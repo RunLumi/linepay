@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct RootView: View {
-    @State private var model = AppModel()
-    @State private var subscriptionStore = SubscriptionStore()
+    let model: AppModel
+    let subscriptionStore: SubscriptionStore
+
     @State private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -23,5 +24,8 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(
+        model: AppModel(),
+        subscriptionStore: SubscriptionStore()
+    )
 }
