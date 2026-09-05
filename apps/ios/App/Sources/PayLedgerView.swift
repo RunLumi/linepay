@@ -134,8 +134,11 @@ struct PayLedgerView: View {
                 .font(.title3.bold())
                 .foregroundStyle(LinePayColor.textPrimary)
 
-            Text("Add the hours you actually worked. LinePay will break expected pay into traceable lines here.")
-                .foregroundStyle(LinePayColor.textSecondary)
+            Text(
+                "Add the hours you actually worked. LinePay will break expected pay into "
+                    + "traceable lines here."
+            )
+            .foregroundStyle(LinePayColor.textSecondary)
 
             Button {
                 showingAddWork = true
