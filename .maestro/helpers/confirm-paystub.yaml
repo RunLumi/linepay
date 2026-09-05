@@ -89,6 +89,8 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: paystub.gross-basis
+    visibilityPercentage: 50
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
@@ -96,6 +98,8 @@ appId: com.streamentry.linepay
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: ".*Wages only.*"
+    visibilityPercentage: 50
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn: ".*Wages only.*"

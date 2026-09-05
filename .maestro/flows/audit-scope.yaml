@@ -112,6 +112,8 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: paystub.line-layout
+    visibilityPercentage: 50
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
@@ -119,6 +121,8 @@ tags: [ios, regression, payroll-scope]
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: Each line includes its full hourly pay
+    visibilityPercentage: 50
+    centerElement: true
     timeout: 60000
 - tapOn: Each line includes its full hourly pay
 - waitForAnimationToEnd
