@@ -305,6 +305,7 @@ struct PaystubReviewView: View {
     let onConfirmed: () -> Void
     @State private var draft: PaystubConfirmationDraft
     @State private var errorMessage: String?
+    @State private var isClosing = false
     init(
         model: AppModel, subscriptionStore: SubscriptionStore, draft: PaystubConfirmationDraft,
         onConfirmed: @escaping () -> Void
@@ -412,6 +413,7 @@ struct PaystubReviewView: View {
         .scrollContentBackground(.hidden).background(LinePayColor.canvas)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
+            guard !isClosing else { return }
             do { try model.savePaystubDraft(value) } catch {
                 errorMessage =
                     "This review could not be saved. Keep the screen open and retry after freeing storage."
@@ -454,10 +456,14 @@ struct PaystubReviewView: View {
     }
     private func confirm() {
         do {
+            isClosing = true
             try model.confirmPaystub(draft, hasProAccess: subscriptionStore.hasAuditAccess)
             errorMessage = nil
             onConfirmed()
-        } catch { errorMessage = error.localizedDescription }
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

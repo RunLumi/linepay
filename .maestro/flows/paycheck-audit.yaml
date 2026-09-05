@@ -31,8 +31,15 @@ tags: [smoke, ios, regression]
 - tapOn:
     id: pay.finish-period
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: period.confirm-close
+    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: period.confirm-close
+    text: Finish and archive
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - tapOn: History
 - waitForAnimationToEnd

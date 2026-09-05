@@ -11,6 +11,7 @@ struct PayProfileSetupView: View {
     @State private var showingUnsupported = false
     @State private var changePreview: ProfileChangePreview?
     @State private var showingChangeConfirmation = false
+    @State private var isClosing = false
     @FocusState private var editingField: String?
 
     init(model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil) {
@@ -77,6 +78,7 @@ struct PayProfileSetupView: View {
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .onChange(of: draft) { _, value in
+            guard !isClosing else { return }
             do { try model.saveSetupDraft(value) } catch {
                 errorMessage =
                     "This draft could not be saved. Keep this screen open and free device storage."
@@ -311,10 +313,15 @@ struct PayProfileSetupView: View {
                 Section("Apply this change") {
                     Picker("Scope", selection: $draft.editScope) {
                         Text("Future work periods only").tag(RuleEditScope.futurePeriods)
+                            .accessibilityIdentifier("pay-profile.scope.future")
                         Text("New rules from a date").tag(RuleEditScope.datedChange)
+                            .accessibilityIdentifier("pay-profile.scope.dated")
                         Text("Recalculate this entire current period").tag(
-                            RuleEditScope.currentPeriod)
-                    }.pickerStyle(.inline).accessibilityIdentifier("pay-profile.change-scope")
+                            RuleEditScope.currentPeriod
+                        )
+                        .accessibilityIdentifier("pay-profile.scope.current")
+                    }.pickerStyle(.navigationLink).accessibilityIdentifier(
+                        "pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
@@ -385,10 +392,14 @@ struct PayProfileSetupView: View {
 
     private func commitProfile() {
         do {
+            isClosing = true
             try model.saveProfile(draft, scope: selectedScope)
             onSaved?()
             if onSaved == nil { dismiss() }
-        } catch { errorMessage = error.localizedDescription }
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func number(_ label: String, _ binding: Binding<String>) -> some View {

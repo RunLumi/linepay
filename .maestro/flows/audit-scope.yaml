@@ -17,6 +17,7 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: audit.correct
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: audit.correct

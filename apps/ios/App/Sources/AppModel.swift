@@ -976,10 +976,6 @@ final class AppModel {
         }
     }
 
-    private var activeTimeZoneIdentifier: String {
-        currentTimeZoneIdentifier
-    }
-
     private func commit(_ candidate: AppPersistentState) throws {
         guard persistenceIssue == nil else { throw AppModelError.persistenceFailed }
         do {
@@ -1327,61 +1323,6 @@ final class AppModel {
             reconciliation: period.reconciliation)
     }
 
-    private func aggregate(
-        calculation: CalculationResult,
-        where predicate: (PayComponent) -> Bool
-    ) -> Money {
-        let amount = calculation.components
-            .filter(predicate)
-            .reduce(Decimal.zero) { $0 + $1.amount.amount }
-        return Money(amount: amount, currencyCode: calculation.total.currencyCode)
-    }
-
-    private func appendFinding(
-        id: String,
-        title: String,
-        expected: Money,
-        paid: Money,
-        explanation: String,
-        to findings: inout [AuditFinding]
-    ) {
-        guard let difference = try? expected.subtracting(paid) else { return }
-        findings.append(
-            AuditFinding(
-                id: id,
-                title: title,
-                expected: expected,
-                paid: paid,
-                difference: difference,
-                explanation: explanation
-            )
-        )
-    }
-
-    private func copy(
-        paystub: ConfirmedPaystub,
-        evidence: PaystubEvidence?
-    ) -> ConfirmedPaystub {
-        ConfirmedPaystub(
-            id: paystub.id,
-            payPeriodStart: paystub.payPeriodStart,
-            payPeriodEnd: paystub.payPeriodEnd,
-            grossPay: paystub.grossPay,
-            regularHours: paystub.regularHours,
-            regularPay: paystub.regularPay,
-            overtimeHours: paystub.overtimeHours,
-            overtimePay: paystub.overtimePay,
-            doubleTimeHours: paystub.doubleTimeHours,
-            doubleTimePay: paystub.doubleTimePay,
-            calloutPay: paystub.calloutPay,
-            perDiemPay: paystub.perDiemPay,
-            notes: paystub.notes,
-            evidence: evidence,
-            confirmedEpochSeconds: paystub.confirmedEpochSeconds,
-            confirmation: paystub.confirmation, assessment: paystub.assessment
-        )
-    }
-
     private func normalizedProfileName(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -1396,21 +1337,6 @@ final class AppModel {
                     || field.lowercased().contains("threshold") ? 4 : 2,
                 allowZero: allowZero, allowDollarSign: true)
         } catch { throw AppModelError.invalidField(field) }
-    }
-
-    private func optionalDecimal(_ text: String, field: String) throws -> Decimal? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        return try positiveDecimal(trimmed, field: field, allowZero: true)
-    }
-
-    private func optionalMoney(
-        _ text: String,
-        field: String,
-        currencyCode: String
-    ) throws -> Money? {
-        guard let amount = try optionalDecimal(text, field: field) else { return nil }
-        return Money(amount: amount, currencyCode: currencyCode)
     }
 
     private func multiplierDecimal(_ text: String, field: String) throws -> Decimal {

@@ -14,6 +14,7 @@ struct AddWorkView: View {
     @State private var errorMessage: String?
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
+    @State private var isClosing = false
 
     init(
         model: AppModel, existingEntry: WorkEntry? = nil, template: WorkEntry? = nil,
@@ -87,7 +88,7 @@ struct AddWorkView: View {
                 } ?? []
             _draft = State(initialValue: value)
         }
-        _quick = State(initialValue: template != nil && !resumesPendingWork)
+        _quick = State(initialValue: template != nil || model.workDraft?.copiedFrom != nil)
     }
 
     private func clock(_ date: Date) -> String {
@@ -214,10 +215,12 @@ struct AddWorkView: View {
                         $0.id == draft.editingEntryID
                     }) {
                         Button("Delete work", role: .destructive) {
+                            isClosing = true
                             if let undo = model.deleteWork(id: existingEntry.id) {
                                 onDeleted?(undo)
                                 dismiss()
                             } else {
+                                isClosing = false
                                 errorMessage = model.lastPersistenceError
                             }
                         }.frame(minHeight: 48).accessibilityIdentifier("work.delete")
@@ -232,13 +235,23 @@ struct AddWorkView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep draft") { dismiss() }.accessibilityIdentifier("work.cancel")
+                    Button("Keep draft") {
+                        do {
+                            isClosing = true
+                            try model.saveWorkDraft(draft)
+                            dismiss()
+                        } catch {
+                            isClosing = false
+                            errorMessage = error.localizedDescription
+                        }
+                    }.accessibilityIdentifier("work.cancel")
                 }
             }
         }
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
-        .onChange(of: draft, initial: true) { _, value in
+        .onChange(of: draft) { _, value in
+            guard !isClosing else { return }
             do { try model.saveWorkDraft(value) } catch {
                 errorMessage = "Draft could not be saved. Your earlier records are unchanged."
             }
@@ -263,14 +276,19 @@ struct AddWorkView: View {
         ) {
             Button("Discard draft", role: .destructive) {
                 do {
+                    isClosing = true
                     try model.saveWorkDraft(nil)
                     dismiss()
-                } catch { errorMessage = error.localizedDescription }
+                } catch {
+                    isClosing = false
+                    errorMessage = error.localizedDescription
+                }
             }
         }
     }
     private func save() {
         do {
+            isClosing = true
             let extra = try draft.additionalBreaks.map {
                 try WorkBreak(
                     id: $0.id,
@@ -291,7 +309,10 @@ struct AddWorkView: View {
                     additionalBreaks: extra)
             }
             dismiss()
-        } catch { errorMessage = error.localizedDescription }
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
+        }
     }
     private func moveTemplate(_ date: Date) {
         var calendar = Calendar(identifier: .gregorian)

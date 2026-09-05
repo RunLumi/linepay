@@ -92,6 +92,18 @@ final class PaydayJourneyTests: XCTestCase {
         }
     }
 
+    func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() {
+        launch(scenario: "matches")
+        tab("Pay")
+        tap("pay.open-audit")
+        tap("audit.correct")
+        XCTAssertTrue(app.buttons["paystub.correct-existing"].waitForExistence(timeout: 10))
+        capture("correction-source-chooser")
+        tap("paystub.correct-existing")
+        tap("paystub.field.grossPay")
+        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "550")
+    }
+
     func testDraftRecoveryAndUnsupportedRulePresentation() {
         launch(scenario: "work")
         tap("today.add-work")
@@ -154,6 +166,7 @@ final class PaydayJourneyTests: XCTestCase {
         tap("work.save")
         XCTAssertEqual(app.buttons.matching(identifier: "today.edit-work").count, 1)
         XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.exists)
+        XCTAssertEqual(app.buttons["today.add-work"].label, "Add work")
     }
 
     func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {

@@ -4,10 +4,23 @@ tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
+- scrollUntilVisible:
+    element:
+      id: today.repeat-shift
+    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: today.repeat-shift
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element: ".*Overlaps.*"
+    centerElement: true
+- waitForAnimationToEnd
 - assertVisible: ".*Overlaps.*"
+- scrollUntilVisible:
+    element:
+      id: work.save
+- waitForAnimationToEnd
 - assertVisible:
     id: work.save
     enabled: false

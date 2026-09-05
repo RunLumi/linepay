@@ -53,7 +53,13 @@ tags: [ios, regression, payroll-scope]
           id: pay-profile.continue
       - waitForAnimationToEnd
 - scrollUntilVisible:
-    element: Recalculate this entire current period
+    element:
+      id: pay-profile.change-scope
+    direction: UP
+    centerElement: true
+- waitForAnimationToEnd
+- tapOn:
+    id: pay-profile.change-scope
 - waitForAnimationToEnd
 - tapOn: Recalculate this entire current period
 - waitForAnimationToEnd
@@ -65,6 +71,7 @@ tags: [ios, regression, payroll-scope]
     id: pay-profile.save
 - waitForAnimationToEnd
 - assertVisible: Review rule change
+- assertVisible: ".*Correct this period.*"
 - takeScreenshot: correction-preview
 - tapOn:
     id: pay-profile.confirm-change
