@@ -127,6 +127,7 @@ struct OnboardingPaywallView: View {
             .font(.headline)
             .foregroundStyle(LinePayColor.brandPrimary)
             .frame(minHeight: 48)
+            .accessibilityIdentifier("paywall.continue-free")
             .accessibilityHint("Skips the Pro offer and continues with LinePay Free")
 
             if !SubscriptionStore.commerceEnabled {
