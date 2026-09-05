@@ -26,11 +26,11 @@ case "$MODE" in
         run_quick
         ;;
     ios)
-        "$ROOT/scripts/check-ios.sh"
+        bash "$ROOT/scripts/check-ios.sh"
         ;;
     ui)
-        "$ROOT/scripts/check-ios.sh"
-        "$ROOT/scripts/test-ios-maestro.sh"
+        bash "$ROOT/scripts/check-ios.sh"
+        bash "$ROOT/scripts/test-ios-maestro.sh"
         ;;
     *)
         cat >&2 <<'EOF'
