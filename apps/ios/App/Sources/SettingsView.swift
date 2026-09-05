@@ -34,11 +34,11 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("LinePay Pro") {
+                Section("LinePaycheck Pro") {
                     LabeledContent("Status", value: subscriptionStatus)
 
                     if !subscriptionStore.isPro {
-                        Button("View LinePay Pro") {
+                        Button("View LinePaycheck Pro") {
                             showingPaywall = true
                         }
                     }
@@ -56,8 +56,8 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Label("No LinePay account", systemImage: "person.crop.circle.badge.xmark")
-                    Label("No LinePay backend stores your paycheck", systemImage: "server.rack")
+                    Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
+                    Label("No LinePaycheck backend stores your paycheck", systemImage: "server.rack")
                     Label("No ad or tracking SDK", systemImage: "eye.slash")
                     Label("Paystub OCR runs on this device", systemImage: "iphone")
                 } header: {
@@ -72,7 +72,7 @@ struct SettingsView: View {
                 Section("Your data") {
                     if let backupURL {
                         ShareLink(item: backupURL) {
-                            Label("Share LinePay backup", systemImage: "square.and.arrow.up")
+                            Label("Share LinePaycheck backup", systemImage: "square.and.arrow.up")
                         }
                     } else {
                         Button {
@@ -93,14 +93,14 @@ struct SettingsView: View {
                     Button(role: .destructive) {
                         showingDeleteAllConfirmation = true
                     } label: {
-                        Label("Delete all LinePay data", systemImage: "trash")
+                        Label("Delete all LinePaycheck data", systemImage: "trash")
                     }
                 }
 
                 Section("About") {
                     LabeledContent("Architecture", value: "Local-first")
                     Text(
-                        "LinePay estimates expected pay and flags possible differences. It is not "
+                        "LinePaycheck estimates expected pay and flags possible differences. It is not "
                             + "payroll software, legal advice, or a determination of wages legally owed."
                     )
                     .font(.footnote)
@@ -125,7 +125,7 @@ struct SettingsView: View {
             }
         }
         .confirmationDialog(
-            "Delete all LinePay data?",
+            "Delete all LinePaycheck data?",
             isPresented: $showingDeleteAllConfirmation,
             titleVisibility: .visible
         ) {
@@ -204,7 +204,7 @@ struct SettingsView: View {
             backupURL = try model.exportBackupURL()
             errorMessage = nil
         } catch {
-            errorMessage = "LinePay could not prepare the backup."
+            errorMessage = "LinePaycheck could not prepare the backup."
         }
     }
 
