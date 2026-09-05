@@ -983,7 +983,7 @@ Lead with the customer-visible improvement. Mention meaningful fixes when they i
 ### Metadata
 
 - [ ] App Store name set to `LinePaycheck: Lineman Pay`
-- [ ] Device/display name remains `LinePaycheck`
+- [ ] Home-screen display name remains `LinePay`; public product branding remains `LinePaycheck`
 - [ ] Subtitle set to `Overtime, Callout & Per Diem`
 - [ ] Keyword field verified at <=100 bytes
 - [ ] Promotional text pasted exactly and proofread
