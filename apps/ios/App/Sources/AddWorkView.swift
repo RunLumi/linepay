@@ -3,18 +3,36 @@ import SwiftUI
 
 struct AddWorkView: View {
     let model: AppModel
+    let existingInterval: WorkInterval?
 
     @Environment(\.dismiss) private var dismiss
     @State private var start: Date
     @State private var end: Date
-    @State private var kind: WorkKind = .regular
+    @State private var kind: WorkKind
     @State private var errorMessage: String?
 
-    init(model: AppModel) {
+    init(model: AppModel, existingInterval: WorkInterval? = nil) {
         self.model = model
-        let now = Date()
-        _start = State(initialValue: now)
-        _end = State(initialValue: now.addingTimeInterval(8 * 60 * 60))
+        self.existingInterval = existingInterval
+
+        if let existingInterval {
+            _start = State(
+                initialValue: Date(
+                    timeIntervalSince1970: TimeInterval(existingInterval.startEpochSeconds)
+                )
+            )
+            _end = State(
+                initialValue: Date(
+                    timeIntervalSince1970: TimeInterval(existingInterval.endEpochSeconds)
+                )
+            )
+            _kind = State(initialValue: existingInterval.kind)
+        } else {
+            let now = Date()
+            _start = State(initialValue: now)
+            _end = State(initialValue: now.addingTimeInterval(8 * 60 * 60))
+            _kind = State(initialValue: .regular)
+        }
     }
 
     var body: some View {
@@ -74,7 +92,7 @@ struct AddWorkView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
-            .navigationTitle("Add work")
+            .navigationTitle(existingInterval == nil ? "Add work" : "Edit work")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -107,7 +125,16 @@ struct AddWorkView: View {
 
     private func save() {
         do {
-            try model.addWork(start: start, end: end, kind: kind)
+            if let existingInterval {
+                try model.updateWork(
+                    id: existingInterval.id,
+                    start: start,
+                    end: end,
+                    kind: kind
+                )
+            } else {
+                try model.addWork(start: start, end: end, kind: kind)
+            }
             errorMessage = nil
             dismiss()
         } catch {
