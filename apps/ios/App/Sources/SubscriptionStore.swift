@@ -23,6 +23,8 @@ final class SubscriptionStore {
     private var transactionUpdatesTask: Task<Void, Never>?
 
     init() {
+        guard Self.commerceEnabled else { return }
+
         transactionUpdatesTask = Task { [weak self] in
             for await result in Transaction.updates {
                 guard let self else { return }
@@ -43,6 +45,13 @@ final class SubscriptionStore {
     }
 
     func load() async {
+        guard Self.commerceEnabled else {
+            products = []
+            isPro = false
+            errorMessage = nil
+            return
+        }
+
         isLoading = true
         defer { isLoading = false }
 
@@ -100,6 +109,11 @@ final class SubscriptionStore {
     }
 
     func restorePurchases() async {
+        guard Self.commerceEnabled else {
+            errorMessage = "Pro purchasing isn't enabled in this build yet."
+            return
+        }
+
         do {
             try await AppStore.sync()
             await refreshEntitlements()
