@@ -1,8 +1,10 @@
-# LinePay
+# LinePaycheck
 
 **Private, agreement-aware paycheck auditing for linemen.**
 
-LinePay records work facts, applies explicit pay rules, calculates expected pay, and helps reconcile a paystub without sending wage or paystub data to a LinePay backend.
+LinePaycheck records work facts, applies explicit pay rules, calculates expected pay, and helps reconcile a paystub without sending wage or paystub data to a LinePaycheck backend.
+
+> Internal repository, module, scheme, and bundle identifiers intentionally remain `LinePay` / `com.streamentry.linepay` to preserve technical stability. The shipping product name is **LinePaycheck**.
 
 ## Product invariant
 
