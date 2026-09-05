@@ -12,6 +12,11 @@ tags: [ios, regression, payroll-scope]
 - tapOn:
     id: settings.edit-rules
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: pay-profile.hourly-rate
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.hourly-rate
 - waitForAnimationToEnd
@@ -48,24 +53,36 @@ tags: [ios, regression, payroll-scope]
       - scrollUntilVisible:
           element:
             id: pay-profile.continue
+          timeout: 60000
       - waitForAnimationToEnd
       - tapOn:
           id: pay-profile.continue
       - waitForAnimationToEnd
 - scrollUntilVisible:
+    element: Confirm rules
+    direction: UP
+    timeout: 60000
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
       id: pay-profile.change-scope
-    direction: UP
+    direction: DOWN
+    timeout: 60000
     centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: pay-profile.change-scope
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Recalculate this entire current period
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn: Recalculate this entire current period
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.save
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: pay-profile.save

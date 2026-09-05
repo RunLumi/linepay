@@ -13,6 +13,7 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: pay-profile.continue
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: pay-profile.continue
@@ -23,6 +24,7 @@ appId: com.streamentry.linepay
     element:
       id: pay-profile.hourly-rate
     direction: UP
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: pay-profile.hourly-rate
@@ -35,10 +37,20 @@ appId: com.streamentry.linepay
     id: keyboard.done
 - waitForAnimationToEnd
 - runFlow: confirm-rules.yaml
+- scrollUntilVisible:
+    element:
+      id: activation.skip-work
+    timeout: 60000
+- waitForAnimationToEnd
 - assertVisible:
     id: activation.skip-work
 - tapOn:
     id: activation.skip-work
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.add-work
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
     id: today.add-work

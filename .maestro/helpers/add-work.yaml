@@ -3,6 +3,7 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: today.add-work
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: today.add-work
@@ -13,6 +14,7 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: work.note
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: work.note
@@ -24,15 +26,26 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: work.save
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: work.save
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: activation.keep-logging
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
     id: activation.keep-logging
 - takeScreenshot: first-real-result
 - tapOn:
     id: activation.keep-logging
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.repeat-shift
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
     id: today.repeat-shift

@@ -6,6 +6,11 @@ tags: [ios, regression, payroll-scope]
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Pay
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: pay.check-paycheck
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: pay.check-paycheck
 - waitForAnimationToEnd
@@ -13,25 +18,47 @@ tags: [ios, regression, payroll-scope]
     file: ../helpers/confirm-paystub.yaml
     env:
       GROSS: "467.20"
+- scrollUntilVisible:
+    element:
+      id: audit.status
+    timeout: 60000
+- waitForAnimationToEnd
 - assertVisible: Gross total matches
 - scrollUntilVisible:
     element:
       id: audit.correct
     centerElement: true
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: audit.correct
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.correct-existing
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.correct-existing
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: Review optional line details
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn: Review optional line details
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.field.regularPay
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.regularPay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.value
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.value
@@ -40,15 +67,26 @@ tags: [ios, regression, payroll-scope]
 - tapOn:
     id: keyboard.done
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.field.overtimePay
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.overtimePay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.value
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.value
@@ -57,22 +95,37 @@ tags: [ios, regression, payroll-scope]
 - tapOn:
     id: keyboard.done
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: How earnings lines are reported
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn: How earnings lines are reported
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.line-layout
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.line-layout
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Each line includes its full hourly pay
+    timeout: 60000
 - tapOn: Each line includes its full hourly pay
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.audit
@@ -81,8 +134,13 @@ tags: [ios, regression, payroll-scope]
     element:
       id: audit.status
     direction: UP
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible: Needs review
+- scrollUntilVisible:
+    element:
+      id: audit.scope
+    timeout: 60000
 - assertVisible:
     id: audit.scope
 - takeScreenshot: offsetting-components-needs-review
@@ -90,7 +148,15 @@ tags: [ios, regression, payroll-scope]
 - launchApp
 - tapOn: Pay
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: pay.open-audit
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: pay.open-audit
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Needs review
+    timeout: 60000
 - assertVisible: Needs review

@@ -353,7 +353,9 @@ struct PaystubReviewView: View {
                 .font(.footnote)
                 Picker("What does gross include?", selection: $draft.grossBasis) {
                     ForEach(PaystubGrossBasis.allCases, id: \.self) { Text($0.title).tag($0) }
-                }.accessibilityIdentifier("paystub.gross-basis")
+                }
+                .pickerStyle(.navigationLink)
+                .accessibilityIdentifier("paystub.gross-basis")
                 Text(
                     "Compare wage gross with wages, not take-home pay. Confirm whether per diem is already inside this gross number; LinePaycheck does not infer tax treatment."
                 ).font(.footnote)
@@ -370,15 +372,16 @@ struct PaystubReviewView: View {
                     Picker("Earnings layout", selection: $draft.lineLayout) {
                         ForEach(PaystubLineLayout.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
+                    .pickerStyle(.navigationLink)
                     .accessibilityIdentifier("paystub.line-layout")
                     Picker("Hours mean", selection: $draft.hoursBasis) {
                         ForEach(PaystubHoursBasis.allCases, id: \.self) { Text($0.title).tag($0) }
-                    }
+                    }.pickerStyle(.navigationLink)
                     Picker("Callout guarantee", selection: $draft.guaranteeLayout) {
                         ForEach(PaystubGuaranteeLayout.allCases, id: \.self) {
                             Text($0.title).tag($0)
                         }
-                    }
+                    }.pickerStyle(.navigationLink)
                     Text(
                         "Full-rate example: 8 h × $50 = $400 regular; 2 h × $75 = $150 OT. Premium-only example: all 10 h × $50 = $500 base; 2 h × $25 = $50 extra OT. Choose only the layout your paystub uses."
                     ).font(.footnote)

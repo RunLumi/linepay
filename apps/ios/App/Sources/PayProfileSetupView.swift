@@ -309,6 +309,7 @@ struct PayProfileSetupView: View {
                 )
                 .font(.footnote)
             }
+            .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
                     Picker("Scope", selection: $draft.editScope) {

@@ -1,11 +1,17 @@
 appId: com.streamentry.linepay
 ---
+- scrollUntilVisible:
+    element:
+      id: paystub.manual
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.manual
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
     id: paystub.audit
@@ -14,21 +20,47 @@ appId: com.streamentry.linepay
     element:
       id: paystub.field.periodStart
     direction: UP
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodStart
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.field.periodEnd
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodEnd
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.field.grossPay
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.grossPay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.value
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.value
@@ -38,12 +70,18 @@ appId: com.streamentry.linepay
     id: keyboard.done
 - waitForAnimationToEnd
 - takeScreenshot: manual-paystub-field
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.complete-work
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.complete-work
@@ -51,15 +89,21 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: paystub.gross-basis
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.gross-basis
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: ".*Wages only.*"
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn: ".*Wages only.*"
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+    timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.audit
