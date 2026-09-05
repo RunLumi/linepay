@@ -19,4 +19,13 @@ bash scripts/agent-verify.sh ios
 bash scripts/agent-verify.sh ui
 ```
 
-Project-scoped optional mobile MCP servers are declared in `.mcp.json`. Do not duplicate repository policy here; update `AGENTS.md` or the focused skill/doc instead.
+Project-scoped optional mobile MCP servers are declared in `.mcp.json`.
+
+For specialized work, Claude project subagents live in `.claude/agents/` and intentionally point back to the canonical workflows in `.agents/skills/`:
+
+- `linepay-ios-engineer`
+- `linepay-payroll-reviewer`
+- `linepay-mobile-qa`
+- `linepay-release-reviewer`
+
+Do not duplicate repository policy here. Update `AGENTS.md` or the focused canonical skill/doc instead.
