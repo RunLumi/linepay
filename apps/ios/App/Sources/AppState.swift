@@ -179,6 +179,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
     var paystub: ConfirmedPaystub?
     var reconciliation: ReconciliationResult?
     var auditCompletedEpochSeconds: Int64?
+    var hasConsumedAuditAccess: Bool
 
     init(
         id: UUID = UUID(),
@@ -187,7 +188,8 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         workEntries: [WorkEntry] = [],
         paystub: ConfirmedPaystub? = nil,
         reconciliation: ReconciliationResult? = nil,
-        auditCompletedEpochSeconds: Int64? = nil
+        auditCompletedEpochSeconds: Int64? = nil,
+        hasConsumedAuditAccess: Bool = false
     ) {
         self.id = id
         self.window = window
@@ -196,6 +198,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.paystub = paystub
         self.reconciliation = reconciliation
         self.auditCompletedEpochSeconds = auditCompletedEpochSeconds
+        self.hasConsumedAuditAccess = hasConsumedAuditAccess
     }
 }
 
