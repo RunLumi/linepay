@@ -27,17 +27,17 @@ actor BackupIO {
         let accessed = url.startAccessingSecurityScopedResource()
         defer { if accessed { url.stopAccessingSecurityScopedResource() } }
         var coordinationError: NSError?
-        let result = Mutex<Result<Data, any Error>?>(nil)
+        let result = CoordinatedReadResult()
         NSFileCoordinator().coordinate(
             readingItemAt: url, options: [], error: &coordinationError
         ) { coordinatedURL in
             let read = Result {
                 try Self.readBounded(coordinatedURL, limit: BackupArchive.maximumBytes)
             }
-            result.withLock { $0 = read }
+            result.value.withLock { $0 = read }
         }
         if coordinationError != nil { throw BackupError.unavailableFile }
-        guard let read = result.withLock({ $0 }) else { throw BackupError.unavailableFile }
+        guard let read = result.value.withLock({ $0 }) else { throw BackupError.unavailableFile }
         try Task.checkCancellation()
         return try BackupArchive.decode(read.get())
     }
@@ -59,4 +59,9 @@ actor BackupIO {
         }
         return result
     }
+}
+
+/// Reference ownership lets the accessor and its caller borrow the same noncopyable lock.
+private final class CoordinatedReadResult: Sendable {
+    let value = Mutex<Result<Data, any Error>?>(nil)
 }
