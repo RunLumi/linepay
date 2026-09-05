@@ -91,11 +91,20 @@ struct PayLedgerView: View {
             HStack(spacing: LinePaySpacing.standard) {
                 Text("\(LinePayFormat.hours(model.totalHours)) h")
                     .monospacedDigit()
-                Text("Rule v\(active.agreement.version)")
+                Text(
+                    "Rules "
+                        + (model.calculation?.agreementSnapshots ?? [active.agreement]).map {
+                            "v" + $0.version
+                        }.joined(separator: ", "))
             }
             .font(.footnote)
             .foregroundStyle(LinePayColor.textSecondary)
 
+            if let error = model.calculationError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .font(.footnote)
+                    .foregroundStyle(LinePayColor.review)
+            }
             LineGapMark()
         }
     }
@@ -253,6 +262,12 @@ struct PayLedgerView: View {
                     LabeledContent("Multiplier", value: "\(LinePayFormat.decimal(multiplier))×")
                 }
                 LabeledContent("Why") {
+                    if let applied = component.appliedAgreement {
+                        Text(
+                            "Rule v\(applied.version) · \(LinePayFormat.money(applied.hourlyRate))/hr"
+                        )
+                        .font(.footnote.monospacedDigit())
+                    }
                     Text(component.explanation)
                         .multilineTextAlignment(.trailing)
                 }
@@ -289,7 +304,7 @@ struct PayLedgerView: View {
     }
 
     private var expectedPayText: String {
-        guard let calculation = model.calculation else { return "$0.00" }
+        guard let calculation = model.calculation else { return "Needs review" }
         return LinePayFormat.money(calculation.total)
     }
 

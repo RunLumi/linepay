@@ -14,6 +14,24 @@ struct DatePremiumDraft: Identifiable, Hashable, Sendable {
     }
 }
 
+struct ProfileChangePreview {
+    let before: Money?
+    let after: Money?
+    let workCount: Int
+}
+
+enum RuleChangeScope: String, CaseIterable, Identifiable, Sendable {
+    case prospective
+    case correctCurrentPeriod
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .prospective: "New rules from a date"
+        case .correctCurrentPeriod: "Correct this period's setup"
+        }
+    }
+}
+
 struct PayProfileDraft: Hashable, Sendable {
     var name = "My current pay"
     var hourlyRate = ""
@@ -46,6 +64,8 @@ struct PayProfileDraft: Hashable, Sendable {
     var effectiveStartDate = Date()
     var useEffectiveEnd = false
     var effectiveEndDate = Date()
+
+    var changeEffectiveDate: Date?
 
     var sourceTitle = ""
     var sourceURL = ""
@@ -202,7 +222,7 @@ final class AppModel {
         self.evidenceStore = evidenceStore
 
         do {
-            state = try store.load() ?? AppPersistentState()
+            state = try (store.load() ?? AppPersistentState()).upgraded()
         } catch {
             state = AppPersistentState()
             persistenceIssue = error.localizedDescription
@@ -255,13 +275,16 @@ final class AppModel {
     var currentAuditStatus: AuditDisplayStatus {
         guard let activePeriod = state.activePeriod else { return .notAudited }
         return auditStatus(
+            calculation: calculation,
             paystub: activePeriod.paystub,
             reconciliation: activePeriod.reconciliation
         )
     }
 
     func auditStatus(for period: CompletedPayPeriod) -> AuditDisplayStatus {
-        auditStatus(paystub: period.paystub, reconciliation: period.reconciliation)
+        auditStatus(
+            calculation: period.calculation, paystub: period.paystub,
+            reconciliation: period.reconciliation)
     }
 
     func canRunAudit(hasProAccess: Bool) -> Bool {
@@ -271,41 +294,121 @@ final class AppModel {
             || !state.hasUsedFreeAudit
     }
 
-    func saveProfile(_ draft: PayProfileDraft) throws {
-        let agreement = try makeAgreement(from: draft)
-        let existingProfile = state.profile
-        let profile = PayProfile(
-            id: existingProfile?.id ?? UUID(),
-            name: normalizedProfileName(draft.name),
-            timeZoneIdentifier: draft.timeZoneIdentifier,
-            agreement: agreement,
-            preferredCadence: draft.preferredCadence
-        )
+    func saveProfile(_ draft: PayProfileDraft, scope: RuleChangeScope = .prospective) throws {
+        try commit(candidateForProfile(draft, scope: scope))
+    }
 
+    func previewProfileChange(_ draft: PayProfileDraft, scope: RuleChangeScope) throws
+        -> ProfileChangePreview
+    {
+        let candidate = try candidateForProfile(draft, scope: scope)
+        return ProfileChangePreview(
+            before: calculation?.total,
+            after: candidate.activePeriod.flatMap { calculate(period: $0) }?.total,
+            workCount: workEntries.count)
+    }
+
+    private func candidateForProfile(
+        _ draft: PayProfileDraft, scope: RuleChangeScope = .prospective
+    ) throws -> AppPersistentState {
+        let agreement = try makeAgreement(from: draft)
+        let existing = state.profile
         var candidate = state
-        let isFirstProfile = candidate.profile == nil
-        candidate.profile = profile
+        var baseline = existing?.baselineAgreement ?? existing?.agreement ?? agreement
+        var changes = existing?.agreementChanges ?? []
 
         if var active = candidate.activePeriod {
-            active.agreement = agreement
-            active.reconciliation = nil
-            active.auditCompletedEpochSeconds = nil
+            guard
+                draft.timeZoneIdentifier
+                    == active.agreementTimeZone(fallback: existing?.timeZoneIdentifier)
+            else {
+                throw AppModelError.invalidField(
+                    "The open period keeps its original payroll timezone")
+            }
+            let isUnusedSetup =
+                active.workEntries.isEmpty && active.paystub == nil
+                && (active.agreementChanges ?? []).isEmpty
+                && draft.changeEffectiveDate == nil && !draft.useEffectiveStart
+            if existing != nil && scope == .prospective && !isUnusedSetup {
+                guard draft.timeZoneIdentifier == currentTimeZoneIdentifier else {
+                    throw AppModelError.invalidField(
+                        "Keep the current payroll timezone while scheduling a rule change")
+                }
+                let date = localDate(
+                    from: draft.changeEffectiveDate
+                        ?? (draft.useEffectiveStart
+                            ? draft.effectiveStartDate : active.window.endDate),
+                    timeZoneIdentifier: currentTimeZoneIdentifier)
+                // A prospective edit cannot alter any recorded work, including an overnight tail.
+                let lastWorkDate = active.workEntries.map {
+                    localDate(
+                        from: Date(
+                            timeIntervalSince1970: TimeInterval($0.interval.endEpochSeconds - 1)),
+                        timeZoneIdentifier: currentTimeZoneIdentifier)
+                }.max()
+                guard lastWorkDate.map({ date > $0 }) ?? true else {
+                    throw AppModelError.prospectiveChangeTouchesRecordedWork
+                }
+                let change = AgreementChange(effectiveDate: date, agreement: agreement)
+                changes.removeAll { $0.effectiveDate == date }
+                changes.append(change)
+                changes = try AgreementTimeline(baseline: baseline, changes: changes).changes
+                var periodChanges = active.agreementChanges ?? []
+                periodChanges.removeAll { $0.effectiveDate == date }
+                periodChanges.append(change)
+                active.agreementChanges = try AgreementTimeline(
+                    baseline: active.agreement, changes: periodChanges
+                ).changes
+                // No recorded facts changed, so an existing audit remains valid.
+            } else {
+                // The UI requires explicit confirmation for this whole-period correction.
+                baseline = agreement
+                let nextStart = localDate(
+                    from: active.window.endDate,
+                    timeZoneIdentifier: currentTimeZoneIdentifier)
+                changes = changes.filter { $0.effectiveDate >= nextStart }
+                active.agreement = agreement
+                active.agreementChanges = changes.isEmpty ? nil : changes
+                active.reconciliation = nil
+                active.auditCompletedEpochSeconds = nil
+                try validate(period: active)
+            }
             candidate.activePeriod = active
-        } else if isFirstProfile {
-            let window = try makePeriodWindow(
-                cadence: draft.preferredCadence,
-                startDate: draft.periodStartDate,
-                manualEndDate: draft.manualPeriodEndDate,
-                timeZoneIdentifier: draft.timeZoneIdentifier
-            )
-            candidate.activePeriod = ActivePayPeriod(
-                window: window,
-                agreement: agreement,
-                timeZoneIdentifier: draft.timeZoneIdentifier
-            )
+        } else {
+            // No open work period exists. Archived snapshots are never rewritten.
+            baseline = agreement
+            changes = []
         }
 
-        try commit(candidate)
+        let profile = PayProfile(
+            id: existing?.id ?? UUID(), name: normalizedProfileName(draft.name),
+            timeZoneIdentifier: draft.timeZoneIdentifier, agreement: agreement,
+            preferredCadence: draft.preferredCadence,
+            baselineAgreement: baseline, agreementChanges: changes.isEmpty ? nil : changes)
+        candidate.profile = profile
+        if existing == nil {
+            let window = try makePeriodWindow(
+                cadence: draft.preferredCadence, startDate: draft.periodStartDate,
+                manualEndDate: draft.manualPeriodEndDate,
+                timeZoneIdentifier: draft.timeZoneIdentifier)
+            candidate.activePeriod = try makeActivePeriod(window: window, profile: profile)
+        }
+        return candidate
+    }
+
+    private func makeActivePeriod(window: PayPeriodWindow, profile: PayProfile) throws
+        -> ActivePayPeriod
+    {
+        let timeline = try AgreementTimeline(
+            baseline: profile.baselineAgreement ?? profile.agreement,
+            changes: profile.agreementChanges ?? [])
+        let start = localDate(
+            from: window.startDate, timeZoneIdentifier: profile.timeZoneIdentifier)
+        let future = timeline.changes.filter { $0.effectiveDate > start }
+        return ActivePayPeriod(
+            window: window, agreement: timeline.agreement(on: start),
+            timeZoneIdentifier: profile.timeZoneIdentifier,
+            agreementChanges: future.isEmpty ? nil : future)
     }
 
     func startNewPayPeriod(
@@ -327,11 +430,7 @@ final class AppModel {
         )
 
         var candidate = state
-        candidate.activePeriod = ActivePayPeriod(
-            window: window,
-            agreement: profile.agreement,
-            timeZoneIdentifier: profile.timeZoneIdentifier
-        )
+        candidate.activePeriod = try makeActivePeriod(window: window, profile: profile)
         try commit(candidate)
     }
 
@@ -469,7 +568,7 @@ final class AppModel {
         guard var active = state.activePeriod else {
             throw AppModelError.missingActivePayPeriod
         }
-        guard let calculation = calculate(period: active) else {
+        guard !active.workEntries.isEmpty, let calculation = calculate(period: active) else {
             throw AppModelError.calculationUnavailable
         }
 
@@ -622,7 +721,8 @@ final class AppModel {
             workEntries: active.workEntries,
             calculation: calculation,
             paystub: active.paystub,
-            reconciliation: active.reconciliation
+            reconciliation: active.reconciliation,
+            agreementChanges: active.agreementChanges
         )
 
         var candidate = state
@@ -636,11 +736,7 @@ final class AppModel {
                 manualEndDate: active.window.endDate,
                 timeZoneIdentifier: profile.timeZoneIdentifier
             )
-            candidate.activePeriod = ActivePayPeriod(
-                window: nextWindow,
-                agreement: profile.agreement,
-                timeZoneIdentifier: profile.timeZoneIdentifier
-            )
+            candidate.activePeriod = try makeActivePeriod(window: nextWindow, profile: profile)
         case .manual:
             candidate.activePeriod = nil
         }
@@ -691,7 +787,8 @@ final class AppModel {
             calculation: original.calculation,
             paystub: copy(paystub: paystub, evidence: nil),
             reconciliation: original.reconciliation,
-            archivedEpochSeconds: original.archivedEpochSeconds
+            archivedEpochSeconds: original.archivedEpochSeconds,
+            agreementChanges: original.agreementChanges
         )
 
         var candidate = state
@@ -704,106 +801,9 @@ final class AppModel {
         evidenceStore.url(for: evidence)
     }
 
-    func auditFindings(
-        calculation: CalculationResult,
-        paystub: ConfirmedPaystub
-    ) -> [AuditFinding] {
-        var findings: [AuditFinding] = []
-        appendFinding(
-            id: "gross",
-            title: "Gross pay",
-            expected: calculation.total,
-            paid: paystub.grossPay,
-            explanation:
-                "Expected gross from your confirmed work and rules compared with confirmed paystub gross.",
-            to: &findings
-        )
-
-        let expectedRegular = aggregate(
-            calculation: calculation,
-            where: {
-                $0.category == .workedHours && ($0.multiplier ?? 1) <= 1
-            }
-        )
-        let expectedOvertime = aggregate(
-            calculation: calculation,
-            where: {
-                let multiplier = $0.multiplier ?? 1
-                return $0.category == .workedHours && multiplier > 1 && multiplier < 2
-            }
-        )
-        let expectedDoubleTime = aggregate(
-            calculation: calculation,
-            where: {
-                $0.category == .workedHours && ($0.multiplier ?? 1) >= 2
-            }
-        )
-        let expectedCallout = aggregate(
-            calculation: calculation,
-            where: { $0.category == .calloutGuarantee }
-        )
-        let expectedPerDiem = aggregate(
-            calculation: calculation,
-            where: { $0.category == .perDiem }
-        )
-
-        if let paid = paystub.regularPay {
-            appendFinding(
-                id: "regular",
-                title: "Regular pay",
-                expected: expectedRegular,
-                paid: paid,
-                explanation:
-                    "Worked-hour components at 1× compared with the confirmed regular-pay line.",
-                to: &findings
-            )
-        }
-        if let paid = paystub.overtimePay {
-            appendFinding(
-                id: "overtime",
-                title: "Overtime pay",
-                expected: expectedOvertime,
-                paid: paid,
-                explanation:
-                    "Worked-hour components above 1× and below 2× compared with confirmed overtime pay.",
-                to: &findings
-            )
-        }
-        if let paid = paystub.doubleTimePay {
-            appendFinding(
-                id: "double-time",
-                title: "Double-time pay",
-                expected: expectedDoubleTime,
-                paid: paid,
-                explanation:
-                    "Worked-hour components at 2× or higher compared with confirmed double-time pay.",
-                to: &findings
-            )
-        }
-        if let paid = paystub.calloutPay {
-            appendFinding(
-                id: "callout",
-                title: "Callout guarantee",
-                expected: expectedCallout,
-                paid: paid,
-                explanation:
-                    "Derived callout-minimum entitlement compared with the confirmed paystub line.",
-                to: &findings
-            )
-        }
-        if let paid = paystub.perDiemPay {
-            appendFinding(
-                id: "per-diem",
-                title: "Per diem",
-                expected: expectedPerDiem,
-                paid: paid,
-                explanation:
-                    "Expected flat per-diem components compared with the confirmed paystub amount.",
-                to: &findings
-            )
-        }
-
-        return findings
+    func auditFindings(calculation: CalculationResult, paystub: ConfirmedPaystub) -> [AuditFinding]
+    {
+        AuditAssessment.moneyFindings(calculation: calculation, paystub: paystub)
     }
 
     func exportBackupURL() throws -> URL {
@@ -858,9 +858,15 @@ final class AppModel {
             calculation = try PayCalculator().calculate(
                 work: active.workEntries.map(\.interval),
                 agreement: active.agreement,
+                changes: active.agreementChanges ?? [],
                 policy: .highestApplicable
             )
             calculationError = nil
+        } catch AgreementTimelineError.calloutGuaranteeNeedsReview {
+            calculation = nil
+            calculationError =
+                "This callout crosses a rule change and may need a minimum-hours top-up. "
+                + "Your work is saved. Confirm how your agreement prices the guarantee before auditing."
         } catch {
             calculation = nil
             calculationError = error.localizedDescription
@@ -871,16 +877,22 @@ final class AppModel {
         try? PayCalculator().calculate(
             work: period.workEntries.map(\.interval),
             agreement: period.agreement,
+            changes: period.agreementChanges ?? [],
             policy: .highestApplicable
         )
     }
 
     private func validate(period: ActivePayPeriod) throws {
-        _ = try PayCalculator().calculate(
-            work: period.workEntries.map(\.interval),
-            agreement: period.agreement,
-            policy: .highestApplicable
-        )
+        do {
+            _ = try PayCalculator().calculate(
+                work: period.workEntries.map(\.interval),
+                agreement: period.agreement,
+                changes: period.agreementChanges ?? [],
+                policy: .highestApplicable
+            )
+        } catch AgreementTimelineError.calloutGuaranteeNeedsReview {
+            // Preserve real work even when an agreement-specific guarantee cannot be priced safely.
+        }
     }
 
     private func invalidateAudit(_ period: inout ActivePayPeriod) {
@@ -939,7 +951,10 @@ final class AppModel {
         let rate = try positiveDecimal(draft.hourlyRate, field: "Hourly rate")
         let existingAgreement = state.profile?.agreement
         let agreementID = existingAgreement?.id ?? UUID().uuidString
-        let nextVersion = String((Int(existingAgreement?.version ?? "0") ?? 0) + 1)
+        let priorVersions =
+            [existingAgreement?.version].compactMap { $0 }
+            + (state.profile?.agreementChanges ?? []).map { $0.agreement.version }
+        let nextVersion = String((priorVersions.compactMap(Int.init).max() ?? 0) + 1)
 
         var regularSchedule: [RegularScheduleWindow] = []
         var outsideMultiplier: Decimal = 1
@@ -1124,47 +1139,13 @@ final class AppModel {
     }
 
     private func auditStatus(
+        calculation: CalculationResult?,
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?
     ) -> AuditDisplayStatus {
-        guard paystub != nil else { return .notAudited }
-        guard let reconciliation else { return .needsReview }
-        switch reconciliation.direction {
-        case .matches: return .matches
-        case .possibleUnderpayment: return .possibleShortfall
-        case .possibleOverpayment: return .possibleOverpayment
-        }
-    }
-
-    private func aggregate(
-        calculation: CalculationResult,
-        where predicate: (PayComponent) -> Bool
-    ) -> Money {
-        let amount = calculation.components
-            .filter(predicate)
-            .reduce(Decimal.zero) { $0 + $1.amount.amount }
-        return Money(amount: amount, currencyCode: calculation.total.currencyCode)
-    }
-
-    private func appendFinding(
-        id: String,
-        title: String,
-        expected: Money,
-        paid: Money,
-        explanation: String,
-        to findings: inout [AuditFinding]
-    ) {
-        guard let difference = try? expected.subtracting(paid) else { return }
-        findings.append(
-            AuditFinding(
-                id: id,
-                title: title,
-                expected: expected,
-                paid: paid,
-                difference: difference,
-                explanation: explanation
-            )
-        )
+        AuditAssessment.evaluate(
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation
+        ).status
     }
 
     private func copy(
@@ -1287,6 +1268,7 @@ extension ActivePayPeriod {
 enum AppModelError: LocalizedError, Equatable {
     case invalidField(String)
     case missingPayProfile
+    case prospectiveChangeTouchesRecordedWork
     case missingActivePayPeriod
     case activePayPeriodAlreadyExists
     case missingWorkInterval
@@ -1299,6 +1281,8 @@ enum AppModelError: LocalizedError, Equatable {
         switch self {
         case .invalidField(let field):
             "Check the value for \(field)."
+        case .prospectiveChangeTouchesRecordedWork:
+            "New rules must start after the last recorded work date. To fix earlier setup, choose the explicit current-period correction. No data changed."
         case .missingPayProfile:
             "Set up your pay rules before adding work."
         case .missingActivePayPeriod:

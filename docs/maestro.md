@@ -573,3 +573,9 @@ Current Maestro documentation used for this workflow:
 - `scrollUntilVisible`: https://docs.maestro.dev/reference/commands-available/scrolluntilvisible
 - test artifacts: https://docs.maestro.dev/maestro-flows/workspace-management/test-reports-and-artifacts
 - iOS `hideKeyboard` caveat: https://docs.maestro.dev/reference/commands-available/hidekeyboard
+
+## Payroll-scope regressions and CI
+
+`rule-scope.yaml` records work, schedules a new rate, verifies the previous amount through relaunch, then explicitly confirms a current-period correction. `audit-scope.yaml` confirms an equal gross with offsetting line differences and requires Needs review after relaunch. Both use actual app controls and synthetic data.
+
+The iOS workflow now installs the checksum-pinned Maestro 2.7.0 release, runs the workspace on iPhone 17 Pro, and runs these two regressions on an iPhone SE (3rd generation) simulator in dark mode at the largest accessibility text size. Earlier local-first CI guidance above is historical; retain exact-run evidence before marking checks complete. Unit/app coverage and UI screenshot artifacts remain separate measures.

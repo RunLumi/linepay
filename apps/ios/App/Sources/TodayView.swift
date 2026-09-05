@@ -252,7 +252,7 @@ struct TodayView: View {
     }
 
     private var expectedPayText: String {
-        guard let calculation = model.calculation else { return "$0.00" }
+        guard let calculation = model.calculation else { return "Needs review" }
         return LinePayFormat.money(calculation.total)
     }
 

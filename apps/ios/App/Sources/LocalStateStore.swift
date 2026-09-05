@@ -64,10 +64,7 @@ final class VersionedLocalStateStore: AppStateStoring {
 
         let data = try Data(contentsOf: stateURL)
         let state = try JSONDecoder().decode(AppPersistentState.self, from: data)
-        guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
-            throw LocalStateStoreError.unsupportedSchema(state.schemaVersion)
-        }
-        return state
+        return try state.upgraded()
     }
 
     func save(_ state: AppPersistentState) throws {

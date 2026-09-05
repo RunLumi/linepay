@@ -12,6 +12,9 @@ struct ReconciliationReportExporter {
         reconciliation: ReconciliationResult?,
         findings: [AuditFinding]
     ) throws -> URL {
+        let assessment = AuditAssessment.evaluate(
+            calculation: calculation, paystub: paystub,
+            reconciliation: reconciliation)
         let filename =
             "LinePaycheck-\(dateSlug(window.startDate, timeZoneIdentifier: timeZoneIdentifier)).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
@@ -33,8 +36,16 @@ struct ReconciliationReportExporter {
                 writer.row("Confirmed paid gross", "Not entered")
             }
             if let reconciliation {
-                writer.row("Status", statusTitle(reconciliation.direction))
+                writer.row("Status", assessment.status.title)
                 writer.row("Difference", LinePayFormat.money(reconciliation.difference))
+            }
+
+            writer.caption(assessment.explanation)
+            for item in assessment.hours {
+                writer.row(
+                    item.title,
+                    "Expected \(LinePayFormat.hours(item.expected)) h · Paid \(LinePayFormat.hours(item.paid)) h"
+                )
             }
 
             writer.section("Pay ledger")
@@ -47,6 +58,10 @@ struct ReconciliationReportExporter {
                         + "\(metadata)  \(LinePayFormat.money(component.amount))"
                 )
                 writer.caption(component.explanation)
+                if let applied = component.appliedAgreement {
+                    writer.caption(
+                        "Rule v\(applied.version) · \(LinePayFormat.money(applied.hourlyRate))/hr")
+                }
             }
 
             if !findings.isEmpty {
@@ -63,15 +78,17 @@ struct ReconciliationReportExporter {
             }
 
             writer.section("Rule snapshot")
-            writer.row("Profile", agreement.displayName)
-            writer.row("Rule version", agreement.version)
-            writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
-            for source in agreement.sources {
-                writer.text(source.title)
-                if !source.url.isEmpty { writer.caption(source.url) }
-                if let section = source.section { writer.caption(section) }
-            }
+            for agreement in calculation.agreementSnapshots ?? [agreement] {
+                writer.row("Profile", agreement.displayName)
+                writer.row("Rule version", agreement.version)
+                writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
+                for source in agreement.sources {
+                    writer.text(source.title)
+                    if !source.url.isEmpty { writer.caption(source.url) }
+                    if let section = source.section { writer.caption(section) }
+                }
 
+            }
             writer.section("Important")
             writer.caption(
                 "LinePaycheck is an estimation and reconciliation tool. A flagged difference is a reason "
@@ -89,14 +106,6 @@ struct ReconciliationReportExporter {
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: timeZoneIdentifier)
         return formatter.string(from: date)
-    }
-
-    private func statusTitle(_ direction: ReconciliationDirection) -> String {
-        switch direction {
-        case .matches: "Matches"
-        case .possibleUnderpayment: "Possible shortfall"
-        case .possibleOverpayment: "Possible overpayment"
-        }
     }
 
     private func category(_ category: PayComponentCategory) -> String {

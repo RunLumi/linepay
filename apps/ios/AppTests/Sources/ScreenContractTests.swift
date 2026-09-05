@@ -82,7 +82,7 @@ struct ScreenContractTests {
         #expect(try text(editor).contains("Per diem"))
         let emptySettings = try text(SettingsView(model: AppModel(), subscriptionStore: commerce()))
         #expect(!emptySettings.contains("Synthetic agreement"))
-        #expect(emptySettings.contains("No LinePaycheck account"))
+        #expect(emptySettings.contains("No account required"))
     }
 
     @Test func missingActivePeriodOffersAStartInsteadOfAnInventedLedger() throws {
@@ -212,7 +212,7 @@ struct ScreenContractTests {
         let backup = try text(backupView)
         #expect(backup.contains("Back up to iCloud Drive"))
         #expect(backup.contains("Restore from iCloud Drive"))
-        #expect(backup.contains("Manual backup, not automatic backup or live sync."))
+        #expect(backup.contains("This does not turn on automatic backup or live sync."))
         #expect(backup.contains("not password-encrypted"))
         #expect(backup.contains("check in Files that upload has completed"))
         #expect(backup.contains("Deleting local data does not delete copies"))

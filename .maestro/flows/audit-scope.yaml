@@ -1,0 +1,67 @@
+appId: com.streamentry.linepay
+name: Equal gross cannot hide component discrepancies
+tags: [ios, regression, payroll-scope]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn: Pay
+- scrollUntilVisible:
+    element:
+      id: pay.audit-paycheck
+- tapOn:
+    id: pay.audit-paycheck
+- tapOn:
+    id: paystub.enter-manually
+- scrollUntilVisible:
+    element:
+      id: paystub.gross-pay
+    timeout: 60000
+- tapOn:
+    id: paystub.gross-pay
+- inputText: "467.20"
+- tapOn:
+    id: keyboard.done
+- scrollUntilVisible:
+    element:
+      id: paystub.regular-pay
+- tapOn:
+    id: paystub.regular-pay
+- inputText: "417.20"
+- tapOn:
+    id: keyboard.done
+- scrollUntilVisible:
+    element:
+      id: paystub.overtime-pay
+- tapOn:
+    id: paystub.overtime-pay
+- inputText: "50.00"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: paystub.audit
+- scrollUntilVisible:
+    element:
+      id: pay.open-audit
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: pay.open-audit
+- scrollUntilVisible:
+    element:
+      id: audit.status
+- assertVisible: Needs review
+- assertVisible:
+    id: audit.scope
+- takeScreenshot: offsetting-components-needs-review
+- stopApp
+- launchApp
+- tapOn: Pay
+- scrollUntilVisible:
+    element:
+      id: pay.open-audit
+- tapOn:
+    id: pay.open-audit
+- scrollUntilVisible:
+    element:
+      id: audit.status
+- assertVisible: Needs review

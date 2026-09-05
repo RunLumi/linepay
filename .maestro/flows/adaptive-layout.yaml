@@ -22,6 +22,7 @@ onFlowComplete:
     id: keyboard.done
 - tapOn:
     id: pay-profile.save
+- tapOn: Confirm rule change
 - tapOn: Today
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT

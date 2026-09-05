@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/ios/**"
+      - ".maestro/**"
       - "shared/contracts/**"
       - "scripts/**"
       - ".swift-format"
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - "apps/ios/**"
+      - ".maestro/**"
       - "shared/contracts/**"
       - "scripts/**"
       - ".swift-format"
@@ -65,8 +67,78 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-tests-${{ github.sha }}
-          # Only synthetic test results are included; never upload the full workspace.
           path: .test-results/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
+
+  ui:
+    name: UI (${{ matrix.name }})
+    needs: check
+    runs-on: macos-26
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: standard-light
+            device: iPhone 17 Pro
+            appearance: light
+            text: large
+            target: .maestro
+          - name: compact-dark-large-text
+            device: LinePay Small
+            appearance: dark
+            text: accessibility-extra-extra-extra-large
+            target: .maestro/flows/rule-scope.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Select native tools
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "JAVA_HOME=$(/usr/libexec/java_home -v 17)" >> "$GITHUB_ENV"
+      - name: Install verified Maestro 2.7.0
+        run: |
+          curl --fail --location --retry 2 -o "$RUNNER_TEMP/maestro.zip" \
+            https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.7.0/maestro.zip
+          echo "a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5  $RUNNER_TEMP/maestro.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP/maestro-cli"
+          echo "$RUNNER_TEMP/maestro-cli/maestro/bin" >> "$GITHUB_PATH"
+      - name: Prepare test appearance and device
+        env:
+          DEVICE_NAME: ${{ matrix.device }}
+          APPEARANCE: ${{ matrix.appearance }}
+          TEXT_SIZE: ${{ matrix.text }}
+        run: |
+          if [[ "$DEVICE_NAME" == "LinePay Small" ]]; then
+            RUNTIME=$(xcrun simctl list runtimes -j | python3 -c 'import json,sys; r=[x for x in json.load(sys.stdin)["runtimes"] if x.get("isAvailable") and "iOS" in x["name"]]; print(sorted(r,key=lambda x:tuple(map(int,x["version"].split("."))))[-1]["identifier"])')
+            xcrun simctl create "$DEVICE_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation "$RUNTIME"
+          fi
+          UDID=$(xcrun simctl list devices available | grep -F "$DEVICE_NAME (" | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl ui "$UDID" appearance "$APPEARANCE"
+          xcrun simctl ui "$UDID" content_size "$TEXT_SIZE"
+          echo "MAESTRO_IOS_DEVICE=$DEVICE_NAME" >> "$GITHUB_ENV"
+          echo "UI_DEVICE_UDID=$UDID" >> "$GITHUB_ENV"
+          maestro --version
+      - name: Run real application journeys
+        run: bash scripts/test-ios-maestro.sh '${{ matrix.target }}'
+      - name: Check compact audit verdict
+        if: matrix.name == 'compact-dark-large-text'
+        run: maestro --udid "$UI_DEVICE_UDID" test --test-output-dir .build/maestro-audit-results .maestro/flows/audit-scope.yaml
+      - name: Retain rendered screenshots and flow results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ios-ui-${{ matrix.name }}-${{ github.sha }}
+          path: |
+            .build/maestro-results/
+            .build/maestro-audit-results/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn

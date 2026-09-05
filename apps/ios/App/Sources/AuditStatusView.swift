@@ -15,7 +15,7 @@ struct AuditStatusView: View {
         switch status {
         case .notAudited:
             LinePayColor.textSecondary
-        case .matches:
+        case .matches, .grossMatches:
             LinePayColor.match
         case .possibleShortfall:
             LinePayColor.difference

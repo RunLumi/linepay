@@ -18,6 +18,12 @@ struct AuditDetailView: View {
     @State private var showingRemoveEvidenceConfirmation = false
     @State private var errorMessage: String?
 
+    private var assessment: AuditAssessment {
+        AuditAssessment.evaluate(
+            calculation: calculation, paystub: paystub,
+            reconciliation: reconciliation)
+    }
+
     var body: some View {
         List {
             Section {
@@ -47,30 +53,54 @@ struct AuditDetailView: View {
                 }
             }
 
-            Section("Rule snapshot") {
-                LabeledContent("Profile", value: agreement.displayName)
-                LabeledContent("Version", value: agreement.version)
-                LabeledContent("Base rate") {
-                    Text("\(LinePayFormat.money(agreement.hourlyRate))/hr")
-                        .monospacedDigit()
-                }
-                if agreement.sources.isEmpty {
-                    Text("No source reference was saved for this rule snapshot.")
-                        .foregroundStyle(LinePayColor.textSecondary)
-                } else {
-                    ForEach(Array(agreement.sources.enumerated()), id: \.offset) { _, source in
+            if !assessment.hours.isEmpty {
+                Section("Confirmed worked hours") {
+                    ForEach(assessment.hours) { finding in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(source.title).font(.headline)
-                            if !source.url.isEmpty {
-                                Text(source.url)
-                                    .font(.footnote)
-                                    .foregroundStyle(LinePayColor.textSecondary)
-                                    .textSelection(.enabled)
-                            }
-                            if let section = source.section {
-                                Text(section)
-                                    .font(.footnote)
-                                    .foregroundStyle(LinePayColor.textSecondary)
+                            Label(
+                                finding.title,
+                                systemImage: finding.differs
+                                    ? "exclamationmark.circle" : "checkmark.circle")
+                            Text(
+                                "Expected \(LinePayFormat.hours(finding.expected)) h · Paid \(LinePayFormat.hours(finding.paid)) h"
+                            )
+                            .font(.footnote.monospacedDigit())
+                        }
+                        .accessibilityIdentifier("audit." + finding.id)
+                    }
+                    Text(
+                        "These are worked hours grouped by multiplier. Callout-guarantee hours are separate entitlements; payroll may label them differently."
+                    )
+                    .font(.footnote)
+                }
+            }
+
+            Section("Applied rule snapshots") {
+                ForEach(calculation.agreementSnapshots ?? [agreement], id: \.version) { agreement in
+                    LabeledContent("Profile", value: agreement.displayName)
+                    LabeledContent("Version", value: agreement.version)
+                    LabeledContent("Base rate") {
+                        Text("\(LinePayFormat.money(agreement.hourlyRate))/hr")
+                            .monospacedDigit()
+                    }
+                    if agreement.sources.isEmpty {
+                        Text("No source reference was saved for this rule snapshot.")
+                            .foregroundStyle(LinePayColor.textSecondary)
+                    } else {
+                        ForEach(Array(agreement.sources.enumerated()), id: \.offset) { _, source in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(source.title).font(.headline)
+                                if !source.url.isEmpty {
+                                    Text(source.url)
+                                        .font(.footnote)
+                                        .foregroundStyle(LinePayColor.textSecondary)
+                                        .textSelection(.enabled)
+                                }
+                                if let section = source.section {
+                                    Text(section)
+                                        .font(.footnote)
+                                        .foregroundStyle(LinePayColor.textSecondary)
+                                }
                             }
                         }
                     }
@@ -187,10 +217,15 @@ struct AuditDetailView: View {
             }
 
             Divider()
+            Text(assessment.explanation)
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+                .accessibilityIdentifier("audit.scope")
 
             if let reconciliation {
                 VStack(spacing: 4) {
-                    AuditStatusView(status: displayStatus(reconciliation.direction))
+                    AuditStatusView(status: assessment.status)
+                        .accessibilityIdentifier("audit.status")
                     if reconciliation.direction != .matches {
                         Text(LinePayFormat.money(reconciliation.difference))
                             .font(.title2.bold().monospacedDigit())
@@ -223,14 +258,6 @@ struct AuditDetailView: View {
                 .font(.footnote)
                 .foregroundStyle(LinePayColor.textSecondary)
             }
-        }
-    }
-
-    private func displayStatus(_ direction: ReconciliationDirection) -> AuditDisplayStatus {
-        switch direction {
-        case .matches: .matches
-        case .possibleUnderpayment: .possibleShortfall
-        case .possibleOverpayment: .possibleOverpayment
         }
     }
 

@@ -112,7 +112,7 @@ struct AppModelTests {
         try model.confirmPaystub(paystub)
 
         #expect(model.hasUsedFreeAudit)
-        #expect(model.currentAuditStatus == .matches)
+        #expect(model.currentAuditStatus == .grossMatches)
         #expect(model.canRunAudit(hasProAccess: false))
 
         let entry = try #require(model.workEntries.first)
@@ -201,10 +201,13 @@ struct AppModelTests {
         #expect(window.end.minute == 30)
     }
 
-    @Test("Archived pay period keeps its original payroll timezone")
+    @Test("Archived pay period keeps its timezone when a later period uses a new timezone")
     func archivedPayPeriodKeepsTimeZone() throws {
         let model = AppModel()
         var draft = makeDraft(rate: "50", start: testStart)
+        // Timezone changes are allowed between periods, never on an open period.
+        draft.preferredCadence = .manual
+        draft.manualPeriodEndDate = testStart.addingTimeInterval(6 * 86_400)
         try model.saveProfile(draft)
         try model.addWork(
             start: testStart,
@@ -212,14 +215,20 @@ struct AppModelTests {
             kind: .regular
         )
         try model.archiveCurrentPeriod()
+        #expect(model.activePeriod == nil)
+        let originalArchive = try #require(model.history.first)
 
         draft.timeZoneIdentifier = "America/New_York"
         try model.saveProfile(draft)
+        try model.startNewPayPeriod(
+            startDate: testStart.addingTimeInterval(7 * 86_400),
+            manualEndDate: testStart.addingTimeInterval(13 * 86_400))
 
         let archived = try #require(model.history.first)
+        #expect(archived == originalArchive)
         #expect(archived.timeZoneIdentifier == "America/Los_Angeles")
         #expect(model.timeZoneIdentifier(for: archived) == "America/Los_Angeles")
-        #expect(model.activePeriod?.timeZoneIdentifier == "America/Los_Angeles")
+        #expect(model.activePeriod?.timeZoneIdentifier == "America/New_York")
         #expect(model.profile?.timeZoneIdentifier == "America/New_York")
     }
 

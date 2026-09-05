@@ -160,7 +160,7 @@ struct AppModelContractTests {
         #expect(
             model.currentAuditStatus
                 == (value == 400
-                    ? .matches : value < 400 ? .possibleShortfall : .possibleOverpayment))
+                    ? .grossMatches : value < 400 ? .possibleShortfall : .possibleOverpayment))
         #expect(model.reconciliation?.difference.amount == 400 - value)
         #expect(model.hasUsedFreeAudit)
         try model.clearCurrentPaystub()
