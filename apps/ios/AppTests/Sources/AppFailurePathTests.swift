@@ -63,11 +63,17 @@ struct AppFailurePathTests {
             }
             #expect(store.state == before)
         }
-        #expect(throws: AppModelError.workOutsideCurrentPayPeriod) {
-            try model.updateWork(
-                id: id, start: UnitFixture.start - 3_600, end: UnitFixture.start, kind: .other)
+        // The fixture starts at 08:00, not the midnight pay-period boundary.
+        let window = try #require(model.activePeriod).window
+        for dates in [
+            (window.startDate - 3_600, window.startDate),
+            (window.endDate - 3_600, window.endDate + 1),
+        ] {
+            #expect(throws: AppModelError.workOutsideCurrentPayPeriod) {
+                try model.updateWork(id: id, start: dates.0, end: dates.1, kind: .other)
+            }
+            #expect(store.state == before)
         }
-        #expect(store.state == before)
         try model.updateWork(
             id: id, start: UnitFixture.start, end: UnitFixture.start + 8 * 3_600, kind: .regular,
             unpaidBreakStart: UnitFixture.start + 3_600, unpaidBreakEnd: UnitFixture.start + 5_400)
@@ -187,11 +193,14 @@ struct AppFailurePathTests {
 
     @Test func profileDraftKeepsScheduleSourceAndEffectiveDates() throws {
         let model = AppModel()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
+        let dayStart = calendar.startOfDay(for: UnitFixture.start)
         var draft = UnitFixture.profile()
         draft.useRegularSchedule = true
         draft.regularWeekdays = [.monday, .wednesday]
-        draft.regularStartTime = UnitFixture.start + 7 * 3_600
-        draft.regularEndTime = UnitFixture.start + 15 * 3_600
+        draft.regularStartTime = dayStart + 7 * 3_600
+        draft.regularEndTime = dayStart + 15 * 3_600
         draft.sourceURL = "https://example.invalid/rule"
         draft.useEffectiveStart = true
         draft.effectiveStartDate = UnitFixture.start
@@ -203,7 +212,11 @@ struct AppFailurePathTests {
         #expect(restored.useRegularSchedule && restored.regularWeekdays == draft.regularWeekdays)
         #expect(restored.sourceTitle == "Worker-provided source" && restored.sourceSection.isEmpty)
         #expect(restored.useEffectiveStart && restored.useEffectiveEnd)
-        #expect(restored.effectiveStartDate == UnitFixture.start)
+        // Agreement effective bounds represent calendar dates, not the input's clock time.
+        #expect(restored.effectiveStartDate == dayStart)
+        #expect(restored.effectiveEndDate == calendar.startOfDay(for: draft.effectiveEndDate))
+        #expect(calendar.component(.hour, from: restored.regularStartTime) == 7)
+        #expect(calendar.component(.hour, from: restored.regularEndTime) == 15)
     }
 
     @Test func manualRestartDefaultsToOneDayAndKeepsHistory() throws {
