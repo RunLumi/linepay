@@ -15,7 +15,7 @@ LinePaycheck records work facts, applies explicit pay rules, calculates expected
 ```text
 apps/
   ios/          Native SwiftUI app, first shipping platform
-  android/      Native Kotlin/Compose app, added after demand is proven
+  android/      Native Kotlin/Compose app, deliberately deferred until demand
 shared/
   contracts/    Platform-neutral schemas and fixtures, not shared runtime code
 docs/
@@ -45,23 +45,33 @@ bash scripts/agent-verify.sh ios     # full native iOS test/build/privacy gate
 bash scripts/agent-verify.sh ui      # native gate + Simulator Maestro smoke suite
 ```
 
-Agent context is progressively disclosed rather than placed in one giant prompt:
+Agent context is progressively disclosed instead of copied into one giant prompt:
 
 ```text
 AGENTS.md                     canonical repository contract
-apps/ios/AGENTS.md            native iOS scope
+nearest AGENTS.md             domain / Maestro / shared-contract boundaries
 .github/instructions/         path-specific Copilot/Xcode guidance
-.agents/skills/               on-demand portable workflows
-.github/agents/               specialist Copilot subagents
+.agents/skills/               canonical on-demand workflows
+.github/agents/               specialist Copilot agents
+.claude/agents/               specialist Claude project agents
 .xcodebuildmcp/config.yaml     interactive iOS agent defaults
-.mcp.json / .codex/           optional project MCP wiring
+.mcp.json                     shared project MCP
+.codex/config.toml            Codex MCP
+.gemini/settings.json         Gemini workspace MCP
 ```
 
-Optional mobile-agent tools are **XcodeBuildMCP** for interactive build/run/screenshot/accessibility/debug loops and **Maestro** for durable black-box E2E flows. The checked-in scripts and tests remain source of truth, so MCP availability is not required for CI correctness.
+Optional mobile-agent tools are **XcodeBuildMCP** for interactive build/run/screenshot/accessibility/debug loops and **Maestro** for durable black-box E2E flows. Checked-in scripts and tests remain source of truth, so MCP availability is not required for CI correctness.
 
-See `docs/agentic.md` for the architecture and `AGENTS.md` for the operating contract.
+See `docs/agentic.md` for the harness architecture and `AGENTS.md` for the operating contract.
 
 ## Local iOS development
+
+Install the repository-pinned XcodeGen version if needed:
+
+```bash
+XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
+export PATH="$HOME/.local/bin:$PATH"
+```
 
 Run the native quality gate:
 
@@ -75,7 +85,7 @@ Build, install, and run the local Maestro smoke suite:
 bash scripts/test-ios-maestro.sh
 ```
 
-See `docs/maestro.md` for prerequisites, manual Simulator commands, selector conventions, flow authoring, and debugging.
+See `docs/maestro.md` for prerequisites, Simulator commands, selector conventions, flow authoring, and debugging.
 
 ## Current sequencing
 
