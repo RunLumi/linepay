@@ -91,7 +91,8 @@ public struct PayCalculator: Sendable {
         )
         components += try perDiemComponents(work: work, agreement: agreement)
 
-        let total = try components.reduce(Money.zero(currencyCode: agreement.hourlyRate.currencyCode)) {
+        let zero = Money.zero(currencyCode: agreement.hourlyRate.currencyCode)
+        let total = try components.reduce(zero) {
             try $0.adding($1.amount)
         }
 
@@ -222,12 +223,12 @@ public struct PayCalculator: Sendable {
 
         switch policy.premiumCombination {
         case .highestApplicable:
-            return max(
+            return [
                 scheduleMultiplier,
                 weekdayMultiplier,
                 dateMultiplier,
-                overtimeMultiplier
-            )
+                overtimeMultiplier,
+            ].max() ?? 1
         }
     }
 
@@ -236,7 +237,9 @@ public struct PayCalculator: Sendable {
         startingDailyHours: Decimal,
         tiers: [DailyOvertimeTier]
     ) -> [OvertimeSlice] {
-        guard hours > 0 else { return [] }
+        guard hours > 0 else {
+            return []
+        }
 
         var result: [OvertimeSlice] = []
         var remaining = hours
@@ -272,17 +275,22 @@ public struct PayCalculator: Sendable {
         existingComponents: [PayComponent],
         agreement: AgreementSnapshot
     ) throws -> [PayComponent] {
-        guard let rule = agreement.calloutMinimum else { return [] }
+        guard let rule = agreement.calloutMinimum else {
+            return []
+        }
 
         var result: [PayComponent] = []
         for interval in work where interval.kind == .callout {
             let missingHours = rule.minimumHours - interval.durationHours
-            guard missingHours > 0 else { continue }
+            guard missingHours > 0 else {
+                continue
+            }
 
             let intervalComponents = existingComponents.filter {
                 $0.workIntervalID == interval.id && $0.category == .workedHours
             }
-            let applicableMultiplier = intervalComponents.compactMap(\.multiplier).max() ?? 1
+            let applicableMultiplier =
+                intervalComponents.compactMap(\.multiplier).max() ?? 1
             let amount = agreement.hourlyRate
                 .multiplied(by: missingHours)
                 .multiplied(by: applicableMultiplier)
@@ -311,7 +319,9 @@ public struct PayCalculator: Sendable {
         work: [WorkInterval],
         agreement: AgreementSnapshot
     ) throws -> [PayComponent] {
-        guard let rule = agreement.flatPerDiem else { return [] }
+        guard let rule = agreement.flatPerDiem else {
+            return []
+        }
         guard rule.amountPerWorkDate.currencyCode == agreement.hourlyRate.currencyCode else {
             throw MoneyError.currencyMismatch(
                 lhs: agreement.hourlyRate.currencyCode,
@@ -379,7 +389,9 @@ public struct PayCalculator: Sendable {
         calendar: Calendar,
         schedule: [RegularScheduleWindow]
     ) -> Bool {
-        guard !schedule.isEmpty else { return true }
+        guard !schedule.isEmpty else {
+            return true
+        }
 
         let date = date(fromEpochSeconds: epochSeconds)
         let components = calendar.dateComponents([.hour, .minute], from: date)
