@@ -9,6 +9,7 @@ tags: [ios, regression, backup]
 - scrollUntilVisible:
     element:
       id: backup.open
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
