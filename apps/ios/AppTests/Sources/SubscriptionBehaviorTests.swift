@@ -6,7 +6,8 @@ import Testing
 @Suite("Subscription application behavior without live commerce")
 @MainActor
 struct SubscriptionBehaviorTests {
-    @Test(arguments: [SubscriptionStore.monthlyProductID, SubscriptionStore.yearlyProductID])
+    // Independent identifiers keep generated test arguments outside actor-isolated app state.
+    @Test(arguments: ["linepay.pro.monthly", "linepay.pro.yearly"])
     func existingOwnershipSurvivesCatalogFailure(_ identifier: String) async {
         let client = TestStorefront()
         client.identifiers = [identifier]
