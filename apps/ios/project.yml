@@ -56,8 +56,9 @@ targets:
     sources:
       - path: App/Sources
         type: syncedFolder
-    resources:
       - path: App/Resources
+        type: group
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay
