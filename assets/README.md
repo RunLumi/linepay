@@ -2,23 +2,46 @@
 
 ## Committed application logo
 
-`brand/linepaycheck-icon-1024.png` is the 1024 × 1024 RGB PNG used by the iOS application. The same bytes are installed in `AppIcon.appiconset/AppIcon-1024.png` and `LinePaycheckLogo.imageset/LinePaycheckLogo.png`. `LineGapMark` now uses the bundled logo on the welcome and Pro screens. Technical bundle/product identifiers remain unchanged.
+`brand/linepaycheck-icon-1024.png` is the 1024 × 1024 RGB PNG used by the iOS application. The same bytes are installed in `AppIcon.appiconset/AppIcon-1024.png` and `LinePaycheckLogo.imageset/LinePaycheckLogo.png`. `LineGapMark` uses the bundled `LinePaycheckLogo` image on the welcome and Pro screens. Technical bundle/product identifiers remain unchanged.
 
 The generated source had a rounded outer square with white corners. The application derivative removes that baked-in outer mask, keeps the selected symbol, normalizes its palette, and uses an opaque full-bleed graphite field. iOS supplies the Home Screen mask. The original remains unmodified in the accompanying asset package.
 
-## Full-resolution asset package: import required
+## Full-resolution asset package: import still required
 
-The logo derivative is committed. The original generated logo and eight full-resolution generated screen images could not be transferred into this repository through the current working environment. They are provided in `linepaycheck-design-assets.zip` in the associated chat, together with eight correctly sized 1284 × 2778 PNG derivatives. Do not mistake this manifest for proof that every binary has already been committed.
+**The application logo is committed. The other 17 PNG files are packaged but have not been pushed to this repository.** A manifest entry does not establish that the corresponding binary is present.
 
-After obtaining that package and pulling this commit into a clean checkout, run:
+Use **`linepaycheck-design-assets-v2.zip`** from the associated chat. It contains the original generated logo, all eight unchanged generated screen images, eight dimension-normalized 1284 × 2778 screen derivatives, and copies of the three already-committed logo files. The three logo copies are identical to the files in this repository; the importer preserves them.
+
+Package details:
+
+- Archive bytes: `28212580`
+- Archive SHA-256: `f8a339dfa7cd0faa8982b4359dc0d4b5e197e44754a397130d693e3ac929971c`
+- Manifest format version: `1`; package revision: `2`
+- Contents: 20 PNGs and the exact matching `assets/design-assets-manifest.json`
+- Expected additions to the current checkout: 17 PNGs
+- No app-preview videos were generated.
+
+Revision 2 preserves every original and the committed icon. The resized images use explicit PNG sRGB metadata and proportional LANCZOS scaling to 1284 × 2776, with one pixel of padding above and below. Their hashes differ from the previous package specification. **Pull the matching manifest and use the v2 archive together; do not mix package revisions.**
+
+### Import and publish from your local checkout
+
+Save the ZIP in your Downloads folder, then run these commands from the repository root. Adjust the ZIP path if needed. Begin with a clean working tree; inspect `git status` before proceeding.
 
 ```bash
-python3 scripts/import-design-assets.py /path/to/linepaycheck-design-assets.zip
+git pull --ff-only
+python3 scripts/import-design-assets.py "$HOME/Downloads/linepaycheck-design-assets-v2.zip" --check
+python3 scripts/import-design-assets.py "$HOME/Downloads/linepaycheck-design-assets-v2.zip"
+git add assets/brand/source assets/app-stores/concepts
+git diff --cached --stat
+git commit -m "assets: add generated logo source and screenshot concepts"
+git push
 ```
 
-The importer verifies every byte against `design-assets-manifest.json`, refuses conflicting existing files, and preserves identical files. It performs no network requests and does not commit or push. `--check` validates without writing. After reviewing the imported files, add/commit the `assets` directory and push normally.
+The importer verifies the full archive against `design-assets-manifest.json` before writing. It refuses conflicting existing files, preserves identical files, and performs no network requests. `--check` validates without writing. Only the explicit `git commit` and `git push` commands publish the imported assets.
 
-Resulting layout:
+A local verification run for revision 2 passed: dry-run without writes, 17-file import with the three existing icons preserved, repeated import adding zero files, all image dimensions/modes/hashes, refusal to overwrite a modified existing file, and rejection of a mismatched archive manifest. This checks packaging/import behavior, not a native iOS build or screenshot fidelity.
+
+Resulting layout after import:
 
 ```text
 assets/
@@ -31,7 +54,7 @@ assets/
   design-assets-manifest.json
 ```
 
-There are nine unique generated originals: one logo and eight screens. No app-preview videos were generated. Duplicate chat attachments containing the identical logo are represented once.
+There are nine unique generated originals: one logo and eight screens. Duplicate chat attachments containing the identical logo are represented once.
 
 ## These screen images are concepts, not store captures
 
