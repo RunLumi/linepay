@@ -6,6 +6,13 @@ SHA256="4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806"
 URL="https://github.com/yonaskolb/XcodeGen/releases/download/${VERSION}/xcodegen.zip"
 PREFIX="${XCODEGEN_PREFIX:-${HOME}/.local}"
 
+for command in curl unzip install; do
+    if ! command -v "$command" >/dev/null 2>&1; then
+        echo "error: $command is required to install XcodeGen" >&2
+        exit 1
+    fi
+done
+
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/linepay-xcodegen.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -29,7 +36,9 @@ ARCHIVE_ROOT="$TMP/unpacked/xcodegen"
 BIN="$ARCHIVE_ROOT/bin/xcodegen"
 PRESETS="$ARCHIVE_ROOT/share/xcodegen/SettingPresets"
 
-[[ -x "$BIN" ]] || {
+# Do not trust ZIP permission metadata. The verified bytes are enough; install(1)
+# establishes the executable mode at the destination.
+[[ -f "$BIN" ]] || {
     echo "error: verified XcodeGen archive did not contain bin/xcodegen" >&2
     exit 1
 }
