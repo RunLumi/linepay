@@ -90,12 +90,13 @@ struct RuleScopeRegressionTests {
         let store = UnitStateStore()
         let model = AppModel(store: store)
         try model.saveProfile(UnitFixture.profile())
+        let boundary = try nextMidnight()
         try model.addWork(
-            start: UnitFixture.start.addingTimeInterval(23 * 3_600),
-            end: UnitFixture.start.addingTimeInterval(25 * 3_600), kind: .regular)
+            start: boundary.addingTimeInterval(-3_600),
+            end: boundary.addingTimeInterval(3_600), kind: .regular)
         let before = store.state
         var draft = UnitFixture.profile(rate: "60")
-        draft.changeEffectiveDate = UnitFixture.start.addingTimeInterval(86_400)
+        draft.changeEffectiveDate = boundary
         #expect(throws: AppModelError.prospectiveChangeTouchesRecordedWork) {
             try model.saveProfile(draft)
         }
@@ -139,12 +140,13 @@ struct RuleScopeRegressionTests {
         draft.useCalloutMinimum = true
         draft.calloutMinimumHours = "4"
         try model.saveProfile(draft)
+        let boundary = try nextMidnight()
         draft.hourlyRate = "60"
-        draft.changeEffectiveDate = UnitFixture.start.addingTimeInterval(86_400)
+        draft.changeEffectiveDate = boundary
         try model.saveProfile(draft)
         try model.addWork(
-            start: UnitFixture.start.addingTimeInterval(23 * 3_600),
-            end: UnitFixture.start.addingTimeInterval(25 * 3_600), kind: .callout)
+            start: boundary.addingTimeInterval(-3_600),
+            end: boundary.addingTimeInterval(3_600), kind: .callout)
         #expect(model.totalHours == 2 && model.workEntries.count == 1)
         #expect(
             model.calculation == nil
@@ -154,5 +156,30 @@ struct RuleScopeRegressionTests {
         }
         #expect(!model.hasUsedFreeAudit && model.currentPaystub == nil)
         #expect(AppModel(store: store).workEntries == model.workEntries)
+    }
+
+    @Test(arguments: [RuleChangeScope.prospective, .correctCurrentPeriod])
+    func openPeriodTimeZoneChangeIsRejectedAtomically(_ scope: RuleChangeScope) throws {
+        let store = UnitStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        let before = store.state
+        let saveCount = store.saveCount
+        var draft = UnitFixture.profile()
+        draft.timeZoneIdentifier = "America/New_York"
+        #expect(throws: (any Error).self) {
+            try model.saveProfile(draft, scope: scope)
+        }
+        #expect(store.state == before && store.saveCount == saveCount)
+        #expect(model.currentTimeZoneIdentifier == "UTC")
+        #expect(model.calculation?.total.amount == 400)
+    }
+
+    private func nextMidnight() throws -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
+        // UnitFixture.start is 08:00, not midnight. Anchor boundary tests to the calendar.
+        return try #require(
+            calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: UnitFixture.start)))
     }
 }
