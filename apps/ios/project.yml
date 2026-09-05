@@ -104,6 +104,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.tests
         GENERATE_INFOPLIST_FILE: YES
+        # Xcode 26.6 StoreKitTest headers reference a deprecated StoreKit 1 enum.
+        # Limit this exception to the test-only Clang importer; Swift/app warnings stay errors.
+        OTHER_SWIFT_FLAGS: "$(inherited) -Xcc -Wno-error=deprecated-declarations"
     dependencies:
       - target: LinePay
       - package: LinePayDomain
