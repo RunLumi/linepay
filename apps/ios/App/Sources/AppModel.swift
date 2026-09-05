@@ -173,22 +173,39 @@ final class AppModel {
             throw AppModelError.missingPayProfile
         }
 
-        let interval = try WorkInterval(
-            startEpochSeconds: Int64(start.timeIntervalSince1970.rounded()),
-            endEpochSeconds: Int64(end.timeIntervalSince1970.rounded()),
-            timeZoneIdentifier: profile.timeZoneIdentifier,
-            kind: kind
+        let interval = try makeWorkInterval(
+            id: UUID(),
+            start: start,
+            end: end,
+            kind: kind,
+            timeZoneIdentifier: profile.timeZoneIdentifier
         )
+        let candidate = sorted(workIntervals + [interval])
+        try validate(candidate: candidate, agreement: profile.agreement)
 
-        let candidate = (workIntervals + [interval]).sorted {
-            $0.startEpochSeconds < $1.startEpochSeconds
+        workIntervals = candidate
+        recalculate()
+    }
+
+    func updateWork(id: UUID, start: Date, end: Date, kind: WorkKind) throws {
+        guard let profile else {
+            throw AppModelError.missingPayProfile
+        }
+        guard workIntervals.contains(where: { $0.id == id }) else {
+            throw AppModelError.missingWorkInterval
         }
 
-        _ = try PayCalculator().calculate(
-            work: candidate,
-            agreement: profile.agreement,
-            policy: .highestApplicable
+        let replacement = try makeWorkInterval(
+            id: id,
+            start: start,
+            end: end,
+            kind: kind,
+            timeZoneIdentifier: profile.timeZoneIdentifier
         )
+        let candidate = sorted(
+            workIntervals.map { $0.id == id ? replacement : $0 }
+        )
+        try validate(candidate: candidate, agreement: profile.agreement)
 
         workIntervals = candidate
         recalculate()
@@ -197,6 +214,34 @@ final class AppModel {
     func deleteWork(id: UUID) {
         workIntervals.removeAll { $0.id == id }
         recalculate()
+    }
+
+    private func makeWorkInterval(
+        id: UUID,
+        start: Date,
+        end: Date,
+        kind: WorkKind,
+        timeZoneIdentifier: String
+    ) throws -> WorkInterval {
+        try WorkInterval(
+            id: id,
+            startEpochSeconds: Int64(start.timeIntervalSince1970.rounded()),
+            endEpochSeconds: Int64(end.timeIntervalSince1970.rounded()),
+            timeZoneIdentifier: timeZoneIdentifier,
+            kind: kind
+        )
+    }
+
+    private func sorted(_ work: [WorkInterval]) -> [WorkInterval] {
+        work.sorted { $0.startEpochSeconds < $1.startEpochSeconds }
+    }
+
+    private func validate(candidate: [WorkInterval], agreement: AgreementSnapshot) throws {
+        _ = try PayCalculator().calculate(
+            work: candidate,
+            agreement: agreement,
+            policy: .highestApplicable
+        )
     }
 
     private func recalculate() {
@@ -245,6 +290,7 @@ final class AppModel {
 enum AppModelError: LocalizedError, Equatable {
     case invalidField(String)
     case missingPayProfile
+    case missingWorkInterval
 
     var errorDescription: String? {
         switch self {
@@ -252,6 +298,8 @@ enum AppModelError: LocalizedError, Equatable {
             "Check the value for \(field)."
         case .missingPayProfile:
             "Set up your pay rules before adding work."
+        case .missingWorkInterval:
+            "That work interval no longer exists."
         }
     }
 }
