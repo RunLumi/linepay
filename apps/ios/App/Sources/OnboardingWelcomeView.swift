@@ -4,45 +4,46 @@ struct OnboardingWelcomeView: View {
     let onContinue: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
-            Spacer(minLength: LinePaySpacing.section)
+        ScrollView {
+            VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
+                LineGapMark()
 
-            LineGapMark()
+                VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
+                    Text("Know what your work should pay.")
+                        .font(.largeTitle.bold())
+                        .foregroundStyle(LinePayColor.textPrimary)
 
-            VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-                Text("Know what your work should pay.")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(LinePayColor.textPrimary)
+                    Text(
+                        "Track the hours and pay rules that matter. LinePaycheck calculates expected "
+                            + "pay and helps you check the paycheck against your work."
+                    )
+                    .font(.title3)
+                    .foregroundStyle(LinePayColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
 
-                Text(
-                    "Track the hours and pay rules that matter. LinePaycheck calculates expected "
-                        + "pay and helps you check the paycheck against your work."
-                )
-                .font(.title3)
-                .foregroundStyle(LinePayColor.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
+                    trustRow(
+                        icon: "person.crop.circle.badge.xmark",
+                        title: "No account",
+                        detail: "Start using LinePaycheck without an email or password."
+                    )
+                    trustRow(
+                        icon: "iphone",
+                        title: "Private by default",
+                        detail: "Your hours, pay rules, and paycheck data stay on this iPhone."
+                    )
+                    trustRow(
+                        icon: "equal.circle",
+                        title: "Explainable pay",
+                        detail: "See how your confirmed rules turn worked hours into expected pay."
+                    )
+                }
             }
-
-            VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-                trustRow(
-                    icon: "person.crop.circle.badge.xmark",
-                    title: "No account",
-                    detail: "Start using LinePaycheck without an email or password."
-                )
-                trustRow(
-                    icon: "iphone",
-                    title: "Private by default",
-                    detail: "Your hours, pay rules, and paycheck data stay on this iPhone."
-                )
-                trustRow(
-                    icon: "equal.circle",
-                    title: "Explainable pay",
-                    detail: "See how your confirmed rules turn worked hours into expected pay."
-                )
-            }
-
-            Spacer()
-
+            .padding(LinePaySpacing.section)
+            .padding(.top, LinePaySpacing.section)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             Button("Set up my pay") {
                 onContinue()
             }
@@ -50,10 +51,12 @@ struct OnboardingWelcomeView: View {
             .controlSize(.large)
             .tint(LinePayColor.brandPrimary)
             .frame(maxWidth: .infinity)
+            .padding(.horizontal, LinePaySpacing.section)
+            .padding(.vertical, LinePaySpacing.standard)
+            .background(LinePayColor.canvas)
             .accessibilityIdentifier("onboarding.set-up-pay")
             .accessibilityHint("Continues to your pay rule setup")
         }
-        .padding(LinePaySpacing.section)
         .background(LinePayColor.canvas.ignoresSafeArea())
     }
 

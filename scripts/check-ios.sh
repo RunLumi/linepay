@@ -9,6 +9,18 @@ EXPECTED_XCODEGEN_VERSION="2.46.0"
 DERIVED_DATA="$(mktemp -d "${TMPDIR:-/tmp}/linepay-derived.XXXXXX")"
 trap 'rm -rf "$DERIVED_DATA"' EXIT
 
+SIMULATOR_DESTINATION="${IOS_SIMULATOR_DESTINATION:-}"
+if [[ -z "$SIMULATOR_DESTINATION" ]]; then
+    SIMULATOR_UDID="$({ xcrun simctl list devices available 2>/dev/null || true; } \
+        | sed -nE '/iPhone.*\([0-9A-Fa-f-]{36}\)/s/.*\(([0-9A-Fa-f-]{36})\).*/\1/p' \
+        | head -n 1)"
+    if [[ -z "$SIMULATOR_UDID" ]]; then
+        echo "error: no available iPhone Simulator found" >&2
+        exit 1
+    fi
+    SIMULATOR_DESTINATION="platform=iOS Simulator,id=$SIMULATOR_UDID"
+fi
+
 if ! command -v xcodegen >/dev/null 2>&1; then
     echo "error: xcodegen is required; run scripts/bootstrap-ios.sh after installing it" >&2
     exit 1
@@ -58,7 +70,7 @@ xcodebuild \
     -project "$IOS_DIR/LinePay.xcodeproj" \
     -scheme LinePay \
     -configuration Debug \
-    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+    -destination "$SIMULATOR_DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
     CODE_SIGNING_ALLOWED=NO \
     test
