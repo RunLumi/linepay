@@ -44,6 +44,14 @@ optional_command() {
 
 cd "$ROOT"
 
+echo "==> Agent harness integrity"
+if bash "$ROOT/scripts/check-agent-harness.sh"; then
+    ok "agent harness contract is internally consistent"
+else
+    fail "agent harness validation failed"
+fi
+
+echo
 echo "==> Required local toolchain"
 require_command git
 require_command xcodebuild
