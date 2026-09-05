@@ -41,12 +41,14 @@ struct DataRecoveryView: View {
                         .tint(LinePayColor.brandPrimary)
 
                         Text(
-                            "Export the raw local file before resetting if you want to preserve it "
+                            "Export the raw local file before resetting or restoring to preserve it "
                                 + "for support or manual recovery."
                         )
                         .font(.footnote)
                         .foregroundStyle(LinePayColor.textSecondary)
                     }
+
+                    BackupRestoreEntryPoint(title: "Restore from iCloud Drive")
 
                     Button(role: .destructive) {
                         showingResetConfirmation = true
@@ -75,7 +77,7 @@ struct DataRecoveryView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This removes the unreadable local state and stored paystub evidence from this iPhone."
+                "This removes the unreadable local state and stored paystub evidence from this iPhone. Backups saved in iCloud Drive or Files are not deleted."
             )
         }
     }
