@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 CHECKOUT_SHA="3d3c42e5aac5ba805825da76410c181273ba90b1"
+XCODEGEN_VERSION="2.46.0"
+XCODEGEN_SHA256="4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806"
 MAX_ROOT_AGENTS_BYTES=12000
 MAX_CLAUDE_LINES=200
 MAX_SKILL_LINES=500
@@ -77,7 +79,8 @@ for file in \
     .github/workflows/ios.yml \
     scripts/agent-context.sh \
     scripts/agent-doctor.sh \
-    scripts/agent-verify.sh; do
+    scripts/agent-verify.sh \
+    scripts/install-xcodegen.sh; do
     require_file "$file"
 done
 
@@ -140,6 +143,11 @@ require_text .codex/config.toml '[mcp_servers.xcodebuildmcp]'
 require_text .codex/config.toml '[mcp_servers.maestro]'
 require_text .gemini/settings.json '"xcodebuildmcp"'
 require_text .gemini/settings.json '"maestro"'
+
+echo "==> Pinned developer tools"
+require_text scripts/install-xcodegen.sh "VERSION=\"$XCODEGEN_VERSION\""
+require_text scripts/install-xcodegen.sh "SHA256=\"$XCODEGEN_SHA256\""
+require_text .github/workflows/ios.yml "bash scripts/install-xcodegen.sh"
 
 echo "==> GitHub Actions supply-chain policy"
 for workflow in .github/workflows/agent-harness.yml .github/workflows/ios.yml; do
