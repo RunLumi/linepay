@@ -9,7 +9,7 @@ let package = Package(
         .macOS(.v15),
     ],
     products: [
-        .library(name: "LinePayDomain", targets: ["LinePayDomain"]),
+        .library(name: "LinePayDomain", targets: ["LinePayDomain"])
     ],
     targets: [
         .target(name: "LinePayDomain"),
