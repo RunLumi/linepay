@@ -118,27 +118,29 @@ final class AppModel {
             ]
         }
 
-        let calloutMinimum: CalloutMinimumRule? = if draft.useCalloutMinimum {
-            try CalloutMinimumRule(
-                minimumHours: positiveDecimal(
-                    draft.calloutMinimumHours,
-                    field: "Callout minimum"
+        let calloutMinimum: CalloutMinimumRule? =
+            if draft.useCalloutMinimum {
+                try CalloutMinimumRule(
+                    minimumHours: positiveDecimal(
+                        draft.calloutMinimumHours,
+                        field: "Callout minimum"
+                    )
                 )
-            )
-        } else {
-            nil
-        }
+            } else {
+                nil
+            }
 
-        let perDiem: FlatPerDiemRule? = if draft.usePerDiem {
-            FlatPerDiemRule(
-                amountPerWorkDate: Money(
-                    amount: try positiveDecimal(draft.perDiemAmount, field: "Per diem"),
-                    currencyCode: "USD"
+        let perDiem: FlatPerDiemRule? =
+            if draft.usePerDiem {
+                FlatPerDiemRule(
+                    amountPerWorkDate: Money(
+                        amount: try positiveDecimal(draft.perDiemAmount, field: "Per diem"),
+                        currencyCode: "USD"
+                    )
                 )
-            )
-        } else {
-            nil
-        }
+            } else {
+                nil
+            }
 
         guard TimeZone(identifier: draft.timeZoneIdentifier) != nil else {
             throw AppModelError.invalidField("Time zone")
