@@ -410,7 +410,7 @@ For each later locale:
 - Reflow captions; do not shrink longer translations into unreadable text.
 - Keep U.S.-only rule coverage explicit. A translated caption does not create local payroll support.
 - Have a fluent reviewer check trade vocabulary and the distinction between expected, paid, and possible difference.
-- Keep rights-to-left language behavior native; the identity mark does not become a different logo.
+- Keep right-to-left language behavior native; the identity mark does not become a different logo.
 
 Use `lineman`, `paycheck`, `overtime`, and `callout` where they naturally explain a real benefit. Metadata strategy remains in `docs/appstore.md`.
 
