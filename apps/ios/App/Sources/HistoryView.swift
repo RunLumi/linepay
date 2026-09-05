@@ -47,7 +47,8 @@ struct HistoryView: View {
             Text(
                 LinePayFormat.payPeriod(
                     period.window,
-                    timeZoneIdentifier: model.profile?.timeZoneIdentifier ?? TimeZone.current.identifier
+                    timeZoneIdentifier: model.profile?.timeZoneIdentifier
+                        ?? TimeZone.current.identifier
                 )
             )
             .font(.headline)
@@ -128,7 +129,8 @@ private struct HistoricalPayPeriodView: View {
                     NavigationLink("Open paycheck audit") {
                         AuditDetailView(
                             window: period.window,
-                            timeZoneIdentifier: model.profile?.timeZoneIdentifier ?? TimeZone.current.identifier,
+                            timeZoneIdentifier: model.profile?.timeZoneIdentifier
+                                ?? TimeZone.current.identifier,
                             agreement: period.agreement,
                             calculation: period.calculation,
                             paystub: paystub,
@@ -211,7 +213,8 @@ private struct HistoricalPayPeriodView: View {
             Button("Delete pay period", role: .destructive) { deletePeriod() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes the historical snapshot and its stored paystub evidence.")
+            Text(
+                "This permanently deletes the historical snapshot and its stored paystub evidence.")
         }
     }
 
@@ -219,7 +222,8 @@ private struct HistoricalPayPeriodView: View {
         do {
             reportURL = try ReconciliationReportExporter().export(
                 window: period.window,
-                timeZoneIdentifier: model.profile?.timeZoneIdentifier ?? TimeZone.current.identifier,
+                timeZoneIdentifier: model.profile?.timeZoneIdentifier
+                    ?? TimeZone.current.identifier,
                 agreement: period.agreement,
                 calculation: period.calculation,
                 paystub: period.paystub,

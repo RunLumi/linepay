@@ -1,6 +1,7 @@
 import Foundation
 import LinePayDomain
 import Testing
+
 @testable import LinePay
 
 @Suite("AppModel orchestration")

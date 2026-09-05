@@ -653,7 +653,8 @@ final class AppModel {
             title: "Gross pay",
             expected: calculation.total,
             paid: paystub.grossPay,
-            explanation: "Expected gross from your confirmed work and rules compared with confirmed paystub gross.",
+            explanation:
+                "Expected gross from your confirmed work and rules compared with confirmed paystub gross.",
             to: &findings
         )
 
@@ -691,7 +692,8 @@ final class AppModel {
                 title: "Regular pay",
                 expected: expectedRegular,
                 paid: paid,
-                explanation: "Worked-hour components at 1× compared with the confirmed regular-pay line.",
+                explanation:
+                    "Worked-hour components at 1× compared with the confirmed regular-pay line.",
                 to: &findings
             )
         }
@@ -701,7 +703,8 @@ final class AppModel {
                 title: "Overtime pay",
                 expected: expectedOvertime,
                 paid: paid,
-                explanation: "Worked-hour components above 1× and below 2× compared with confirmed overtime pay.",
+                explanation:
+                    "Worked-hour components above 1× and below 2× compared with confirmed overtime pay.",
                 to: &findings
             )
         }
@@ -711,7 +714,8 @@ final class AppModel {
                 title: "Double-time pay",
                 expected: expectedDoubleTime,
                 paid: paid,
-                explanation: "Worked-hour components at 2× or higher compared with confirmed double-time pay.",
+                explanation:
+                    "Worked-hour components at 2× or higher compared with confirmed double-time pay.",
                 to: &findings
             )
         }
@@ -721,7 +725,8 @@ final class AppModel {
                 title: "Callout guarantee",
                 expected: expectedCallout,
                 paid: paid,
-                explanation: "Derived callout-minimum entitlement compared with the confirmed paystub line.",
+                explanation:
+                    "Derived callout-minimum entitlement compared with the confirmed paystub line.",
                 to: &findings
             )
         }
@@ -731,7 +736,8 @@ final class AppModel {
                 title: "Per diem",
                 expected: expectedPerDiem,
                 paid: paid,
-                explanation: "Expected flat per-diem components compared with the confirmed paystub amount.",
+                explanation:
+                    "Expected flat per-diem components compared with the confirmed paystub amount.",
                 to: &findings
             )
         }
@@ -958,10 +964,13 @@ final class AppModel {
                 nil
             }
 
-        let effectiveStart = draft.useEffectiveStart
-            ? localDate(from: draft.effectiveStartDate, timeZoneIdentifier: draft.timeZoneIdentifier)
+        let effectiveStart =
+            draft.useEffectiveStart
+            ? localDate(
+                from: draft.effectiveStartDate, timeZoneIdentifier: draft.timeZoneIdentifier)
             : nil
-        let effectiveEnd = draft.useEffectiveEnd
+        let effectiveEnd =
+            draft.useEffectiveEnd
             ? localDate(from: draft.effectiveEndDate, timeZoneIdentifier: draft.timeZoneIdentifier)
             : nil
         if let effectiveStart, let effectiveEnd, effectiveEnd < effectiveStart {
@@ -1167,7 +1176,8 @@ final class AppModel {
     }
 
     private func localTime(from date: Date) throws -> LocalTime {
-        let components = Calendar(identifier: .gregorian).dateComponents([.hour, .minute], from: date)
+        let components = Calendar(identifier: .gregorian).dateComponents(
+            [.hour, .minute], from: date)
         return try LocalTime(
             hour: components.hour ?? 0,
             minute: components.minute ?? 0
@@ -1179,8 +1189,8 @@ final class AppModel {
     }
 }
 
-private extension ActivePayPeriod {
-    func agreementTimeZone(fallback: String?) -> String {
+extension ActivePayPeriod {
+    fileprivate func agreementTimeZone(fallback: String?) -> String {
         fallback ?? TimeZone.current.identifier
     }
 }

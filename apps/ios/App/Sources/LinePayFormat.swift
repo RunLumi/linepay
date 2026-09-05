@@ -47,7 +47,8 @@ enum LinePayFormat {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         formatter.timeZone = TimeZone(identifier: timeZoneIdentifier)
-        return "\(formatter.string(from: window.startDate)) – \(formatter.string(from: window.displayEndDate))"
+        return
+            "\(formatter.string(from: window.startDate)) – \(formatter.string(from: window.displayEndDate))"
     }
 
     static func breakDuration(_ interval: WorkInterval) -> String? {

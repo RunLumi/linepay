@@ -70,11 +70,13 @@ final class LocalEvidenceStore: EvidenceStoring {
         if let baseDirectory {
             directoryURL = baseDirectory
         } else {
-            let applicationSupport = fileManager.urls(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask
-            ).first ?? fileManager.temporaryDirectory
-            directoryURL = applicationSupport
+            let applicationSupport =
+                fileManager.urls(
+                    for: .applicationSupportDirectory,
+                    in: .userDomainMask
+                ).first ?? fileManager.temporaryDirectory
+            directoryURL =
+                applicationSupport
                 .appendingPathComponent("LinePay", isDirectory: true)
                 .appendingPathComponent("Paystubs", isDirectory: true)
         }

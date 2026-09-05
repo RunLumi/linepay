@@ -303,7 +303,9 @@ struct PaystubReviewView: View {
                     } header: {
                         Text("Source evidence")
                     } footer: {
-                        Text("OCR is evidence, not truth. The fields above are what LinePay will trust.")
+                        Text(
+                            "OCR is evidence, not truth. The fields above are what LinePay will trust."
+                        )
                     }
                 }
 

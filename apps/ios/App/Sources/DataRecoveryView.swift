@@ -74,7 +74,9 @@ struct DataRecoveryView: View {
             Button("Reset local data", role: .destructive) { reset() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This removes the unreadable local state and stored paystub evidence from this iPhone.")
+            Text(
+                "This removes the unreadable local state and stored paystub evidence from this iPhone."
+            )
         }
     }
 

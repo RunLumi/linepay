@@ -62,9 +62,12 @@ struct TodayView: View {
                 .minimumScaleFactor(0.75)
 
             if let profile = model.profile {
-                Text(LinePayFormat.payPeriod(active.window, timeZoneIdentifier: profile.timeZoneIdentifier))
-                    .font(.subheadline)
-                    .foregroundStyle(LinePayColor.textSecondary)
+                Text(
+                    LinePayFormat.payPeriod(
+                        active.window, timeZoneIdentifier: profile.timeZoneIdentifier)
+                )
+                .font(.subheadline)
+                .foregroundStyle(LinePayColor.textSecondary)
             }
 
             HStack(spacing: LinePaySpacing.standard) {

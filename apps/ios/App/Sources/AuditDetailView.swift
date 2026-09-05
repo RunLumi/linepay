@@ -26,8 +26,11 @@ struct AuditDetailView: View {
 
             Section("What to review") {
                 if reconciliation == nil {
-                    Label("Re-run the audit after confirming changed work or rules.", systemImage: "arrow.clockwise")
-                        .foregroundStyle(.orange)
+                    Label(
+                        "Re-run the audit after confirming changed work or rules.",
+                        systemImage: "arrow.clockwise"
+                    )
+                    .foregroundStyle(.orange)
                 } else {
                     ForEach(findings) { finding in
                         NavigationLink {
@@ -120,9 +123,11 @@ struct AuditDetailView: View {
                         Label("Prepare reconciliation report", systemImage: "doc.richtext")
                     }
                 }
-                Text("The report does not include the original paystub unless you share it separately.")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
+                Text(
+                    "The report does not include the original paystub unless you share it separately."
+                )
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
             }
 
             Section {
@@ -159,7 +164,9 @@ struct AuditDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Confirmed audit values remain. The original image/PDF and local OCR evidence are deleted.")
+            Text(
+                "Confirmed audit values remain. The original image/PDF and local OCR evidence are deleted."
+            )
         }
     }
 
@@ -206,9 +213,11 @@ struct AuditDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(finding.title)
                     .font(.headline)
-                Text("Expected \(LinePayFormat.money(finding.expected)) · Paid \(LinePayFormat.money(finding.paid))")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
+                Text(
+                    "Expected \(LinePayFormat.money(finding.expected)) · Paid \(LinePayFormat.money(finding.paid))"
+                )
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
             }
             Spacer()
             Text(LinePayFormat.money(finding.difference))

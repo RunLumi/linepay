@@ -5,7 +5,8 @@ struct StartPayPeriodView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var startDate = Date()
-    @State private var endDate = Calendar.current.date(byAdding: .day, value: 6, to: Date()) ?? Date()
+    @State private var endDate =
+        Calendar.current.date(byAdding: .day, value: 6, to: Date()) ?? Date()
     @State private var errorMessage: String?
 
     var body: some View {

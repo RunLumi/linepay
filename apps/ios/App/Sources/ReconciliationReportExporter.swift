@@ -12,7 +12,8 @@ struct ReconciliationReportExporter {
         reconciliation: ReconciliationResult?,
         findings: [AuditFinding]
     ) throws -> URL {
-        let filename = "LinePay-\(dateSlug(window.startDate, timeZoneIdentifier: timeZoneIdentifier)).pdf"
+        let filename =
+            "LinePay-\(dateSlug(window.startDate, timeZoneIdentifier: timeZoneIdentifier)).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         let pageBounds = CGRect(x: 0, y: 0, width: 612, height: 792)
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)

@@ -1,4 +1,5 @@
 import Foundation
+
 @testable import LinePayDomain
 
 func decimal(_ value: String) -> Decimal {

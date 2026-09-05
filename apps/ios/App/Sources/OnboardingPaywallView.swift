@@ -110,15 +110,19 @@ struct ProPaywallView: View {
             .disabled(!canPurchase || isPurchasing)
 
             if !SubscriptionStore.commerceEnabled {
-                Text("Purchasing is disabled in this debug build. Audit access remains open for testing.")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
-                    .multilineTextAlignment(.center)
+                Text(
+                    "Purchasing is disabled in this debug build. Audit access remains open for testing."
+                )
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+                .multilineTextAlignment(.center)
             } else if store.products.isEmpty, !store.isLoading {
-                Text("App Store prices are unavailable right now. Your existing LinePay data is unaffected.")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
-                    .multilineTextAlignment(.center)
+                Text(
+                    "App Store prices are unavailable right now. Your existing LinePay data is unaffected."
+                )
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+                .multilineTextAlignment(.center)
             }
 
             if let errorMessage = store.errorMessage {
@@ -184,7 +188,9 @@ struct ProPaywallView: View {
             HStack(spacing: LinePaySpacing.standard) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? LinePayColor.brandPrimary : LinePayColor.textSecondary)
+                    .foregroundStyle(
+                        isSelected ? LinePayColor.brandPrimary : LinePayColor.textSecondary
+                    )
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 4) {

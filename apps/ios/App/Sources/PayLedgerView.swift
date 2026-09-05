@@ -59,7 +59,9 @@ struct PayLedgerView: View {
             Button("Finish and archive") { archive() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("LinePay saves an immutable snapshot of these work facts, rules, calculations, and audit results.")
+            Text(
+                "LinePay saves an immutable snapshot of these work facts, rules, calculations, and audit results."
+            )
         }
     }
 
@@ -77,9 +79,12 @@ struct PayLedgerView: View {
                 .minimumScaleFactor(0.75)
 
             if let profile = model.profile {
-                Text(LinePayFormat.payPeriod(active.window, timeZoneIdentifier: profile.timeZoneIdentifier))
-                    .font(.subheadline)
-                    .foregroundStyle(LinePayColor.textSecondary)
+                Text(
+                    LinePayFormat.payPeriod(
+                        active.window, timeZoneIdentifier: profile.timeZoneIdentifier)
+                )
+                .font(.subheadline)
+                .foregroundStyle(LinePayColor.textSecondary)
             }
 
             HStack(spacing: LinePaySpacing.standard) {
@@ -105,7 +110,8 @@ struct PayLedgerView: View {
                 NavigationLink {
                     AuditDetailView(
                         window: active.window,
-                        timeZoneIdentifier: model.profile?.timeZoneIdentifier ?? TimeZone.current.identifier,
+                        timeZoneIdentifier: model.profile?.timeZoneIdentifier
+                            ?? TimeZone.current.identifier,
                         agreement: active.agreement,
                         calculation: calculation,
                         paystub: paystub,
@@ -144,7 +150,9 @@ struct PayLedgerView: View {
                             .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.borderedProminent)
-                } else if model.hasUsedFreeAudit, !subscriptionStore.isPro, SubscriptionStore.commerceEnabled {
+                } else if model.hasUsedFreeAudit, !subscriptionStore.isPro,
+                    SubscriptionStore.commerceEnabled
+                {
                     Button {
                         showingPaywall = true
                     } label: {
@@ -201,8 +209,10 @@ struct PayLedgerView: View {
                 VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
                     Text("Your ledger is empty")
                         .font(.title3.bold())
-                    Text("Add actual work and LinePay will turn it into explainable pay components.")
-                        .foregroundStyle(LinePayColor.textSecondary)
+                    Text(
+                        "Add actual work and LinePay will turn it into explainable pay components."
+                    )
+                    .foregroundStyle(LinePayColor.textSecondary)
                 }
             }
         }
@@ -218,9 +228,11 @@ struct PayLedgerView: View {
                     .frame(maxWidth: .infinity, minHeight: 48)
             }
             .buttonStyle(.bordered)
-            Text("Finishing creates an immutable historical snapshot. It does not require a paystub audit.")
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
+            Text(
+                "Finishing creates an immutable historical snapshot. It does not require a paystub audit."
+            )
+            .font(.footnote)
+            .foregroundStyle(LinePayColor.textSecondary)
         }
     }
 

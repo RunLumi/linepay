@@ -54,8 +54,10 @@ struct AddWorkView: View {
             _note = State(initialValue: template.note)
 
             if let firstBreak = template.interval.unpaidBreaks.first {
-                let breakStartOffset = firstBreak.startEpochSeconds - template.interval.startEpochSeconds
-                let breakEndOffset = firstBreak.endEpochSeconds - template.interval.startEpochSeconds
+                let breakStartOffset =
+                    firstBreak.startEpochSeconds - template.interval.startEpochSeconds
+                let breakEndOffset =
+                    firstBreak.endEpochSeconds - template.interval.startEpochSeconds
                 _hasUnpaidBreak = State(initialValue: true)
                 _breakStart = State(
                     initialValue: repeated.start.addingTimeInterval(TimeInterval(breakStartOffset))
@@ -192,7 +194,8 @@ struct AddWorkView: View {
     }
 
     private var paidWorkedHours: Decimal {
-        let breakHours: Decimal = hasUnpaidBreak
+        let breakHours: Decimal =
+            hasUnpaidBreak
             ? max(0, Decimal(breakEnd.timeIntervalSince(breakStart)) / 3_600)
             : 0
         return max(0, clockSpanHours - breakHours)
@@ -244,7 +247,8 @@ struct AddWorkView: View {
         calendar.timeZone = timeZone
 
         let originalStart = Date(timeIntervalSince1970: TimeInterval(interval.startEpochSeconds))
-        let originalComponents = calendar.dateComponents([.hour, .minute, .second], from: originalStart)
+        let originalComponents = calendar.dateComponents(
+            [.hour, .minute, .second], from: originalStart)
         let today = calendar.dateComponents([.year, .month, .day], from: Date())
 
         var components = DateComponents()

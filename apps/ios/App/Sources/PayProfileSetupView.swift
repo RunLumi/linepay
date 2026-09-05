@@ -84,7 +84,9 @@ struct PayProfileSetupView: View {
                     Text("Pay period")
                 } footer: {
                     if model.profile == nil {
-                        Text("Choose the boundary that matches the paycheck you are currently earning.")
+                        Text(
+                            "Choose the boundary that matches the paycheck you are currently earning."
+                        )
                     } else {
                         Text(
                             "Changing cadence affects future periods only. The current and archived "

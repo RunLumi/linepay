@@ -59,7 +59,8 @@ struct DocumentScannerView: UIViewControllerRepresentable {
                 for index in 0..<scan.pageCount {
                     context.beginPage()
                     let image = scan.imageOfPage(at: index)
-                    let target = aspectFitRect(for: image.size, inside: pageBounds.insetBy(dx: 24, dy: 24))
+                    let target = aspectFitRect(
+                        for: image.size, inside: pageBounds.insetBy(dx: 24, dy: 24))
                     image.draw(in: target)
                 }
             }

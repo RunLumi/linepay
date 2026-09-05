@@ -1,4 +1,5 @@
 import Testing
+
 @testable import LinePay
 
 @Suite("Subscription store")
