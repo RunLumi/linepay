@@ -1,0 +1,37 @@
+name: Coverage diagnostics
+on:
+  push:
+    branches: [test/coverage-completion]
+    paths: [.github/workflows/coverage-diagnostics.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: macos-26
+    timeout-minutes: 5
+    steps:
+      - name: Select native toolchain
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+      - name: Read the retained synthetic test result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/streamentry/linepay/actions/artifacts/9971166471/zip \
+            -o result.zip
+          unzip -q result.zip -d result
+          mkdir diagnostics
+          xcrun xcresulttool get test-results summary --path result/AppTests.xcresult > diagnostics/test-summary.json
+          xcrun xcresulttool get test-results tests --path result/AppTests.xcresult > diagnostics/test-details.json
+          xcrun xccov view --report --json result/AppTests.xcresult > diagnostics/app-coverage.json
+          xcrun xccov view --report result/AppTests.xcresult > diagnostics/app-coverage.txt
+          xcrun xccov help > diagnostics/xccov-help.txt 2>&1 || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: coverage-diagnostics
+          path: diagnostics/
+          retention-days: 1
