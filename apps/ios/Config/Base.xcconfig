@@ -1,0 +1,15 @@
+// Shared settings. Keep environment-specific values out of build configurations.
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
+GCC_WARN_UNUSED_VARIABLE = YES
+GCC_WARN_UNUSED_FUNCTION = YES
+
+// Release correctness and symbols.
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+COPY_PHASE_STRIP = NO
+
+// iPhone only for v1.
+TARGETED_DEVICE_FAMILY = 1
