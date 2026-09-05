@@ -22,26 +22,19 @@ final class SubscriptionStore {
     @ObservationIgnored
     private var transactionUpdatesTask: Task<Void, Never>?
 
-    init() {
-        guard Self.commerceEnabled else { return }
-
-        transactionUpdatesTask = Task { [weak self] in
-            for await result in Transaction.updates {
-                guard let self else { return }
-                if case .verified(let transaction) = result {
-                    await transaction.finish()
-                    await self.refreshEntitlements()
-                }
-            }
-        }
-
-        Task { [weak self] in
-            await self?.load()
-        }
-    }
-
     deinit {
         transactionUpdatesTask?.cancel()
+    }
+
+    /// Starts StoreKit observation when the app is ready for it.
+    ///
+    /// Keeping asynchronous work out of `init` makes object construction deterministic for previews and
+    /// tests, and gives the SwiftUI lifecycle explicit ownership of long-lived tasks.
+    func start() async {
+        guard Self.commerceEnabled else { return }
+
+        startTransactionUpdatesIfNeeded()
+        await load()
     }
 
     func load() async {
@@ -65,6 +58,7 @@ final class SubscriptionStore {
         } catch {
             products = []
             errorMessage = "Pro isn't available right now. You can keep using LinePay Free."
+            LinePayLog.storeKit.error("Failed to load StoreKit products")
         }
     }
 
@@ -84,6 +78,7 @@ final class SubscriptionStore {
             case .success(let verification):
                 guard case .verified(let transaction) = verification else {
                     errorMessage = "The App Store couldn't verify this purchase."
+                    LinePayLog.storeKit.error("StoreKit returned an unverified purchase")
                     return false
                 }
                 await transaction.finish()
@@ -100,10 +95,12 @@ final class SubscriptionStore {
 
             @unknown default:
                 errorMessage = "The purchase couldn't be completed. Try again later."
+                LinePayLog.storeKit.error("StoreKit returned an unknown purchase result")
                 return false
             }
         } catch {
             errorMessage = "The purchase couldn't be completed. Try again later."
+            LinePayLog.storeKit.error("StoreKit purchase failed")
             return false
         }
     }
@@ -120,6 +117,25 @@ final class SubscriptionStore {
             errorMessage = isPro ? nil : "No active LinePay Pro purchase was found."
         } catch {
             errorMessage = "Purchases couldn't be restored right now."
+            LinePayLog.storeKit.error("StoreKit restore failed")
+        }
+    }
+
+    private func startTransactionUpdatesIfNeeded() {
+        guard transactionUpdatesTask == nil else { return }
+
+        transactionUpdatesTask = Task { [weak self] in
+            for await result in Transaction.updates {
+                guard let self else { return }
+
+                guard case .verified(let transaction) = result else {
+                    LinePayLog.storeKit.error("StoreKit emitted an unverified transaction update")
+                    continue
+                }
+
+                await transaction.finish()
+                await self.refreshEntitlements()
+            }
         }
     }
 
