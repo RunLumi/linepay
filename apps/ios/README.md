@@ -4,8 +4,8 @@ Native SwiftUI client. iOS ships first; Android remains a separate native client
 
 ## Toolchain
 
-- Xcode 26.x stable
-- Swift 6.2 toolchain / Swift 6 language mode
+- Xcode 26.6 stable
+- Swift 6.3 toolchain / Swift 6 language mode
 - XcodeGen >= 2.46.0
 - iOS deployment target 18.0
 
