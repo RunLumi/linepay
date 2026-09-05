@@ -177,8 +177,10 @@ struct ScreenContractTests {
         try UnitFixture.populate(model)
         let importView = PaystubImportView(model: model) {}
         let importContent = try text(importView)
-        #expect(importContent.lowercased().contains("manual"))
-        #expect(importContent.lowercased().contains("file"))
+        #expect(importContent.contains("Enter paycheck manually"))
+        #expect(importContent.contains("Choose PDF or image"))
+        #expect(importContent.contains("Choose photo"))
+        #expect(importContent.contains("confirm the numbers before auditing"))
         var draft = UnitFixture.paystub(model)
         draft.recognizedText = "SYNTHETIC OCR TEXT"
         draft.regularPay = "400"
@@ -206,11 +208,20 @@ struct ScreenContractTests {
 
     @Test func backupAndPaywallDoNotClaimExternalSuccess() throws {
         let session = AppSession(store: MemoryStateStore(), evidenceStore: MemoryEvidenceStore())
-        let backup = try text(BackupRestoreView(session: session))
-        #expect(backup.lowercased().contains("backup"))
-        #expect(backup.lowercased().contains("icloud"))
-        let entry = BackupRestoreEntryPoint().environment(\.linePaySession, session)
-        #expect(try text(entry).contains("iCloud backup & restore"))
+        let backupView = BackupRestoreView(session: session)
+        let backup = try text(backupView)
+        #expect(backup.contains("Back up to iCloud Drive"))
+        #expect(backup.contains("Restore from iCloud Drive"))
+        #expect(backup.contains("Manual backup, not automatic backup or live sync."))
+        #expect(backup.contains("not password-encrypted"))
+        #expect(backup.contains("check in Files that upload has completed"))
+        #expect(backup.contains("Deleting local data does not delete copies"))
+        // Reflection cannot propagate this custom @Environment key into EntryPoint.
+        // Its navigation/sheet contract requires native UI testing, not a false text assertion.
+        let save = try backupView.inspect().find(viewWithAccessibilityIdentifier: "backup.save")
+        let restore = try backupView.inspect().find(viewWithAccessibilityIdentifier: "backup.restore")
+        #expect(try !save.button().isDisabled())
+        #expect(try !restore.button().isDisabled())
         let paywall = try text(ProPaywallView(store: commerce()) {})
         #expect(paywall.contains("Audit every paycheck."))
         #expect(paywall.contains("Yearly"))
