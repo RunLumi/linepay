@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "repository": "streamentry/linepay",
+  "description": "Original generated artwork and dimension-normalized derivatives. Screen images are concepts, not verified native captures.",
+  "files": [
+    {
+      "path": "assets/brand/source/linepaycheck-generated.png",
+      "sha256": "886df39ee839acd045c45177006a30290d0594293d2580b6a249b9dee8892bdf",
+      "bytes": 883357,
+      "pixels": [
+        1254,
+        1254
+      ],
+      "role": "generated-logo-original",
+      "source": "minimalist_cream_bars_with_teal_accent.png"
+    },
+    {
+      "path": "assets/brand/linepaycheck-icon-1024.png",
+      "sha256": "1629a712a03dcde270a302ee08d89c1c73a0512b0c5e91c2d7109ccd047c847b",
+      "bytes": 9186,
+      "pixels": [
+        1024,
+        1024
+      ],
+      "role": "normalized-ios-logo",
+      "source": "minimalist_cream_bars_with_teal_accent.png"
+    },
+    {
+      "path": "apps/ios/App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+      "sha256": "1629a712a03dcde270a302ee08d89c1c73a0512b0c5e91c2d7109ccd047c847b",
+      "bytes": 9186,
+      "pixels": [
+        1024,
+        1024
+      ],
+      "role": "normalized-ios-logo",
+      "source": "minimalist_cream_bars_with_teal_accent.png"
+    },
+    {
+      "path": "apps/ios/App/Resources/Assets.xcassets/LinePaycheckLogo.imageset/LinePaycheckLogo.png",
+      "sha256": "1629a712a03dcde270a302ee08d89c1c73a0512b0c5e91c2d7109ccd047c847b",
+      "bytes": 9186,
+      "pixels": [
+        1024,
+        1024
+      ],
+      "role": "normalized-ios-logo",
+      "source": "minimalist_cream_bars_with_teal_accent.png"
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/01-expected-pay.png",
+      "sha256": "bd4d4f9f0fad0ccc6f379a07b9ecb0de38b35fe8699b1bcef9033ff9d01a05fe",
+      "bytes": 1199074,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_app_promo_mockup.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/01-expected-pay.png",
+      "sha256": "4ca13161aa6e05adc6540cf888954b2c7c49e7751912832f30284a216aee676b",
+      "bytes": 1984556,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/01-expected-pay.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/02-confirmed-rules.png",
+      "sha256": "52c2c39110affb8f262bff1ae304a6cfbda7fefbd4f545a010d9759533217156",
+      "bytes": 1207609,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_pay_rules_app_mockup.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/02-confirmed-rules.png",
+      "sha256": "c5a435d66040250cf87f5755823ee3108facba59a6b921d79f22d433b836a43e",
+      "bytes": 1981138,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/02-confirmed-rules.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/03-possible-difference.png",
+      "sha256": "13a1ea57eef60a8b12cf900e706324c141d731ef96ed170a3f90f681e14c7d08",
+      "bytes": 1342829,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_pay_difference_summary.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/03-possible-difference.png",
+      "sha256": "55244df8b87958891f9f8dc2d4be8d6c10494713ed4268df130230738f0c134a",
+      "bytes": 2281197,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/03-possible-difference.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/04-evidence-receipt.png",
+      "sha256": "b781b7d1b1b2947082c0c9cecd8dfda46728bdf9d66151403757ac2a889a7e34",
+      "bytes": 1300111,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_evidence_receipt_app_mockup.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/04-evidence-receipt.png",
+      "sha256": "63499b0aad371865104e0a22db67bfc5876672a8e399a7b4d9b3dac9f3467890",
+      "bytes": 2168229,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/04-evidence-receipt.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/05-log-work.png",
+      "sha256": "4fde5b0beaeb3289b3a35fd8e5f8d1e749733ac1426c12f520d208407bce8537",
+      "bytes": 1269357,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "log_the_shift_keep_the_evidence.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/05-log-work.png",
+      "sha256": "f0a8b25785e52697963f0f3df27ec8e3d28a3d3cca7444005200c630706b0abf",
+      "bytes": 2118281,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/05-log-work.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/06-scan-confirm.png",
+      "sha256": "e4d36a002d367a91a03119f60d5f7062f43280259d9f8aa41bd08ba3826a297d",
+      "bytes": 1319454,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_scan_and_confirm.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/06-scan-confirm.png",
+      "sha256": "d70dcd77b7c066952c7f739e4bf7fbe3286cad9b3317fad2cb48609af4860f58",
+      "bytes": 2240926,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/06-scan-confirm.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/07-privacy.png",
+      "sha256": "1d34834fa8a5935689530160d70cf260cde831d8c25c71d811279b7c2fa28577",
+      "bytes": 1220154,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_privacy_kept_local.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/07-privacy.png",
+      "sha256": "c7d78dee6b46e9a705b85cc1b66d4d1c783ea4f95df51f42e5151a3256ebf4b3",
+      "bytes": 2024499,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/07-privacy.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/originals/08-history.png",
+      "sha256": "a19660200137a8d26529ee69f42ed12609ec6c38e5b2eb6dc034f0b77edebeb8",
+      "bytes": 1344135,
+      "pixels": [
+        853,
+        1844
+      ],
+      "role": "generated-concept-original",
+      "source": "linepaycheck_history_simplified.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    },
+    {
+      "path": "assets/app-stores/concepts/en-US/1284x2778/08-history.png",
+      "sha256": "95e437c3ffbe2372cf8343e022bb6e1ecbb4918b87fd4b081e953841fc1698eb",
+      "bytes": 2290118,
+      "pixels": [
+        1284,
+        2778
+      ],
+      "role": "generated-concept-resized",
+      "source": "assets/app-stores/concepts/en-US/originals/08-history.png",
+      "capturedFromApp": false,
+      "approvedForStoreUpload": false
+    }
+  ]
+}
