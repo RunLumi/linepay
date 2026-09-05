@@ -1,0 +1,25 @@
+name: Unit test source snapshot
+
+# Temporary development helper. Removed before this PR is ready for review.
+on:
+  push:
+    branches: [test/comprehensive-unit-coverage]
+    paths: [.github/workflows/unit-test-source.yml]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Archive tracked repository source only
+        run: git archive --format=zip -o source.zip HEAD
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unit-test-source
+          path: source.zip
+          retention-days: 1
+          if-no-files-found: error
