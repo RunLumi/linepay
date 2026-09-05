@@ -10,6 +10,106 @@ Build the smallest trustworthy product that helps a worker answer:
 
 LinePay is a **calculation and reconciliation tool**, not payroll software, legal advice, a union authority, or an autonomous contract interpreter.
 
+## Pareto operating principle
+
+**Every agent decision should aim for Pareto efficiency.**
+
+For LinePay, this means choosing solutions that deliver the most user value, correctness, trust, and learning with the least unnecessary complexity, code, dependencies, operational burden, and irreversible commitment.
+
+A decision is **Pareto-dominated** when another feasible option is at least as good on all important dimensions and meaningfully better on one or more. Do not choose a dominated option.
+
+The goal is not to minimize engineering effort at any cost. Correctness, trust, privacy, auditability, and preservation of user data are hard constraints. Never trade them away merely to ship faster or reduce code.
+
+### Decision objectives, in priority order
+
+When options compete, evaluate them against these objectives:
+
+1. **Correctness and trust** — especially money, time, rule interpretation, history, and reconciliation.
+2. **User value** — does this materially help a worker understand or protect their pay?
+3. **Privacy and safety** — minimize sensitive-data exposure and unnecessary data collection.
+4. **Speed of learning** — prefer choices that validate important assumptions sooner with real users.
+5. **Simplicity and maintainability** — fewer concepts, layers, dependencies, states, and failure modes.
+6. **Implementation and operating cost** — less code, infrastructure, support, and maintenance when outcomes are otherwise comparable.
+7. **Reversibility** — prefer decisions that are cheap to change until evidence justifies locking them in.
+8. **Extensibility** — optimize for demonstrated next steps, not imagined futures.
+
+Do not reverse this list by building elaborate extensibility while the core user value is still unproven.
+
+### Pareto decision protocol
+
+For any material product, architecture, UX, dependency, schema, pricing, or implementation decision:
+
+1. Define the actual user outcome and the hard constraints.
+2. Identify the smallest credible set of alternatives. Usually 2–4 is enough.
+3. Compare the alternatives on value, correctness, privacy, learning speed, complexity, cost, and reversibility.
+4. Eliminate clearly Pareto-dominated alternatives.
+5. Among remaining options, prefer the simplest reversible option that preserves the hard constraints and captures most of the available value.
+6. Spend additional complexity only when it buys disproportionate value, materially reduces risk, or creates a compounding asset.
+7. If a real trade-off remains, state it explicitly instead of hiding it behind abstraction or vague “best practice.”
+8. Revisit the decision when new evidence changes the frontier.
+
+For trivial decisions, apply this mentally and move on. Do not create process theater. For decisions with lasting consequences, make the reasoning explicit in the issue, PR, plan, or ADR.
+
+### The 80/20 implementation rule
+
+Default to the smallest implementation that captures roughly 80% of the validated user value with a fraction of the complexity.
+
+This does **not** mean shipping knowingly incorrect payroll math, unsafe migrations, inaccessible critical flows, or weak privacy. Those are hard constraints, not the expendable 20%.
+
+Good examples:
+
+- one excellent native workflow before multiple platforms;
+- one paid tier before a pricing matrix;
+- local storage before a user-account backend;
+- deterministic rules before AI interpretation;
+- canonical fixtures before shared runtime code;
+- a focused adapter before a generic framework;
+- a manual confirmation step before building uncertain automation.
+
+### Complexity budget
+
+Treat every new abstraction, dependency, service, state, screen, setting, database table, network request, and background process as spending from a finite complexity budget.
+
+Before adding one, ask:
+
+> What concrete user value, risk reduction, or learning does this complexity purchase?
+
+If the answer is vague, speculative, or merely “we may need it later,” do not add it yet.
+
+Prefer deleting complexity to organizing it beautifully.
+
+### Reversibility and option value
+
+Early LinePay decisions should preserve option value.
+
+Prefer:
+
+- data and behavior contracts over shared runtime abstractions;
+- adapters over framework coupling;
+- versioned schemas over implicit persistence behavior;
+- feature boundaries over generalized infrastructure;
+- platform services over owned infrastructure when they satisfy the need;
+- evidence-backed commitments over speculative future-proofing.
+
+Irreversible or expensive-to-reverse decisions require stronger evidence than reversible ones.
+
+### Compounding exception
+
+Some work is worth doing even when it is not the shortest path because it compounds across the product.
+
+Examples include:
+
+- canonical pay-rule fixtures;
+- deterministic domain tests;
+- versioned agreement/rule representations;
+- migration safety;
+- reusable verified agreement data;
+- source/provenance conventions;
+- accessibility foundations;
+- privacy-preserving architecture.
+
+Agents should distinguish **compounding foundations** from **speculative infrastructure**. Invest in the former. Resist the latter.
+
 ## Product invariants
 
 These are harder constraints than implementation convenience.
@@ -231,6 +331,9 @@ Answer these questions in the issue/PR or working notes:
 3. Which product invariant could this accidentally violate?
 4. What is the cheapest test that proves correctness?
 5. Does it introduce persistence, privacy, migration, or rule-version consequences?
+6. What simpler alternative captures most of the value?
+7. Is the proposed solution Pareto-dominated by a cheaper, simpler, safer, or more reversible option?
+8. What complexity are we adding, and what concrete value or risk reduction buys it?
 
 ## Definition of done
 
@@ -243,7 +346,9 @@ A change is done only when:
 - privacy implications are understood;
 - persistence changes include migration consideration;
 - user-visible errors are actionable;
-- documentation/ADR is updated when the architecture changed.
+- documentation/ADR is updated when the architecture changed;
+- no known materially simpler Pareto-superior implementation remains unexplored;
+- unnecessary complexity introduced by the change has been removed.
 
 ## Anti-goals
 
