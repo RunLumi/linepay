@@ -8,7 +8,7 @@ import ViewInspector
 @testable import LinePay
 
 /// Inspect actual SwiftUI bodies and their values. No generated mirror of the UI or payroll logic.
-/// State-transition journeys additionally run against installed views in the simulator.
+/// Interactive/device behavior remains a separate test layer from synchronous body inspection.
 @Suite("Screen content and intent contracts")
 @MainActor
 struct ScreenContractTests {
@@ -241,10 +241,10 @@ struct ScreenContractTests {
         ]
         for style in [UIUserInterfaceStyle.light, .dark] {
             for contrast in [UIAccessibilityContrast.normal, .high] {
-                let traits = UITraitCollection(traitsFrom: [
-                    UITraitCollection(userInterfaceStyle: style),
-                    UITraitCollection(accessibilityContrast: contrast),
-                ])
+                let traits = UITraitCollection { values in
+                    values.userInterfaceStyle = style
+                    values.accessibilityContrast = contrast
+                }
                 for color in colors {
                     let resolved = UIColor(color).resolvedColor(with: traits)
                     var r: CGFloat = 0
