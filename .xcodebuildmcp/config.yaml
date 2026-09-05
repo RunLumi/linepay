@@ -1,0 +1,19 @@
+schemaVersion: 1
+
+enabledWorkflows: ['simulator', 'ui-automation', 'debugging']
+disableSessionDefaults: false
+incrementalBuildsEnabled: false
+debug: false
+sentryDisabled: true
+filePathRenderStyle: 'list'
+
+sessionDefaults:
+  projectPath: './apps/ios/LinePay.xcodeproj'
+  scheme: 'LinePay'
+  configuration: 'Debug'
+  simulatorName: 'iPhone 17 Pro'
+  useLatestOS: true
+  arch: 'arm64'
+  suppressWarnings: false
+  platform: 'iOS'
+  bundleId: 'com.streamentry.linepay'

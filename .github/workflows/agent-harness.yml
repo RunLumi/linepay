@@ -1,0 +1,59 @@
+name: Agent Harness
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".agents/**"
+      - ".codex/**"
+      - ".github/agents/**"
+      - ".github/instructions/**"
+      - ".github/copilot-instructions.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - ".mcp.json"
+      - ".xcodebuildmcp/**"
+      - "docs/agentic.md"
+      - "scripts/*.sh"
+      - "apps/ios/project.yml"
+      - ".github/workflows/agent-harness.yml"
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".agents/**"
+      - ".codex/**"
+      - ".github/agents/**"
+      - ".github/instructions/**"
+      - ".github/copilot-instructions.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - ".mcp.json"
+      - ".xcodebuildmcp/**"
+      - "docs/agentic.md"
+      - "scripts/*.sh"
+      - "apps/ios/project.yml"
+      - ".github/workflows/agent-harness.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-harness-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate harness
+        run: bash scripts/check-agent-harness.sh
