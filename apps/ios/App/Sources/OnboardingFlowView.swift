@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OnboardingFlowView: View {
-    enum Step {
+    enum Step: Equatable {
         case welcome
         case paySetup
         case softPaywall
