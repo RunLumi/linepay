@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     let model: AppModel
+    let subscriptionStore: SubscriptionStore
 
     var body: some View {
         TabView {
@@ -10,20 +11,26 @@ struct MainTabView: View {
                     Label("Today", systemImage: "clock")
                 }
 
-            PayLedgerView(model: model)
-                .tabItem {
-                    Label("Pay", systemImage: "dollarsign")
-                }
+            PayLedgerView(
+                model: model,
+                subscriptionStore: subscriptionStore
+            )
+            .tabItem {
+                Label("Pay", systemImage: "dollarsign")
+            }
 
             HistoryView(model: model)
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")
                 }
 
-            SettingsView(model: model)
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
+            SettingsView(
+                model: model,
+                subscriptionStore: subscriptionStore
+            )
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
         }
         .tint(LinePayColor.brandPrimary)
     }
