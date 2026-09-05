@@ -209,17 +209,18 @@ public struct PayCalculator: Sendable {
         overtimeMultiplier: Decimal,
         policy: PayCalculationPolicy
     ) -> Decimal {
-        let scheduleMultiplier: Decimal = segment.isWithinRegularSchedule
+        let scheduleMultiplier: Decimal =
+            segment.isWithinRegularSchedule
             ? 1
             : agreement.outsideScheduleMultiplier
-        let weekdayMultiplier = agreement.weekdayPremiums
-            .filter { $0.weekday == segment.weekday }
-            .map(\.multiplier)
-            .max() ?? 1
-        let dateMultiplier = agreement.datePremiums
-            .filter { $0.date == segment.localDate }
-            .map(\.multiplier)
-            .max() ?? 1
+        let weekdayPremiums = agreement.weekdayPremiums.filter {
+            $0.weekday == segment.weekday
+        }
+        let weekdayMultiplier = weekdayPremiums.map(\.multiplier).max() ?? 1
+        let datePremiums = agreement.datePremiums.filter {
+            $0.date == segment.localDate
+        }
+        let dateMultiplier = datePremiums.map(\.multiplier).max() ?? 1
 
         switch policy.premiumCombination {
         case .highestApplicable:
@@ -246,14 +247,10 @@ public struct PayCalculator: Sendable {
         var position = startingDailyHours
 
         while remaining > 0 {
-            let currentMultiplier = tiers
-                .filter { $0.afterHours <= position }
-                .last?
-                .multiplier ?? 1
-            let nextThreshold = tiers
-                .map(\.afterHours)
-                .filter { $0 > position }
-                .min()
+            let activeTiers = tiers.filter { $0.afterHours <= position }
+            let currentMultiplier = activeTiers.last?.multiplier ?? 1
+            let futureThresholds = tiers.map(\.afterHours).filter { $0 > position }
+            let nextThreshold = futureThresholds.min()
 
             let sliceHours: Decimal
             if let nextThreshold {
@@ -289,8 +286,8 @@ public struct PayCalculator: Sendable {
             let intervalComponents = existingComponents.filter {
                 $0.workIntervalID == interval.id && $0.category == .workedHours
             }
-            let applicableMultiplier =
-                intervalComponents.compactMap(\.multiplier).max() ?? 1
+            let multipliers = intervalComponents.compactMap(\.multiplier)
+            let applicableMultiplier = multipliers.max() ?? 1
             let amount = agreement.hourlyRate
                 .multiplied(by: missingHours)
                 .multiplied(by: applicableMultiplier)
