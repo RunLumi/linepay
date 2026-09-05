@@ -28,7 +28,7 @@ A source fix is not release acceptance. Require native compilation, domain/app/S
 | A14 | Unknown calculation renders Unavailable with actionable context; invalid results cannot finalize an audit | Calculation error source paths plus runtime acceptance |
 | A15 | About/privacy/terms/acknowledgements; adaptive presentation and reduced-motion behavior; existing shared icon retained; launch configuration corrected | Brand/launch tests and light/dark/large-text UI evidence; physical review remains separate |
 
-The [ADR](../adr/0005-evidence-aware-payday-records.md) supersedes the old plan's gross-total-only and single-period lifecycle assumptions. ADR 0004 remains the accepted JSON-store decision; an unchecked SwiftData item in the original planning sequence is not a direction to rewrite persistence.
+The [ADR](../adr/0006-evidence-aware-payday-records.md) supersedes the old plan's gross-total-only and single-period lifecycle assumptions. ADR 0004 remains the accepted JSON-store decision; an unchecked SwiftData item in the original planning sequence is not a direction to rewrite persistence.
 
 ## Current execution checkpoint — September 5, 2026
 
@@ -40,7 +40,7 @@ Integrated `build-for-testing` succeeded on iOS 26.5. That runtime's StoreKitTes
 
 Integrated app run `.build/readiness/integration/app-tests-18b.xcresult`: 121 app tests passed on iOS 18.5, including native seven-day trial-to-paid, cancellation, pending approval, interrupted purchase, grace, restore and refund; static v1 migration, malformed saved values and interrupted-file recovery passed. This run preceded the final UI fixes and work-completeness requirement, so it is an intermediate checkpoint.
 
-UI execution exposed missed rate-field focus and an inactive-parent save callback that lost pushed field edits on interruption. The controls now own focus explicitly and the field editor persists directly. The new work-completeness confirmation prevents a partial work log from producing a full-paycheck verdict. A stale simulator test-runner installation was removed after Xcode reported a deleted container; no worker data was reset. Final candidate SHA and final gates remain pending.
+UI execution exposed missed rate-field focus and an inactive-parent save callback that lost pushed field edits on interruption. The controls now own focus explicitly and the field editor persists directly. The new work-completeness confirmation prevents a partial work log from producing a full-paycheck verdict. A stale simulator test-runner installation was removed after Xcode reported a deleted container; no worker data was reset. The repaired two-period and interrupted-paycheck-field UI journeys passed. Main then advanced to `2bf0d3d45123df2eb64c13156b2bd7475ac1820e` with dated rules, additional screen tests and accessible data controls; these are now integrated. The combined quick gate passed 82 domain tests and the combined native app suite passed 164 tests. Edited-work draft resumption, draft-safe period closing and final combined UI/native/Release gates remain pending on the final candidate.
 
 ## Recorded verification checkpoint
 

@@ -196,3 +196,12 @@ struct KeyboardDismissModifier: ViewModifier {
 extension View {
     func linePayKeyboardDismiss() -> some View { modifier(KeyboardDismissModifier()) }
 }
+
+func appliedSnapshot(
+    for component: PayComponent, in calculation: CalculationResult, fallback: AgreementSnapshot
+) -> AgreementSnapshot {
+    guard let reference = component.appliedAgreement else { return fallback }
+    return calculation.agreementSnapshots?.first {
+        $0.id == reference.id && $0.version == reference.version
+    } ?? fallback
+}

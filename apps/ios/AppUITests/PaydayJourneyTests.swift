@@ -136,6 +136,26 @@ final class PaydayJourneyTests: XCTestCase {
             app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
+    func testEditedWorkDraftResumesItsOriginalEntry() {
+        launch(scenario: "work")
+        tap("today.edit-work")
+        let note = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
+        scrollTo(note)
+        note.tap()
+        note.typeText(" unfinished correction")
+        dismissKeyboard()
+        app.terminate()
+        launch(reset: false)
+        tap("today.add-work")
+        let resumed = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
+        scrollTo(resumed)
+        XCTAssertTrue(String(describing: resumed.value ?? "").contains("unfinished correction"))
+        capture("edited-work-draft-resumed")
+        tap("work.save")
+        XCTAssertEqual(app.buttons.matching(identifier: "today.edit-work").count, 1)
+        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.exists)
+    }
+
     func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {
         launch(scenario: "intake")
         tab("Pay")

@@ -66,18 +66,6 @@ struct BackupRestoreView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Keep a copy. Bring your records back.")
-                        .font(.title2.bold())
-                    Text(
-                        "Save a complete snapshot to a private folder in iCloud Drive using Files. "
-                            + "Restore it here on this or another iPhone. No LinePaycheck account."
-                    )
-                    Text("Manual backup, not automatic backup or live sync.")
-                        .font(.footnote)
-                        .foregroundStyle(LinePayColor.textSecondary)
-                }
-
-                Section {
                     Button {
                         showExportConsent = true
                     } label: {
@@ -96,10 +84,13 @@ struct BackupRestoreView: View {
                     }
                     .disabled(session.isBusy)
                     .accessibilityIdentifier("backup.restore")
+                } header: {
+                    Text("Your saved records")
                 } footer: {
                     Text(
-                        "In Files, choose Browse > iCloud Drive. Other Files locations also work. "
-                            + "If iCloud Drive is unavailable, check your Apple Account in Settings."
+                        "Save a manual copy using Files, then restore it on this or another iPhone. "
+                            + "Choose a private iCloud Drive folder or another Files location. "
+                            + "This does not turn on automatic backup or live sync."
                     )
                 }
 
@@ -126,6 +117,7 @@ struct BackupRestoreView: View {
                         .disabled(session.isBusy)
                         .accessibilityIdentifier("backup.confirm-restore")
                         Button("Discard selection", role: .cancel) { reviewedBackup = nil }
+                            .accessibilityIdentifier("backup.discard-selection")
                     }
                 }
 
@@ -165,10 +157,12 @@ struct BackupRestoreView: View {
                 }
                 .font(.footnote)
             }
-            .navigationTitle("Backup & restore")
+            .navigationTitle("Backup")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }.disabled(session.isBusy)
+                        .accessibilityIdentifier("backup.done")
                 }
             }
         }
@@ -199,14 +193,15 @@ struct BackupRestoreView: View {
             case .failure: showMessage("No backup was opened. Retry from Files.", error: true)
             }
         }
-        .confirmationDialog(
-            "Save sensitive pay data?", isPresented: $showExportConsent, titleVisibility: .visible
+        .alert(
+            "Save a backup?", isPresented: $showExportConsent
         ) {
-            Button("Choose backup location") { prepare() }
+            Button("Choose location") { prepare() }
+                .accessibilityIdentifier("backup.choose-location")
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This complete file includes retained original paystubs. It is not password-encrypted. Choose a private iCloud Drive folder or another trusted Files location."
+                "Includes pay details and original paystubs. Not password-encrypted."
             )
         }
         .confirmationDialog(

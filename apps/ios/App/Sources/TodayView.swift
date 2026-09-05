@@ -134,5 +134,8 @@ struct TodayView: View {
         }
         .sheet(item: $repeating) { AddWorkView(model: model, template: $0) }
         .onChange(of: model.activePeriod?.id) { _, _ in undo = nil }
+        .onChange(of: model.currentWorkRevision) { _, revision in
+            if let undo, undo.expectedRevision != revision { self.undo = nil }
+        }
     }
 }

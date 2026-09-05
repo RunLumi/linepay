@@ -46,7 +46,8 @@ extension AppPersistentState {
                 reconciliation: period.reconciliation,
                 archivedEpochSeconds: period.archivedEpochSeconds,
                 auditRevisions: period.auditRevisions?.map { $0.mappingEvidence(transform) },
-                hasConsumedAuditAccess: period.hasConsumedAuditAccess
+                hasConsumedAuditAccess: period.hasConsumedAuditAccess,
+                agreementChanges: period.agreementChanges
             )
         }
         return result
@@ -61,7 +62,7 @@ extension AuditRevision {
             id: id, window: window, agreement: agreement,
             timeZoneIdentifier: timeZoneIdentifier, workEntries: workEntries,
             calculation: calculation, paystub: paystub.mappingEvidence(transform),
-            reconciliation: reconciliation)
+            reconciliation: reconciliation, agreementChanges: agreementChanges)
     }
 }
 

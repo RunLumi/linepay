@@ -21,6 +21,8 @@ onFlowComplete:
 - tapOn:
     id: keyboard.done
 - runFlow: ../helpers/confirm-rules.yaml
+- tapOn:
+    id: pay-profile.confirm-change
 - tapOn: Today
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT

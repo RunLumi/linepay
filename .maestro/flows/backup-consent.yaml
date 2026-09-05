@@ -1,0 +1,37 @@
+appId: com.streamentry.linepay
+name: Backup is reachable and requires consent before choosing a location
+tags: [ios, regression, backup]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: backup.open
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: backup.open
+- scrollUntilVisible:
+    element:
+      id: backup.save
+    timeout: 60000
+    centerElement: true
+- takeScreenshot: backup-actions
+- tapOn:
+    id: backup.save
+- assertVisible:
+    id: backup.choose-location
+- takeScreenshot: backup-sensitive-data-consent
+- tapOn: Cancel
+- scrollUntilVisible:
+    element:
+      id: backup.restore
+    timeout: 60000
+- assertVisible:
+    id: backup.restore
+- tapOn:
+    id: backup.done
+- tapOn: Today
+- assertVisible:
+    id: today.repeat-shift

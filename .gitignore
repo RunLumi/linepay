@@ -7,7 +7,13 @@ DerivedData/
 xcuserdata/
 *.xccheckout
 *.xcscmblueprint
-apps/ios/LinePay.xcodeproj/
+# Generated project, except the dependency lockfile consumed by Xcode.
+# Restore the tracked lockfile with git after deleting the generated project.
+apps/ios/LinePay.xcodeproj/**
+!apps/ios/LinePay.xcodeproj/project.xcworkspace/
+!apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/
+!apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+!apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # SwiftPM
 .build/

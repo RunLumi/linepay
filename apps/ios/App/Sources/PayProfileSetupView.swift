@@ -9,6 +9,8 @@ struct PayProfileSetupView: View {
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
     @State private var showingUnsupported = false
+    @State private var changePreview: ProfileChangePreview?
+    @State private var showingChangeConfirmation = false
     @FocusState private var editingField: String?
 
     init(model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil) {
@@ -81,6 +83,17 @@ struct PayProfileSetupView: View {
             }
         }
         .onChange(of: draft.timeZoneIdentifier) { old, new in rebase(from: old, to: new) }
+        .alert("Review rule change", isPresented: $showingChangeConfirmation) {
+            Button("Confirm rule change") { commitProfile() }
+                .accessibilityIdentifier("pay-profile.confirm-change")
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let preview = changePreview {
+                Text(
+                    "\(selectedScope.title). Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
+                )
+            }
+        }
         .sheet(isPresented: $showingUnsupported) {
             NavigationStack {
                 Form {
@@ -298,9 +311,25 @@ struct PayProfileSetupView: View {
                 Section("Apply this change") {
                     Picker("Scope", selection: $draft.editScope) {
                         Text("Future work periods only").tag(RuleEditScope.futurePeriods)
+                        Text("New rules from a date").tag(RuleEditScope.datedChange)
                         Text("Recalculate this entire current period").tag(
                             RuleEditScope.currentPeriod)
-                    }.pickerStyle(.inline)
+                    }.pickerStyle(.inline).accessibilityIdentifier("pay-profile.change-scope")
+                    if draft.editScope == .datedChange {
+                        DatePicker(
+                            "New rules start",
+                            selection: Binding(
+                                get: {
+                                    draft.changeEffectiveDate ?? model.activePeriod?.window.endDate
+                                        ?? draft.periodStartDate
+                                },
+                                set: { draft.changeEffectiveDate = $0 }), displayedComponents: .date
+                        )
+                        .accessibilityIdentifier("pay-profile.change-date")
+                        Text(
+                            "Starts at midnight in the frozen payroll timezone, after the last recorded work date. Spanning callout guarantees may require review."
+                        ).font(.footnote)
+                    }
                     if let old = model.activePeriod?.agreement {
                         DisclosureGroup("Previous current-period rules") {
                             AgreementSummaryView(agreement: old)
@@ -336,13 +365,32 @@ struct PayProfileSetupView: View {
             if step < 3 {
                 draft.setupStep += 1
             } else {
-                try model.saveProfile(draft)
-                onSaved?()
-                if onSaved == nil { dismiss() }
+                if editing {
+                    changePreview = try model.previewProfileChange(draft, scope: selectedScope)
+                    showingChangeConfirmation = true
+                } else {
+                    commitProfile()
+                }
             }
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
+    private var selectedScope: RuleChangeScope {
+        switch draft.editScope {
+        case .futurePeriods: .futurePeriods
+        case .datedChange: .prospective
+        case .currentPeriod: .correctCurrentPeriod
+        }
+    }
+
+    private func commitProfile() {
+        do {
+            try model.saveProfile(draft, scope: selectedScope)
+            onSaved?()
+            if onSaved == nil { dismiss() }
+        } catch { errorMessage = error.localizedDescription }
+    }
+
     private func number(_ label: String, _ binding: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.subheadline)

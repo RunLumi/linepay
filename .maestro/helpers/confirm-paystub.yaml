@@ -2,9 +2,16 @@ appId: com.streamentry.linepay
 ---
 - tapOn:
     id: paystub.manual
+- scrollUntilVisible:
+    element:
+      id: paystub.audit
 - assertVisible:
     id: paystub.audit
     enabled: false
+- scrollUntilVisible:
+    element:
+      id: paystub.field.periodStart
+    direction: UP
 - tapOn:
     id: paystub.field.periodStart
 - tapOn:

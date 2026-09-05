@@ -174,7 +174,18 @@ final class SubscriptionStore {
             switch try await operations.purchase(productID, products) {
             case .verified:
                 await refreshEntitlements()
-                errorMessage = nil
+                if observesStoreKit && !isPro {
+                    // StoreKit can return the verified purchase before currentEntitlements updates.
+                    for _ in 0..<30 {
+                        guard !Task.isCancelled, !isPro else { break }
+                        try await Task.sleep(for: .milliseconds(100))
+                        await refreshEntitlements()
+                    }
+                }
+                errorMessage =
+                    isPro
+                    ? nil
+                    : "Apple verified the purchase; access is still refreshing. Restore purchases to check again."
                 return isPro
             case .unverified:
                 errorMessage = "The App Store could not verify the purchase."

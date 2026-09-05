@@ -28,6 +28,8 @@ CI uploads the results even on failure when any results exist, for seven days. L
 | DomainModels.swift | DomainContractTests; existing calculator tests | Constructors, invalid values, duplicate IDs, work/break rules, date ordering, Codable value round trips. Synthesized decoding alone does not validate external data. |
 | Money.swift | MoneyTests; ExactMoneyContractTests | Exact arithmetic, currency isolation, rounding modes, zero and signed values. |
 | PayCalculator.swift | Existing schedule/time/break/California fixtures; PayCalculatorInvariantTests | Thresholds, multiple tiers, DST, midnight, effective dates, schedules, premium precedence, guarantees, per diem, empty work, input order, amount/hour conservation. |
+| AgreementTimeline.swift | AgreementTimelineTests; RuleScopeRegressionTests; TimelinePersistenceTests | Date-specific snapshot selection, DST, guarantee ambiguity, provenance and schema migration. |
+| AuditAssessment.swift | AuditScopeRegressionTests; ReportExporterTests | Gross-only versus entered-item scope, money/hour conflicts, stale/currency states and history/PDF parity. |
 | Reconciliation.swift | ReconciliationTests; ExactMoneyContractTests | Sign, match scope, rounding thresholds, currency errors, preserved inputs. |
 | AppModel.swift / PayProfileDraft / PaystubConfirmationDraft | AppModelTests; AppModelContractTests; PeriodAndEvidenceTests | Input grammar, optional rules, profile reconstruction, period lifecycle, work mutations, audit access, field preservation, save-failure atomicity, source corrections, reset and history. |
 | AppState.swift | StorageContractTests; PresentationValueTests; period/backup tests | Saved value semantics, identity, enums, exclusive period bounds, complete snapshot round trip. |
@@ -61,16 +63,15 @@ CI uploads the results even on failure when any results exist, for seven days. L
 
 These fixes do not change the supported agreement policy or silently reprice historical snapshots.
 
-## Explicit known issues: not hidden skips
+## Resolved payroll contracts
 
-`KnownProductGapTests.swift` uses Swift Testing `withKnownIssue` for two contract regressions:
+The former `KnownProductGapTests` expected-failure wrappers are removed. `RuleScopeRegressionTests` verifies dated changes without repricing earlier work, explicit previewed corrections, failure atomicity, and archive/relaunch behavior. `AuditScopeRegressionTests` verifies one scoped verdict across current state, history and PDFs, including offsetting components and confirmed-hour conflicts. `AgreementTimelineTests` owns date-boundary and rule-selection calculations. `TimelinePersistenceTests` covers schema-1 migration and complete timeline/evidence backup round trips.
 
-- **RULE-SCOPE:** a prospective rate edit can invalidate/reprice already logged active-period work. Effective-dated work/rule assignment and an explicit correction-versus-new-rate UI remain required.
-- **AUDIT-SCOPE:** matching gross can mask offsetting component differences. A gross-only result must not imply a fully verified paycheck.
+Do not reintroduce `withKnownIssue` around these contracts to make a build green. See [ADR 0005](adr/0005-effective-dated-rules-and-audit-scope.md) for scope and the explicit cross-boundary callout review condition.
 
-The assertions still execute. The test runner reports known issues separately; if a fix makes the assertion pass, the expected-known-issue wrapper must be removed. A green CI with these issues is **not** an all-correct payroll release. No other failed assertion should be relabeled a known issue just to make a build pass.
+Native CI additionally runs Maestro 2.7.0 (release ZIP digest pinned) on a standard light device, plus the two payroll regressions on a compact dark device at the largest accessibility text size. Results/screenshots are retained separately from unit coverage. `.xcresult` coverage still describes the app-test run; Maestro screenshots do not magically turn its percentage into complete UI coverage. Source: [official release](https://github.com/mobile-dev-inc/Maestro/releases/tag/cli-2.7.0).
 
-Other previously documented product gaps, including auditing an earlier closed period after its paycheck arrives, comparable allowance/gross basis, durable drafts, and OCR provenance UI, are not implemented by this test-focused expansion. Keep them in the product readiness checklist.
+Other product gaps, including auditing an earlier closed period after its paycheck arrives, comparable allowance/gross basis, durable drafts, and OCR provenance UI, remain on the product readiness checklist. Physical-device and signed-commerce checks are not substituted with mocks.
 
 ## Test design rules
 

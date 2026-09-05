@@ -20,7 +20,9 @@ struct ReconciliationReportExporter {
         let pageBounds = CGRect(x: 0, y: 0, width: 612, height: 792)
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)
         let assessment = paystub?.assessment
-        let isCurrent = reconciliation != nil || assessment?.verdict == .notComparable
+        let isCurrent = AuditAssessment.evaluate(
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation
+        ).isCurrent
 
         let data = renderer.pdfData { context in
             var writer = PDFTextWriter(context: context, pageBounds: pageBounds)
@@ -69,6 +71,9 @@ struct ReconciliationReportExporter {
                     )
                 }
                 writer.caption(component.explanation)
+                if let reference = component.appliedAgreement {
+                    writer.caption("Applied rule version: \(reference.version)")
+                }
                 writer.caption("Rounded using the recorded agreement's policy.")
             }
 
@@ -89,26 +94,29 @@ struct ReconciliationReportExporter {
                 }
             }
 
-            writer.section("Rule snapshot")
-            writer.row("Profile", agreement.displayName)
-            writer.row("Agreement ID", agreement.id)
-            writer.row("Rule version", agreement.version)
-            writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
-            if let confirmed = agreement.confirmedEpochSeconds {
-                writer.caption(
-                    "Rules confirmed: \(ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: TimeInterval(confirmed))))"
-                )
-            }
-            if agreement.sources.isEmpty {
-                writer.caption("Rules confirmed by you; no source attached.")
-            }
-            for source in agreement.sources {
-                writer.text("\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
-                if !source.url.isEmpty { writer.caption(source.url) }
-                if let section = source.section { writer.caption(section) }
-            }
-            if let notes = agreement.unsupportedRuleNotes, !notes.isEmpty {
-                writer.text("Incomplete rule coverage: \(notes)")
+            for agreement in calculation.agreementSnapshots ?? [agreement] {
+                writer.section("Rule snapshot")
+                writer.row("Profile", agreement.displayName)
+                writer.row("Agreement ID", agreement.id)
+                writer.row("Rule version", agreement.version)
+                writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
+                if let confirmed = agreement.confirmedEpochSeconds {
+                    writer.caption(
+                        "Rules confirmed: \(ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: TimeInterval(confirmed))))"
+                    )
+                }
+                if agreement.sources.isEmpty {
+                    writer.caption("Rules confirmed by you; no source attached.")
+                }
+                for source in agreement.sources {
+                    writer.text(
+                        "\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
+                    if !source.url.isEmpty { writer.caption(source.url) }
+                    if let section = source.section { writer.caption(section) }
+                }
+                if let notes = agreement.unsupportedRuleNotes, !notes.isEmpty {
+                    writer.text("Incomplete rule coverage: \(notes)")
+                }
             }
             writer.section("Important")
             writer.caption(

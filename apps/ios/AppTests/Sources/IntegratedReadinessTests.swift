@@ -9,6 +9,38 @@ private final class MigrationResourceAnchor: NSObject {}
 @Suite("Integrated payday, migration and cleanup contracts")
 @MainActor
 struct IntegratedReadinessTests {
+    @Test func unfinishedWorkCannotDisappearDuringPeriodClose() throws {
+        let store = MemoryStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        let active = try #require(model.activePeriod)
+        let draft = WorkDraft(
+            periodID: active.id, editingEntryID: model.workEntries.first?.id,
+            start: UnitFixture.start, end: UnitFixture.start.addingTimeInterval(28_800),
+            kind: .regular,
+            note: "Unfinished correction", hasUnpaidBreak: false, breakStart: UnitFixture.start,
+            breakEnd: UnitFixture.start, copiedFrom: nil)
+        try model.saveWorkDraft(draft)
+        #expect(throws: AppModelError.unfinishedWorkDraft) { try model.archiveCurrentPeriod() }
+        #expect(model.activePeriod?.id == active.id && model.history.isEmpty)
+        #expect(AppModel(store: store).workDraft == draft)
+        try model.saveWorkDraft(nil)
+        try model.archiveCurrentPeriod()
+        #expect(model.history.first?.id == active.id)
+    }
+
+    @Test func scheduledRuleChangeRejectsUndoWhoseWorkCouldBeRepriced() throws {
+        let model = AppModel()
+        try UnitFixture.populate(model)
+        let id = try #require(model.workEntries.first?.id)
+        let deleted = model.deleteWork(id: id)
+        let undo = try #require(deleted)
+        var profile = UnitFixture.profile(rate: "60")
+        profile.changeEffectiveDate = UnitFixture.start
+        try model.saveProfile(profile)
+        #expect(throws: AppModelError.staleUndo) { try model.restoreWork(undo) }
+        #expect(model.workEntries.isEmpty)
+    }
     @Test func sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules() throws {
         let formatter = ISO8601DateFormatter()
         let monday = try #require(formatter.date(from: "2026-09-07T07:00:00Z"))

@@ -56,6 +56,7 @@ struct PayLedgerView: View {
                                         model: model, subscriptionStore: subscriptionStore,
                                         periodID: context.id)
                                 }
+                                .accessibilityIdentifier("pay.open-audit")
                             }
                             Button(
                                 context.paystub == nil

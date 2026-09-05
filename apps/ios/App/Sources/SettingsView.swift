@@ -13,8 +13,22 @@ struct SettingsView: View {
                     Section("Pay") {
                         NavigationLink("Pay profile: \(profile.name)") {
                             List {
-                                Section("Future-period rules") {
+                                Section("Latest entered rules") {
                                     AgreementSummaryView(agreement: profile.agreement)
+                                }
+                                if let changes = profile.agreementChanges, !changes.isEmpty {
+                                    Section("Dated rule versions") {
+                                        ForEach(changes, id: \.effectiveDate) { change in
+                                            LabeledContent(
+                                                LinePayFormat.localDate(change.effectiveDate),
+                                                value:
+                                                    "v\(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
+                                            )
+                                        }
+                                        Text(
+                                            "The ledger shows the exact snapshot applied to each work date."
+                                        ).font(.footnote)
+                                    }
                                 }
                                 Section {
                                     Text("Timezone: \(profile.timeZoneIdentifier)")
@@ -203,15 +217,16 @@ struct PrivacyDataView: View {
             }
         }
         .navigationTitle("Privacy and data").navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog(
-            "Delete all local pay data?", isPresented: $deleteAll, titleVisibility: .visible
+        .alert(
+            "Delete all local pay data?", isPresented: $deleteAll
         ) {
             Button("Delete all local data", role: .destructive) {
                 do { try model.resetAllData() } catch { errorMessage = error.localizedDescription }
-            }
+            }.accessibilityIdentifier("settings.confirm-delete-all")
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Removes work, rules, drafts, audit revisions, originals and temporary report copies. Export a backup first to preserve them. Copies in Files/iCloud Drive are not deleted. App Store subscriptions are not cancelled, and previously used free audit access is not reset."
+                "Deletes local work, rules, drafts, audits and originals. Export a backup first. External backups and subscriptions stay; used free-audit access is not reset."
             )
         }
         .confirmationDialog(

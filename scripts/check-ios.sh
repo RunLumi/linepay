@@ -45,6 +45,22 @@ if [[ "$XCODEGEN_VERSION" != "$EXPECTED_XCODEGEN_VERSION" ]]; then
     exit 1
 fi
 
+PACKAGE_LOCK="$IOS_DIR/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+if [[ ! -f "$PACKAGE_LOCK" ]]; then
+    echo "error: restore the tracked Xcode Package.resolved before building" >&2
+    echo "git restore apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved" >&2
+    exit 1
+fi
+cp "$PACKAGE_LOCK" "$DERIVED_DATA/Package.resolved.expected"
+
+check_package_lock() {
+    if ! cmp -s "$DERIVED_DATA/Package.resolved.expected" "$PACKAGE_LOCK"; then
+        echo "error: project generation or dependency resolution changed Package.resolved" >&2
+        echo "Review and commit dependency changes deliberately; never regenerate the lock silently." >&2
+        exit 1
+    fi
+}
+
 RESULTS_DIR="${LINEPAY_RESULTS_DIR:-${LINEPAY_TEST_RESULTS_DIR:-$ROOT/.test-results}}"
 mkdir -p "$RESULTS_DIR"
 RESULTS_DIR="$(cd "$RESULTS_DIR" && pwd)"
@@ -89,6 +105,7 @@ echo "==> Generate Xcode project"
     cd "$IOS_DIR"
     xcodegen generate
 )
+check_package_lock
 
 echo "==> Run app-layer tests on iOS Simulator"
 xcodebuild \
@@ -100,8 +117,12 @@ xcodebuild \
     -resultBundlePath "$RESULTS_DIR/AppTests.xcresult" \
     -enableCodeCoverage YES \
     -parallel-testing-enabled NO \
+    -test-timeouts-enabled YES \
+    -maximum-test-execution-time-allowance 180 \
+    -onlyUsePackageVersionsFromResolvedFile \
     CODE_SIGNING_ALLOWED=NO \
     test
+check_package_lock
 
 xcrun xccov view --report --json "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.json"
 xcrun xccov view --report "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.txt"
@@ -123,8 +144,11 @@ xcodebuild \
     -configuration Release \
     -destination 'generic/platform=iOS Simulator' \
     -derivedDataPath "$DERIVED_DATA" \
+    -onlyUsePackageVersionsFromResolvedFile \
     CODE_SIGNING_ALLOWED=NO \
     build
+check_package_lock
 
+echo "==> Xcode dependency lockfile preserved"
 plutil -extract UILaunchScreen xml1 -o /dev/null \
     "$DERIVED_DATA/Build/Products/Release-iphonesimulator/LinePay.app/Info.plist"

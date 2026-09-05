@@ -13,6 +13,24 @@ struct DatePremiumDraft: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
+struct ProfileChangePreview {
+    let before: Money?
+    let after: Money?
+    let workCount: Int
+}
+
+enum RuleChangeScope: String, CaseIterable, Identifiable, Codable, Sendable {
+    case prospective, correctCurrentPeriod, futurePeriods
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .prospective: "New rules from a date"
+        case .correctCurrentPeriod: "Correct this period's setup"
+        case .futurePeriods: "Future work periods only"
+        }
+    }
+}
+
 struct PayProfileDraft: Codable, Hashable, Sendable {
     var name = "My current pay"
     var hourlyRate = ""
@@ -51,6 +69,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var additionalSources: [RuleSourceDraft] = []
     var sourceRuleKey: PayRuleKey?
     var unsupportedRuleNotes = ""
+    var changeEffectiveDate: Date?
     var editScope: RuleEditScope = .futurePeriods
     var setupStep = 0
     var sourceTitle = ""
@@ -214,7 +233,7 @@ struct PaystubConfirmationDraft: Codable, Hashable, Sendable {
 }
 
 enum RuleEditScope: String, Codable, CaseIterable, Hashable, Sendable {
-    case futurePeriods, currentPeriod
+    case futurePeriods, currentPeriod, datedChange
 }
 
 struct OvertimeTierDraft: Identifiable, Codable, Hashable, Sendable {

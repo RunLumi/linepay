@@ -369,6 +369,7 @@ struct PaystubReviewView: View {
                     Picker("Earnings layout", selection: $draft.lineLayout) {
                         ForEach(PaystubLineLayout.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
+                    .accessibilityIdentifier("paystub.line-layout")
                     Picker("Hours mean", selection: $draft.hoursBasis) {
                         ForEach(PaystubHoursBasis.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
@@ -391,7 +392,7 @@ struct PaystubReviewView: View {
             }
             Section {
                 Button(
-                    draft.grossBasis == .unconfirmed
+                    draft.grossBasis == .unconfirmed || draft.workComplete != true
                         ? "Save as not comparable" : "Audit confirmed facts"
                 ) { confirm() }
                 .buttonStyle(LinePayPrimaryButtonStyle())
@@ -400,7 +401,7 @@ struct PaystubReviewView: View {
                 )
                 .accessibilityIdentifier("paystub.audit")
                 Text(
-                    "Your first comparable audit is free. An unknown gross basis does not consume it."
+                    "Your first comparable audit is free. Unconfirmed work or an unknown gross basis does not consume it."
                 ).font(.footnote)
             }
             if let errorMessage {

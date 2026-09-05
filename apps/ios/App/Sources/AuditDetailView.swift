@@ -43,12 +43,14 @@ struct AuditDetailView: View {
     var body: some View {
         List {
             if let paid = context.paystub, let calculation = context.calculation {
+                let presentation = AuditAssessment.evaluate(
+                    calculation: calculation, paystub: paid, reconciliation: context.reconciliation)
                 Section {
                     Text(
                         LinePayFormat.payPeriod(
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.subheadline)
-                    if context.reconciliation == nil && paid.assessment?.verdict != .notComparable {
+                    if !presentation.isCurrent {
                         AuditStatusView(status: .needsReview)
                         Text(
                             "Work or rules changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
@@ -58,6 +60,11 @@ struct AuditDetailView: View {
                             expected: assessment.expectedGross, paid: assessment.paidGross)
                         LineGapComparison(difference: assessment.difference)
                         AuditStatusView(status: .assessment(assessment))
+                        Text(
+                            assessment.scope == .grossOnly
+                                ? "Gross total only" : "Only confirmed lines compared"
+                        )
+                        .font(.footnote).accessibilityIdentifier("audit.scope")
                         if let difference = assessment.difference, difference.amount != 0 {
                             PayAmount(label: "Expected minus confirmed paid", money: difference)
                         }
@@ -81,7 +88,9 @@ struct AuditDetailView: View {
                         ).accessibilityIdentifier("audit.correct")
                     }
                 }
-                if let assessment = paid.assessment, context.reconciliation != nil {
+                if let assessment = paid.assessment, presentation.isCurrent,
+                    context.reconciliation != nil
+                {
                     Section("Compared lines; positive difference means expected was higher") {
                         ForEach(assessment.comparisons.sorted { $0.differs && !$1.differs }) {
                             comparison in
@@ -198,7 +207,9 @@ struct PaycheckComparisonDetail: View {
                             "\(componentTitle(component)): \(LinePayFormat.money(component.amount))"
                         ) {
                             EvidenceReceiptView(
-                                component: component, agreement: context.agreement,
+                                component: component,
+                                agreement: appliedSnapshot(
+                                    for: component, in: calculation, fallback: context.agreement),
                                 work: context.workEntries)
                         }
                     }

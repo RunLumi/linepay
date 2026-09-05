@@ -1,4 +1,4 @@
-# ADR 0005: Evidence-aware payday records
+# ADR 0006: Evidence-aware payday records
 
 Status: accepted for the iOS 1.0 readiness repair.
 
@@ -24,6 +24,8 @@ One period is current for work entry. Closed periods retain their frozen work, a
 
 Corrections append an audit revision. They do not recalculate a closed period against today's agreement or erase its earlier confirmed audit. Manual correction retains the existing original unless the worker explicitly replaces or removes it.
 
+The dated timeline from ADR 0005 is retained, including complete snapshots and component-level version/rate provenance. Audit revisions also retain the timeline. Premium-only comparisons use each component's recorded rate.
+
 An active-period correction validates work containment and overlaps. Future-rule editing is the default; applying changes to the current period requires an explicit choice and successful validation. Changing the payroll timezone closes the old work period on its original boundary and requires an explicit new start rather than guessing overlapping midnights in different zones.
 
 ### Persist unfinished work and evidence ownership
@@ -35,6 +37,8 @@ Import ownership begins before the first asynchronous file/photo read. One opera
 Field editors persist directly while pushed above the review list; saving cannot depend on an inactive parent view receiving a change callback.
 
 An interrupted original written before a failed state commit is rediscovered by its app-generated UUID filename and queued for cleanup after relaunch. Unknown files and external exported copies are preserved.
+
+An unfinished work draft, including an edit to an existing entry, resumes its original target and must be finished or explicitly discarded before the work period closes.
 
 Undo carries the original period identity and work revision. Rollover or intervening mutations invalidate stale Undo rather than inserting a prior shift into a new period.
 

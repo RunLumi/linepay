@@ -11,8 +11,10 @@ tags: [smoke, ios, regression]
     id: work.save
     enabled: false
 - takeScreenshot: overlap-error
-- tapOn:
-    id: work.cancel
+- scrollUntilVisible:
+    element: Discard this draft
+- tapOn: Discard this draft
+- tapOn: Discard draft
 - scrollUntilVisible:
     element:
       id: today.edit-work

@@ -20,6 +20,9 @@ configFiles:
   Release: Config/Release.xcconfig
 
 packages:
+  ViewInspector:
+    url: https://github.com/nalexn/ViewInspector
+    revision: f110d97d84f7a3a2fe89b897d63c814c538f695e
   LinePayDomain:
     path: Packages/LinePayDomain
 
@@ -113,6 +116,7 @@ targets:
     dependencies:
       - target: LinePay
       - package: LinePayDomain
+      - package: ViewInspector
 
   LinePayUITests:
     type: bundle.ui-testing

@@ -1,0 +1,62 @@
+appId: com.streamentry.linepay
+name: Future rules preserve work and correction requires confirmation
+tags: [ios, regression, payroll-scope]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- copyTextFrom:
+    id: today.expected-wages
+- evalScript: ${output.beforeRateChange = maestro.copiedText}
+- tapOn: Settings
+- tapOn:
+    id: settings.edit-rules
+- tapOn:
+    id: pay-profile.hourly-rate
+- eraseText
+- inputText: "60"
+- tapOn:
+    id: keyboard.done
+- runFlow: ../helpers/confirm-rules.yaml
+- assertVisible: Review rule change
+- takeScreenshot: prospective-rule-preview
+- tapOn:
+    id: pay-profile.confirm-change
+- tapOn: Today
+- copyTextFrom:
+    id: today.expected-wages
+- assertTrue: ${maestro.copiedText == output.beforeRateChange}
+- takeScreenshot: earlier-work-preserved
+- stopApp
+- launchApp
+- copyTextFrom:
+    id: today.expected-wages
+- assertTrue: ${maestro.copiedText == output.beforeRateChange}
+- tapOn: Settings
+- tapOn:
+    id: settings.edit-rules
+- repeat:
+    times: 3
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: pay-profile.continue
+          centerElement: true
+      - tapOn:
+          id: pay-profile.continue
+- scrollUntilVisible:
+    element: Recalculate this entire current period
+- tapOn: Recalculate this entire current period
+- scrollUntilVisible:
+    element:
+      id: pay-profile.save
+- tapOn:
+    id: pay-profile.save
+- assertVisible: Review rule change
+- takeScreenshot: correction-preview
+- tapOn:
+    id: pay-profile.confirm-change
+- tapOn: Today
+- assertVisible:
+    id: today.expected-wages
+    text: '.*480[.,]00.*'
+- takeScreenshot: explicit-correction-applied

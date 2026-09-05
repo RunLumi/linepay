@@ -214,7 +214,9 @@ public struct PaycheckAssessor: Sendable {
                         if facts.lineLayout == .fullRateBuckets {
                             return value + component.amount.amount
                         }
-                        let base = agreement.hourlyRate.multiplied(by: component.hours ?? 0)
+                        let base =
+                            (component.baseRate ?? component.appliedAgreement?.hourlyRate
+                            ?? agreement.hourlyRate).multiplied(by: component.hours ?? 0)
                             .rounded(using: agreement.rounding).amount
                         return value
                             + (field == .regularPay ? base : component.amount.amount - base)

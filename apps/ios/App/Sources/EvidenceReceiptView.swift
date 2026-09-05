@@ -139,7 +139,10 @@ struct PayLedgerRows: View {
             Section(LinePayFormat.localDate(date)) {
                 ForEach(calculation.components.filter { $0.localDate == date }) { component in
                     NavigationLink {
-                        EvidenceReceiptView(component: component, agreement: agreement, work: work)
+                        EvidenceReceiptView(
+                            component: component,
+                            agreement: appliedSnapshot(
+                                for: component, in: calculation, fallback: agreement), work: work)
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(componentTitle(component)).font(.headline)

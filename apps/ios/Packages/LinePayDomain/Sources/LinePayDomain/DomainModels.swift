@@ -325,6 +325,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
     public let explanation: String
     public let ruleKeys: [PayRuleKey]?
     public let baseRate: Money?
+    public let appliedAgreement: AgreementReference?
 
     public init(
         id: UUID = UUID(),
@@ -336,7 +337,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         amount: Money,
         explanation: String,
         ruleKeys: [PayRuleKey]? = nil,
-        baseRate: Money? = nil
+        baseRate: Money? = nil,
+        appliedAgreement: AgreementReference? = nil
     ) {
         self.id = id
         self.category = category
@@ -348,6 +350,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         self.explanation = explanation
         self.ruleKeys = ruleKeys
         self.baseRate = baseRate
+        self.appliedAgreement = appliedAgreement
     }
 }
 
@@ -356,17 +359,20 @@ public struct CalculationResult: Codable, Hashable, Sendable {
     public let agreementVersion: String
     public let components: [PayComponent]
     public let total: Money
+    public let agreementSnapshots: [AgreementSnapshot]?
 
     public init(
         agreementID: String,
         agreementVersion: String,
         components: [PayComponent],
-        total: Money
+        total: Money,
+        agreementSnapshots: [AgreementSnapshot]? = nil
     ) {
         self.agreementID = agreementID
         self.agreementVersion = agreementVersion
         self.components = components
         self.total = total
+        self.agreementSnapshots = agreementSnapshots
     }
 }
 

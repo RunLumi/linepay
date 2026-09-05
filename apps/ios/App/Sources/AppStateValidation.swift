@@ -20,6 +20,16 @@ enum AppStateValidation {
             guard TimeZone(identifier: profile.timeZoneIdentifier) != nil else { throw invalid() }
             try validate(profile.agreement)
         }
+        if let profile = state.profile {
+            try validateTimeline(
+                profile.baselineAgreement ?? profile.agreement, profile.agreementChanges)
+        }
+        if let active = state.activePeriod {
+            try validateTimeline(active.agreement, active.agreementChanges)
+        }
+        for period in state.history {
+            try validateTimeline(period.agreement, period.agreementChanges)
+        }
         for (window, entries, agreement, zone) in contexts {
             try validate(window: window, entries: entries, zone: zone)
             try validate(agreement)
@@ -42,6 +52,7 @@ enum AppStateValidation {
                 window: revision.window, entries: revision.workEntries,
                 zone: revision.timeZoneIdentifier)
             try validate(revision.agreement)
+            try validateTimeline(revision.agreement, revision.agreementChanges)
             try validate(calculation: revision.calculation, agreement: revision.agreement)
             try validate(
                 paystub: revision.paystub, calculation: revision.calculation,
@@ -61,6 +72,14 @@ enum AppStateValidation {
                     currency: period.agreement.hourlyRate.currencyCode)
             }
         }
+    }
+
+    private static func validateTimeline(
+        _ baseline: AgreementSnapshot, _ changes: [AgreementChange]?
+    ) throws {
+        try validate(baseline)
+        _ = try AgreementTimeline(baseline: baseline, changes: changes ?? [])
+        for change in changes ?? [] { try validate(change.agreement) }
     }
 
     static func safeFilename(_ value: String) -> Bool {

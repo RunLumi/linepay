@@ -77,10 +77,14 @@ struct BackupArchive: Sendable {
             }
             let payload = try decoder.decode(Payload.self, from: envelope.payload)
             guard payload.stateJSON.count <= maximumStateBytes else { throw BackupError.tooLarge }
-            let state = try JSONDecoder().decode(AppPersistentState.self, from: payload.stateJSON)
-            guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
+            let decoded = try JSONDecoder().decode(AppPersistentState.self, from: payload.stateJSON)
+            guard
+                decoded.schemaVersion == 1
+                    || decoded.schemaVersion == AppPersistentState.currentSchemaVersion
+            else {
                 throw BackupError.newerVersion
             }
+            let state = try decoded.upgraded()
             guard payload.createdAt.timeIntervalSince1970.isFinite else {
                 throw BackupError.invalidArchive
             }
@@ -140,14 +144,28 @@ struct BackupArchive: Sendable {
         if let zone = state.profile?.timeZoneIdentifier, TimeZone(identifier: zone) == nil {
             throw BackupError.invalidArchive
         }
-        if let profile = state.profile { try validate(agreement: profile.agreement) }
+        if let profile = state.profile {
+            try validate(agreement: profile.agreement)
+            try validateTimeline(
+                baseline: profile.baselineAgreement ?? profile.agreement,
+                changes: profile.agreementChanges ?? [])
+        }
         if let active = state.activePeriod {
-            try validate(agreement: active.agreement)
+            try validateTimeline(baseline: active.agreement, changes: active.agreementChanges ?? [])
             try validate(
                 window: active.window, entries: active.workEntries, zone: active.timeZoneIdentifier)
         }
         for period in state.history {
-            try validate(agreement: period.agreement)
+            try validateTimeline(baseline: period.agreement, changes: period.agreementChanges ?? [])
+            let snapshots = period.calculation.agreementSnapshots ?? [period.agreement]
+            for snapshot in snapshots { try validate(agreement: snapshot) }
+            for component in period.calculation.components {
+                if let reference = component.appliedAgreement {
+                    guard snapshots.contains(where: { AgreementReference($0) == reference }) else {
+                        throw BackupError.invalidArchive
+                    }
+                }
+            }
             guard period.calculation.agreementID == period.agreement.id,
                 period.calculation.agreementVersion == period.agreement.version,
                 !period.calculation.total.amount.isNaN
@@ -155,6 +173,14 @@ struct BackupArchive: Sendable {
             try validate(
                 window: period.window, entries: period.workEntries, zone: period.timeZoneIdentifier)
         }
+    }
+
+    private static func validateTimeline(baseline: AgreementSnapshot, changes: [AgreementChange])
+        throws
+    {
+        _ = try AgreementTimeline(baseline: baseline, changes: changes)
+        try validate(agreement: baseline)
+        for change in changes { try validate(agreement: change.agreement) }
     }
 
     private static func validate(agreement: AgreementSnapshot) throws {

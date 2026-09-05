@@ -1,0 +1,70 @@
+appId: com.streamentry.linepay
+name: Equal gross cannot hide confirmed component differences
+tags: [ios, regression, payroll-scope]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn: Pay
+- tapOn:
+    id: pay.check-paycheck
+- runFlow:
+    file: ../helpers/confirm-paystub.yaml
+    env:
+      GROSS: "467.20"
+- assertVisible: Gross total matches
+- scrollUntilVisible:
+    element:
+      id: audit.correct
+- tapOn:
+    id: audit.correct
+- tapOn:
+    id: paystub.correct-existing
+- scrollUntilVisible:
+    element: Review optional line details
+- tapOn: Review optional line details
+- tapOn:
+    id: paystub.field.regularPay
+- tapOn:
+    id: paystub.value
+- inputText: "417.20"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: paystub.confirm-field
+- scrollUntilVisible:
+    element:
+      id: paystub.field.overtimePay
+- tapOn:
+    id: paystub.field.overtimePay
+- tapOn:
+    id: paystub.value
+- inputText: "50.00"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: paystub.confirm-field
+- scrollUntilVisible:
+    element: How earnings lines are reported
+- tapOn: How earnings lines are reported
+- tapOn:
+    id: paystub.line-layout
+- tapOn: Each line includes its full hourly pay
+- scrollUntilVisible:
+    element:
+      id: paystub.audit
+- tapOn:
+    id: paystub.audit
+- scrollUntilVisible:
+    element:
+      id: audit.status
+    direction: UP
+- assertVisible: Needs review
+- assertVisible:
+    id: audit.scope
+- takeScreenshot: offsetting-components-needs-review
+- stopApp
+- launchApp
+- tapOn: Pay
+- tapOn:
+    id: pay.open-audit
+- assertVisible: Needs review

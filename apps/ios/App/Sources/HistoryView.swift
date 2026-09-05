@@ -187,6 +187,7 @@ extension AuditRevision {
             id: periodID, window: window, agreement: agreement,
             timeZoneIdentifier: timeZoneIdentifier, workEntries: workEntries,
             calculation: calculation,
-            paystub: paystub, reconciliation: reconciliation, revisions: [], isClosed: true)
+            paystub: paystub, reconciliation: reconciliation, revisions: [], isClosed: true,
+            agreementChanges: agreementChanges)
     }
 }

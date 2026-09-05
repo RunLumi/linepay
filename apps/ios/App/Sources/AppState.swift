@@ -7,19 +7,25 @@ struct PayProfile: Identifiable, Codable, Hashable, Sendable {
     let timeZoneIdentifier: String
     let agreement: AgreementSnapshot
     let preferredCadence: PayPeriodCadence
+    let baselineAgreement: AgreementSnapshot?
+    let agreementChanges: [AgreementChange]?
 
     init(
         id: UUID = UUID(),
         name: String,
         timeZoneIdentifier: String,
         agreement: AgreementSnapshot,
-        preferredCadence: PayPeriodCadence = .weekly
+        preferredCadence: PayPeriodCadence = .weekly,
+        baselineAgreement: AgreementSnapshot? = nil,
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.name = name
         self.timeZoneIdentifier = timeZoneIdentifier
         self.agreement = agreement
         self.preferredCadence = preferredCadence
+        self.baselineAgreement = baselineAgreement
+        self.agreementChanges = agreementChanges
     }
 }
 
@@ -181,6 +187,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     var window: PayPeriodWindow
     var agreement: AgreementSnapshot
+    var agreementChanges: [AgreementChange]?
     var timeZoneIdentifier: String?
     var workEntries: [WorkEntry]
     var paystub: ConfirmedPaystub?
@@ -201,7 +208,8 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         auditCompletedEpochSeconds: Int64? = nil,
         hasConsumedAuditAccess: Bool = false,
         auditRevisions: [AuditRevision]? = nil,
-        workRevision: Int? = nil
+        workRevision: Int? = nil,
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.window = window
@@ -214,6 +222,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.hasConsumedAuditAccess = hasConsumedAuditAccess
         self.auditRevisions = auditRevisions
         self.workRevision = workRevision
+        self.agreementChanges = agreementChanges
     }
 }
 
@@ -221,6 +230,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     let window: PayPeriodWindow
     let agreement: AgreementSnapshot
+    let agreementChanges: [AgreementChange]?
     let timeZoneIdentifier: String?
     let workEntries: [WorkEntry]
     let calculation: CalculationResult
@@ -241,7 +251,8 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         reconciliation: ReconciliationResult?,
         archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded()),
         auditRevisions: [AuditRevision]? = nil,
-        hasConsumedAuditAccess: Bool? = nil
+        hasConsumedAuditAccess: Bool? = nil,
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.window = window
@@ -254,6 +265,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.archivedEpochSeconds = archivedEpochSeconds
         self.auditRevisions = auditRevisions
         self.hasConsumedAuditAccess = hasConsumedAuditAccess
+        self.agreementChanges = agreementChanges
     }
 }
 
@@ -271,6 +283,15 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     var pendingEvidenceDeletions: [PaystubEvidence] = []
 
     init() {}
+
+    func upgraded() throws -> AppPersistentState {
+        guard (1...Self.currentSchemaVersion).contains(schemaVersion) else {
+            throw LocalStateStoreError.unsupportedSchema(schemaVersion)
+        }
+        var result = self
+        result.schemaVersion = Self.currentSchemaVersion
+        return result
+    }
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit
@@ -316,6 +337,7 @@ struct AuditRevision: Identifiable, Codable, Hashable, Sendable {
     let calculation: CalculationResult
     let paystub: ConfirmedPaystub
     let reconciliation: ReconciliationResult?
+    var agreementChanges: [AgreementChange]?
 }
 
 struct PayPeriodContext: Identifiable, Hashable, Sendable {
@@ -329,6 +351,7 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     let reconciliation: ReconciliationResult?
     let revisions: [AuditRevision]
     let isClosed: Bool
+    var agreementChanges: [AgreementChange]?
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {
