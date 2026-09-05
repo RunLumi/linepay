@@ -7,11 +7,13 @@ import Testing
 struct PaystubImportOperationTests {
     @Test func loadingLocksOutASecondImportBeforeAnyBytesAreSaved() throws {
         var operation = PaystubImportOperation()
-        let token = try #require(operation.begin())
+        let tokenResult = operation.begin()
+        let token = try #require(tokenResult)
         #expect(operation.isProcessing)
         #expect(operation.phase == .loading)
         #expect(operation.message.contains("Not saved yet"))
-        #expect(operation.begin() == nil)
+        let concurrent = operation.begin()
+        #expect(concurrent == nil)
         operation.didSaveOriginal(token)
         #expect(operation.phase == .readingSavedOriginal)
         #expect(operation.message.contains("Original saved"))
@@ -21,9 +23,11 @@ struct PaystubImportOperationTests {
 
     @Test func cancelledReadCannotClaimOrFinishANewerImport() throws {
         var operation = PaystubImportOperation()
-        let old = try #require(operation.begin())
+        let oldResult = operation.begin()
+        let old = try #require(oldResult)
         operation.cancel()
-        let current = try #require(operation.begin())
+        let currentResult = operation.begin()
+        let current = try #require(currentResult)
         #expect(!operation.owns(old))
         operation.didSaveOriginal(old)
         #expect(operation.phase == .loading)

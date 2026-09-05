@@ -129,7 +129,8 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["recovery.retry"].waitForExistence(timeout: 10))
         capture("46-data-recovery")
         tap("recovery.retry")
-        XCTAssertTrue(app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
+        XCTAssertTrue(
+            app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
     private func launch(
