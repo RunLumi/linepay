@@ -27,4 +27,15 @@ enum LinePayFormat {
     static func localDate(_ date: LocalDate) -> String {
         String(format: "%02d/%02d/%04d", date.month, date.day, date.year)
     }
+
+    static func workDateRange(_ interval: WorkInterval) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.timeZone = TimeZone(identifier: interval.timeZoneIdentifier)
+
+        let start = Date(timeIntervalSince1970: TimeInterval(interval.startEpochSeconds))
+        let end = Date(timeIntervalSince1970: TimeInterval(interval.endEpochSeconds))
+        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
+    }
 }
