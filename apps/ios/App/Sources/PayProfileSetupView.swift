@@ -3,6 +3,8 @@ import SwiftUI
 struct PayProfileSetupView: View {
     let model: AppModel
     let isEditing: Bool
+    let showsIntro: Bool
+    let onSaved: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: PayProfileDraft
@@ -11,10 +13,14 @@ struct PayProfileSetupView: View {
     init(
         model: AppModel,
         draft: PayProfileDraft = PayProfileDraft(),
-        isEditing: Bool = false
+        isEditing: Bool = false,
+        showsIntro: Bool = true,
+        onSaved: (() -> Void)? = nil
     ) {
         self.model = model
         self.isEditing = isEditing
+        self.showsIntro = showsIntro
+        self.onSaved = onSaved
         _draft = State(initialValue: draft)
     }
 
@@ -22,7 +28,7 @@ struct PayProfileSetupView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
-                    if !isEditing {
+                    if showsIntro && !isEditing {
                         intro
                     }
 
@@ -40,7 +46,7 @@ struct PayProfileSetupView: View {
                             .accessibilityLabel("Error: \(errorMessage)")
                     }
 
-                    Button(isEditing ? "Save pay rules" : "Use these pay rules") {
+                    Button(isEditing ? "Save pay rules" : "Save my pay rules") {
                         save()
                     }
                     .buttonStyle(.borderedProminent)
@@ -54,7 +60,7 @@ struct PayProfileSetupView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
-            .navigationTitle(isEditing ? "Pay rules" : "Set up LinePay")
+            .navigationTitle(isEditing ? "Pay rules" : "Set up your pay")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isEditing {
@@ -214,6 +220,8 @@ struct PayProfileSetupView: View {
             errorMessage = nil
             if isEditing {
                 dismiss()
+            } else {
+                onSaved?()
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -244,7 +252,7 @@ struct PayProfileSetupView: View {
     }
 }
 
-private struct LineGapMark: View {
+struct LineGapMark: View {
     var body: some View {
         HStack(spacing: 7) {
             Rectangle()
