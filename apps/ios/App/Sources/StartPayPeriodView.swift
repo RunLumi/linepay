@@ -4,10 +4,20 @@ struct StartPayPeriodView: View {
     let model: AppModel
 
     @Environment(\.dismiss) private var dismiss
-    @State private var startDate = Date()
-    @State private var endDate =
-        Calendar.current.date(byAdding: .day, value: 6, to: Date()) ?? Date()
+    @State private var startDate: Date
+    @State private var endDate: Date
     @State private var errorMessage: String?
+
+    init(model: AppModel) {
+        self.model = model
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current
+        let start = calendar.startOfDay(for: Date())
+        _startDate = State(initialValue: start)
+        _endDate = State(
+            initialValue: calendar.date(byAdding: .day, value: 6, to: start) ?? start
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -45,7 +55,12 @@ struct StartPayPeriodView: View {
                 }
             }
         }
+        .environment(\.timeZone, payrollTimeZone)
         .tint(LinePayColor.brandPrimary)
+    }
+
+    private var payrollTimeZone: TimeZone {
+        TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current
     }
 
     private func start() {
