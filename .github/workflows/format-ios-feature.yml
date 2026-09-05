@@ -1,0 +1,37 @@
+name: Format iOS feature branch
+
+on:
+  push:
+    branches:
+      - feat/ios-1.0-e2e
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: macos-26
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: feat/ios-1.0-e2e
+          fetch-depth: 0
+
+      - name: Select Xcode 26.6
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
+      - name: Format Swift
+        run: swift format --in-place --recursive apps/ios
+
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/ios
+          git commit -m "style: format iOS 1.0 implementation"
+          git push origin HEAD:feat/ios-1.0-e2e
