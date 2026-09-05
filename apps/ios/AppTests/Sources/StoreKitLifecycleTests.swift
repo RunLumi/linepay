@@ -53,7 +53,8 @@ struct StoreKitLifecycleTests {
             identifier: SubscriptionStore.yearlyProductID)
         let store = SubscriptionStore(testCommerceEnabled: true)
         await expectAccess(true, store: store)
-        try session.refundTransaction(identifier: transaction.identifier)
+        let identifier = try #require(Int(exactly: transaction.id))
+        try session.refundTransaction(identifier: identifier)
         await expectAccess(false, store: store)
     }
     @Test func billingGraceKeepsAccessThenExpires() async throws {
