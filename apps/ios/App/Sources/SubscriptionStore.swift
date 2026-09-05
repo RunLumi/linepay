@@ -62,7 +62,7 @@ final class SubscriptionStore {
             await refreshEntitlements()
         } catch {
             products = []
-            errorMessage = "Pro isn't available right now. You can keep using LinePay Free."
+            errorMessage = "Pro isn't available right now. You can keep using LinePaycheck Free."
             LinePayLog.storeKit.error("Failed to load StoreKit products")
         }
     }
@@ -119,7 +119,7 @@ final class SubscriptionStore {
         do {
             try await AppStore.sync()
             await refreshEntitlements()
-            errorMessage = isPro ? nil : "No active LinePay Pro purchase was found."
+            errorMessage = isPro ? nil : "No active LinePaycheck Pro purchase was found."
         } catch {
             errorMessage = "Purchases couldn't be restored right now."
             LinePayLog.storeKit.error("StoreKit restore failed")
