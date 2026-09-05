@@ -101,7 +101,7 @@ struct TodayView: View {
                     .font(.headline)
                     .foregroundStyle(LinePayColor.textPrimary)
 
-                Text(workDateRange(interval))
+                Text(LinePayFormat.workDateRange(interval))
                     .font(.callout)
                     .foregroundStyle(LinePayColor.textSecondary)
 
@@ -136,13 +136,5 @@ struct TodayView: View {
         case .callout: "Callout"
         case .other: "Other work"
         }
-    }
-
-    private func workDateRange(_ interval: WorkInterval) -> String {
-        let start = Date(timeIntervalSince1970: TimeInterval(interval.startEpochSeconds))
-        let end = Date(timeIntervalSince1970: TimeInterval(interval.endEpochSeconds))
-        return start.formatted(date: .abbreviated, time: .shortened)
-            + " – "
-            + end.formatted(date: .abbreviated, time: .shortened)
     }
 }
