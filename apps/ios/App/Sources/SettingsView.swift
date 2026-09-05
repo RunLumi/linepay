@@ -7,7 +7,6 @@ struct SettingsView: View {
     @State private var showingRuleEditor = false
     @State private var showingPaywall = false
     @State private var showingDeleteAllConfirmation = false
-    @State private var backupURL: URL?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -65,23 +64,14 @@ struct SettingsView: View {
                     Text("Privacy")
                 } footer: {
                     Text(
-                        "Network access is used for App Store purchase state. Your wage, work, "
-                            + "agreement, and paystub data remain local unless you explicitly share/export them."
+                        "App Store purchases and Files providers may use the network. Pay data stays "
+                            + "local by default. Choosing iCloud backup or another export location "
+                            + "sends a copy to that provider, not to a LinePaycheck server."
                     )
                 }
 
                 Section("Your data") {
-                    if let backupURL {
-                        ShareLink(item: backupURL) {
-                            Label("Share LinePaycheck backup", systemImage: "square.and.arrow.up")
-                        }
-                    } else {
-                        Button {
-                            prepareBackup()
-                        } label: {
-                            Label("Prepare local backup", systemImage: "archivebox")
-                        }
-                    }
+                    BackupRestoreEntryPoint()
 
                     if let currentEvidence = model.currentPaystub?.evidence {
                         Button(role: .destructive) {
@@ -134,7 +124,7 @@ struct SettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This permanently deletes pay rules, work history, audit results, and stored paystub evidence from this iPhone. App Store purchases are not cancelled."
+                "This permanently deletes pay rules, work history, audit results, and stored paystub evidence from this iPhone. App Store purchases are not cancelled. Backups in iCloud Drive or Files are not deleted."
             )
         }
     }
@@ -200,15 +190,6 @@ struct SettingsView: View {
         }
     }
 
-    private func prepareBackup() {
-        do {
-            backupURL = try model.exportBackupURL()
-            errorMessage = nil
-        } catch {
-            errorMessage = "LinePaycheck could not prepare the backup."
-        }
-    }
-
     private func removeCurrentEvidence(_ evidence: PaystubEvidence) {
         do {
             _ = evidence
@@ -223,7 +204,6 @@ struct SettingsView: View {
         do {
             try model.resetAllData()
             errorMessage = nil
-            backupURL = nil
         } catch {
             errorMessage = error.localizedDescription
         }
