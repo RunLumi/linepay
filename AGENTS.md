@@ -10,22 +10,120 @@ Build the smallest trustworthy product that helps a worker answer:
 
 LinePay is a **calculation and reconciliation tool**, not payroll software, legal advice, a union authority, or an autonomous contract interpreter.
 
+## Insanely great product standard
+
+**The goal is not merely to ship LinePay. The goal is to make LinePay insanely great.**
+
+“Insanely great” does not mean more features, more animation, more abstraction, or more code. It means the few things LinePay chooses to do feel unusually clear, trustworthy, fast, useful, and well-crafted.
+
+A worker should be able to open LinePay and quickly feel:
+
+- **this was built for my kind of work;**
+- **this understands that my hours and pay rules can get complicated;**
+- **I can trust where this number came from;**
+- **I can use this without reading a manual;**
+- **my private pay information is being treated with respect;**
+- **this feels like a serious precision tool, not generic app-store software.**
+
+The standard is not “technically correct and shipped.” The standard is **correct, obvious, calm, fast, distinctive, and satisfying**.
+
+### Craft where it matters
+
+Spend disproportionate care on the moments that define the product:
+
+1. first launch and pay-rule setup;
+2. recording or correcting work after a long shift;
+3. seeing expected pay update;
+4. scanning and confirming a paystub;
+5. understanding a possible discrepancy;
+6. tracing a number back to the exact work fact and rule;
+7. recovering safely from mistakes, edits, migrations, or interrupted flows.
+
+These moments deserve polish beyond the minimum viable implementation because they determine trust and word of mouth.
+
+### Delight without decoration
+
+LinePay should feel great because it removes uncertainty and friction, not because it is covered in visual effects.
+
+Prefer delight from:
+
+- an answer appearing exactly when needed;
+- excellent defaults;
+- fewer decisions;
+- instant feedback;
+- precise typography and spacing;
+- clear money and hour presentation;
+- excellent empty/error states;
+- subtle, meaningful haptics and motion;
+- fast correction of mistakes;
+- explanations that make a complicated paycheck suddenly understandable.
+
+Avoid manufactured delight:
+
+- gratuitous gradients or glass;
+- decorative dashboards;
+- fake AI personality;
+- sparkle icons and “AI magic” copy;
+- excessive cards, pills, badges, charts, or celebration effects;
+- animation that delays the worker;
+- novelty that weakens clarity or trust.
+
+Follow `DESIGN.md` for the visual/product design constitution.
+
+### Ruthless quality bar
+
+Before accepting user-facing work, ask:
+
+> If a great independent iOS team obsessed over this exact flow for another week, what obvious rough edge would they remove?
+
+Fix the highest-value rough edge now when it is cheap and materially improves trust, comprehension, speed, or feel.
+
+Do not use this question to justify endless polishing of low-value surfaces. Quality work must still obey the Pareto operating principle below.
+
+### Product taste is part of engineering
+
+Agents are expected to exercise judgment, not merely satisfy literal acceptance criteria.
+
+If an implementation is technically compliant but feels confusing, generic, slow, fragile, visually noisy, or inconsistent with the product identity, improve it before calling it done.
+
+When two implementations are functionally equivalent, prefer the one that:
+
+- removes a user decision;
+- makes the correct action more obvious;
+- exposes less implementation detail;
+- reduces latency or perceived latency;
+- improves explainability;
+- creates a more coherent visual hierarchy;
+- makes an error easier to recover from;
+- feels more specific to linework and paycheck auditing;
+- leaves less code and fewer states behind.
+
+### Distinctive, not generic
+
+LinePay must not drift into generic fintech, time-tracker, SaaS-dashboard, or AI-app aesthetics and behavior.
+
+Its product identity is **precision industrial minimalism**: a calm, durable field instrument for expensive hours.
+
+If the logo and product name were blurred, a key LinePay screen should still not look interchangeable with a crypto wallet, habit tracker, generic payroll app, or AI assistant.
+
+Distinctiveness should come from the product model, information hierarchy, Pay Ledger, evidence trail, language, and interaction quality, not decoration.
+
 ## Pareto operating principle
 
 **Every agent decision should aim for Pareto efficiency.**
 
-For LinePay, this means choosing solutions that deliver the most user value, correctness, trust, and learning with the least unnecessary complexity, code, dependencies, operational burden, and irreversible commitment.
+For LinePay, this means choosing solutions that deliver the most user value, correctness, trust, craft, and learning with the least unnecessary complexity, code, dependencies, operational burden, and irreversible commitment.
 
 A decision is **Pareto-dominated** when another feasible option is at least as good on all important dimensions and meaningfully better on one or more. Do not choose a dominated option.
 
-The goal is not to minimize engineering effort at any cost. Correctness, trust, privacy, auditability, and preservation of user data are hard constraints. Never trade them away merely to ship faster or reduce code.
+The goal is not to minimize engineering effort at any cost. Correctness, trust, privacy, auditability, preservation of user data, and the core product-quality bar are hard constraints. Never trade them away merely to ship faster or reduce code.
 
 ### Decision objectives, in priority order
 
 When options compete, evaluate them against these objectives:
 
 1. **Correctness and trust** — especially money, time, rule interpretation, history, and reconciliation.
-2. **User value** — does this materially help a worker understand or protect their pay?
+2. **User value and product quality** — does this materially help a worker understand or protect their pay, and does the experience feel excellent?
 3. **Privacy and safety** — minimize sensitive-data exposure and unnecessary data collection.
 4. **Speed of learning** — prefer choices that validate important assumptions sooner with real users.
 5. **Simplicity and maintainability** — fewer concepts, layers, dependencies, states, and failure modes.
@@ -41,7 +139,7 @@ For any material product, architecture, UX, dependency, schema, pricing, or impl
 
 1. Define the actual user outcome and the hard constraints.
 2. Identify the smallest credible set of alternatives. Usually 2–4 is enough.
-3. Compare the alternatives on value, correctness, privacy, learning speed, complexity, cost, and reversibility.
+3. Compare the alternatives on value, correctness, product quality, privacy, learning speed, complexity, cost, and reversibility.
 4. Eliminate clearly Pareto-dominated alternatives.
 5. Among remaining options, prefer the simplest reversible option that preserves the hard constraints and captures most of the available value.
 6. Spend additional complexity only when it buys disproportionate value, materially reduces risk, or creates a compounding asset.
@@ -54,7 +152,9 @@ For trivial decisions, apply this mentally and move on. Do not create process th
 
 Default to the smallest implementation that captures roughly 80% of the validated user value with a fraction of the complexity.
 
-This does **not** mean shipping knowingly incorrect payroll math, unsafe migrations, inaccessible critical flows, or weak privacy. Those are hard constraints, not the expendable 20%.
+Then spend focused craft on the **critical 20% of surfaces and interactions that create most of the trust, comprehension, retention, and affection for the product**.
+
+This does **not** mean shipping knowingly incorrect payroll math, unsafe migrations, inaccessible critical flows, weak privacy, or visibly rough core interactions. Those are hard constraints, not the expendable 20%.
 
 Good examples:
 
@@ -64,7 +164,8 @@ Good examples:
 - deterministic rules before AI interpretation;
 - canonical fixtures before shared runtime code;
 - a focused adapter before a generic framework;
-- a manual confirmation step before building uncertain automation.
+- a manual confirmation step before building uncertain automation;
+- one beautifully resolved Pay Ledger before five mediocre analytics screens.
 
 ### Complexity budget
 
@@ -72,7 +173,7 @@ Treat every new abstraction, dependency, service, state, screen, setting, databa
 
 Before adding one, ask:
 
-> What concrete user value, risk reduction, or learning does this complexity purchase?
+> What concrete user value, risk reduction, learning, or product-quality improvement does this complexity purchase?
 
 If the answer is vague, speculative, or merely “we may need it later,” do not add it yet.
 
@@ -106,7 +207,8 @@ Examples include:
 - reusable verified agreement data;
 - source/provenance conventions;
 - accessibility foundations;
-- privacy-preserving architecture.
+- privacy-preserving architecture;
+- durable design tokens and interaction patterns that improve every critical flow.
 
 Agents should distinguish **compounding foundations** from **speculative infrastructure**. Invest in the former. Resist the latter.
 
@@ -253,6 +355,8 @@ Avoid storing only derived totals. Store sufficient raw facts to recalculate and
 
 ## UI quality baseline
 
+User-facing work must follow `DESIGN.md` and the insanely great product standard above.
+
 - Dynamic Type from day one.
 - VoiceOver labels/hints for non-obvious controls.
 - Do not encode meaning using color alone.
@@ -260,6 +364,12 @@ Avoid storing only derived totals. Store sufficient raw facts to recalculate and
 - Respect locale for display, but keep calculation primitives locale-independent.
 - Prefer system components and navigation before custom UI infrastructure.
 - Avoid a design-system framework until repetition justifies it.
+- Optimize critical flows for one-handed, tired, distracted use.
+- Prefer immediate feedback and direct manipulation over modal explanation.
+- Make important money values scannable at a glance.
+- Keep visual hierarchy strong enough that the worker knows what matters before reading every label.
+- Every empty, loading, error, uncertain-OCR, and discrepancy state must be intentionally designed.
+- Never ship placeholder-feeling copy or generic “AI app” visual patterns into a core flow.
 
 ## Testing policy
 
@@ -332,8 +442,11 @@ Answer these questions in the issue/PR or working notes:
 4. What is the cheapest test that proves correctness?
 5. Does it introduce persistence, privacy, migration, or rule-version consequences?
 6. What simpler alternative captures most of the value?
-7. Is the proposed solution Pareto-dominated by a cheaper, simpler, safer, or more reversible option?
+7. Is the proposed solution Pareto-dominated by a cheaper, simpler, safer, more delightful, or more reversible option?
 8. What complexity are we adding, and what concrete value or risk reduction buys it?
+9. What is the one moment in this feature that users will judge most strongly?
+10. What would make that moment feel unusually clear, fast, trustworthy, and specific to LinePay?
+11. Are we adding feature surface because users need it, or because implementation makes it easy to add?
 
 ## Definition of done
 
@@ -348,7 +461,12 @@ A change is done only when:
 - user-visible errors are actionable;
 - documentation/ADR is updated when the architecture changed;
 - no known materially simpler Pareto-superior implementation remains unexplored;
-- unnecessary complexity introduced by the change has been removed.
+- unnecessary complexity introduced by the change has been removed;
+- critical user-facing states look intentional rather than default-generated;
+- the main interaction is understandable without explanatory prose where possible;
+- the flow feels fast and responsive on a real device;
+- visual/copy details comply with `DESIGN.md`;
+- the result clears the question: **does this make LinePay meaningfully closer to insanely great?**
 
 ## Anti-goals
 
@@ -367,4 +485,4 @@ Do not build these before evidence requires them:
 - remote feature-flag platform
 - custom analytics warehouse
 
-LinePay should remain a small, trustworthy machine for expensive hours.
+LinePay should remain a small, trustworthy, insanely great machine for expensive hours.
