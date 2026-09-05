@@ -36,3 +36,8 @@ local.properties
 # Generated/exported sensitive artifacts
 *.paystub.pdf
 *.paystub.png
+
+# Test and coverage outputs
+__pycache__/
+*.py[cod]
+.test-results/

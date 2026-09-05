@@ -3,15 +3,6 @@ import PDFKit
 import UIKit
 import Vision
 
-struct OCRPaystubResult: Sendable {
-    let recognizedText: String
-    let grossPay: String?
-    let regularPay: String?
-    let overtimePay: String?
-    let doubleTimePay: String?
-    let perDiemPay: String?
-}
-
 enum PaystubOCRError: LocalizedError {
     case unsupportedDocument
     case noReadablePages
@@ -42,17 +33,7 @@ struct PaystubOCRService: Sendable {
                 throw PaystubOCRError.noReadablePages
             }
 
-            return OCRPaystubResult(
-                recognizedText: lines.joined(separator: "\n"),
-                grossPay: Self.amount(in: lines, labels: ["gross pay", "gross earnings", "gross"]),
-                regularPay: Self.amount(in: lines, labels: ["regular pay", "regular"]),
-                overtimePay: Self.amount(in: lines, labels: ["overtime", "ot pay"]),
-                doubleTimePay: Self.amount(
-                    in: lines,
-                    labels: ["double time", "double-time", "dt pay"]
-                ),
-                perDiemPay: Self.amount(in: lines, labels: ["per diem", "per-diem"])
-            )
+            return PaystubTextParser.parse(lines: lines)
         }.value
     }
 
@@ -103,28 +84,4 @@ struct PaystubOCRService: Sendable {
         }
     }
 
-    private static func amount(in lines: [String], labels: [String]) -> String? {
-        for line in lines {
-            let lowercased = line.lowercased()
-            guard labels.contains(where: { lowercased.contains($0) }) else { continue }
-            if let value = lastCurrencyLikeNumber(in: line) {
-                return value
-            }
-        }
-        return nil
-    }
-
-    private static func lastCurrencyLikeNumber(in line: String) -> String? {
-        let pattern = #"\$?([0-9]{1,3}(?:,[0-9]{3})*|[0-9]+)\.([0-9]{2})"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
-        let range = NSRange(line.startIndex..<line.endIndex, in: line)
-        guard let match = regex.matches(in: line, range: range).last,
-            let matchRange = Range(match.range, in: line)
-        else {
-            return nil
-        }
-        return line[matchRange]
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
-    }
 }

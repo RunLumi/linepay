@@ -38,6 +38,14 @@ if [[ "$XCODEGEN_VERSION" != "$EXPECTED_XCODEGEN_VERSION" ]]; then
     exit 1
 fi
 
+RESULTS_DIR="${LINEPAY_TEST_RESULTS_DIR:-$ROOT/.test-results}"
+mkdir -p "$RESULTS_DIR"
+RESULTS_DIR="$(cd "$RESULTS_DIR" && pwd)"
+if [[ -e "$RESULTS_DIR/AppTests.xcresult" ]]; then
+    echo "error: $RESULTS_DIR/AppTests.xcresult already exists; use a fresh results directory" >&2
+    exit 1
+fi
+
 echo "==> Toolchain"
 xcodebuild -version
 swift --version
@@ -56,8 +64,18 @@ plutil -lint "$PRIVACY_MANIFEST"
 echo "==> Test pure domain package"
 (
     cd "$DOMAIN_DIR"
-    swift test --parallel
+    swift test --parallel --enable-code-coverage
 )
+
+DOMAIN_COVERAGE="$(find "$DOMAIN_DIR/.build" -path '*/codecov/LinePayDomain.json' -print -quit)"
+if [[ -z "$DOMAIN_COVERAGE" ]]; then
+    echo "error: SwiftPM did not produce the requested coverage report" >&2
+    exit 1
+fi
+cp "$DOMAIN_COVERAGE" "$RESULTS_DIR/domain-coverage.json"
+
+echo "==> Test repository scripts"
+python3 -m unittest discover -s "$ROOT/scripts/tests" -v
 
 echo "==> Generate Xcode project"
 (
@@ -72,8 +90,13 @@ xcodebuild \
     -configuration Debug \
     -destination "$SIMULATOR_DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
+    -resultBundlePath "$RESULTS_DIR/AppTests.xcresult" \
+    -enableCodeCoverage YES \
     CODE_SIGNING_ALLOWED=NO \
     test
+
+xcrun xccov view --report --json "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.json"
+xcrun xccov view --report "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.txt"
 
 BUILT_PRIVACY_MANIFEST="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/LinePay.app/PrivacyInfo.xcprivacy"
 if [[ ! -f "$BUILT_PRIVACY_MANIFEST" ]]; then
