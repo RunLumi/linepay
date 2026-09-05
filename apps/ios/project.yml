@@ -78,6 +78,7 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: LinePaycheck
         INFOPLIST_KEY_CFBundleName: LinePaycheck
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device for a paycheck audit."
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"
     dependencies:

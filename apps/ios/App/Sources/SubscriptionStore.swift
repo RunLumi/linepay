@@ -8,9 +8,15 @@ final class SubscriptionStore {
     static let monthlyProductID = "linepay.pro.monthly"
     static let yearlyProductID = "linepay.pro.yearly"
 
-    /// Keep purchases off until the recurring paycheck-audit value promised by Pro is shipping.
-    /// The onboarding paywall can still render as a product preview without trapping Free users.
-    static let commerceEnabled = false
+    /// Release builds use real StoreKit. Debug builds stay frictionless unless explicitly enabled
+    /// with LINEPAY_COMMERCE_ENABLED=1 so previews/tests never depend on App Store state.
+    static var commerceEnabled: Bool {
+        #if DEBUG
+            ProcessInfo.processInfo.environment["LINEPAY_COMMERCE_ENABLED"] == "1"
+        #else
+            true
+        #endif
+    }
 
     private static let productIDs = [monthlyProductID, yearlyProductID]
 
@@ -26,13 +32,12 @@ final class SubscriptionStore {
         transactionUpdatesTask?.cancel()
     }
 
-    /// Starts StoreKit observation when the app is ready for it.
-    ///
-    /// Keeping asynchronous work out of `init` makes object construction deterministic for previews and
-    /// tests, and gives the SwiftUI lifecycle explicit ownership of long-lived tasks.
+    var hasAuditAccess: Bool {
+        isPro || !Self.commerceEnabled
+    }
+
     func start() async {
         guard Self.commerceEnabled else { return }
-
         startTransactionUpdatesIfNeeded()
         await load()
     }
@@ -68,7 +73,7 @@ final class SubscriptionStore {
 
     func purchase(_ product: Product) async -> Bool {
         guard Self.commerceEnabled else {
-            errorMessage = "Pro purchasing isn't enabled in this build yet."
+            errorMessage = "Purchases are disabled in this debug build."
             return false
         }
 
@@ -107,7 +112,7 @@ final class SubscriptionStore {
 
     func restorePurchases() async {
         guard Self.commerceEnabled else {
-            errorMessage = "Pro purchasing isn't enabled in this build yet."
+            errorMessage = "Purchases are disabled in this debug build."
             return
         }
 

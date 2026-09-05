@@ -129,6 +129,8 @@ public struct PayCalculator: Sendable {
         }
     }
 
+    /// Splits actual clock time at local-day, schedule, and unpaid-break boundaries.
+    /// Break spans are omitted entirely, so downstream OT/premium logic operates only on paid worked time.
     private func split(
         interval: WorkInterval,
         agreement: AgreementSnapshot
@@ -175,9 +177,26 @@ public struct PayCalculator: Sendable {
                 }
             }
 
+            for workBreak in interval.unpaidBreaks {
+                if workBreak.startEpochSeconds > cursor,
+                    workBreak.startEpochSeconds < chunkEnd
+                {
+                    boundaries.insert(workBreak.startEpochSeconds)
+                }
+                if workBreak.endEpochSeconds > cursor,
+                    workBreak.endEpochSeconds < chunkEnd
+                {
+                    boundaries.insert(workBreak.endEpochSeconds)
+                }
+            }
+
             let sortedBoundaries = boundaries.sorted()
             for pair in zip(sortedBoundaries, sortedBoundaries.dropFirst()) {
                 let midpoint = pair.0 + (pair.1 - pair.0) / 2
+                if isInsideUnpaidBreak(epochSeconds: midpoint, interval: interval) {
+                    continue
+                }
+
                 result.append(
                     RawSegment(
                         workIntervalID: interval.id,
@@ -201,6 +220,15 @@ public struct PayCalculator: Sendable {
         }
 
         return result
+    }
+
+    private func isInsideUnpaidBreak(
+        epochSeconds: Int64,
+        interval: WorkInterval
+    ) -> Bool {
+        interval.unpaidBreaks.contains {
+            epochSeconds >= $0.startEpochSeconds && epochSeconds < $0.endEpochSeconds
+        }
     }
 
     private func applicableBaseMultiplier(

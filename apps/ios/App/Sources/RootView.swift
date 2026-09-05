@@ -4,19 +4,17 @@ struct RootView: View {
     let model: AppModel
     let subscriptionStore: SubscriptionStore
 
-    @State private var hasCompletedOnboarding = false
-
     var body: some View {
         Group {
-            if hasCompletedOnboarding {
-                MainTabView(model: model)
-            } else {
-                OnboardingFlowView(
+            if model.persistenceIssue != nil {
+                DataRecoveryView(model: model)
+            } else if model.isOnboarded {
+                MainTabView(
                     model: model,
-                    store: subscriptionStore
-                ) {
-                    hasCompletedOnboarding = true
-                }
+                    subscriptionStore: subscriptionStore
+                )
+            } else {
+                OnboardingFlowView(model: model) {}
             }
         }
         .background(LinePayColor.canvas.ignoresSafeArea())

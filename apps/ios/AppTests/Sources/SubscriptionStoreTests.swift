@@ -1,29 +1,34 @@
 import Testing
+
 @testable import LinePay
 
-@Suite("SubscriptionStore lifecycle")
+@Suite("Subscription store")
 @MainActor
 struct SubscriptionStoreTests {
-    @Test("Disabled commerce starts without network or entitlement state")
-    func disabledCommerceStartIsNoOp() async {
-        #expect(SubscriptionStore.commerceEnabled == false)
-
-        let store = SubscriptionStore()
-        await store.start()
-
-        #expect(store.products.isEmpty)
-        #expect(store.isPro == false)
-        #expect(store.isLoading == false)
-        #expect(store.errorMessage == nil)
+    @Test("Commerce remains disabled in ordinary debug tests")
+    func commerceIsDisabledInDebugTests() {
+        #if DEBUG
+            #expect(!SubscriptionStore.commerceEnabled)
+        #endif
     }
 
-    @Test("Disabled commerce restore remains explicit")
-    func disabledCommerceRestoreIsExplicit() async {
+    @Test("Debug builds stay audit-able without App Store state")
+    func debugAuditAccessDoesNotDependOnStoreKit() {
         let store = SubscriptionStore()
+        #if DEBUG
+            #expect(store.hasAuditAccess)
+        #endif
+    }
 
-        await store.restorePurchases()
+    @Test("Disabled commerce does not load products")
+    func disabledCommerceLoadIsDeterministic() async {
+        let store = SubscriptionStore()
+        await store.load()
 
-        #expect(store.isPro == false)
-        #expect(store.errorMessage != nil)
+        if !SubscriptionStore.commerceEnabled {
+            #expect(store.products.isEmpty)
+            #expect(!store.isPro)
+            #expect(store.errorMessage == nil)
+        }
     }
 }
