@@ -1,0 +1,225 @@
+name: Finalize iOS timezone integrity
+
+on:
+  push:
+    branches:
+      - feat/ios-1.0-e2e
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feat/ios-1.0-e2e
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Patch timezone and pay-period invariants
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected 1 match, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          def all_matches(path, old, new, expected):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path}: expected {expected} matches, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new))
+
+          # Snapshot payroll timezone with active and archived pay periods.
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {\n    let id: UUID\n    var window: PayPeriodWindow\n    var agreement: AgreementSnapshot\n    var workEntries: [WorkEntry]''',
+              '''struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {\n    let id: UUID\n    var window: PayPeriodWindow\n    var agreement: AgreementSnapshot\n    var timeZoneIdentifier: String?\n    var workEntries: [WorkEntry]'''
+          )
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''        window: PayPeriodWindow,\n        agreement: AgreementSnapshot,\n        workEntries: [WorkEntry] = [],''',
+              '''        window: PayPeriodWindow,\n        agreement: AgreementSnapshot,\n        timeZoneIdentifier: String? = nil,\n        workEntries: [WorkEntry] = [],'''
+          )
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''        self.window = window\n        self.agreement = agreement\n        self.workEntries = workEntries''',
+              '''        self.window = window\n        self.agreement = agreement\n        self.timeZoneIdentifier = timeZoneIdentifier\n        self.workEntries = workEntries'''
+          )
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {\n    let id: UUID\n    let window: PayPeriodWindow\n    let agreement: AgreementSnapshot\n    let workEntries: [WorkEntry]''',
+              '''struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {\n    let id: UUID\n    let window: PayPeriodWindow\n    let agreement: AgreementSnapshot\n    let timeZoneIdentifier: String?\n    let workEntries: [WorkEntry]'''
+          )
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''        id: UUID,\n        window: PayPeriodWindow,\n        agreement: AgreementSnapshot,\n        workEntries: [WorkEntry],''',
+              '''        id: UUID,\n        window: PayPeriodWindow,\n        agreement: AgreementSnapshot,\n        timeZoneIdentifier: String? = nil,\n        workEntries: [WorkEntry],'''
+          )
+          once(
+              'apps/ios/App/Sources/AppState.swift',
+              '''        self.id = id\n        self.window = window\n        self.agreement = agreement\n        self.workEntries = workEntries\n        self.calculation = calculation''',
+              '''        self.id = id\n        self.window = window\n        self.agreement = agreement\n        self.timeZoneIdentifier = timeZoneIdentifier\n        self.workEntries = workEntries\n        self.calculation = calculation'''
+          )
+
+          # Build/edit schedule wall-clock values in the selected payroll timezone.
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''            regularStartTime = Self.clockDate(\n                hour: firstWindow.start.hour,\n                minute: firstWindow.start.minute\n            )\n            regularEndTime = Self.clockDate(\n                hour: firstWindow.end.hour,\n                minute: firstWindow.end.minute\n            )''',
+              '''            regularStartTime = Self.clockDate(\n                hour: firstWindow.start.hour,\n                minute: firstWindow.start.minute,\n                timeZoneIdentifier: profile.timeZoneIdentifier\n            )\n            regularEndTime = Self.clockDate(\n                hour: firstWindow.end.hour,\n                minute: firstWindow.end.minute,\n                timeZoneIdentifier: profile.timeZoneIdentifier\n            )'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''    private static func clockDate(hour: Int, minute: Int) -> Date {\n        var components = DateComponents()\n        components.year = 2001\n        components.month = 1\n        components.day = 1\n        components.hour = hour\n        components.minute = minute\n        return Calendar(identifier: .gregorian).date(from: components) ?? Date()\n    }''',
+              '''    private static func clockDate(\n        hour: Int,\n        minute: Int,\n        timeZoneIdentifier: String = TimeZone.current.identifier\n    ) -> Date {\n        var calendar = Calendar(identifier: .gregorian)\n        calendar.timeZone = TimeZone(identifier: timeZoneIdentifier) ?? .current\n        var components = DateComponents()\n        components.timeZone = calendar.timeZone\n        components.year = 2001\n        components.month = 1\n        components.day = 1\n        components.hour = hour\n        components.minute = minute\n        return calendar.date(from: components) ?? Date()\n    }'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''            let start = try localTime(from: draft.regularStartTime)\n            let end = try localTime(from: draft.regularEndTime)''',
+              '''            let start = try localTime(\n                from: draft.regularStartTime,\n                timeZoneIdentifier: draft.timeZoneIdentifier\n            )\n            let end = try localTime(\n                from: draft.regularEndTime,\n                timeZoneIdentifier: draft.timeZoneIdentifier\n            )'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''    private func localTime(from date: Date) throws -> LocalTime {\n        let components = Calendar(identifier: .gregorian).dateComponents(\n            [.hour, .minute], from: date)\n        return try LocalTime(\n            hour: components.hour ?? 0,\n            minute: components.minute ?? 0\n        )\n    }''',
+              '''    private func localTime(\n        from date: Date,\n        timeZoneIdentifier: String\n    ) throws -> LocalTime {\n        guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {\n            throw AppModelError.invalidField("Time zone")\n        }\n        var calendar = Calendar(identifier: .gregorian)\n        calendar.timeZone = timeZone\n        let components = calendar.dateComponents([.hour, .minute], from: date)\n        return try LocalTime(\n            hour: components.hour ?? 0,\n            minute: components.minute ?? 0\n        )\n    }'''
+          )
+
+          # Persist the active payroll timezone and carry it into immutable history.
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''            candidate.activePeriod = ActivePayPeriod(\n                window: window,\n                agreement: agreement\n            )''',
+              '''            candidate.activePeriod = ActivePayPeriod(\n                window: window,\n                agreement: agreement,\n                timeZoneIdentifier: draft.timeZoneIdentifier\n            )'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''        candidate.activePeriod = ActivePayPeriod(\n            window: window,\n            agreement: profile.agreement\n        )''',
+              '''        candidate.activePeriod = ActivePayPeriod(\n            window: window,\n            agreement: profile.agreement,\n            timeZoneIdentifier: profile.timeZoneIdentifier\n        )'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''        let completed = CompletedPayPeriod(\n            id: active.id,\n            window: active.window,\n            agreement: active.agreement,\n            workEntries: active.workEntries,''',
+              '''        let completed = CompletedPayPeriod(\n            id: active.id,\n            window: active.window,\n            agreement: active.agreement,\n            timeZoneIdentifier: active.agreementTimeZone(\n                fallback: profile.timeZoneIdentifier\n            ),\n            workEntries: active.workEntries,'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''            candidate.activePeriod = ActivePayPeriod(\n                window: nextWindow,\n                agreement: profile.agreement\n            )''',
+              '''            candidate.activePeriod = ActivePayPeriod(\n                window: nextWindow,\n                agreement: profile.agreement,\n                timeZoneIdentifier: profile.timeZoneIdentifier\n            )'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''        let replacement = CompletedPayPeriod(\n            id: original.id,\n            window: original.window,\n            agreement: original.agreement,\n            workEntries: original.workEntries,''',
+              '''        let replacement = CompletedPayPeriod(\n            id: original.id,\n            window: original.window,\n            agreement: original.agreement,\n            timeZoneIdentifier: original.timeZoneIdentifier,\n            workEntries: original.workEntries,'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''extension ActivePayPeriod {\n    fileprivate func agreementTimeZone(fallback: String?) -> String {\n        fallback ?? TimeZone.current.identifier\n    }\n}''',
+              '''extension ActivePayPeriod {\n    fileprivate func agreementTimeZone(fallback: String?) -> String {\n        if let timeZoneIdentifier {\n            return timeZoneIdentifier\n        }\n        if let workTimeZone = workEntries.first?.interval.timeZoneIdentifier {\n            return workTimeZone\n        }\n        return fallback ?? TimeZone.current.identifier\n    }\n}'''
+          )
+
+          # Expose stable timezone resolution to user-facing active/history views.
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''    var isOnboarded: Bool { state.profile != nil }\n    var recoveryFileURL: URL? { store.recoveryFileURL }''',
+              '''    var isOnboarded: Bool { state.profile != nil }\n    var recoveryFileURL: URL? { store.recoveryFileURL }\n\n    var currentTimeZoneIdentifier: String {\n        state.activePeriod?.agreementTimeZone(fallback: profile?.timeZoneIdentifier)\n            ?? profile?.timeZoneIdentifier\n            ?? TimeZone.current.identifier\n    }\n\n    func timeZoneIdentifier(for period: CompletedPayPeriod) -> String {\n        period.timeZoneIdentifier\n            ?? period.workEntries.first?.interval.timeZoneIdentifier\n            ?? profile?.timeZoneIdentifier\n            ?? TimeZone.current.identifier\n    }'''
+          )
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''    private var activeTimeZoneIdentifier: String {\n        profile?.timeZoneIdentifier ?? TimeZone.current.identifier\n    }''',
+              '''    private var activeTimeZoneIdentifier: String {\n        currentTimeZoneIdentifier\n    }'''
+          )
+
+          # Refuse to audit a paycheck whose stated period does not match the active period.
+          once(
+              'apps/ios/App/Sources/AppModel.swift',
+              '''        guard let calculation = calculate(period: active) else {\n            throw AppModelError.calculationUnavailable\n        }\n\n        let gross = try positiveDecimal(draft.grossPay, field: "Gross pay", allowZero: true)''',
+              '''        guard let calculation = calculate(period: active) else {\n            throw AppModelError.calculationUnavailable\n        }\n\n        let periodTimeZoneIdentifier = active.agreementTimeZone(\n            fallback: profile?.timeZoneIdentifier\n        )\n        let expectedStart = localDate(\n            from: active.window.startDate,\n            timeZoneIdentifier: periodTimeZoneIdentifier\n        )\n        let expectedEnd = localDate(\n            from: active.window.displayEndDate,\n            timeZoneIdentifier: periodTimeZoneIdentifier\n        )\n        if let providedStart = draft.payPeriodStartDate.map({\n            localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)\n        }), providedStart != expectedStart {\n            throw AppModelError.invalidPayPeriod\n        }\n        if let providedEnd = draft.payPeriodEndDate.map({\n            localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)\n        }), providedEnd != expectedEnd {\n            throw AppModelError.invalidPayPeriod\n        }\n\n        let gross = try positiveDecimal(draft.grossPay, field: "Gross pay", allowZero: true)'''
+          )
+          all_matches(
+              'apps/ios/App/Sources/AppModel.swift',
+              'timeZoneIdentifier: activeTimeZoneIdentifier',
+              'timeZoneIdentifier: periodTimeZoneIdentifier',
+              2
+          )
+
+          # Preserve picker wall-clock/date components when changing payroll timezone.
+          once(
+              'apps/ios/App/Sources/PayProfileSetupView.swift',
+              '''        .environment(\\.timeZone, selectedTimeZone)\n        .tint(LinePayColor.brandPrimary)''',
+              '''        .environment(\\.timeZone, selectedTimeZone)\n        .onChange(of: draft.timeZoneIdentifier) { oldIdentifier, newIdentifier in\n            rebaseDraftDates(from: oldIdentifier, to: newIdentifier)\n        }\n        .tint(LinePayColor.brandPrimary)'''
+          )
+          once(
+              'apps/ios/App/Sources/PayProfileSetupView.swift',
+              '''    private var selectedTimeZone: TimeZone {\n        TimeZone(identifier: draft.timeZoneIdentifier) ?? .current\n    }\n\n    private func save() {''',
+              '''    private var selectedTimeZone: TimeZone {\n        TimeZone(identifier: draft.timeZoneIdentifier) ?? .current\n    }\n\n    private func rebaseDraftDates(from oldIdentifier: String, to newIdentifier: String) {\n        guard oldIdentifier != newIdentifier else { return }\n        draft.regularStartTime = rebaseTime(\n            draft.regularStartTime,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        draft.regularEndTime = rebaseTime(\n            draft.regularEndTime,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        draft.periodStartDate = rebaseDate(\n            draft.periodStartDate,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        draft.manualPeriodEndDate = rebaseDate(\n            draft.manualPeriodEndDate,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        draft.effectiveStartDate = rebaseDate(\n            draft.effectiveStartDate,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        draft.effectiveEndDate = rebaseDate(\n            draft.effectiveEndDate,\n            from: oldIdentifier,\n            to: newIdentifier\n        )\n        for index in draft.datePremiums.indices {\n            draft.datePremiums[index].date = rebaseDate(\n                draft.datePremiums[index].date,\n                from: oldIdentifier,\n                to: newIdentifier\n            )\n        }\n    }\n\n    private func rebaseTime(_ date: Date, from oldIdentifier: String, to newIdentifier: String) -> Date {\n        var oldCalendar = Calendar(identifier: .gregorian)\n        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current\n        var newCalendar = Calendar(identifier: .gregorian)\n        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current\n        let components = oldCalendar.dateComponents([.hour, .minute], from: date)\n        return newCalendar.date(\n            from: DateComponents(\n                timeZone: newCalendar.timeZone,\n                year: 2001,\n                month: 1,\n                day: 1,\n                hour: components.hour,\n                minute: components.minute\n            )\n        ) ?? date\n    }\n\n    private func rebaseDate(_ date: Date, from oldIdentifier: String, to newIdentifier: String) -> Date {\n        var oldCalendar = Calendar(identifier: .gregorian)\n        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current\n        var newCalendar = Calendar(identifier: .gregorian)\n        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current\n        var components = oldCalendar.dateComponents([.year, .month, .day], from: date)\n        components.timeZone = newCalendar.timeZone\n        return newCalendar.date(from: components) ?? date\n    }\n\n    private func save() {'''
+          )
+
+          # Current-period displays use the active period's timezone snapshot.
+          once(
+              'apps/ios/App/Sources/TodayView.swift',
+              '''            if let profile = model.profile {\n                Text(\n                    LinePayFormat.payPeriod(\n                        active.window, timeZoneIdentifier: profile.timeZoneIdentifier)\n                )\n                .font(.subheadline)\n                .foregroundStyle(LinePayColor.textSecondary)\n            }''',
+              '''            Text(\n                LinePayFormat.payPeriod(\n                    active.window,\n                    timeZoneIdentifier: model.currentTimeZoneIdentifier\n                )\n            )\n            .font(.subheadline)\n            .foregroundStyle(LinePayColor.textSecondary)'''
+          )
+          once(
+              'apps/ios/App/Sources/PayLedgerView.swift',
+              '''            if let profile = model.profile {\n                Text(\n                    LinePayFormat.payPeriod(\n                        active.window, timeZoneIdentifier: profile.timeZoneIdentifier)\n                )\n                .font(.subheadline)\n                .foregroundStyle(LinePayColor.textSecondary)\n            }''',
+              '''            Text(\n                LinePayFormat.payPeriod(\n                    active.window,\n                    timeZoneIdentifier: model.currentTimeZoneIdentifier\n                )\n            )\n            .font(.subheadline)\n            .foregroundStyle(LinePayColor.textSecondary)'''
+          )
+          once(
+              'apps/ios/App/Sources/PayLedgerView.swift',
+              '''                        timeZoneIdentifier: model.profile?.timeZoneIdentifier\n                            ?? TimeZone.current.identifier,''',
+              '''                        timeZoneIdentifier: model.currentTimeZoneIdentifier,'''
+          )
+
+          # Historical views and exports use each archived period's own timezone snapshot.
+          all_matches(
+              'apps/ios/App/Sources/HistoryView.swift',
+              '''model.profile?.timeZoneIdentifier\n                        ?? TimeZone.current.identifier''',
+              '''model.timeZoneIdentifier(for: period)''',
+              3
+          )
+
+          # Paystub confirmation date pickers render in payroll timezone.
+          once(
+              'apps/ios/App/Sources/PaystubImportView.swift',
+              '''        .tint(LinePayColor.brandPrimary)\n    }\n\n    private var periodStartBinding: Binding<Date> {''',
+              '''        .environment(\\.timeZone, payrollTimeZone)\n        .tint(LinePayColor.brandPrimary)\n    }\n\n    private var payrollTimeZone: TimeZone {\n        TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current\n    }\n\n    private var periodStartBinding: Binding<Date> {'''
+          )
+
+          # New manual period date pickers use the profile payroll timezone, including defaults.
+          p = Path('apps/ios/App/Sources/StartPayPeriodView.swift')
+          p.write_text('''import SwiftUI\n\nstruct StartPayPeriodView: View {\n    let model: AppModel\n\n    @Environment(\\.dismiss) private var dismiss\n    @State private var startDate: Date\n    @State private var endDate: Date\n    @State private var errorMessage: String?\n\n    init(model: AppModel) {\n        self.model = model\n        var calendar = Calendar(identifier: .gregorian)\n        calendar.timeZone = TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current\n        let start = calendar.startOfDay(for: Date())\n        _startDate = State(initialValue: start)\n        _endDate = State(\n            initialValue: calendar.date(byAdding: .day, value: 6, to: start) ?? start\n        )\n    }\n\n    var body: some View {\n        NavigationStack {\n            Form {\n                Section {\n                    if let profile = model.profile {\n                        LabeledContent("Cadence", value: profile.preferredCadence.title)\n                    }\n                    DatePicker("Starts", selection: $startDate, displayedComponents: .date)\n                    if model.profile?.preferredCadence == .manual {\n                        DatePicker("Ends", selection: $endDate, displayedComponents: .date)\n                    }\n                } footer: {\n                    Text(\n                        "This creates a new pay-period boundary. Archived periods are never reinterpreted."\n                    )\n                }\n\n                if let errorMessage {\n                    Section {\n                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")\n                            .foregroundStyle(.red)\n                    }\n                }\n            }\n            .navigationTitle("Start pay period")\n            .navigationBarTitleDisplayMode(.inline)\n            .toolbar {\n                ToolbarItem(placement: .cancellationAction) {\n                    Button("Cancel") { dismiss() }\n                }\n                ToolbarItem(placement: .confirmationAction) {\n                    Button("Start") { start() }\n                        .fontWeight(.semibold)\n                }\n            }\n        }\n        .environment(\\.timeZone, payrollTimeZone)\n        .tint(LinePayColor.brandPrimary)\n    }\n\n    private var payrollTimeZone: TimeZone {\n        TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current\n    }\n\n    private func start() {\n        do {\n            try model.startNewPayPeriod(\n                startDate: startDate,\n                manualEndDate: model.profile?.preferredCadence == .manual ? endDate : nil\n            )\n            errorMessage = nil\n            dismiss()\n        } catch {\n            errorMessage = error.localizedDescription\n        }\n    }\n}\n''')
+
+          # Regression tests for schedule wall-clock, archived timezone, and paystub period identity.
+          once(
+              'apps/ios/AppTests/Sources/AppModelTests.swift',
+              '''    private func makeDraft(rate: String, start: Date) -> PayProfileDraft {''',
+              '''    @Test("Regular schedule wall-clock time uses the payroll timezone")\n    func regularScheduleUsesPayrollTimeZone() throws {\n        let model = AppModel()\n        var draft = makeDraft(rate: "50", start: testStart)\n        draft.useRegularSchedule = true\n        draft.regularWeekdays = [.monday]\n\n        var payrollCalendar = Calendar(identifier: .gregorian)\n        payrollCalendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))\n        draft.regularStartTime = try #require(\n            payrollCalendar.date(\n                from: DateComponents(year: 2001, month: 1, day: 1, hour: 7, minute: 0)\n            )\n        )\n        draft.regularEndTime = try #require(\n            payrollCalendar.date(\n                from: DateComponents(year: 2001, month: 1, day: 1, hour: 15, minute: 30)\n            )\n        )\n\n        try model.saveProfile(draft)\n\n        let window = try #require(model.profile?.agreement.regularSchedule.first)\n        #expect(window.start.hour == 7)\n        #expect(window.start.minute == 0)\n        #expect(window.end.hour == 15)\n        #expect(window.end.minute == 30)\n    }\n\n    @Test("Archived pay period keeps its original payroll timezone")\n    func archivedPayPeriodKeepsTimeZone() throws {\n        let model = AppModel()\n        var draft = makeDraft(rate: "50", start: testStart)\n        try model.saveProfile(draft)\n        try model.addWork(\n            start: testStart,\n            end: testStart.addingTimeInterval(8 * 60 * 60),\n            kind: .regular\n        )\n        try model.archiveCurrentPeriod()\n\n        draft.timeZoneIdentifier = "America/New_York"\n        try model.saveProfile(draft)\n\n        let archived = try #require(model.history.first)\n        #expect(archived.timeZoneIdentifier == "America/Los_Angeles")\n        #expect(model.timeZoneIdentifier(for: archived) == "America/Los_Angeles")\n        #expect(model.activePeriod?.timeZoneIdentifier == "America/Los_Angeles")\n        #expect(model.profile?.timeZoneIdentifier == "America/New_York")\n    }\n\n    @Test("Paystub period dates must match the active pay period")\n    func paystubPeriodMismatchIsRejected() throws {\n        let model = AppModel()\n        try model.saveProfile(makeDraft(rate: "50", start: testStart))\n        try model.addWork(\n            start: testStart,\n            end: testStart.addingTimeInterval(8 * 60 * 60),\n            kind: .regular\n        )\n\n        var paystub = PaystubConfirmationDraft()\n        paystub.payPeriodStartDate = testStart.addingTimeInterval(24 * 60 * 60)\n        paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)\n        paystub.grossPay = "400"\n\n        #expect(throws: AppModelError.invalidPayPeriod) {\n            try model.confirmPaystub(paystub)\n        }\n        #expect(model.currentPaystub == nil)\n        #expect(!model.hasUsedFreeAudit)\n    }\n\n    private func makeDraft(rate: String, start: Date) -> PayProfileDraft {'''
+          )
+          PY
+
+      - name: Select Xcode 26.6
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
+      - name: Format Swift
+        run: swift format --in-place --recursive apps/ios
+
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/ios
+          git commit -m "fix: preserve payroll timezone semantics"
+          git push origin HEAD:feat/ios-1.0-e2e
