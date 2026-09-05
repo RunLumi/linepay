@@ -1,66 +1,55 @@
 import StoreKit
 import SwiftUI
 
-struct OnboardingPaywallView: View {
-    let model: AppModel
+struct ProPaywallView: View {
     let store: SubscriptionStore
-    let onContinueFree: () -> Void
     let onPurchaseCompleted: () -> Void
 
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedProductID = SubscriptionStore.yearlyProductID
     @State private var isPurchasing = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
-                header
-                profileReadySection
-                benefits
-                planSelector
-                actions
-                footer
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
+                    header
+                    benefits
+                    planSelector
+                    actions
+                    footer
+                }
+                .padding(LinePaySpacing.section)
             }
-            .padding(LinePaySpacing.section)
+            .background(LinePayColor.canvas)
+            .navigationTitle("LinePay Pro")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Not now") { dismiss() }
+                }
+            }
         }
-        .background(LinePayColor.canvas.ignoresSafeArea())
         .tint(LinePayColor.brandPrimary)
+        .task {
+            if SubscriptionStore.commerceEnabled, store.products.isEmpty {
+                await store.load()
+            }
+        }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
             LineGapMark()
-
             Text("Audit every paycheck.")
                 .font(.largeTitle.bold())
                 .foregroundStyle(LinePayColor.textPrimary)
-
             Text(
-                "LinePay Pro is built for recurring paycheck checks. Free still lets you track "
-                    + "work, calculate expected pay, and complete your first paycheck audit."
+                "You have seen what a LinePay audit does. Pro keeps that independent check "
+                    + "available for every future paycheck."
             )
             .font(.title3)
             .foregroundStyle(LinePayColor.textSecondary)
-            .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    @ViewBuilder
-    private var profileReadySection: some View {
-        if let profile = model.profile {
-            VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                Text("YOUR PAY PROFILE IS READY")
-                    .font(.caption.weight(.semibold))
-                    .tracking(0.6)
-                    .foregroundStyle(LinePayColor.textSecondary)
-
-                Text(profileSummary(profile))
-                    .font(.headline)
-                    .foregroundStyle(LinePayColor.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(LinePaySpacing.standard)
-            .background(LinePayColor.surfaceSecondary)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 
@@ -68,43 +57,44 @@ struct OnboardingPaywallView: View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
             benefit(
                 icon: "doc.text.magnifyingglass",
-                title: "Check every paycheck",
-                detail: "Compare recorded work with what your paycheck actually paid."
+                title: "Unlimited paycheck audits",
+                detail: "Scan or enter each paycheck and compare it with your confirmed work."
             )
             benefit(
-                icon: "list.bullet.rectangle",
-                title: "See the math",
-                detail: "Review possible differences through an explainable Pay Ledger."
+                icon: "clock.arrow.circlepath",
+                title: "Durable history",
+                detail: "Keep immutable pay-period records and audit evidence on your iPhone."
+            )
+            benefit(
+                icon: "square.and.arrow.up",
+                title: "Export the evidence",
+                detail: "Create a concise reconciliation report you control."
             )
             benefit(
                 icon: "lock.shield",
-                title: "Private by default",
-                detail: "No LinePay account. Pay data stays on this device by default."
+                title: "Still private",
+                detail: "Pro does not create a LinePay account or upload your paycheck."
             )
         }
     }
 
     private var planSelector: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            Text("Choose a plan")
-                .font(.headline)
-                .foregroundStyle(LinePayColor.textPrimary)
-
             planRow(
                 productID: SubscriptionStore.yearlyProductID,
                 title: "Yearly",
+                fallbackPrice: "$79.99/year",
                 badge: "Best value"
             )
             planRow(
                 productID: SubscriptionStore.monthlyProductID,
                 title: "Monthly",
+                fallbackPrice: "$9.99/month",
                 badge: nil
             )
-
             if store.isLoading {
                 ProgressView("Loading App Store prices…")
                     .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
             }
         }
     }
@@ -116,38 +106,25 @@ struct OnboardingPaywallView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(LinePayColor.brandPrimary)
             .frame(maxWidth: .infinity)
             .disabled(!canPurchase || isPurchasing)
 
-            Button("Continue free") {
-                onContinueFree()
-            }
-            .buttonStyle(.plain)
-            .font(.headline)
-            .foregroundStyle(LinePayColor.brandPrimary)
-            .frame(minHeight: 48)
-            .accessibilityHint("Skips the Pro offer and continues with LinePay Free")
-
             if !SubscriptionStore.commerceEnabled {
-                Text("Pro purchasing is disabled until recurring paycheck audits are shipping.")
+                Text("Purchasing is disabled in this debug build. Audit access remains open for testing.")
                     .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            } else if store.products.isEmpty && !store.isLoading {
-                Text("Pro isn't available right now. You can keep using LinePay Free.")
+            } else if store.products.isEmpty, !store.isLoading {
+                Text("App Store prices are unavailable right now. Your existing LinePay data is unaffected.")
                     .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
             }
 
             if let errorMessage = store.errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle")
                     .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -159,6 +136,7 @@ struct OnboardingPaywallView: View {
                     await store.restorePurchases()
                     if store.isPro {
                         onPurchaseCompleted()
+                        dismiss()
                     }
                 }
             }
@@ -166,34 +144,39 @@ struct OnboardingPaywallView: View {
             .disabled(!SubscriptionStore.commerceEnabled)
 
             Text(
-                "Subscriptions renew automatically unless cancelled through your App Store "
-                    + "subscription settings. Prices and billing terms are shown by the App Store."
+                "Subscriptions renew automatically unless cancelled in App Store subscription "
+                    + "settings. The App Store shows the final localized price and billing terms."
             )
             .font(.caption)
             .foregroundStyle(LinePayColor.textSecondary)
             .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
     }
 
     private var canPurchase: Bool {
-        SubscriptionStore.commerceEnabled
-            && store.product(id: selectedProductID) != nil
+        SubscriptionStore.commerceEnabled && store.product(id: selectedProductID) != nil
     }
 
     private var primaryButtonTitle: String {
-        if isPurchasing {
-            return "Working…"
-        }
+        if isPurchasing { return "Working…" }
         return selectedProductID == SubscriptionStore.yearlyProductID
             ? "Continue with Yearly"
             : "Continue with Monthly"
     }
 
-    private func planRow(productID: String, title: String, badge: String?) -> some View {
+    private func planRow(
+        productID: String,
+        title: String,
+        fallbackPrice: String,
+        badge: String?
+    ) -> some View {
         let isSelected = selectedProductID == productID
-        let product = store.product(id: productID)
+        let price = priceLabel(
+            product: store.product(id: productID),
+            productID: productID,
+            fallback: fallbackPrice
+        )
 
         return Button {
             selectedProductID = productID
@@ -201,29 +184,22 @@ struct OnboardingPaywallView: View {
             HStack(spacing: LinePaySpacing.standard) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(
-                        isSelected ? LinePayColor.brandPrimary : LinePayColor.textSecondary
-                    )
+                    .foregroundStyle(isSelected ? LinePayColor.brandPrimary : LinePayColor.textSecondary)
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: LinePaySpacing.compact) {
-                        Text(title)
-                            .font(.headline)
-                            .foregroundStyle(LinePayColor.textPrimary)
-
+                        Text(title).font(.headline)
                         if let badge {
                             Text(badge)
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(LinePayColor.brandPrimary)
                         }
                     }
-
-                    Text(priceLabel(product: product, productID: productID))
+                    Text(price)
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(LinePayColor.textSecondary)
                 }
-
                 Spacer()
             }
             .padding(LinePaySpacing.standard)
@@ -238,15 +214,12 @@ struct OnboardingPaywallView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title), \(priceLabel(product: product, productID: productID))")
+        .accessibilityLabel("\(title), \(price)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private func priceLabel(product: Product?, productID: String) -> String {
-        guard let product else {
-            return store.isLoading ? "Loading price" : "Price unavailable"
-        }
-
+    private func priceLabel(product: Product?, productID: String, fallback: String) -> String {
+        guard let product else { return fallback }
         return productID == SubscriptionStore.yearlyProductID
             ? "\(product.displayPrice) per year"
             : "\(product.displayPrice) per month"
@@ -259,55 +232,36 @@ struct OnboardingPaywallView: View {
                 .foregroundStyle(LinePayColor.brandPrimary)
                 .frame(width: 28)
                 .accessibilityHidden(true)
-
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(LinePayColor.textPrimary)
-
+                Text(title).font(.headline)
                 Text(detail)
                     .font(.subheadline)
                     .foregroundStyle(LinePayColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
-    private func profileSummary(_ profile: PayProfile) -> String {
-        let agreement = profile.agreement
-        var rules: [String] = []
-
-        if !agreement.dailyOvertimeTiers.isEmpty {
-            rules.append("daily OT")
-        }
-        if agreement.weekdayPremiums.contains(where: { $0.weekday == .sunday }) {
-            rules.append("Sunday premium")
-        }
-        if agreement.calloutMinimum != nil {
-            rules.append("callout minimum")
-        }
-        if agreement.flatPerDiem != nil {
-            rules.append("per diem")
-        }
-
-        let rate = "\(LinePayFormat.money(agreement.hourlyRate))/hr"
-        if rules.isEmpty {
-            return "\(rate). Optional premium rules remain off until you confirm them."
-        }
-
-        return "\(rate) with \(rules.joined(separator: ", "))."
-    }
-
     private func purchaseSelectedPlan() {
         guard let product = store.product(id: selectedProductID) else { return }
-
         Task {
             isPurchasing = true
             let purchased = await store.purchase(product)
             isPurchasing = false
             if purchased {
                 onPurchaseCompleted()
+                dismiss()
             }
         }
+    }
+}
+
+struct LineGapMark: View {
+    var body: some View {
+        HStack(spacing: 7) {
+            Rectangle().frame(width: 64, height: 1)
+            Rectangle().frame(width: 32, height: 1)
+        }
+        .foregroundStyle(LinePayColor.brandCopper)
+        .accessibilityHidden(true)
     }
 }
