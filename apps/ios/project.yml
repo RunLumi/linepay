@@ -70,12 +70,14 @@ targets:
         buildPhase: resources
     settings:
       base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay
         PRODUCT_NAME: LinePay
         CURRENT_PROJECT_VERSION: 1
         MARKETING_VERSION: 1.0
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: LinePaycheck
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
         INFOPLIST_KEY_CFBundleName: LinePaycheck
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
         INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device for a paycheck audit."
