@@ -1,4 +1,4 @@
-# LinePay iOS Agent Instructions
+# LinePaycheck iOS Agent Instructions
 
 The repository-root `AGENTS.md` remains authoritative for engineering and product invariants.
 
@@ -22,5 +22,7 @@ In particular:
 - run the `DESIGN.md` Design QA checklist before considering a user-facing screen complete.
 
 Engineering changes must also preserve the tested boundaries in `docs/best-practices.md`, especially Swift 6 concurrency safety, exact money/time semantics, privacy-by-architecture, localization readiness, migration safety, and layered test coverage.
+
+For user-facing work, compilation is not completion when Simulator inspection is available. Prefer XcodeBuildMCP for the interactive build/run/screenshot/accessibility loop and Maestro for durable critical journeys.
 
 If a feature genuinely requires breaking a rule in `DESIGN.md` or `docs/best-practices.md`, update the relevant decision deliberately rather than silently drifting from the system.
