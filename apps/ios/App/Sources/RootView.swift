@@ -7,9 +7,12 @@ struct RootView: View {
                 Text("Know what your work should pay.")
                     .font(.largeTitle.bold())
 
-                Text("LinePay records your work, applies the pay rules you confirm, and helps flag possible paycheck differences.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                Text(
+                    "LinePay records your work, applies the pay rules you confirm, "
+                        + "and helps flag possible paycheck differences."
+                )
+                .font(.body)
+                .foregroundStyle(.secondary)
 
                 Spacer()
 
