@@ -109,10 +109,12 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.grossBasis = .wagesOnly
+        paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         try model.confirmPaystub(paystub)
 
         #expect(model.hasUsedFreeAudit)
-        #expect(model.currentAuditStatus == .matches)
+        #expect(model.currentAuditStatus == .grossMatches)
         #expect(model.canRunAudit(hasProAccess: false))
 
         let entry = try #require(model.workEntries.first)
@@ -237,6 +239,8 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart.addingTimeInterval(24 * 60 * 60)
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.grossBasis = .wagesOnly
+        paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
 
         #expect(throws: AppModelError.invalidPayPeriod) {
             try model.confirmPaystub(paystub)

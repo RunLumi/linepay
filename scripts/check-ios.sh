@@ -7,7 +7,16 @@ DOMAIN_DIR="$IOS_DIR/Packages/LinePayDomain"
 PRIVACY_MANIFEST="$IOS_DIR/App/Resources/PrivacyInfo.xcprivacy"
 EXPECTED_XCODEGEN_VERSION="2.46.0"
 DERIVED_DATA="$(mktemp -d "${TMPDIR:-/tmp}/linepay-derived.XXXXXX")"
-trap 'rm -rf "$DERIVED_DATA"' EXIT
+RESULTS_DIR="${LINEPAY_RESULTS_DIR:-$ROOT/.build/ios-results}"
+mkdir -p "$RESULTS_DIR"
+cleanup() {
+    if [[ -d "$RESULTS_DIR/LinePay.xcresult" ]]; then
+        xcrun xcresulttool export attachments --path "$RESULTS_DIR/LinePay.xcresult" \
+            --output-path "$RESULTS_DIR/screenshots" || true
+    fi
+    rm -rf "$DERIVED_DATA"
+}
+trap cleanup EXIT
 
 SIMULATOR_DESTINATION="${IOS_SIMULATOR_DESTINATION:-}"
 if [[ -z "$SIMULATOR_DESTINATION" ]]; then
@@ -72,6 +81,8 @@ xcodebuild \
     -configuration Debug \
     -destination "$SIMULATOR_DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
+    -resultBundlePath "$RESULTS_DIR/LinePay.xcresult" \
+    -parallel-testing-enabled NO \
     CODE_SIGNING_ALLOWED=NO \
     test
 

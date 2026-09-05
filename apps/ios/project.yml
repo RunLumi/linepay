@@ -44,6 +44,7 @@ schemes:
       targets:
         LinePay: all
         LinePayAppTests: [test]
+        LinePayUITests: [test]
     run:
       config: Debug
     test:
@@ -53,7 +54,9 @@ schemes:
         - LinePay
       targets:
         - name: LinePayAppTests
-          parallelizable: true
+          parallelizable: false
+        - name: LinePayUITests
+          parallelizable: false
     archive:
       config: Release
 
@@ -94,6 +97,9 @@ targets:
     sources:
       - path: AppTests/Sources
         type: group
+      - path: AppTests/Resources
+        type: group
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.tests
@@ -101,3 +107,18 @@ targets:
     dependencies:
       - target: LinePay
       - package: LinePayDomain
+
+  LinePayUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: AppUITests
+        type: group
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: LinePay
+    dependencies:
+      - target: LinePay

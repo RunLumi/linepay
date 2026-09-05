@@ -75,7 +75,12 @@ public struct PayCalculator: Sendable {
                             overtimeMultiplier: slice.multiplier,
                             finalMultiplier: baseMultiplier,
                             agreement: agreement
-                        )
+                        ),
+                        ruleKeys: appliedRuleKeys(
+                            segment: segment, overtimeMultiplier: slice.multiplier,
+                            finalMultiplier: baseMultiplier, agreement: agreement
+                        ),
+                        baseRate: agreement.hourlyRate
                     )
                 )
                 hoursConsumed += slice.hours
@@ -333,7 +338,8 @@ public struct PayCalculator: Sendable {
                     hours: missingHours,
                     multiplier: applicableMultiplier,
                     amount: amount,
-                    explanation: "callout minimum guarantee"
+                    explanation: "callout minimum guarantee at the highest worked multiplier",
+                    ruleKeys: [.callout], baseRate: agreement.hourlyRate
                 )
             )
         }
@@ -374,9 +380,37 @@ public struct PayCalculator: Sendable {
                 hours: nil,
                 multiplier: nil,
                 amount: rule.amountPerWorkDate.rounded(using: agreement.rounding),
-                explanation: "flat per diem for worked local date"
+                explanation: "flat per diem for worked local date",
+                ruleKeys: [.perDiem], baseRate: nil
             )
         }
+    }
+
+    private func appliedRuleKeys(
+        segment: RawSegment, overtimeMultiplier: Decimal,
+        finalMultiplier: Decimal, agreement: AgreementSnapshot
+    ) -> [PayRuleKey] {
+        var keys: [PayRuleKey] = [.base]
+        if !segment.isWithinRegularSchedule,
+            agreement.outsideScheduleMultiplier > 1,
+            agreement.outsideScheduleMultiplier == finalMultiplier
+        {
+            keys.append(.schedule)
+        }
+        if agreement.weekdayPremiums.contains(where: {
+            $0.weekday == segment.weekday && $0.multiplier == finalMultiplier
+        }) {
+            keys.append(.weekday)
+        }
+        if agreement.datePremiums.contains(where: {
+            $0.date == segment.localDate && $0.multiplier == finalMultiplier
+        }) {
+            keys.append(.date)
+        }
+        if overtimeMultiplier > 1 && overtimeMultiplier == finalMultiplier {
+            keys.append(.dailyOvertime)
+        }
+        return keys
     }
 
     private func explanation(
@@ -386,7 +420,9 @@ public struct PayCalculator: Sendable {
         agreement: AgreementSnapshot
     ) -> String {
         var reasons: [String] = []
-        if !segment.isWithinRegularSchedule, agreement.outsideScheduleMultiplier > 1 {
+        if !segment.isWithinRegularSchedule, agreement.outsideScheduleMultiplier > 1,
+            agreement.outsideScheduleMultiplier == finalMultiplier
+        {
             reasons.append("outside regular schedule")
         }
         if agreement.weekdayPremiums.contains(where: {

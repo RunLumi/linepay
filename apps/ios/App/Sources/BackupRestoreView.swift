@@ -148,7 +148,7 @@ struct BackupRestoreView: View {
                         "Saved pay profiles, exact rule snapshots, work entries, notes, pay periods, confirmed paycheck facts, audit history, and retained original paystubs."
                     )
                     Text(
-                        "Unsaved drafts, deleted originals, and App Store subscription entitlements are not included. Restore Purchases is separate."
+                        "Saved drafts and retained originals are included. Unsaved input, deleted originals, and App Store subscription entitlements are not included. Restore Purchases is separate."
                     )
                     .foregroundStyle(LinePayColor.textSecondary)
                 }

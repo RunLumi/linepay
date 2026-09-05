@@ -7,9 +7,7 @@ import StoreKit
 final class SubscriptionStore {
     static let monthlyProductID = "linepay.pro.monthly"
     static let yearlyProductID = "linepay.pro.yearly"
-
-    /// Release builds use real StoreKit. Debug builds stay frictionless unless explicitly enabled
-    /// with LINEPAY_COMMERCE_ENABLED=1 so previews/tests never depend on App Store state.
+    private static let productIDs = [monthlyProductID, yearlyProductID]
     static var commerceEnabled: Bool {
         #if DEBUG
             ProcessInfo.processInfo.environment["LINEPAY_COMMERCE_ENABLED"] == "1"
@@ -17,152 +15,179 @@ final class SubscriptionStore {
             true
         #endif
     }
-
-    private static let productIDs = [monthlyProductID, yearlyProductID]
-
+    let purchasingEnabled: Bool
     private(set) var products: [Product] = []
     private(set) var isPro = false
     private(set) var isLoading = false
+    private(set) var hasCheckedEntitlements = false
     private(set) var errorMessage: String?
+    private(set) var notice: String?
+    @ObservationIgnored private var transactionTask: Task<Void, Never>?
+    @ObservationIgnored private var statusTask: Task<Void, Never>?
+    @ObservationIgnored private var refreshGeneration = 0
+    @ObservationIgnored private let productLoader: @MainActor ([String]) async throws -> [Product]
 
-    @ObservationIgnored
-    private var transactionUpdatesTask: Task<Void, Never>?
-
+    init(
+        testCommerceEnabled: Bool? = nil,
+        productLoader: @escaping @MainActor ([String]) async throws -> [Product] = {
+            try await Product.products(for: $0)
+        }
+    ) {
+        #if DEBUG
+            purchasingEnabled = testCommerceEnabled ?? Self.commerceEnabled
+        #else
+            purchasingEnabled = true
+        #endif
+        self.productLoader = productLoader
+    }
     deinit {
-        transactionUpdatesTask?.cancel()
+        transactionTask?.cancel()
+        statusTask?.cancel()
     }
-
-    var hasAuditAccess: Bool {
-        isPro || !Self.commerceEnabled
-    }
+    var hasAuditAccess: Bool { isPro || !purchasingEnabled }
+    func product(id: String) -> Product? { products.first { $0.id == id } }
 
     func start() async {
-        guard Self.commerceEnabled else { return }
-        startTransactionUpdatesIfNeeded()
+        guard purchasingEnabled else { return }
+        if transactionTask == nil {
+            transactionTask = Task { [weak self] in
+                for await update in Transaction.updates {
+                    guard let self, !Task.isCancelled else { return }
+                    guard case .verified(let transaction) = update else { continue }
+                    await self.refreshEntitlements()
+                    await transaction.finish()
+                }
+            }
+            statusTask = Task { [weak self] in
+                for await _ in Product.SubscriptionInfo.Status.updates {
+                    guard let self, !Task.isCancelled else { return }
+                    // Includes billing-grace/expiration changes that are not a new purchase.
+                    await self.refreshEntitlements()
+                }
+            }
+        }
         await load()
     }
 
     func load() async {
-        guard Self.commerceEnabled else {
+        guard purchasingEnabled else {
             products = []
             isPro = false
             errorMessage = nil
             return
         }
-
+        // Signed on-device entitlements are independent of network product merchandising.
+        await refreshEntitlements()
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
-
         do {
-            products = try await Product.products(for: Self.productIDs)
-                .sorted { lhs, rhs in
-                    rank(lhs.id) < rank(rhs.id)
-                }
-            errorMessage = nil
+            products = try await productLoader(Self.productIDs).sorted { rank($0.id) < rank($1.id) }
+            errorMessage =
+                products.isEmpty
+                ? "App Store prices are unavailable. Your saved pay data remains accessible." : nil
             await refreshEntitlements()
         } catch {
             products = []
-            errorMessage = "Pro isn't available right now. You can keep using LinePaycheck Free."
-            LinePayLog.storeKit.error("Failed to load StoreKit products")
+            errorMessage =
+                "App Store prices could not be loaded. Verified access and saved pay data do not depend on this request."
+            LinePayLog.storeKit.error("Product metadata unavailable")
         }
     }
 
-    func product(id: String) -> Product? {
-        products.first { $0.id == id }
+    func refreshEntitlements() async {
+        guard purchasingEnabled else {
+            hasCheckedEntitlements = true
+            return
+        }
+        refreshGeneration += 1
+        let generation = refreshGeneration
+        var entitled = false
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result else { continue }
+            if Self.productIDs.contains(transaction.productID), transaction.revocationDate == nil,
+                !transaction.isUpgraded
+            {
+                entitled = true
+            }
+        }
+        guard generation == refreshGeneration else { return }
+        isPro = entitled
+        hasCheckedEntitlements = true
+        // Never reject an entitlement just because its paid period expired: StoreKit includes grace.
+        notice = nil
+        for product in products {
+            guard let subscription = product.subscription,
+                let statuses = try? await subscription.status
+            else { continue }
+            guard generation == refreshGeneration else { return }
+            for status in statuses {
+                guard case .verified(let renewal) = status.renewalInfo,
+                    case .verified(let transaction) = status.transaction,
+                    Self.productIDs.contains(transaction.productID)
+                else { continue }
+                if status.state == .inGracePeriod, entitled {
+                    notice =
+                        "Pro remains active during Apple's billing grace period. Review payment details in your App Store account."
+                } else if renewal.isInBillingRetry && !entitled {
+                    notice =
+                        "Apple is retrying subscription payment. Existing records remain available."
+                } else if status.state == .expired && !entitled {
+                    notice = "Pro has expired. Existing audits and work records remain available."
+                } else if status.state == .revoked && !entitled {
+                    notice =
+                        "The App Store entitlement is no longer active. Existing records remain available."
+                }
+            }
+        }
     }
 
     func purchase(_ product: Product) async -> Bool {
-        guard Self.commerceEnabled else {
-            errorMessage = "Purchases are disabled in this debug build."
+        guard purchasingEnabled else {
+            errorMessage = "Purchasing is disabled in this debug build."
             return false
         }
-
         do {
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                guard case .verified(let transaction) = verification else {
-                    errorMessage = "The App Store couldn't verify this purchase."
-                    LinePayLog.storeKit.error("StoreKit returned an unverified purchase")
+            switch try await product.purchase() {
+            case .success(let result):
+                guard case .verified(let transaction) = result else {
+                    errorMessage = "The App Store could not verify the purchase."
                     return false
                 }
-                await transaction.finish()
                 await refreshEntitlements()
+                await transaction.finish()
+                errorMessage = nil
                 return isPro
-
             case .pending:
-                errorMessage = "This purchase is waiting for App Store approval."
+                errorMessage = "This purchase is awaiting App Store approval."
                 return false
-
             case .userCancelled:
                 errorMessage = nil
                 return false
-
             @unknown default:
-                errorMessage = "The purchase couldn't be completed. Try again later."
-                LinePayLog.storeKit.error("StoreKit returned an unknown purchase result")
+                errorMessage = "The purchase could not be completed."
                 return false
             }
         } catch {
-            errorMessage = "The purchase couldn't be completed. Try again later."
-            LinePayLog.storeKit.error("StoreKit purchase failed")
+            errorMessage = "The purchase could not be completed. Try again later."
             return false
         }
     }
-
     func restorePurchases() async {
-        guard Self.commerceEnabled else {
-            errorMessage = "Purchases are disabled in this debug build."
+        guard purchasingEnabled else {
+            errorMessage = "Purchasing is disabled in this debug build."
             return
         }
-
         do {
             try await AppStore.sync()
             await refreshEntitlements()
-            errorMessage = isPro ? nil : "No active LinePaycheck Pro purchase was found."
+            errorMessage = isPro ? nil : "No active Pro purchase was found for this Apple account."
+            if isPro { notice = "LinePaycheck Pro restored." }
         } catch {
-            errorMessage = "Purchases couldn't be restored right now."
-            LinePayLog.storeKit.error("StoreKit restore failed")
+            await refreshEntitlements()
+            errorMessage =
+                "Purchases could not be synchronized. Verified local entitlements were checked; your records are unchanged."
         }
     }
-
-    private func startTransactionUpdatesIfNeeded() {
-        guard transactionUpdatesTask == nil else { return }
-
-        transactionUpdatesTask = Task { [weak self] in
-            for await result in Transaction.updates {
-                guard let self else { return }
-
-                guard case .verified(let transaction) = result else {
-                    LinePayLog.storeKit.error("StoreKit emitted an unverified transaction update")
-                    continue
-                }
-
-                await transaction.finish()
-                await self.refreshEntitlements()
-            }
-        }
-    }
-
-    private func refreshEntitlements() async {
-        var hasPro = false
-
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result else { continue }
-            if Self.productIDs.contains(transaction.productID) {
-                hasPro = true
-                break
-            }
-        }
-
-        isPro = hasPro
-    }
-
-    private func rank(_ productID: String) -> Int {
-        switch productID {
-        case Self.yearlyProductID: 0
-        case Self.monthlyProductID: 1
-        default: 2
-        }
-    }
+    private func rank(_ id: String) -> Int { id == Self.yearlyProductID ? 0 : 1 }
 }

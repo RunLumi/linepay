@@ -135,6 +135,8 @@ struct ConfirmedPaystub: Codable, Hashable, Sendable, Identifiable {
     let notes: String
     let evidence: PaystubEvidence?
     let confirmedEpochSeconds: Int64
+    let confirmation: PaystubConfirmation?
+    let assessment: PaycheckAssessment?
 
     init(
         id: UUID = UUID(),
@@ -151,7 +153,9 @@ struct ConfirmedPaystub: Codable, Hashable, Sendable, Identifiable {
         perDiemPay: Money? = nil,
         notes: String = "",
         evidence: PaystubEvidence? = nil,
-        confirmedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded())
+        confirmedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded()),
+        confirmation: PaystubConfirmation? = nil,
+        assessment: PaycheckAssessment? = nil
     ) {
         self.id = id
         self.payPeriodStart = payPeriodStart
@@ -168,6 +172,8 @@ struct ConfirmedPaystub: Codable, Hashable, Sendable, Identifiable {
         self.notes = notes
         self.evidence = evidence
         self.confirmedEpochSeconds = confirmedEpochSeconds
+        self.confirmation = confirmation
+        self.assessment = assessment
     }
 }
 
@@ -181,6 +187,8 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
     var reconciliation: ReconciliationResult?
     var auditCompletedEpochSeconds: Int64?
     var hasConsumedAuditAccess: Bool
+    var auditRevisions: [AuditRevision]?
+    var workRevision: Int?
 
     init(
         id: UUID = UUID(),
@@ -191,7 +199,9 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         paystub: ConfirmedPaystub? = nil,
         reconciliation: ReconciliationResult? = nil,
         auditCompletedEpochSeconds: Int64? = nil,
-        hasConsumedAuditAccess: Bool = false
+        hasConsumedAuditAccess: Bool = false,
+        auditRevisions: [AuditRevision]? = nil,
+        workRevision: Int? = nil
     ) {
         self.id = id
         self.window = window
@@ -202,6 +212,8 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.reconciliation = reconciliation
         self.auditCompletedEpochSeconds = auditCompletedEpochSeconds
         self.hasConsumedAuditAccess = hasConsumedAuditAccess
+        self.auditRevisions = auditRevisions
+        self.workRevision = workRevision
     }
 }
 
@@ -215,6 +227,8 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let paystub: ConfirmedPaystub?
     let reconciliation: ReconciliationResult?
     let archivedEpochSeconds: Int64
+    let auditRevisions: [AuditRevision]?
+    let hasConsumedAuditAccess: Bool?
 
     init(
         id: UUID,
@@ -225,7 +239,9 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         calculation: CalculationResult,
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
-        archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded())
+        archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded()),
+        auditRevisions: [AuditRevision]? = nil,
+        hasConsumedAuditAccess: Bool? = nil
     ) {
         self.id = id
         self.window = window
@@ -236,22 +252,81 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.paystub = paystub
         self.reconciliation = reconciliation
         self.archivedEpochSeconds = archivedEpochSeconds
+        self.auditRevisions = auditRevisions
+        self.hasConsumedAuditAccess = hasConsumedAuditAccess
     }
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 1
-
+    static let currentSchemaVersion = 2
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
+    var setupDraft: PayProfileDraft?
+    var workDraft: WorkDraft?
+    var paystubDraft: PaystubConfirmationDraft?
+    var pendingEvidenceDeletions: [PaystubEvidence] = []
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit
+        case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
+    }
+
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let version = try values.decode(Int.self, forKey: .schemaVersion)
+        guard (1...Self.currentSchemaVersion).contains(version) else {
+            throw LocalStateStoreError.unsupportedSchema(version)
+        }
+        // Additive v1 -> v2 migration. Historical work, calculations and sources are not recalculated.
+        schemaVersion = Self.currentSchemaVersion
+        profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)
+        activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)
+        history = try values.decodeIfPresent([CompletedPayPeriod].self, forKey: .history) ?? []
+        hasUsedFreeAudit = try values.decodeIfPresent(Bool.self, forKey: .hasUsedFreeAudit) ?? false
+        setupDraft = try values.decodeIfPresent(PayProfileDraft.self, forKey: .setupDraft)
+        workDraft = try values.decodeIfPresent(WorkDraft.self, forKey: .workDraft)
+        paystubDraft = try values.decodeIfPresent(
+            PaystubConfirmationDraft.self, forKey: .paystubDraft)
+        pendingEvidenceDeletions =
+            try values.decodeIfPresent(
+                [PaystubEvidence].self, forKey: .pendingEvidenceDeletions) ?? []
+    }
+}
+
+struct AuditRevision: Identifiable, Codable, Hashable, Sendable {
+    let id: UUID
+    let window: PayPeriodWindow
+    let agreement: AgreementSnapshot
+    let timeZoneIdentifier: String
+    let workEntries: [WorkEntry]
+    let calculation: CalculationResult
+    let paystub: ConfirmedPaystub
+    let reconciliation: ReconciliationResult?
+}
+
+struct PayPeriodContext: Identifiable, Hashable, Sendable {
+    let id: UUID
+    let window: PayPeriodWindow
+    let agreement: AgreementSnapshot
+    let timeZoneIdentifier: String
+    let workEntries: [WorkEntry]
+    let calculation: CalculationResult?
+    let paystub: ConfirmedPaystub?
+    let reconciliation: ReconciliationResult?
+    let revisions: [AuditRevision]
+    let isClosed: Bool
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {
     case notAudited
     case matches
+    case grossMatches
+    case notComparable
     case possibleShortfall
     case possibleOverpayment
     case needsReview
@@ -259,7 +334,9 @@ enum AuditDisplayStatus: Hashable, Sendable {
     var title: String {
         switch self {
         case .notAudited: "Not audited"
-        case .matches: "Matches"
+        case .matches: "Compared values match"
+        case .grossMatches: "Gross total matches"
+        case .notComparable: "Not ready to compare"
         case .possibleShortfall: "Possible shortfall"
         case .possibleOverpayment: "Possible overpayment"
         case .needsReview: "Needs review"
@@ -269,7 +346,8 @@ enum AuditDisplayStatus: Hashable, Sendable {
     var systemImage: String {
         switch self {
         case .notAudited: "doc.text.magnifyingglass"
-        case .matches: "checkmark.circle.fill"
+        case .matches, .grossMatches: "checkmark.circle.fill"
+        case .notComparable: "questionmark.square"
         case .possibleShortfall: "exclamationmark.circle.fill"
         case .possibleOverpayment: "arrow.up.arrow.down.circle.fill"
         case .needsReview: "questionmark.circle.fill"

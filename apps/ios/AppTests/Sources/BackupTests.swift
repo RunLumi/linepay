@@ -228,6 +228,8 @@ struct BackupTests {
         stub.payPeriodStartDate = period.window.startDate
         stub.payPeriodEndDate = period.window.displayEndDate
         stub.grossPay = "400"
+        stub.grossBasis = .wagesOnly
+        stub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         stub.sourceData = syntheticOriginal
         stub.originalFilename = "synthetic.pdf"
         stub.mediaType = "application/pdf"

@@ -1,377 +1,240 @@
 import LinePayDomain
-import QuickLook
 import SwiftUI
 
+struct LiveAuditView: View {
+    let model: AppModel
+    let subscriptionStore: SubscriptionStore
+    let periodID: UUID
+    @State private var correction = false
+    @State private var paywall = false
+    var body: some View {
+        Group {
+            if let context = model.periodContext(id: periodID) {
+                AuditDetailView(model: model, context: context, onCorrect: { correction = true })
+            } else {
+                ContentUnavailableView("Period unavailable", systemImage: "doc")
+            }
+        }
+        .toolbar {
+            if !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled {
+                ToolbarItem(placement: .bottomBar) {
+                    Button("Audit future paychecks with Pro") { paywall = true }
+                }
+            }
+        }
+        .sheet(isPresented: $correction) {
+            PaystubImportView(
+                model: model, subscriptionStore: subscriptionStore, periodID: periodID
+            ) {}
+        }
+        .sheet(isPresented: $paywall) {
+            ProPaywallView(store: subscriptionStore) { paywall = false }
+        }
+    }
+}
+
 struct AuditDetailView: View {
-    let window: PayPeriodWindow
-    let timeZoneIdentifier: String
-    let agreement: AgreementSnapshot
-    let calculation: CalculationResult
-    let paystub: ConfirmedPaystub
-    let reconciliation: ReconciliationResult?
-    let findings: [AuditFinding]
-    let evidenceURL: URL?
-    let onRemoveEvidence: (() throws -> Void)?
-
+    let model: AppModel
+    let context: PayPeriodContext
+    var onCorrect: (() -> Void)? = nil
     @State private var reportURL: URL?
-    @State private var showingEvidence = false
-    @State private var showingRemoveEvidenceConfirmation = false
+    @State private var showingRemove = false
     @State private var errorMessage: String?
-
     var body: some View {
         List {
-            Section {
-                comparisonHeader
-            }
-
-            Section("What to review") {
-                if reconciliation == nil {
-                    Label(
-                        "Re-run the audit after confirming changed work or rules.",
-                        systemImage: "arrow.clockwise"
-                    )
-                    .foregroundStyle(.orange)
-                } else {
-                    ForEach(findings) { finding in
-                        NavigationLink {
-                            FindingDetailView(
-                                finding: finding,
-                                agreement: agreement,
-                                calculation: calculation,
-                                paystub: paystub
-                            )
-                        } label: {
-                            findingRow(finding)
-                        }
-                    }
-                }
-            }
-
-            Section("Rule snapshot") {
-                LabeledContent("Profile", value: agreement.displayName)
-                LabeledContent("Version", value: agreement.version)
-                LabeledContent("Base rate") {
-                    Text("\(LinePayFormat.money(agreement.hourlyRate))/hr")
-                        .monospacedDigit()
-                }
-                if agreement.sources.isEmpty {
-                    Text("No source reference was saved for this rule snapshot.")
-                        .foregroundStyle(LinePayColor.textSecondary)
-                } else {
-                    ForEach(Array(agreement.sources.enumerated()), id: \.offset) { _, source in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(source.title).font(.headline)
-                            if !source.url.isEmpty {
-                                Text(source.url)
-                                    .font(.footnote)
-                                    .foregroundStyle(LinePayColor.textSecondary)
-                                    .textSelection(.enabled)
-                            }
-                            if let section = source.section {
-                                Text(section)
-                                    .font(.footnote)
-                                    .foregroundStyle(LinePayColor.textSecondary)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Section("Paystub evidence") {
-                if let evidence = paystub.evidence {
-                    LabeledContent("Source", value: evidence.originalFilename)
-                    LabeledContent("Imported as", value: sourceLabel(evidence.sourceKind))
-
-                    if evidenceURL != nil {
-                        Button {
-                            showingEvidence = true
-                        } label: {
-                            Label("View original", systemImage: "doc")
-                        }
-                    }
-
-                    if let recognizedText = evidence.recognizedText, !recognizedText.isEmpty {
-                        DisclosureGroup("OCR text") {
-                            Text(recognizedText)
-                                .font(.caption.monospaced())
-                                .textSelection(.enabled)
-                        }
-                    }
-
-                    if onRemoveEvidence != nil {
-                        Button(role: .destructive) {
-                            showingRemoveEvidenceConfirmation = true
-                        } label: {
-                            Label("Remove original paystub", systemImage: "trash")
-                        }
-                    }
-                } else {
-                    Text("No original paystub is stored for this audit.")
-                        .foregroundStyle(LinePayColor.textSecondary)
-                }
-            }
-
-            Section("Export") {
-                if let reportURL {
-                    ShareLink(item: reportURL) {
-                        Label("Share reconciliation report", systemImage: "square.and.arrow.up")
-                    }
-                } else {
-                    Button {
-                        makeReport()
-                    } label: {
-                        Label("Prepare reconciliation report", systemImage: "doc.richtext")
-                    }
-                }
-                Text(
-                    "The report does not include the original paystub unless you share it separately."
-                )
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
-            }
-
-            Section {
-                Text(
-                    "LinePaycheck estimates and reconciles pay from the facts and rules you confirmed. "
-                        + "A possible difference is a reason to review the paycheck, not a legal determination."
-                )
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
-            }
-
-            if let errorMessage {
+            if let paid = context.paystub, let calculation = context.calculation {
                 Section {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
+                    Text(
+                        LinePayFormat.payPeriod(
+                            context.window, timeZoneIdentifier: context.timeZoneIdentifier)
+                    ).font(.subheadline)
+                    if context.reconciliation == nil && paid.assessment?.verdict != .notComparable {
+                        AuditStatusView(status: .needsReview)
+                        Text(
+                            "Work or rules changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
+                        )
+                    } else if let assessment = paid.assessment {
+                        ComparisonAmounts(
+                            expected: assessment.expectedGross, paid: assessment.paidGross)
+                        LineGapComparison(difference: assessment.difference)
+                        AuditStatusView(status: .assessment(assessment))
+                        if let difference = assessment.difference, difference.amount != 0 {
+                            PayAmount(label: "Expected minus confirmed paid", money: difference)
+                        }
+                        Text(paid.confirmation?.grossBasis.title ?? "Gross basis not confirmed")
+                            .font(.footnote)
+                        ForEach(assessment.reviewReasons, id: \.self) {
+                            Text($0).foregroundStyle(LinePayColor.review)
+                        }
+                        ForEach(assessment.scopeNotes, id: \.self) {
+                            Text($0).font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                        }
+                    } else {
+                        AuditStatusView(status: .needsReview)
+                        Text(
+                            "This older audit compared gross totals without recording their basis. Review the paycheck to create an evidence-aware revision; the original record is preserved."
+                        )
+                    }
+                    if let onCorrect {
+                        Button("Review or correct confirmed facts", action: onCorrect).frame(
+                            minHeight: 48
+                        ).accessibilityIdentifier("audit.correct")
+                    }
+                }
+                if let assessment = paid.assessment, context.reconciliation != nil {
+                    Section("Compared lines; positive difference means expected was higher") {
+                        ForEach(assessment.comparisons.sorted { $0.differs && !$1.differs }) {
+                            comparison in
+                            NavigationLink {
+                                PaycheckComparisonDetail(
+                                    model: model, context: context, comparison: comparison)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(comparison.field.title).font(.headline)
+                                    Text("Expected \(format(comparison.expected, comparison))")
+                                    Text("Confirmed \(format(comparison.paid, comparison))")
+                                    Text(
+                                        comparison.differs
+                                            ? "Difference \(format(comparison.difference, comparison))"
+                                            : "Compared value matches"
+                                    )
+                                    .foregroundStyle(
+                                        comparison.differs
+                                            ? LinePayColor.difference : LinePayColor.textSecondary)
+                                }.monospacedDigit().padding(.vertical, 6)
+                            }
+                        }
+                    }
+                }
+                Section("Original evidence") {
+                    if let evidence = paid.evidence, let url = model.evidenceURL(for: evidence) {
+                        NavigationLink("View original paystub") {
+                            SourceEvidenceView(url: url, region: nil)
+                        }
+                        Text(evidence.originalFilename).font(.footnote)
+                        Button("Remove this original", role: .destructive) { showingRemove = true }
+                    } else {
+                        Text(
+                            "No original is available for this audit. Confirmed values are still retained."
+                        )
+                    }
+                }
+                Section("Rule snapshot") {
+                    NavigationLink("Rules and sources v\(context.agreement.version)") {
+                        RuleSourcesView(agreement: context.agreement)
+                    }
+                }
+                Section("Worker-owned report") {
+                    if let reportURL { ShareLink("Share report", item: reportURL) }
+                    Button("Prepare audit report") {
+                        do {
+                            reportURL = try ReconciliationReportExporter().export(
+                                window: context.window,
+                                timeZoneIdentifier: context.timeZoneIdentifier,
+                                agreement: context.agreement,
+                                calculation: calculation, paystub: paid,
+                                reconciliation: context.reconciliation,
+                                findings: model.auditFindings(
+                                    calculation: calculation, paystub: paid))
+                        } catch { errorMessage = error.localizedDescription }
+                    }.accessibilityIdentifier("audit.export")
+                    Text(
+                        "This report excludes original paystub pages. Existing records and exports remain available without Pro."
+                    ).font(.footnote)
                 }
             }
-        }
-        .navigationTitle("Paycheck audit")
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingEvidence) {
-            if let evidenceURL {
-                QuickLookPreview(url: evidenceURL)
-                    .ignoresSafeArea()
+            if let errorMessage {
+                Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
+        .navigationTitle("Paycheck audit").navigationBarTitleDisplayMode(.inline)
         .confirmationDialog(
-            "Remove the original paystub?",
-            isPresented: $showingRemoveEvidenceConfirmation,
+            "Delete this original from the device?", isPresented: $showingRemove,
             titleVisibility: .visible
         ) {
-            Button("Remove original paystub", role: .destructive) {
-                removeEvidence()
+            Button("Remove original", role: .destructive) {
+                guard let id = context.paystub?.evidence?.id else { return }
+                do { try model.removeEvidence(id: id) } catch {
+                    errorMessage = error.localizedDescription
+                }
             }
-            Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Confirmed audit values remain. The original image/PDF and local OCR evidence are deleted."
+                "Every audit revision sharing this source loses access to the original. Confirmed amounts and calculation records remain. Copies you exported to Files are not removed."
             )
         }
     }
-
-    private var comparisonHeader: some View {
-        VStack(spacing: LinePaySpacing.standard) {
-            HStack(alignment: .firstTextBaseline) {
-                amountColumn("EXPECTED", calculation.total)
-                Spacer()
-                amountColumn("PAID", paystub.grossPay)
-            }
-
-            Divider()
-
-            if let reconciliation {
-                VStack(spacing: 4) {
-                    AuditStatusView(status: displayStatus(reconciliation.direction))
-                    if reconciliation.direction != .matches {
-                        Text(LinePayFormat.money(reconciliation.difference))
-                            .font(.title2.bold().monospacedDigit())
-                            .foregroundStyle(LinePayColor.textPrimary)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            } else {
-                AuditStatusView(status: .needsReview)
-            }
-        }
-        .padding(.vertical, LinePaySpacing.standard)
-    }
-
-    private func amountColumn(_ label: String, _ money: Money) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
-                .foregroundStyle(LinePayColor.textSecondary)
-            Text(LinePayFormat.money(money))
-                .font(.title3.bold().monospacedDigit())
-        }
-    }
-
-    private func findingRow(_ finding: AuditFinding) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(finding.title)
-                    .font(.headline)
-                Text(
-                    "Expected \(LinePayFormat.money(finding.expected)) · Paid \(LinePayFormat.money(finding.paid))"
-                )
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
-            }
-            Spacer()
-            Text(LinePayFormat.money(finding.difference))
-                .font(.subheadline.weight(.semibold).monospacedDigit())
-        }
-    }
-
-    private func displayStatus(_ direction: ReconciliationDirection) -> AuditDisplayStatus {
-        switch direction {
-        case .matches: .matches
-        case .possibleUnderpayment: .possibleShortfall
-        case .possibleOverpayment: .possibleOverpayment
-        }
-    }
-
-    private func sourceLabel(_ kind: PaystubSourceKind) -> String {
-        switch kind {
-        case .scan: "Document scan"
-        case .photo: "Photo"
-        case .file: "File"
-        case .manual: "Manual entry"
-        }
-    }
-
-    private func makeReport() {
-        do {
-            reportURL = try ReconciliationReportExporter().export(
-                window: window,
-                timeZoneIdentifier: timeZoneIdentifier,
-                agreement: agreement,
-                calculation: calculation,
-                paystub: paystub,
-                reconciliation: reconciliation,
-                findings: findings
-            )
-            errorMessage = nil
-        } catch {
-            errorMessage = "LinePaycheck could not prepare the report."
-        }
-    }
-
-    private func removeEvidence() {
-        guard let onRemoveEvidence else { return }
-        do {
-            try onRemoveEvidence()
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+    private func format(_ value: Decimal, _ comparison: PaycheckComparison) -> String {
+        comparison.unit == .hours
+            ? "\(LinePayFormat.hours(value)) h"
+            : LinePayFormat.money(Money(amount: value, currencyCode: comparison.currencyCode))
     }
 }
 
-private struct FindingDetailView: View {
-    let finding: AuditFinding
-    let agreement: AgreementSnapshot
-    let calculation: CalculationResult
-    let paystub: ConfirmedPaystub
-
+struct PaycheckComparisonDetail: View {
+    let model: AppModel
+    let context: PayPeriodContext
+    let comparison: PaycheckComparison
     var body: some View {
         List {
-            Section("Comparison") {
-                LabeledContent("Expected") {
-                    Text(LinePayFormat.money(finding.expected)).monospacedDigit()
-                }
-                LabeledContent("Confirmed paid") {
-                    Text(LinePayFormat.money(finding.paid)).monospacedDigit()
-                }
-                LabeledContent("Difference") {
-                    Text(LinePayFormat.money(finding.difference)).monospacedDigit()
-                }
+            Section("This comparison") {
+                Text(comparison.field.title).font(.title2.bold())
+                LabeledContent("Expected", value: formatted(comparison.expected))
+                LabeledContent("Confirmed paid", value: formatted(comparison.paid))
+                LabeledContent("Difference", value: formatted(comparison.difference))
             }
-
-            Section("Why") {
-                Text(finding.explanation)
-            }
-
-            Section("Calculation evidence") {
-                ForEach(calculation.components) { component in
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack {
-                            Text(LinePayFormat.localDate(component.localDate))
-                            Spacer()
-                            Text(LinePayFormat.money(component.amount)).monospacedDigit()
-                        }
-                        Text(component.explanation)
-                            .font(.footnote)
-                            .foregroundStyle(LinePayColor.textSecondary)
+            if let calculation = context.calculation {
+                Section("Only the work behind this line") {
+                    let selected = calculation.components.filter {
+                        comparison.componentIDs.contains($0.id)
                     }
-                }
-            }
-
-            Section("Rule evidence") {
-                LabeledContent("Rule version", value: agreement.version)
-                if agreement.sources.isEmpty {
-                    Text("No source reference saved.")
-                        .foregroundStyle(LinePayColor.textSecondary)
-                } else {
-                    ForEach(Array(agreement.sources.enumerated()), id: \.offset) { _, source in
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(source.title)
-                            if !source.url.isEmpty {
-                                Text(source.url)
-                                    .font(.footnote)
-                                    .foregroundStyle(LinePayColor.textSecondary)
-                                    .textSelection(.enabled)
-                            }
+                    if selected.isEmpty {
+                        Text(
+                            "No applicable expected components. Check whether your recorded work or selected paystub layout is incomplete."
+                        )
+                    }
+                    ForEach(selected) { component in
+                        NavigationLink(
+                            "\(componentTitle(component)): \(LinePayFormat.money(component.amount))"
+                        ) {
+                            EvidenceReceiptView(
+                                component: component, agreement: context.agreement,
+                                work: context.workEntries)
                         }
                     }
                 }
             }
-
-            Section("Paystub fact") {
-                LabeledContent("Gross pay") {
-                    Text(LinePayFormat.money(paystub.grossPay)).monospacedDigit()
+            Section("Paystub evidence") {
+                if let paid = context.paystub {
+                    Text("Confirmed \(comparison.field.title): \(formatted(comparison.paid))")
+                        .monospacedDigit()
+                    Text("Layout: \(paid.confirmation?.lineLayout.title ?? "Not recorded")").font(
+                        .footnote)
+                    if let source = paid.evidence, let url = model.evidenceURL(for: source) {
+                        NavigationLink("View source for this field") {
+                            SourceEvidenceView(
+                                url: url,
+                                region: paid.confirmation?.suggestions[comparison.field]?.region)
+                        }
+                    } else {
+                        Text("Entered or confirmed by you. Original not available.")
+                    }
+                    if let text = paid.confirmation?.suggestions[comparison.field]?.sourceText {
+                        Text(text).font(.caption.monospaced()).textSelection(.enabled)
+                    }
                 }
-                Text("Only values you confirmed are used as paycheck facts.")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
+            }
+            Section {
+                Text(
+                    "Check this line on your paystub or with payroll. A difference is not a determination of wages legally owed."
+                ).font(.footnote)
             }
         }
-        .navigationTitle(finding.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(comparison.field.title).navigationBarTitleDisplayMode(.inline)
     }
-}
-
-private struct QuickLookPreview: UIViewControllerRepresentable {
-    let url: URL
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(url: url)
-    }
-
-    func makeUIViewController(context: Context) -> QLPreviewController {
-        let controller = QLPreviewController()
-        controller.dataSource = context.coordinator
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: QLPreviewController, context: Context) {}
-
-    final class Coordinator: NSObject, QLPreviewControllerDataSource {
-        let url: URL
-
-        init(url: URL) {
-            self.url = url
-        }
-
-        func numberOfPreviewItems(in controller: QLPreviewController) -> Int { 1 }
-
-        func previewController(
-            _ controller: QLPreviewController,
-            previewItemAt index: Int
-        ) -> QLPreviewItem {
-            url as NSURL
-        }
+    private func formatted(_ value: Decimal) -> String {
+        comparison.unit == .hours
+            ? "\(LinePayFormat.hours(value)) h"
+            : LinePayFormat.money(Money(amount: value, currencyCode: comparison.currencyCode))
     }
 }

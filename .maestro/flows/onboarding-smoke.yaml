@@ -16,9 +16,21 @@ tags:
     id: pay-profile.hourly-rate
 - inputText: "58.40"
 - tapOn:
-    point: "50%,12%"
-- assertVisible:
-    id: pay-profile.save
+    id: keyboard.done
+- tapOn:
+    id: pay-profile.continue
+- tapOn:
+    id: pay-profile.continue
+- scrollUntilVisible:
+    element:
+      id: pay-profile.continue
+    direction: DOWN
+- tapOn:
+    id: pay-profile.continue
+- scrollUntilVisible:
+    element:
+      id: pay-profile.save
+    direction: DOWN
 - tapOn:
     id: pay-profile.save
 - assertVisible:

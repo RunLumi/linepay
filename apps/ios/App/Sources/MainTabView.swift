@@ -1,37 +1,27 @@
 import SwiftUI
 
 struct MainTabView: View {
+    enum Destination: Hashable { case today, pay, history, settings }
     let model: AppModel
     let subscriptionStore: SubscriptionStore
-
+    @State private var selection: Destination = .today
     var body: some View {
-        TabView {
-            TodayView(model: model)
-                .tabItem {
-                    Label("Today", systemImage: "clock")
-                }
-
-            PayLedgerView(
-                model: model,
-                subscriptionStore: subscriptionStore
+        TabView(selection: $selection) {
+            TodayView(
+                model: model, onOpenHistory: { selection = .history },
+                onOpenPay: { selection = .pay }
             )
-            .tabItem {
-                Label("Pay", systemImage: "dollarsign")
-            }
-
-            HistoryView(model: model)
-                .tabItem {
-                    Label("History", systemImage: "clock.arrow.circlepath")
-                }
-
-            SettingsView(
-                model: model,
-                subscriptionStore: subscriptionStore
+            .tabItem { Label("Today", systemImage: "clock") }.tag(Destination.today)
+            PayLedgerView(model: model, subscriptionStore: subscriptionStore)
+                .tabItem { Label("Pay", systemImage: "dollarsign") }.tag(Destination.pay)
+            HistoryView(
+                model: model, subscriptionStore: subscriptionStore,
+                onOpenCurrent: { selection = .pay }
             )
-            .tabItem {
-                Label("Settings", systemImage: "gearshape")
-            }
-        }
-        .tint(LinePayColor.brandPrimary)
+            .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }.tag(
+                Destination.history)
+            SettingsView(model: model, subscriptionStore: subscriptionStore)
+                .tabItem { Label("Settings", systemImage: "gearshape") }.tag(Destination.settings)
+        }.tint(LinePayColor.brandPrimary)
     }
 }

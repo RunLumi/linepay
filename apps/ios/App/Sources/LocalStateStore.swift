@@ -62,11 +62,14 @@ final class VersionedLocalStateStore: AppStateStoring {
             return nil
         }
 
+        let size = try stateURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+        guard size <= 8 * 1024 * 1024 else { throw LocalStateStoreError.invalidState }
         let data = try Data(contentsOf: stateURL)
         let state = try JSONDecoder().decode(AppPersistentState.self, from: data)
         guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
             throw LocalStateStoreError.unsupportedSchema(state.schemaVersion)
         }
+        try AppStateValidation.validate(state)
         return state
     }
 
@@ -75,15 +78,19 @@ final class VersionedLocalStateStore: AppStateStoring {
             throw LocalStateStoreError.unsupportedSchema(state.schemaVersion)
         }
 
+        try AppStateValidation.validate(state)
         try ensureDirectory()
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let data = try encoder.encode(state)
-        try data.write(to: stateURL, options: [.atomic])
-        try? fileManager.setAttributes(
-            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: stateURL.path
-        )
+        #if os(iOS)
+            try data.write(
+                to: stateURL,
+                options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        #else
+            try data.write(to: stateURL, options: [.atomic])
+        #endif
+
     }
 
     func reset() throws {
@@ -101,18 +108,23 @@ final class VersionedLocalStateStore: AppStateStoring {
             at: directoryURL,
             withIntermediateDirectories: true
         )
-        try? fileManager.setAttributes(
-            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: directoryURL.path
-        )
+        #if os(iOS)
+            try fileManager.setAttributes(
+                [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                ofItemAtPath: directoryURL.path
+            )
+        #endif
     }
 }
 
 enum LocalStateStoreError: LocalizedError, Equatable {
     case unsupportedSchema(Int)
+    case invalidState
 
     var errorDescription: String? {
         switch self {
+        case .invalidState:
+            "The local file contains invalid or oversized records. Your saved file was not overwritten."
         case .unsupportedSchema(let version):
             "This LinePaycheck data uses unsupported local schema version \(version)."
         }

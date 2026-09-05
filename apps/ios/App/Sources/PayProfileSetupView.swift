@@ -5,428 +5,452 @@ struct PayProfileSetupView: View {
     let model: AppModel
     let showsIntro: Bool
     let onSaved: (() -> Void)?
-
     @Environment(\.dismiss) private var dismiss
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
+    @State private var showingUnsupported = false
 
-    init(
-        model: AppModel,
-        showsIntro: Bool = true,
-        onSaved: (() -> Void)? = nil
-    ) {
+    init(model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil) {
         self.model = model
         self.showsIntro = showsIntro
         self.onSaved = onSaved
-        if let profile = model.profile {
-            _draft = State(
-                initialValue: PayProfileDraft(
-                    profile: profile,
-                    activePeriod: model.activePeriod
-                )
-            )
-        } else {
-            _draft = State(initialValue: PayProfileDraft())
-        }
+        _draft = State(
+            initialValue: model.setupDraft ?? model.profile.map {
+                PayProfileDraft(profile: $0, activePeriod: model.activePeriod)
+            } ?? PayProfileDraft())
     }
+    private var editing: Bool { model.profile != nil }
+    private var zone: TimeZone { TimeZone(identifier: draft.timeZoneIdentifier) ?? .current }
+    private var step: Int { min(3, max(0, draft.setupStep)) }
 
     var body: some View {
         NavigationStack {
             Form {
-                if showsIntro {
-                    Section {
-                        VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                            Text("Know what your work should pay.")
-                                .font(.title2.bold())
-                            Text(
-                                "Confirm only the rules that actually apply. Optional rules start off."
-                            )
-                            .foregroundStyle(LinePayColor.textSecondary)
-                            lineGap
-                        }
-                        .padding(.vertical, LinePaySpacing.compact)
-                    }
-                }
-
-                Section("Pay profile") {
-                    TextField("Profile name", text: $draft.name)
-                    TextField("Base hourly rate", text: $draft.hourlyRate)
-                        .keyboardType(.decimalPad)
-                        .monospacedDigit()
-                        .accessibilityIdentifier("pay-profile.hourly-rate")
-
-                    Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
-                        ForEach(Self.usTimeZones, id: \.identifier) { option in
-                            Text(option.name).tag(option.identifier)
-                        }
-                    }
-                }
-
                 Section {
-                    Picker("Pay cadence", selection: $draft.preferredCadence) {
-                        ForEach(PayPeriodCadence.allCases) { cadence in
-                            Text(cadence.title).tag(cadence)
-                        }
-                    }
-                    DatePicker(
-                        model.profile == nil ? "Current period starts" : "Next period starts",
-                        selection: $draft.periodStartDate,
-                        displayedComponents: .date
-                    )
-                    if draft.preferredCadence == .manual {
-                        DatePicker(
-                            "Period ends",
-                            selection: $draft.manualPeriodEndDate,
-                            displayedComponents: .date
-                        )
-                    }
-                } header: {
-                    Text("Pay period")
-                } footer: {
-                    if model.profile == nil {
-                        Text(
-                            "Choose the boundary that matches the paycheck you are currently earning."
-                        )
-                    } else {
-                        Text(
-                            "Changing cadence affects future periods only. The current and archived "
-                                + "period boundaries keep their original meaning."
-                        )
-                    }
+                    Text(["Pay basics", "Pay period", "Your rules", "Confirm rules"][step])
+                        .font(.title2.bold())
+                    Text("Step \(step + 1) of 4. Your unfinished setup is saved on this device.")
+                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                 }
-
-                Section {
-                    Toggle("Regular schedule", isOn: $draft.useRegularSchedule)
-                    if draft.useRegularSchedule {
-                        weekdaySelector
-                        DatePicker(
-                            "Scheduled start",
-                            selection: $draft.regularStartTime,
-                            displayedComponents: .hourAndMinute
-                        )
-                        DatePicker(
-                            "Scheduled end",
-                            selection: $draft.regularEndTime,
-                            displayedComponents: .hourAndMinute
-                        )
-                        TextField(
-                            "Outside-schedule multiplier",
-                            text: $draft.outsideScheduleMultiplier
-                        )
-                        .keyboardType(.decimalPad)
-                        .monospacedDigit()
-                    }
-                } header: {
-                    Text("Regular schedule")
-                } footer: {
-                    Text(
-                        "Enable only if your agreement pays a different multiplier outside a defined "
-                            + "schedule. Overnight schedule windows are not approximated in 1.0."
-                    )
+                switch step {
+                case 0: basics
+                case 1: period
+                case 2: rules
+                default: review
                 }
-
-                Section {
-                    Toggle("Daily overtime", isOn: $draft.useDailyOvertime)
-                    if draft.useDailyOvertime {
-                        TextField("After hours", text: $draft.overtimeAfterHours)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                        TextField("Multiplier", text: $draft.overtimeMultiplier)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                    }
-                } header: {
-                    Text("Daily overtime")
-                } footer: {
-                    Text("LinePaycheck will not assume an overtime threshold unless you enable it.")
-                }
-
-                Section {
-                    Toggle("Sunday premium", isOn: $draft.useSundayPremium)
-                    if draft.useSundayPremium {
-                        TextField("Sunday multiplier", text: $draft.sundayMultiplier)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                    }
-                } header: {
-                    Text("Sunday")
-                }
-
-                Section {
-                    ForEach($draft.datePremiums) { $premium in
-                        VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                            DatePicker(
-                                "Premium date",
-                                selection: $premium.date,
-                                displayedComponents: .date
-                            )
-                            HStack {
-                                TextField("Multiplier", text: $premium.multiplier)
-                                    .keyboardType(.decimalPad)
-                                    .monospacedDigit()
-                                Button(role: .destructive) {
-                                    draft.datePremiums.removeAll { $0.id == premium.id }
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .frame(width: 44, height: 44)
-                                }
-                                .accessibilityLabel("Remove date premium")
-                            }
-                        }
-                    }
-                    Button {
-                        draft.datePremiums.append(DatePremiumDraft())
-                    } label: {
-                        Label("Add holiday or premium date", systemImage: "plus")
-                    }
-                } header: {
-                    Text("Specific dates")
-                } footer: {
-                    Text("Use only dates and multipliers you can confirm from your agreement.")
-                }
-
-                Section {
-                    Toggle("Callout minimum", isOn: $draft.useCalloutMinimum)
-                    if draft.useCalloutMinimum {
-                        TextField("Minimum paid hours", text: $draft.calloutMinimumHours)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                    }
-                } header: {
-                    Text("Callout")
-                } footer: {
-                    Text(
-                        "LinePaycheck keeps actual worked time unchanged and derives any minimum-pay "
-                            + "guarantee as a separate ledger line."
-                    )
-                }
-
-                Section {
-                    Toggle("Flat per diem", isOn: $draft.usePerDiem)
-                    if draft.usePerDiem {
-                        TextField("Amount per worked date", text: $draft.perDiemAmount)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                    }
-                } header: {
-                    Text("Per diem")
-                }
-
-                Section {
-                    Toggle("Effective start", isOn: $draft.useEffectiveStart)
-                    if draft.useEffectiveStart {
-                        DatePicker(
-                            "Starts",
-                            selection: $draft.effectiveStartDate,
-                            displayedComponents: .date
-                        )
-                    }
-                    Toggle("Effective end", isOn: $draft.useEffectiveEnd)
-                    if draft.useEffectiveEnd {
-                        DatePicker(
-                            "Ends",
-                            selection: $draft.effectiveEndDate,
-                            displayedComponents: .date
-                        )
-                    }
-                } header: {
-                    Text("Agreement effective dates")
-                }
-
-                Section {
-                    TextField("Source title", text: $draft.sourceTitle)
-                    TextField("Source URL", text: $draft.sourceURL)
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Section / note", text: $draft.sourceSection)
-                } header: {
-                    Text("Rule source (optional)")
-                } footer: {
-                    Text(
-                        "A source helps you trace the rule later. LinePaycheck does not treat a typed URL "
-                            + "as independently verified."
-                    )
-                }
-
-                Section {
-                    Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
-                    Label("Pay data stays on this iPhone", systemImage: "iphone.and.arrow.forward")
-                } header: {
-                    Text("Privacy")
-                }
-
                 if let errorMessage {
                     Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
+                        Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(LinePayColor.review)
                     }
                 }
+                Section {
+                    Button(
+                        step == 3
+                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
+                    ) {
+                        advance()
+                    }
+                    .buttonStyle(LinePayPrimaryButtonStyle())
+                    .accessibilityIdentifier(
+                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
+                }
             }
-            .navigationTitle(model.profile == nil ? "Set up pay" : "Edit pay rules")
+            .linePayKeyboardDismiss()
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
+            .navigationTitle(editing ? "Edit pay rules" : "Set up my pay")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if model.profile != nil {
-                    ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .cancellationAction) {
+                    if step > 0 {
+                        Button("Back") { draft.setupStep -= 1 }
+                    } else if editing {
                         Button("Cancel") { dismiss() }
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
-                        .fontWeight(.semibold)
-                        .accessibilityIdentifier("pay-profile.save")
+            }
+        }
+        .environment(\.timeZone, zone)
+        .tint(LinePayColor.brandPrimary)
+        .onChange(of: draft) { _, value in
+            do { try model.saveSetupDraft(value) } catch {
+                errorMessage =
+                    "This draft could not be saved. Keep this screen open and free device storage."
+            }
+        }
+        .onChange(of: draft.timeZoneIdentifier) { old, new in rebase(from: old, to: new) }
+        .sheet(isPresented: $showingUnsupported) {
+            NavigationStack {
+                Form {
+                    Section("Do not force a close-enough rule") {
+                        Text(
+                            "Weekly overtime, rest-period premiums, unusual stacking, meal penalties and travel guarantees are not automatically inferred. Record anything missing below."
+                        )
+                        TextField(
+                            "Rule or source to check", text: $draft.unsupportedRuleNotes,
+                            axis: .vertical
+                        )
+                        .lineLimit(3...8)
+                        Text(
+                            "A nonempty note marks this agreement and its audits as incomplete. LinePaycheck will not call an incomplete audit a clean match."
+                        )
+                        .font(.footnote)
+                    }
+                }
+                .navigationTitle("Missing rule")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { showingUnsupported = false }
+                    }
                 }
             }
         }
-        .environment(\.timeZone, selectedTimeZone)
-        .onChange(of: draft.timeZoneIdentifier) { oldIdentifier, newIdentifier in
-            rebaseDraftDates(from: oldIdentifier, to: newIdentifier)
-        }
-        .tint(LinePayColor.brandPrimary)
     }
 
-    private var weekdaySelector: some View {
-        VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-            Text("Workdays")
-                .font(.subheadline)
-            ForEach(Weekday.allCases, id: \.rawValue) { weekday in
-                Toggle(
-                    weekdayName(weekday),
-                    isOn: Binding(
-                        get: { draft.regularWeekdays.contains(weekday) },
-                        set: { enabled in
-                            if enabled {
-                                draft.regularWeekdays.insert(weekday)
-                            } else {
-                                draft.regularWeekdays.remove(weekday)
-                            }
-                        }
-                    )
-                )
+    private var basics: some View {
+        Section {
+            TextField("Profile name", text: $draft.name).accessibilityIdentifier("pay-profile.name")
+            LabeledContent("Base hourly rate, USD") {
+                TextField("58.40", text: $draft.hourlyRate)
+                    .keyboardType(.decimalPad).monospacedDigit()
+                    .multilineTextAlignment(.trailing)
+                    .accessibilityLabel("Hourly rate in US dollars")
+                    .accessibilityIdentifier("pay-profile.hourly-rate")
             }
-        }
-    }
-
-    private var lineGap: some View {
-        HStack(spacing: 7) {
-            Rectangle().frame(height: 1)
-            Rectangle().frame(width: 26, height: 1)
-        }
-        .foregroundStyle(LinePayColor.brandCopper)
-        .accessibilityHidden(true)
-    }
-
-    private var selectedTimeZone: TimeZone {
-        TimeZone(identifier: draft.timeZoneIdentifier) ?? .current
-    }
-
-    private func rebaseDraftDates(from oldIdentifier: String, to newIdentifier: String) {
-        guard oldIdentifier != newIdentifier else { return }
-        draft.regularStartTime = rebaseTime(
-            draft.regularStartTime,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        draft.regularEndTime = rebaseTime(
-            draft.regularEndTime,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        draft.periodStartDate = rebaseDate(
-            draft.periodStartDate,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        draft.manualPeriodEndDate = rebaseDate(
-            draft.manualPeriodEndDate,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        draft.effectiveStartDate = rebaseDate(
-            draft.effectiveStartDate,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        draft.effectiveEndDate = rebaseDate(
-            draft.effectiveEndDate,
-            from: oldIdentifier,
-            to: newIdentifier
-        )
-        for index in draft.datePremiums.indices {
-            draft.datePremiums[index].date = rebaseDate(
-                draft.datePremiums[index].date,
-                from: oldIdentifier,
-                to: newIdentifier
+            Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
+                ForEach(timeZones, id: \.self) { Text($0).tag($0) }
+            }
+        } footer: {
+            Text(
+                "Use a decimal point for numbers, for example 58.40. Payroll timezone determines day and premium boundaries, not where your phone happens to be."
             )
         }
     }
 
-    private func rebaseTime(
-        _ date: Date,
-        from oldIdentifier: String,
-        to newIdentifier: String
-    ) -> Date {
-        var oldCalendar = Calendar(identifier: .gregorian)
-        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current
-        var newCalendar = Calendar(identifier: .gregorian)
-        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current
-        let values = oldCalendar.dateComponents([.hour, .minute], from: date)
-        var components = DateComponents()
-        components.timeZone = newCalendar.timeZone
-        components.year = 2001
-        components.month = 1
-        components.day = 1
-        components.hour = values.hour
-        components.minute = values.minute
-        return newCalendar.date(from: components) ?? date
-    }
-
-    private func rebaseDate(
-        _ date: Date,
-        from oldIdentifier: String,
-        to newIdentifier: String
-    ) -> Date {
-        var oldCalendar = Calendar(identifier: .gregorian)
-        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current
-        var newCalendar = Calendar(identifier: .gregorian)
-        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current
-        var components = oldCalendar.dateComponents([.year, .month, .day], from: date)
-        components.timeZone = newCalendar.timeZone
-        return newCalendar.date(from: components) ?? date
-    }
-
-    private func save() {
-        do {
-            try model.saveProfile(draft)
-            errorMessage = nil
-            onSaved?()
-            if model.profile != nil, onSaved == nil {
-                dismiss()
+    private var period: some View {
+        Section {
+            Picker("Pay cadence", selection: $draft.preferredCadence) {
+                ForEach(PayPeriodCadence.allCases) { Text($0.title).tag($0) }
+            }.accessibilityIdentifier("pay-profile.cadence")
+            if !editing {
+                DatePicker(
+                    "Current period starts", selection: $draft.periodStartDate,
+                    displayedComponents: .date)
+                if draft.preferredCadence == .manual {
+                    DatePicker(
+                        "Current period ends", selection: $draft.manualPeriodEndDate,
+                        displayedComponents: .date)
+                }
+                Text("Preview: \(periodPreview)").font(.callout)
+            } else {
+                Text(
+                    "Cadence changes apply to future periods. Correct current dates separately in Settings; no entered date will be silently ignored."
+                )
             }
-        } catch {
-            errorMessage = error.localizedDescription
+        } footer: {
+            Text(
+                "You can close a work period and keep logging the next one while its paycheck is pending. Audit the earlier paycheck from History when it arrives."
+            )
         }
     }
 
-    private func weekdayName(_ weekday: Weekday) -> String {
-        switch weekday {
-        case .sunday: "Sunday"
-        case .monday: "Monday"
-        case .tuesday: "Tuesday"
-        case .wednesday: "Wednesday"
-        case .thursday: "Thursday"
-        case .friday: "Friday"
-        case .saturday: "Saturday"
+    @ViewBuilder private var rules: some View {
+        Section("Common rules; off unless confirmed") {
+            Toggle("Daily overtime", isOn: $draft.useDailyOvertime)
+            if draft.useDailyOvertime {
+                number("After worked hours", $draft.overtimeAfterHours)
+                number("Multiplier", $draft.overtimeMultiplier)
+                ForEach($draft.additionalOvertimeTiers) { $tier in
+                    VStack(alignment: .leading) {
+                        number("Additional threshold", $tier.afterHours)
+                        number("Additional multiplier", $tier.multiplier)
+                        Button("Remove tier", role: .destructive) {
+                            draft.additionalOvertimeTiers.removeAll { $0.id == tier.id }
+                        }
+                    }
+                }
+                Button("Add another overtime tier") {
+                    draft.additionalOvertimeTiers.append(OvertimeTierDraft())
+                }
+            }
+            Toggle("Sunday premium", isOn: $draft.useSundayPremium)
+            if draft.useSundayPremium { number("Sunday multiplier", $draft.sundayMultiplier) }
+            Toggle("Callout minimum", isOn: $draft.useCalloutMinimum)
+            if draft.useCalloutMinimum { number("Minimum paid hours", $draft.calloutMinimumHours) }
+            Toggle("Flat per diem", isOn: $draft.usePerDiem)
+            if draft.usePerDiem { number("USD per worked date", $draft.perDiemAmount) }
+        }
+        Section("Additional rules") {
+            DisclosureGroup("Other weekdays") {
+                ForEach($draft.additionalWeekdayPremiums) { $premium in
+                    Picker("Weekday", selection: $premium.weekday) {
+                        ForEach(Weekday.allCases.filter { $0 != .sunday }, id: \.self) {
+                            Text(weekdayName($0)).tag($0)
+                        }
+                    }
+                    number("Multiplier", $premium.multiplier)
+                    Button("Remove weekday", role: .destructive) {
+                        draft.additionalWeekdayPremiums.removeAll { $0.id == premium.id }
+                    }
+                }
+                Button("Add weekday premium") {
+                    draft.additionalWeekdayPremiums.append(WeekdayPremiumDraft())
+                }
+            }
+            DisclosureGroup("Outside-schedule pay") {
+                Toggle("Use regular schedule", isOn: $draft.useRegularSchedule)
+                if draft.useRegularSchedule {
+                    ForEach(Weekday.allCases, id: \.self) { day in
+                        Toggle(
+                            weekdayName(day),
+                            isOn: Binding(
+                                get: { draft.regularWeekdays.contains(day) },
+                                set: {
+                                    if $0 {
+                                        draft.regularWeekdays.insert(day)
+                                    } else {
+                                        draft.regularWeekdays.remove(day)
+                                    }
+                                }))
+                    }
+                    DatePicker(
+                        "Schedule starts", selection: $draft.regularStartTime,
+                        displayedComponents: .hourAndMinute)
+                    DatePicker(
+                        "Schedule ends", selection: $draft.regularEndTime,
+                        displayedComponents: .hourAndMinute)
+                    number("Outside-schedule multiplier", $draft.outsideScheduleMultiplier)
+                    Text(
+                        "This setup uses the same daytime schedule on selected days. Overnight schedule windows are unsupported; do not approximate them."
+                    ).font(.footnote)
+                }
+            }
+            DisclosureGroup("Holidays and specific dates") {
+                ForEach($draft.datePremiums) { $premium in
+                    DatePicker("Premium date", selection: $premium.date, displayedComponents: .date)
+                    number("Date multiplier", $premium.multiplier)
+                    Button("Remove date", role: .destructive) {
+                        draft.datePremiums.removeAll { $0.id == premium.id }
+                    }
+                }
+                Button("Add premium date") { draft.datePremiums.append(DatePremiumDraft()) }
+            }
+            DisclosureGroup("Agreement effective dates") {
+                Toggle("Effective start", isOn: $draft.useEffectiveStart)
+                if draft.useEffectiveStart {
+                    DatePicker(
+                        "Starts", selection: $draft.effectiveStartDate, displayedComponents: .date)
+                }
+                Toggle("Effective end", isOn: $draft.useEffectiveEnd)
+                if draft.useEffectiveEnd {
+                    DatePicker(
+                        "Ends", selection: $draft.effectiveEndDate, displayedComponents: .date)
+                }
+            }
+        }
+        Section("Source references, optional") {
+            TextField("Source title", text: $draft.sourceTitle)
+            TextField("Source URL", text: $draft.sourceURL).keyboardType(.URL)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
+            TextField("Section or note", text: $draft.sourceSection)
+            sourceRulePicker($draft.sourceRuleKey)
+            ForEach($draft.additionalSources) { $source in
+                DisclosureGroup(source.title.isEmpty ? "Additional source" : source.title) {
+                    TextField("Title", text: $source.title)
+                    TextField("URL", text: $source.url).keyboardType(.URL)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Section", text: $source.section)
+                    sourceRulePicker($source.ruleKey)
+                    Button("Remove source", role: .destructive) {
+                        draft.additionalSources.removeAll { $0.id == source.id }
+                    }
+                }
+            }
+            Button("Add source") { draft.additionalSources.append(RuleSourceDraft()) }
+            Text("A reference you enter is not independently verified by LinePaycheck.").font(
+                .footnote)
+        }
+        Section {
+            Button("I don't see my rule") { showingUnsupported = true }.accessibilityIdentifier(
+                "pay-profile.unsupported")
+            if !draft.unsupportedRuleNotes.isEmpty {
+                Label("Incomplete rule coverage", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(LinePayColor.review)
+                Text(draft.unsupportedRuleNotes)
+            }
         }
     }
 
-    private static let usTimeZones: [(name: String, identifier: String)] = [
-        ("Pacific", "America/Los_Angeles"),
-        ("Mountain", "America/Denver"),
-        ("Arizona", "America/Phoenix"),
-        ("Central", "America/Chicago"),
-        ("Eastern", "America/New_York"),
-        ("Alaska", "America/Anchorage"),
-        ("Hawaii", "Pacific/Honolulu"),
-    ]
+    @ViewBuilder private var review: some View {
+        if let agreement = try? model.previewAgreement(draft) {
+            Section("What LinePaycheck will calculate") {
+                AgreementSummaryView(agreement: agreement)
+                LabeledContent("Payroll timezone", value: draft.timeZoneIdentifier)
+                LabeledContent("Pay cadence", value: draft.preferredCadence.title)
+                Text(
+                    "Where premiums overlap, the highest applicable multiplier wins; premiums are not added together. A callout top-up uses the highest worked multiplier. Confirm these semantics match your agreement."
+                )
+                .font(.footnote)
+            }
+            if editing {
+                Section("Apply this change") {
+                    Picker("Scope", selection: $draft.editScope) {
+                        Text("Future work periods only").tag(RuleEditScope.futurePeriods)
+                        Text("Recalculate this entire current period").tag(
+                            RuleEditScope.currentPeriod)
+                    }.pickerStyle(.inline)
+                    if let old = model.activePeriod?.agreement {
+                        DisclosureGroup("Previous current-period rules") {
+                            AgreementSummaryView(agreement: old)
+                        }
+                        LabeledContent("Current rate", value: LinePayFormat.money(old.hourlyRate))
+                        LabeledContent(
+                            "Reviewed rate", value: LinePayFormat.money(agreement.hourlyRate))
+                    }
+                    Text(
+                        draft.editScope == .futurePeriods
+                            ? "Logged work keeps its current rules. The new snapshot is used when the next work period starts."
+                            : "All work in the current open period will be recalculated. Earlier audit revisions remain available. This does not implement a mid-period rate change."
+                    )
+                    .foregroundStyle(LinePayColor.review)
+                    Text("Closed work periods and their calculation snapshots are not changed.")
+                        .font(.footnote)
+                }
+            }
+            Section("Confirmation") {
+                Text(
+                    "These are the rules you entered, not rules inferred from your union or employer. Review the summary before using them."
+                )
+                if agreement.sources.isEmpty {
+                    Text("Confirmed by you; no source attached.").font(.footnote)
+                }
+            }
+        }
+    }
+
+    private func advance() {
+        do {
+            _ = try model.previewAgreement(draft)
+            if step < 3 {
+                draft.setupStep += 1
+            } else {
+                try model.saveProfile(draft)
+                onSaved?()
+                if onSaved == nil { dismiss() }
+            }
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+    private func number(_ label: String, _ binding: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(.subheadline)
+            TextField(label, text: binding).keyboardType(.decimalPad).monospacedDigit()
+        }
+    }
+    private func sourceRulePicker(_ selection: Binding<PayRuleKey?>) -> some View {
+        Picker("Applies to", selection: selection) {
+            Text("Agreement-level reference").tag(PayRuleKey?.none)
+            ForEach(PayRuleKey.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
+        }
+    }
+    private func weekdayName(_ day: Weekday) -> String {
+        Calendar(identifier: .gregorian).weekdaySymbols[day.rawValue - 1]
+    }
+    private var timeZones: [String] {
+        Array(
+            Set([
+                draft.timeZoneIdentifier, "America/Los_Angeles", "America/Denver",
+                "America/Phoenix", "America/Chicago", "America/New_York", "America/Anchorage",
+                "Pacific/Honolulu",
+            ])
+        ).sorted()
+    }
+    private var periodPreview: String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let end =
+            draft.preferredCadence == .manual
+            ? draft.manualPeriodEndDate
+            : calendar.date(
+                byAdding: .day, value: draft.preferredCadence == .weekly ? 6 : 13,
+                to: draft.periodStartDate) ?? draft.periodStartDate
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeZone = zone
+        return "\(formatter.string(from: draft.periodStartDate)) to \(formatter.string(from: end))"
+    }
+    private func rebase(from old: String, to new: String) {
+        guard let oldZone = TimeZone(identifier: old), let newZone = TimeZone(identifier: new)
+        else { return }
+        var a = Calendar(identifier: .gregorian)
+        a.timeZone = oldZone
+        var b = Calendar(identifier: .gregorian)
+        b.timeZone = newZone
+        func change(_ date: Date) -> Date {
+            var parts = a.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+            parts.timeZone = newZone
+            return b.date(from: parts) ?? date
+        }
+        draft.periodStartDate = change(draft.periodStartDate)
+        draft.manualPeriodEndDate = change(draft.manualPeriodEndDate)
+        draft.regularStartTime = change(draft.regularStartTime)
+        draft.regularEndTime = change(draft.regularEndTime)
+        draft.effectiveStartDate = change(draft.effectiveStartDate)
+        draft.effectiveEndDate = change(draft.effectiveEndDate)
+        for index in draft.datePremiums.indices {
+            draft.datePremiums[index].date = change(draft.datePremiums[index].date)
+        }
+    }
+}
+
+struct AgreementSummaryView: View {
+    let agreement: AgreementSnapshot
+    var body: some View {
+        LabeledContent("Base rate", value: "\(LinePayFormat.money(agreement.hourlyRate))/hr")
+        ForEach(Array(agreement.dailyOvertimeTiers.enumerated()), id: \.offset) { _, tier in
+            LabeledContent(
+                "After \(LinePayFormat.hours(tier.afterHours)) worked h",
+                value: "\(LinePayFormat.decimal(tier.multiplier))×")
+        }
+        ForEach(Array(agreement.weekdayPremiums.enumerated()), id: \.offset) { _, premium in
+            LabeledContent(
+                Calendar(identifier: .gregorian).weekdaySymbols[premium.weekday.rawValue - 1],
+                value: "\(LinePayFormat.decimal(premium.multiplier))×")
+        }
+        ForEach(Array(agreement.datePremiums.enumerated()), id: \.offset) { _, premium in
+            LabeledContent(
+                LinePayFormat.localDate(premium.date),
+                value: "\(LinePayFormat.decimal(premium.multiplier))×")
+        }
+        if let rule = agreement.calloutMinimum {
+            LabeledContent(
+                "Callout minimum", value: "\(LinePayFormat.hours(rule.minimumHours)) paid h")
+        }
+        if let rule = agreement.flatPerDiem {
+            LabeledContent("Per worked date", value: LinePayFormat.money(rule.amountPerWorkDate))
+        }
+        ForEach(Array(agreement.regularSchedule.enumerated()), id: \.offset) { _, window in
+            LabeledContent(
+                Calendar(identifier: .gregorian).weekdaySymbols[window.weekday.rawValue - 1],
+                value: String(
+                    format: "%02d:%02d to %02d:%02d", window.start.hour, window.start.minute,
+                    window.end.hour, window.end.minute))
+        }
+        if !agreement.regularSchedule.isEmpty {
+            LabeledContent(
+                "Outside schedule",
+                value: "\(LinePayFormat.decimal(agreement.outsideScheduleMultiplier))×")
+        }
+        if let date = agreement.effectiveStart {
+            LabeledContent("Effective start", value: LinePayFormat.localDate(date))
+        }
+        if let date = agreement.effectiveEnd {
+            LabeledContent("Effective end", value: LinePayFormat.localDate(date))
+        }
+        if let note = agreement.unsupportedRuleNotes, !note.isEmpty {
+            Label("Incomplete: \(note)", systemImage: "exclamationmark.triangle").foregroundStyle(
+                LinePayColor.review)
+        }
+    }
 }

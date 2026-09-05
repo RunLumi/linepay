@@ -22,11 +22,12 @@ struct ProPaywallView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
+            .accessibilityIdentifier("paywall.screen")
             .navigationTitle("LinePaycheck Pro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Not now") { dismiss() }
+                    Button("Not now") { dismiss() }.accessibilityIdentifier("paywall.dismiss")
                 }
             }
         }
@@ -45,8 +46,8 @@ struct ProPaywallView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(LinePayColor.textPrimary)
             Text(
-                "You have seen what a LinePaycheck audit does. Pro keeps that independent check "
-                    + "available for every future paycheck."
+                "Your first comparable audit is free. Pro keeps an independent check "
+                    + "available for future paychecks; saved data is never held behind a paywall."
             )
             .font(.title3)
             .foregroundStyle(LinePayColor.textSecondary)
@@ -62,13 +63,15 @@ struct ProPaywallView: View {
             )
             benefit(
                 icon: "clock.arrow.circlepath",
-                title: "Durable history",
-                detail: "Keep immutable pay-period records and audit evidence on your iPhone."
+                title: "Independent, repeatable checks",
+                detail:
+                    "Future paychecks receive the same evidence-aware check. Your existing records remain yours without Pro."
             )
             benefit(
                 icon: "square.and.arrow.up",
                 title: "Export the evidence",
-                detail: "Create a concise reconciliation report you control."
+                detail:
+                    "Keep the work, source and comparison behind each audit. Saved reports stay available after Pro ends."
             )
             benefit(
                 icon: "lock.shield",
@@ -83,13 +86,13 @@ struct ProPaywallView: View {
             planRow(
                 productID: SubscriptionStore.yearlyProductID,
                 title: "Yearly",
-                fallbackPrice: "$79.99/year",
+                fallbackPrice: "Price unavailable",
                 badge: "Best value"
             )
             planRow(
                 productID: SubscriptionStore.monthlyProductID,
                 title: "Monthly",
-                fallbackPrice: "$9.99/month",
+                fallbackPrice: "Price unavailable",
                 badge: nil
             )
             if store.isLoading {
@@ -104,9 +107,7 @@ struct ProPaywallView: View {
             Button(primaryButtonTitle) {
                 purchaseSelectedPlan()
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .frame(maxWidth: .infinity)
+            .buttonStyle(LinePayPrimaryButtonStyle())
             .disabled(!canPurchase || isPurchasing)
 
             if !SubscriptionStore.commerceEnabled {
@@ -135,6 +136,12 @@ struct ProPaywallView: View {
 
     private var footer: some View {
         VStack(spacing: LinePaySpacing.compact) {
+            NavigationLink("Privacy policy") { LegalTextView(kind: .privacy) }.frame(minHeight: 44)
+            NavigationLink("Terms of use") { LegalTextView(kind: .terms) }.frame(minHeight: 44)
+            if store.products.isEmpty && !store.isLoading {
+                Button("Retry App Store prices") { Task { await store.load() } }.frame(
+                    minHeight: 44)
+            }
             Button("Restore Purchases") {
                 Task {
                     await store.restorePurchases()
@@ -145,6 +152,7 @@ struct ProPaywallView: View {
                 }
             }
             .font(.footnote.weight(.semibold))
+            .frame(minHeight: 44)
             .disabled(!SubscriptionStore.commerceEnabled)
 
             Text(

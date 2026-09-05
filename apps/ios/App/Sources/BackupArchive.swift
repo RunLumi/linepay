@@ -94,9 +94,7 @@ struct BackupArchive: Sendable {
     }
 
     static func evidence(in state: AppPersistentState) throws -> [PaystubEvidence] {
-        let references =
-            ([state.activePeriod?.paystub?.evidence]
-            + state.history.map { $0.paystub?.evidence }).compactMap { $0 }
+        let references = state.allEvidence
         var unique: [UUID: PaystubEvidence] = [:]
         for reference in references {
             // Never allow an imported path to reach the local evidence store.
@@ -117,6 +115,7 @@ struct BackupArchive: Sendable {
     }
 
     private static func validate(state: AppPersistentState, files: [EvidenceFile]) throws {
+        try AppStateValidation.validate(state)
         guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
             throw BackupError.newerVersion
         }

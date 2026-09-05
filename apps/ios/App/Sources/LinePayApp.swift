@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct LinePayApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var session = AppSession.production()
     @State private var subscriptionStore = SubscriptionStore()
 
@@ -12,6 +13,9 @@ struct LinePayApp: App {
                 .environment(\.linePaySession, session)
                 .disabled(session.isBusy)
                 .task { await subscriptionStore.start() }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { Task { await subscriptionStore.refreshEntitlements() } }
+                }
                 .alert(
                     "Backup restore",
                     isPresented: Binding(
