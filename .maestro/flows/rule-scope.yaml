@@ -5,6 +5,11 @@ tags: [ios, regression, payroll-scope]
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.edit-pay-rules
+    timeout: 60000
+    centerElement: true
 - tapOn:
     id: settings.edit-pay-rules
 - scrollUntilVisible:
@@ -26,14 +31,28 @@ tags: [ios, regression, payroll-scope]
     element:
       id: today.expected-pay
     direction: UP
-- assertVisible: "$467.20"
+- assertVisible:
+    text: 'US\$467,20'
+    id: today.expected-pay
 - takeScreenshot: earlier-work-preserved
 - stopApp
 - launchApp
-- assertVisible: "$467.20"
+- assertVisible:
+    text: 'US\$467,20'
+    id: today.expected-pay
 - tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.edit-pay-rules
+    timeout: 60000
+    centerElement: true
 - tapOn:
     id: settings.edit-pay-rules
+- scrollUntilVisible:
+    element:
+      id: pay-profile.change-scope
+    timeout: 60000
+    centerElement: true
 - tapOn:
     id: pay-profile.change-scope
 - tapOn: "Correct this period's setup"
@@ -47,5 +66,7 @@ tags: [ios, regression, payroll-scope]
     element:
       id: today.expected-pay
     direction: UP
-- assertVisible: "$480.00"
+- assertVisible:
+    text: 'US\$480,00'
+    id: today.expected-pay
 - takeScreenshot: explicit-correction-applied

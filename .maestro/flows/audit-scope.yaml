@@ -12,6 +12,10 @@ tags: [ios, regression, payroll-scope]
     id: pay.audit-paycheck
 - tapOn:
     id: paystub.enter-manually
+- scrollUntilVisible:
+    element:
+      id: paystub.gross-pay
+    timeout: 60000
 - tapOn:
     id: paystub.gross-pay
 - inputText: "467.20"
