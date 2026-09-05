@@ -9,6 +9,9 @@ struct PayProfileSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
+    @State private var changeScope: RuleChangeScope = .prospective
+    @State private var changePreview: ProfileChangePreview?
+    @State private var showingChangeConfirmation = false
     @FocusState private var isEditing: String?
 
     init(
@@ -20,12 +23,9 @@ struct PayProfileSetupView: View {
         self.showsIntro = showsIntro
         self.onSaved = onSaved
         if let profile = model.profile {
-            _draft = State(
-                initialValue: PayProfileDraft(
-                    profile: profile,
-                    activePeriod: model.activePeriod
-                )
-            )
+            var initial = PayProfileDraft(profile: profile, activePeriod: model.activePeriod)
+            initial.changeEffectiveDate = model.activePeriod?.window.endDate
+            _draft = State(initialValue: initial)
         } else {
             _draft = State(initialValue: PayProfileDraft())
         }
@@ -46,6 +46,52 @@ struct PayProfileSetupView: View {
                             lineGap
                         }
                         .padding(.vertical, LinePaySpacing.compact)
+                    }
+                }
+
+                if model.profile != nil && model.activePeriod != nil {
+                    Section {
+                        Picker("Apply change", selection: $changeScope) {
+                            ForEach(RuleChangeScope.allCases) { scope in
+                                Text(scope.title).tag(scope)
+                            }
+                        }
+                        .accessibilityIdentifier("pay-profile.change-scope")
+                        if changeScope == .prospective {
+                            DatePicker(
+                                "New rules start",
+                                selection: Binding(
+                                    get: {
+                                        draft.changeEffectiveDate ?? model.activePeriod?.window
+                                            .endDate ?? draft.periodStartDate
+                                    },
+                                    set: { draft.changeEffectiveDate = $0 }),
+                                displayedComponents: .date
+                            )
+                            .accessibilityIdentifier("pay-profile.change-date")
+                            Text(
+                                "Starts at midnight in the payroll timezone. Already recorded work keeps its exact rule version."
+                            )
+                            .font(.footnote)
+                        } else {
+                            Text(
+                                "Recalculates all work in the current period and invalidates its audit. Archived periods stay unchanged. Later-period scheduled changes are kept."
+                            )
+                            .font(.footnote)
+                        }
+                    } header: {
+                        Text("Change scope")
+                    }
+                    if let changes = model.profile?.agreementChanges, !changes.isEmpty {
+                        Section("Scheduled rule versions") {
+                            ForEach(changes, id: \.effectiveDate) { change in
+                                LabeledContent(
+                                    LinePayFormat.localDate(change.effectiveDate),
+                                    value:
+                                        "v\(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -82,17 +128,19 @@ struct PayProfileSetupView: View {
                             Text(cadence.title).tag(cadence)
                         }
                     }
-                    DatePicker(
-                        model.profile == nil ? "Current period starts" : "Next period starts",
-                        selection: $draft.periodStartDate,
-                        displayedComponents: .date
-                    )
-                    if draft.preferredCadence == .manual {
+                    if model.profile == nil {
                         DatePicker(
-                            "Period ends",
-                            selection: $draft.manualPeriodEndDate,
+                            "Current period starts",
+                            selection: $draft.periodStartDate,
                             displayedComponents: .date
                         )
+                        if draft.preferredCadence == .manual {
+                            DatePicker(
+                                "Period ends",
+                                selection: $draft.manualPeriodEndDate,
+                                displayedComponents: .date
+                            )
+                        }
                     }
                 } header: {
                     Text("Pay period")
@@ -309,6 +357,20 @@ struct PayProfileSetupView: View {
                         .accessibilityIdentifier("pay-profile.save")
                 }
             }
+            .confirmationDialog(
+                "Review rule change", isPresented: $showingChangeConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Confirm rule change") { commitProfile() }
+                    .accessibilityIdentifier("pay-profile.confirm-change")
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                if let preview = changePreview {
+                    Text(
+                        "\(changeScope.title). Current period: \(preview.before.map(LinePayFormat.money) ?? "Needs review") → \(preview.after.map(LinePayFormat.money) ?? "Needs review"). \(preview.workCount) saved work entries. Archived results never change."
+                    )
+                }
+            }
             .alert(
                 "Pay rules weren't saved",
                 isPresented: Binding(
@@ -439,8 +501,20 @@ struct PayProfileSetupView: View {
     }
 
     private func save() {
+        isEditing = nil
+        guard model.profile != nil else {
+            commitProfile()
+            return
+        }
         do {
-            try model.saveProfile(draft)
+            changePreview = try model.previewProfileChange(draft, scope: changeScope)
+            showingChangeConfirmation = true
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func commitProfile() {
+        do {
+            try model.saveProfile(draft, scope: changeScope)
             errorMessage = nil
             onSaved?()
             if model.profile != nil, onSaved == nil {

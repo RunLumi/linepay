@@ -15,7 +15,8 @@ extension AppPersistentState {
                 calculation: period.calculation,
                 paystub: period.paystub?.replacingEvidence(replacements),
                 reconciliation: period.reconciliation,
-                archivedEpochSeconds: period.archivedEpochSeconds
+                archivedEpochSeconds: period.archivedEpochSeconds,
+                agreementChanges: period.agreementChanges
             )
         }
         return result

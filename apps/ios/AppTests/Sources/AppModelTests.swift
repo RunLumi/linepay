@@ -112,7 +112,7 @@ struct AppModelTests {
         try model.confirmPaystub(paystub)
 
         #expect(model.hasUsedFreeAudit)
-        #expect(model.currentAuditStatus == .matches)
+        #expect(model.currentAuditStatus == .grossMatches)
         #expect(model.canRunAudit(hasProAccess: false))
 
         let entry = try #require(model.workEntries.first)

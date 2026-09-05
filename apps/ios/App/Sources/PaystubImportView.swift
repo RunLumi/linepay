@@ -281,9 +281,12 @@ struct PaystubReviewView: View {
 
                 Section {
                     optionalNumberField("Regular hours", text: $draft.regularHours)
-                    moneyField("Regular pay", text: $draft.regularPay)
+                    moneyField(
+                        "Regular pay", text: $draft.regularPay, identifier: "paystub.regular-pay")
                     optionalNumberField("Overtime hours", text: $draft.overtimeHours)
-                    moneyField("Overtime pay", text: $draft.overtimePay)
+                    moneyField(
+                        "Overtime pay", text: $draft.overtimePay, identifier: "paystub.overtime-pay"
+                    )
                     optionalNumberField("Double-time hours", text: $draft.doubleTimeHours)
                     moneyField("Double-time pay", text: $draft.doubleTimePay)
                     moneyField("Callout pay", text: $draft.calloutPay)

@@ -22,13 +22,15 @@ public struct PayCalculator: Sendable {
     public func calculate(
         work: [WorkInterval],
         agreement: AgreementSnapshot,
+        changes: [AgreementChange] = [],
         policy: PayCalculationPolicy
     ) throws -> CalculationResult {
         try validate(work: work)
+        let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
 
         var rawSegments: [RawSegment] = []
         for interval in work {
-            rawSegments += try split(interval: interval, agreement: agreement)
+            rawSegments += try split(interval: interval, timeline: timeline)
         }
         rawSegments.sort { $0.startEpochSeconds < $1.startEpochSeconds }
 
@@ -36,6 +38,7 @@ public struct PayCalculator: Sendable {
         var components: [PayComponent] = []
 
         for segment in rawSegments {
+            let agreement = segment.agreement
             try validateEffectiveDate(segment.localDate, agreement: agreement)
 
             let dayKey = DayKey(
@@ -75,7 +78,8 @@ public struct PayCalculator: Sendable {
                             overtimeMultiplier: slice.multiplier,
                             finalMultiplier: baseMultiplier,
                             agreement: agreement
-                        )
+                        ),
+                        appliedAgreement: AgreementReference(agreement)
                     )
                 )
                 hoursConsumed += slice.hours
@@ -87,20 +91,25 @@ public struct PayCalculator: Sendable {
         components += try calloutGuarantees(
             work: work,
             existingComponents: components,
-            agreement: agreement
+            timeline: timeline
         )
-        components += try perDiemComponents(work: work, agreement: agreement)
+        components += try perDiemComponents(segments: rawSegments)
 
         let zero = Money.zero(currencyCode: agreement.hourlyRate.currencyCode)
         let total = try components.reduce(zero) {
             try $0.adding($1.amount)
         }
 
+        let usedVersions = Set(components.compactMap { $0.appliedAgreement?.version })
+        let snapshots = ([agreement] + timeline.changes.map(\.agreement)).filter {
+            usedVersions.contains($0.version)
+        }
         return CalculationResult(
             agreementID: agreement.id,
             agreementVersion: agreement.version,
             components: components,
-            total: total.rounded(using: agreement.rounding)
+            total: total.rounded(using: agreement.rounding),
+            agreementSnapshots: snapshots.isEmpty ? [agreement] : snapshots
         )
     }
 
@@ -133,7 +142,7 @@ public struct PayCalculator: Sendable {
     /// Break spans are omitted entirely, so downstream OT/premium logic operates only on paid worked time.
     private func split(
         interval: WorkInterval,
-        agreement: AgreementSnapshot
+        timeline: AgreementTimeline
     ) throws -> [RawSegment] {
         guard let timeZone = TimeZone(identifier: interval.timeZoneIdentifier) else {
             throw DomainValidationError.invalidTimeZone(interval.timeZoneIdentifier)
@@ -155,6 +164,7 @@ public struct PayCalculator: Sendable {
             let nextDayEpoch = epochSeconds(from: nextDay)
             let chunkEnd = min(interval.endEpochSeconds, nextDayEpoch)
             let localDate = localDate(for: cursorDate, calendar: calendar)
+            let agreement = timeline.agreement(on: localDate)
             let weekday = try weekday(for: cursorDate, calendar: calendar)
 
             var boundaries: Set<Int64> = [cursor, chunkEnd]
@@ -199,6 +209,7 @@ public struct PayCalculator: Sendable {
 
                 result.append(
                     RawSegment(
+                        agreement: agreement,
                         workIntervalID: interval.id,
                         kind: interval.kind,
                         startEpochSeconds: pair.0,
@@ -298,14 +309,29 @@ public struct PayCalculator: Sendable {
     private func calloutGuarantees(
         work: [WorkInterval],
         existingComponents: [PayComponent],
-        agreement: AgreementSnapshot
+        timeline: AgreementTimeline
     ) throws -> [PayComponent] {
-        guard let rule = agreement.calloutMinimum else {
-            return []
-        }
-
         var result: [PayComponent] = []
         for interval in work where interval.kind == .callout {
+            let startDate = try localDate(
+                epochSeconds: interval.startEpochSeconds,
+                timeZoneIdentifier: interval.timeZoneIdentifier)
+            let endDate = try localDate(
+                epochSeconds: interval.endEpochSeconds - 1,
+                timeZoneIdentifier: interval.timeZoneIdentifier)
+            let agreement = timeline.agreement(on: startDate)
+            let crossed = timeline.changes.filter {
+                $0.effectiveDate > startDate && $0.effectiveDate <= endDate
+            }
+            let possibleMinimums = ([agreement] + crossed.map(\.agreement))
+                .compactMap { $0.calloutMinimum?.minimumHours }
+            if !crossed.isEmpty,
+                possibleMinimums.contains(where: { $0 > interval.durationHours })
+            {
+                // A spanning guarantee is agreement-specific. Preserve facts; never guess its rate.
+                throw AgreementTimelineError.calloutGuaranteeNeedsReview(interval.id)
+            }
+            guard let rule = agreement.calloutMinimum else { continue }
             let missingHours = rule.minimumHours - interval.durationHours
             guard missingHours > 0 else {
                 continue
@@ -333,48 +359,37 @@ public struct PayCalculator: Sendable {
                     hours: missingHours,
                     multiplier: applicableMultiplier,
                     amount: amount,
-                    explanation: "callout minimum guarantee"
+                    explanation: "callout minimum guarantee",
+                    appliedAgreement: AgreementReference(agreement)
                 )
             )
         }
         return result
     }
 
-    private func perDiemComponents(
-        work: [WorkInterval],
-        agreement: AgreementSnapshot
-    ) throws -> [PayComponent] {
-        guard let rule = agreement.flatPerDiem else {
-            return []
+    private func perDiemComponents(segments: [RawSegment]) throws -> [PayComponent] {
+        var agreementsByDay: [DayKey: AgreementSnapshot] = [:]
+        for segment in segments {
+            agreementsByDay[
+                DayKey(
+                    date: segment.localDate, timeZoneIdentifier: segment.timeZoneIdentifier
+                )] = segment.agreement
         }
-        guard rule.amountPerWorkDate.currencyCode == agreement.hourlyRate.currencyCode else {
-            throw MoneyError.currencyMismatch(
-                lhs: agreement.hourlyRate.currencyCode,
-                rhs: rule.amountPerWorkDate.currencyCode
-            )
-        }
-
-        var dates: Set<DayKey> = []
-        for interval in work {
-            for segment in try split(interval: interval, agreement: agreement) {
-                dates.insert(
-                    DayKey(
-                        date: segment.localDate,
-                        timeZoneIdentifier: segment.timeZoneIdentifier
-                    )
+        return try agreementsByDay.keys.sorted().compactMap { day in
+            guard let agreement = agreementsByDay[day], let rule = agreement.flatPerDiem else {
+                return nil
+            }
+            guard rule.amountPerWorkDate.currencyCode == agreement.hourlyRate.currencyCode else {
+                throw MoneyError.currencyMismatch(
+                    lhs: agreement.hourlyRate.currencyCode, rhs: rule.amountPerWorkDate.currencyCode
                 )
             }
-        }
-
-        return dates.sorted().map { day in
-            PayComponent(
-                category: .perDiem,
-                workIntervalID: nil,
-                localDate: day.date,
-                hours: nil,
-                multiplier: nil,
+            return PayComponent(
+                category: .perDiem, workIntervalID: nil, localDate: day.date,
+                hours: nil, multiplier: nil,
                 amount: rule.amountPerWorkDate.rounded(using: agreement.rounding),
-                explanation: "flat per diem for worked local date"
+                explanation: "flat per diem for worked local date",
+                appliedAgreement: AgreementReference(agreement)
             )
         }
     }
@@ -491,6 +506,7 @@ public struct PayCalculator: Sendable {
 }
 
 private struct RawSegment: Sendable {
+    let agreement: AgreementSnapshot
     let workIntervalID: UUID
     let kind: WorkKind
     let startEpochSeconds: Int64

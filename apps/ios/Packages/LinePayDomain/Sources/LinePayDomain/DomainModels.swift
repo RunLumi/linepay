@@ -310,6 +310,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
     public let multiplier: Decimal?
     public let amount: Money
     public let explanation: String
+    public let appliedAgreement: AgreementReference?
 
     public init(
         id: UUID = UUID(),
@@ -319,7 +320,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         hours: Decimal?,
         multiplier: Decimal?,
         amount: Money,
-        explanation: String
+        explanation: String,
+        appliedAgreement: AgreementReference? = nil
     ) {
         self.id = id
         self.category = category
@@ -329,6 +331,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         self.multiplier = multiplier
         self.amount = amount
         self.explanation = explanation
+        self.appliedAgreement = appliedAgreement
     }
 }
 
@@ -337,17 +340,20 @@ public struct CalculationResult: Codable, Hashable, Sendable {
     public let agreementVersion: String
     public let components: [PayComponent]
     public let total: Money
+    public let agreementSnapshots: [AgreementSnapshot]?
 
     public init(
         agreementID: String,
         agreementVersion: String,
         components: [PayComponent],
-        total: Money
+        total: Money,
+        agreementSnapshots: [AgreementSnapshot]? = nil
     ) {
         self.agreementID = agreementID
         self.agreementVersion = agreementVersion
         self.components = components
         self.total = total
+        self.agreementSnapshots = agreementSnapshots
     }
 }
 

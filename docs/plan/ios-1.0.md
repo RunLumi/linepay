@@ -1179,3 +1179,9 @@ Ask three questions:
 If the first two are no, it probably does not belong in 1.0.
 
 If the third is yes, choose the simpler path and spend the saved complexity making the critical interaction insanely great.
+
+## Payroll correctness completion contract
+
+Use [ADR 0005](../adr/0005-effective-dated-rules-and-audit-scope.md) for prospective-versus-correction behavior, effective-dated snapshots, schema-1 migration, explicit guarantee ambiguity, and the single scoped audit verdict. The two original known-issue tests are replaced by ordinary regression tests. The default new rate starts at the next period boundary; editing requires an expected-pay preview and confirmation.
+
+Acceptance requires native CI and the real `rule-scope` / `audit-scope` Maestro journeys, with archived/PDF/backup consistency tested below the UI. This addition does not mark unrelated feature, device, commerce, or 46-screen release checks complete.

@@ -7,19 +7,25 @@ struct PayProfile: Identifiable, Codable, Hashable, Sendable {
     let timeZoneIdentifier: String
     let agreement: AgreementSnapshot
     let preferredCadence: PayPeriodCadence
+    let baselineAgreement: AgreementSnapshot?
+    let agreementChanges: [AgreementChange]?
 
     init(
         id: UUID = UUID(),
         name: String,
         timeZoneIdentifier: String,
         agreement: AgreementSnapshot,
-        preferredCadence: PayPeriodCadence = .weekly
+        preferredCadence: PayPeriodCadence = .weekly,
+        baselineAgreement: AgreementSnapshot? = nil,
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.name = name
         self.timeZoneIdentifier = timeZoneIdentifier
         self.agreement = agreement
         self.preferredCadence = preferredCadence
+        self.baselineAgreement = baselineAgreement
+        self.agreementChanges = agreementChanges
     }
 }
 
@@ -175,6 +181,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     var window: PayPeriodWindow
     var agreement: AgreementSnapshot
+    var agreementChanges: [AgreementChange]?
     var timeZoneIdentifier: String?
     var workEntries: [WorkEntry]
     var paystub: ConfirmedPaystub?
@@ -191,7 +198,8 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         paystub: ConfirmedPaystub? = nil,
         reconciliation: ReconciliationResult? = nil,
         auditCompletedEpochSeconds: Int64? = nil,
-        hasConsumedAuditAccess: Bool = false
+        hasConsumedAuditAccess: Bool = false,
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.window = window
@@ -202,6 +210,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.reconciliation = reconciliation
         self.auditCompletedEpochSeconds = auditCompletedEpochSeconds
         self.hasConsumedAuditAccess = hasConsumedAuditAccess
+        self.agreementChanges = agreementChanges
     }
 }
 
@@ -209,6 +218,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     let window: PayPeriodWindow
     let agreement: AgreementSnapshot
+    let agreementChanges: [AgreementChange]?
     let timeZoneIdentifier: String?
     let workEntries: [WorkEntry]
     let calculation: CalculationResult
@@ -225,7 +235,8 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         calculation: CalculationResult,
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
-        archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded())
+        archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded()),
+        agreementChanges: [AgreementChange]? = nil
     ) {
         self.id = id
         self.window = window
@@ -236,22 +247,34 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.paystub = paystub
         self.reconciliation = reconciliation
         self.archivedEpochSeconds = archivedEpochSeconds
+        self.agreementChanges = agreementChanges
     }
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 1
+    static let currentSchemaVersion = 2
 
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
+
+    /// Schema 1 has no scheduled rules. Upgrade in memory without rewriting historical results.
+    func upgraded() throws -> AppPersistentState {
+        guard schemaVersion == 1 || schemaVersion == Self.currentSchemaVersion else {
+            throw LocalStateStoreError.unsupportedSchema(schemaVersion)
+        }
+        var result = self
+        result.schemaVersion = Self.currentSchemaVersion
+        return result
+    }
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {
     case notAudited
     case matches
+    case grossMatches
     case possibleShortfall
     case possibleOverpayment
     case needsReview
@@ -259,7 +282,8 @@ enum AuditDisplayStatus: Hashable, Sendable {
     var title: String {
         switch self {
         case .notAudited: "Not audited"
-        case .matches: "Matches"
+        case .matches: "Confirmed items match"
+        case .grossMatches: "Gross total matches"
         case .possibleShortfall: "Possible shortfall"
         case .possibleOverpayment: "Possible overpayment"
         case .needsReview: "Needs review"
@@ -269,7 +293,7 @@ enum AuditDisplayStatus: Hashable, Sendable {
     var systemImage: String {
         switch self {
         case .notAudited: "doc.text.magnifyingglass"
-        case .matches: "checkmark.circle.fill"
+        case .matches, .grossMatches: "checkmark.circle.fill"
         case .possibleShortfall: "exclamationmark.circle.fill"
         case .possibleOverpayment: "arrow.up.arrow.down.circle.fill"
         case .needsReview: "questionmark.circle.fill"

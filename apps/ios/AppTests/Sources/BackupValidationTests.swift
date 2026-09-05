@@ -64,7 +64,7 @@ struct BackupValidationTests {
         }
         #expect(throws: BackupError.newerVersion) {
             var future = AppPersistentState()
-            future.schemaVersion = 2
+            future.schemaVersion = AppPersistentState.currentSchemaVersion + 1
             try BackupArchive(createdAt: Date(), state: future, files: []).validate()
         }
     }

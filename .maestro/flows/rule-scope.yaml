@@ -1,0 +1,51 @@
+appId: com.streamentry.linepay
+name: Future rule preserves work and correction requires confirmation
+tags: [ios, regression, payroll-scope]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn: Settings
+- tapOn:
+    id: settings.edit-pay-rules
+- scrollUntilVisible:
+    element:
+      id: pay-profile.hourly-rate
+- tapOn:
+    id: pay-profile.hourly-rate
+- eraseText
+- inputText: "60"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: pay-profile.save
+- assertVisible: Review rule change
+- takeScreenshot: prospective-rule-preview
+- tapOn: Confirm rule change
+- tapOn: Today
+- scrollUntilVisible:
+    element:
+      id: today.expected-pay
+    direction: UP
+- assertVisible: "$467.20"
+- takeScreenshot: earlier-work-preserved
+- stopApp
+- launchApp
+- assertVisible: "$467.20"
+- tapOn: Settings
+- tapOn:
+    id: settings.edit-pay-rules
+- tapOn:
+    id: pay-profile.change-scope
+- tapOn: "Correct this period's setup"
+- tapOn:
+    id: pay-profile.save
+- assertVisible: Review rule change
+- takeScreenshot: correction-preview
+- tapOn: Confirm rule change
+- tapOn: Today
+- scrollUntilVisible:
+    element:
+      id: today.expected-pay
+    direction: UP
+- assertVisible: "$480.00"
+- takeScreenshot: explicit-correction-applied

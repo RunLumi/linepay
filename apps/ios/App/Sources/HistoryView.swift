@@ -131,8 +131,7 @@ private struct HistoricalPayPeriodView: View {
                     NavigationLink("Open paycheck audit") {
                         AuditDetailView(
                             window: period.window,
-                            timeZoneIdentifier: model.profile?.timeZoneIdentifier
-                                ?? TimeZone.current.identifier,
+                            timeZoneIdentifier: model.timeZoneIdentifier(for: period),
                             agreement: period.agreement,
                             calculation: period.calculation,
                             paystub: paystub,
@@ -228,8 +227,7 @@ private struct HistoricalPayPeriodView: View {
         do {
             reportURL = try ReconciliationReportExporter().export(
                 window: period.window,
-                timeZoneIdentifier: model.profile?.timeZoneIdentifier
-                    ?? TimeZone.current.identifier,
+                timeZoneIdentifier: model.timeZoneIdentifier(for: period),
                 agreement: period.agreement,
                 calculation: period.calculation,
                 paystub: period.paystub,
