@@ -25,7 +25,8 @@ struct ReadinessBoundaryTests {
             edit.timeZoneIdentifier = zones[1]
             try model.saveProfile(edit)
             try model.archiveCurrentPeriod()
-            #expect(model.activePeriod == nil, "A timezone change requires an explicit new boundary")
+            #expect(
+                model.activePeriod == nil, "A timezone change requires an explicit new boundary")
             let closed = try #require(model.history.first)
             #expect(closed.window == old.window)
             #expect(closed.timeZoneIdentifier == zones[0])

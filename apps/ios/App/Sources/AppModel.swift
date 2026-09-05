@@ -485,6 +485,14 @@ final class AppModel {
         candidate.history.insert(completed, at: 0)
         candidate.workDraft = nil
 
+        // A new timezone can place its midnight before the old period's end.
+        // Close safely, then ask for an explicit nonoverlapping start in the new zone.
+        if currentTimeZoneIdentifier != profile.timeZoneIdentifier {
+            candidate.activePeriod = nil
+            try commit(candidate)
+            return
+        }
+
         switch profile.preferredCadence {
         case .weekly, .biweekly:
             let nextWindow = try makePeriodWindow(
@@ -509,9 +517,12 @@ final class AppModel {
         guard let period = state.history.first(where: { $0.id == id }) else { return }
         var candidate = state
         candidate.history.removeAll { $0.id == id }
+        let draftEvidence =
+            candidate.paystubDraft?.targetPeriodID == id
+            ? candidate.paystubDraft?.sourceEvidence : nil
         if candidate.paystubDraft?.targetPeriodID == id { candidate.paystubDraft = nil }
         let removed =
-            ([period.paystub?.evidence]
+            ([period.paystub?.evidence, draftEvidence]
             + (period.auditRevisions ?? []).map { $0.paystub.evidence }).compactMap { $0 }
         enqueue(removed, in: &candidate)
         try commit(candidate)
@@ -668,12 +679,15 @@ final class AppModel {
         guard !data.isEmpty, data.count <= 25 * 1024 * 1024 else {
             throw AppModelError.documentTooLarge
         }
-        let evidence = try evidenceStore.save(
-            data: data, originalFilename: filename,
-            mediaType: mediaType, sourceKind: kind, recognizedText: nil)
         guard let context = periodContext(id: periodID) else {
             throw AppModelError.missingActivePayPeriod
         }
+        if let existing = state.paystubDraft, existing.targetPeriodID != periodID {
+            throw AppModelError.otherPaystubDraft
+        }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: filename,
+            mediaType: mediaType, sourceKind: kind, recognizedText: nil)
         var draft = PaystubConfirmationDraft()
         draft.targetPeriodID = periodID
         draft.payPeriodStartDate = context.window.startDate
