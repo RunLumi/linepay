@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IOS_PROJECT="$ROOT/apps/ios/project.yml"
+GENERATED_XCODE_PROJECT="$ROOT/apps/ios/LinePay.xcodeproj"
 PRIVACY_MANIFEST="$ROOT/apps/ios/App/Resources/PrivacyInfo.xcprivacy"
 EXPECTED_XCODEGEN_VERSION="2.46.0"
 
@@ -71,6 +72,12 @@ echo
 echo "==> Optional mobile-agent tools"
 optional_command maestro "checked-in E2E flows"
 optional_command xcodebuildmcp "interactive simulator/build/debug/UI agent loop"
+
+if [[ -d "$GENERATED_XCODE_PROJECT" ]]; then
+    ok "generated LinePay.xcodeproj is available for direct Xcode/MCP use"
+else
+    warn "generated LinePay.xcodeproj is absent; run 'bash scripts/bootstrap-ios.sh' before direct XcodeBuildMCP/Xcode use"
+fi
 
 echo
 echo "==> Repository contracts"
