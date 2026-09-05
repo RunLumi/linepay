@@ -77,9 +77,12 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
                     Text("No work logged yet")
                         .font(.headline)
-                    Text("Add the hours you actually worked. Your expected pay updates immediately.")
-                        .font(.callout)
-                        .foregroundStyle(LinePayColor.textSecondary)
+                    Text(
+                        "Add the hours you actually worked. Your expected pay updates "
+                            + "immediately."
+                    )
+                    .font(.callout)
+                    .foregroundStyle(LinePayColor.textSecondary)
                 }
                 .padding(.vertical, LinePaySpacing.standard)
             } else {
