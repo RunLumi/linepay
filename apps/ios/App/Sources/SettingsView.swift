@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var showingRuleEditor = false
     @State private var showingPaywall = false
     @State private var showingDeleteAllConfirmation = false
+    @State private var showingRemoveEvidenceConfirmation = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -68,31 +69,16 @@ struct SettingsView: View {
                     }
                 }
 
-                Section {
-                    Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
-                    Label(
-                        "No LinePaycheck backend stores your paycheck", systemImage: "server.rack")
-                    Label("No ad or tracking SDK", systemImage: "eye.slash")
-                    Label("Paystub OCR runs on this device", systemImage: "iphone")
-                } header: {
-                    Text("Privacy")
-                } footer: {
-                    Text(
-                        "App Store purchases and Files providers may use the network. Pay data stays "
-                            + "local by default. Choosing iCloud backup or another export location "
-                            + "sends a copy to that provider, not to a LinePaycheck server."
-                    )
-                }
-
                 Section("Your data") {
                     BackupRestoreEntryPoint()
 
-                    if let currentEvidence = model.currentPaystub?.evidence {
+                    if model.currentPaystub?.evidence != nil {
                         Button(role: .destructive) {
-                            removeCurrentEvidence(currentEvidence)
+                            showingRemoveEvidenceConfirmation = true
                         } label: {
                             Label("Remove current original paystub", systemImage: "doc.badge.minus")
                         }
+                        .accessibilityIdentifier("settings.remove-original")
                     }
 
                     Button(role: .destructive) {
@@ -100,6 +86,21 @@ struct SettingsView: View {
                     } label: {
                         Label("Delete all LinePaycheck data", systemImage: "trash")
                     }
+                    .accessibilityIdentifier("settings.delete-all")
+                }
+
+                Section {
+                    Text("No account required")
+                    Text("No ads or tracking")
+                    Text("Paystub scanning stays on this device")
+                } header: {
+                    Text("Privacy")
+                } footer: {
+                    Text(
+                        "Pay data stays on your iPhone by default. Purchases use Apple services. "
+                            + "Choosing iCloud backup or another Files location sends a copy "
+                            + "to that provider, not to a LinePaycheck server."
+                    )
                 }
 
                 Section("About") {
@@ -108,7 +109,6 @@ struct SettingsView: View {
                     Link("Privacy policy", destination: AppLinks.privacy)
                         .accessibilityIdentifier("settings.privacy-policy")
                     Link("Terms of use", destination: AppLinks.terms)
-                    LabeledContent("Architecture", value: "Local-first")
                     Text(
                         "LinePaycheck estimates expected pay and flags possible differences. It is not "
                             + "payroll software, legal advice, or a determination of wages legally owed."
@@ -137,16 +137,29 @@ struct SettingsView: View {
                 showingPaywall = false
             }
         }
-        .confirmationDialog(
-            "Delete all LinePaycheck data?",
-            isPresented: $showingDeleteAllConfirmation,
-            titleVisibility: .visible
+        .alert(
+            "Remove the original paystub?",
+            isPresented: $showingRemoveEvidenceConfirmation
         ) {
-            Button("Delete everything", role: .destructive) { deleteAll() }
+            Button("Remove original paystub", role: .destructive) { removeCurrentEvidence() }
+                .accessibilityIdentifier("settings.confirm-remove-original")
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This permanently deletes pay rules, work history, audit results, and stored paystub evidence from this iPhone. App Store purchases are not cancelled. Backups in iCloud Drive or Files are not deleted."
+                "The original image/PDF and its OCR text will be deleted. Confirmed paycheck "
+                    + "values and audit results remain."
+            )
+        }
+        .alert(
+            "Delete all LinePaycheck data?",
+            isPresented: $showingDeleteAllConfirmation
+        ) {
+            Button("Delete everything", role: .destructive) { deleteAll() }
+                .accessibilityIdentifier("settings.confirm-delete-all")
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(
+                "Deletes local rules, work, audits, and paystub originals. Purchases and backups remain."
             )
         }
     }
@@ -212,9 +225,8 @@ struct SettingsView: View {
         }
     }
 
-    private func removeCurrentEvidence(_ evidence: PaystubEvidence) {
+    private func removeCurrentEvidence() {
         do {
-            _ = evidence
             try model.removeCurrentPaystubEvidence()
             errorMessage = nil
         } catch {

@@ -1,0 +1,38 @@
+appId: com.streamentry.linepay
+name: Data deletion requires confirmation and resets the app
+tags: [ios, regression, settings]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.delete-all
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: settings.delete-all
+- assertVisible:
+    id: settings.confirm-delete-all
+- takeScreenshot: delete-all-confirmation
+- tapOn: Cancel
+- tapOn: Today
+- assertVisible:
+    id: today.repeat-shift
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.delete-all
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: settings.delete-all
+- tapOn:
+    id: settings.confirm-delete-all
+- assertVisible:
+    id: onboarding.set-up-pay
+- stopApp
+- launchApp
+- assertVisible:
+    id: onboarding.set-up-pay
+- takeScreenshot: delete-all-complete
