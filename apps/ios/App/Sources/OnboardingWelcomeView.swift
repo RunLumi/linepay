@@ -50,6 +50,7 @@ struct OnboardingWelcomeView: View {
             .controlSize(.large)
             .tint(LinePayColor.brandPrimary)
             .frame(maxWidth: .infinity)
+            .accessibilityIdentifier("onboarding.set-up-pay")
             .accessibilityHint("Continues to your pay rule setup")
         }
         .padding(LinePaySpacing.section)
