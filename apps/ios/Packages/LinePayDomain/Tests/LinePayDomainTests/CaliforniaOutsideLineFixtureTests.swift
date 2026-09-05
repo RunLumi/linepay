@@ -1,9 +1,10 @@
 import Testing
 @testable import LinePayDomain
 
-private let californiaOutsideLineURL =
-    "https://ibew1245.com/wp-content/uploads/2022/06/" +
-    "California-Outside-Line-Construction-Agreement-2022-2027-signed.pdf"
+private let californiaOutsideLineURL = [
+    "https://ibew1245.com/wp-content/uploads/2022/06/",
+    "California-Outside-Line-Construction-Agreement-2022-2027-signed.pdf",
+].joined()
 
 private func californiaOutsideLine2026() throws -> AgreementSnapshot {
     let schedule = try weekdaySchedule(startHour: 7, endHour: 15)
