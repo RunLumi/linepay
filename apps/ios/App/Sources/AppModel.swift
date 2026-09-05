@@ -1189,7 +1189,16 @@ final class AppModel {
         field: String,
         allowZero: Bool = false
     ) throws -> Decimal {
-        guard let value = Decimal(string: text, locale: Locale(identifier: "en_US_POSIX")) else {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Decimal(string:) accepts a numeric prefix. Validate the entire entry so a
+        // decimal-comma keyboard or pasted suffix cannot silently change a pay amount.
+        // Either separator means decimals; grouped/thousands-formatted input is not supported.
+        guard trimmed.range(of: #"^[0-9]+(?:[.,][0-9]+)?$"#, options: .regularExpression) != nil,
+            let value = Decimal(
+                string: trimmed.replacingOccurrences(of: ",", with: "."),
+                locale: Locale(identifier: "en_US_POSIX")
+            )
+        else {
             throw AppModelError.invalidField(field)
         }
         guard allowZero ? value >= 0 : value > 0 else {

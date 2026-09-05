@@ -17,12 +17,14 @@ struct HistoryView: View {
                             } label: {
                                 historyRow(period)
                             }
+                            .accessibilityIdentifier("history.open-period")
                         }
                     }
                     .listStyle(.plain)
                 }
             }
             .background(LinePayColor.canvas)
+            .labeledContentStyle(LinePayValueStyle())
             .navigationTitle("History")
         }
     }
@@ -53,7 +55,7 @@ struct HistoryView: View {
             )
             .font(.headline)
 
-            HStack(spacing: LinePaySpacing.standard) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(LinePayFormat.money(period.calculation.total))
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                 if let paid = period.paystub?.grossPay {
@@ -98,12 +100,12 @@ private struct HistoricalPayPeriodView: View {
             Section("Pay ledger") {
                 ForEach(period.calculation.components) { component in
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(categoryLabel(component.category))
-                                .font(.headline)
-                            Spacer()
+                        LabeledContent {
                             Text(LinePayFormat.money(component.amount))
                                 .font(.headline.monospacedDigit())
+                        } label: {
+                            Text(categoryLabel(component.category))
+                                .font(.headline)
                         }
                         HStack(spacing: LinePaySpacing.compact) {
                             Text(LinePayFormat.localDate(component.localDate))
@@ -199,12 +201,15 @@ private struct HistoricalPayPeriodView: View {
             if let errorMessage {
                 Section {
                     Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(LinePayColor.difference)
                 }
             }
         }
         .navigationTitle("Pay period")
+        .labeledContentStyle(LinePayValueStyle())
         .navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden)
+        .background(LinePayColor.canvas)
         .confirmationDialog(
             "Delete this pay period?",
             isPresented: $showingDeleteConfirmation,

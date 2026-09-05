@@ -27,6 +27,7 @@ struct PayLedgerView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
+            .labeledContentStyle(LinePayValueStyle())
             .navigationTitle("Pay")
             .toolbar {
                 if model.activePeriod != nil {
@@ -67,16 +68,16 @@ struct PayLedgerView: View {
 
     private func ledgerHeader(_ active: ActivePayPeriod) -> some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-            Text("EXPECTED GROSS")
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
+            Text("Expected gross")
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(LinePayColor.textSecondary)
 
             Text(expectedPayText)
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .font(.largeTitle.bold())
                 .monospacedDigit()
                 .foregroundStyle(LinePayColor.textPrimary)
-                .minimumScaleFactor(0.75)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("pay.expected-pay")
 
             Text(
                 LinePayFormat.payPeriod(
@@ -101,9 +102,8 @@ struct PayLedgerView: View {
 
     private func paycheckSection(_ active: ActivePayPeriod) -> some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            Text("PAYCHECK")
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
+            Text("Paycheck")
+                .font(.headline)
                 .foregroundStyle(LinePayColor.textSecondary)
 
             if let paystub = active.paystub, let calculation = model.calculation {
@@ -125,9 +125,8 @@ struct PayLedgerView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             AuditStatusView(status: model.currentAuditStatus)
-                            HStack(spacing: LinePaySpacing.compact) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text("Expected \(LinePayFormat.money(calculation.total))")
-                                Text("·")
                                 Text("Paid \(LinePayFormat.money(paystub.grossPay))")
                             }
                             .font(.footnote.monospacedDigit())
@@ -140,15 +139,15 @@ struct PayLedgerView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("pay.open-audit")
 
                 if active.reconciliation == nil {
                     Button {
                         rerunAudit(active: active, paystub: paystub)
                     } label: {
                         Label("Re-run audit with current work", systemImage: "arrow.clockwise")
-                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(LinePayPrimaryButtonStyle())
                 } else if model.hasUsedFreeAudit, !subscriptionStore.isPro,
                     SubscriptionStore.commerceEnabled
                 {
@@ -176,25 +175,23 @@ struct PayLedgerView: View {
                         model.hasUsedFreeAudit ? "Audit paycheck" : "Audit first paycheck free",
                         systemImage: "doc.text.magnifyingglass"
                     )
-                    .frame(maxWidth: .infinity, minHeight: 48)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(LinePayColor.brandPrimary)
+                .buttonStyle(LinePayPrimaryButtonStyle())
+                .accessibilityIdentifier("pay.audit-paycheck")
             }
 
             if let errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                     .font(.callout)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(LinePayColor.difference)
             }
         }
     }
 
     private var ledgerSection: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            Text("PAY LEDGER")
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
+            Text("Pay ledger")
+                .font(.headline)
                 .foregroundStyle(LinePayColor.textSecondary)
 
             if let calculation = model.calculation, !calculation.components.isEmpty {
@@ -227,6 +224,7 @@ struct PayLedgerView: View {
                     .frame(maxWidth: .infinity, minHeight: 48)
             }
             .buttonStyle(.bordered)
+            .accessibilityIdentifier("pay.finish-period")
             Text(
                 "Finishing creates an immutable historical snapshot. It does not require a paystub audit."
             )
@@ -263,11 +261,14 @@ struct PayLedgerView: View {
             .foregroundStyle(LinePayColor.textSecondary)
             .padding(.vertical, LinePaySpacing.standard)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
+            LabeledContent {
+                Text(LinePayFormat.money(component.amount))
+                    .font(.headline.monospacedDigit())
+            } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(categoryLabel(component.category))
                         .font(.headline)
-                    HStack(spacing: LinePaySpacing.compact) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(LinePayFormat.localDate(component.localDate))
                         if let hours = component.hours {
                             Text("\(LinePayFormat.hours(hours)) h").monospacedDigit()
@@ -279,13 +280,12 @@ struct PayLedgerView: View {
                     .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
                 }
-                Spacer(minLength: LinePaySpacing.standard)
-                Text(LinePayFormat.money(component.amount))
-                    .font(.headline.monospacedDigit())
             }
+            .foregroundStyle(LinePayColor.textPrimary)
             .padding(.vertical, LinePaySpacing.standard)
         }
-        .tint(LinePayColor.brandPrimary)
+        .accessibilityIdentifier("pay.ledger-row")
+        .tint(LinePayColor.actionText)
     }
 
     private var expectedPayText: String {

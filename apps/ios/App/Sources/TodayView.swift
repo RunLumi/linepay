@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TodayView: View {
     let model: AppModel
+    let onOpenPay: () -> Void
 
     @State private var showingAddWork = false
     @State private var showingStartPeriod = false
@@ -27,6 +28,7 @@ struct TodayView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
+            .labeledContentStyle(LinePayValueStyle())
             .navigationTitle("Today")
             .safeAreaInset(edge: .bottom) {
                 if let deletedEntry {
@@ -50,16 +52,16 @@ struct TodayView: View {
 
     private func expectedPayHeader(_ active: ActivePayPeriod) -> some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-            Text("EXPECTED GROSS")
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
+            Text("Expected gross")
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(LinePayColor.textSecondary)
 
             Text(expectedPayText)
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .font(.largeTitle.bold())
                 .monospacedDigit()
                 .foregroundStyle(LinePayColor.textPrimary)
-                .minimumScaleFactor(0.75)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("today.expected-pay")
 
             Text(
                 LinePayFormat.payPeriod(
@@ -70,9 +72,9 @@ struct TodayView: View {
             .font(.subheadline)
             .foregroundStyle(LinePayColor.textSecondary)
 
-            HStack(spacing: LinePaySpacing.standard) {
+            VStack(alignment: .leading, spacing: 4) {
                 Label(
-                    "\(LinePayFormat.hours(model.totalHours)) h paid work",
+                    "\(LinePayFormat.hours(model.totalHours)) h recorded",
                     systemImage: "clock"
                 )
                 if let profile = model.profile {
@@ -85,7 +87,7 @@ struct TodayView: View {
             if let calculationError = model.calculationError {
                 Label(calculationError, systemImage: "exclamationmark.triangle.fill")
                     .font(.callout)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(LinePayColor.difference)
             }
         }
     }
@@ -96,10 +98,8 @@ struct TodayView: View {
                 showingAddWork = true
             } label: {
                 Label("Add work", systemImage: "plus")
-                    .frame(maxWidth: .infinity, minHeight: 48)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(LinePayColor.brandPrimary)
+            .buttonStyle(LinePayPrimaryButtonStyle())
             .accessibilityIdentifier("today.add-work")
 
             if let last = model.lastWorkEntry {
@@ -110,33 +110,38 @@ struct TodayView: View {
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.bordered)
-                .tint(LinePayColor.brandPrimary)
+                .tint(LinePayColor.actionText)
+                .accessibilityIdentifier("today.repeat-shift")
             }
         }
     }
 
     private var auditState: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("PAYCHECK")
-                    .font(.caption.weight(.semibold))
-                    .tracking(0.6)
+        Button(action: onOpenPay) {
+            HStack(alignment: .center, spacing: LinePaySpacing.standard) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Paycheck")
+                        .font(.headline)
+                        .foregroundStyle(LinePayColor.textSecondary)
+                    AuditStatusView(status: model.currentAuditStatus)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(LinePayColor.textSecondary)
-                AuditStatusView(status: model.currentAuditStatus)
             }
-            Spacer()
-            Text(model.currentPaystub == nil ? "Waiting for paystub" : "See Pay tab")
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
+            .padding(.vertical, LinePaySpacing.compact)
         }
-        .padding(.vertical, LinePaySpacing.compact)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today.open-pay")
     }
 
     private var recentWork: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            Text("WORK LOG")
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
+            Text("Work log")
+                .font(.headline)
                 .foregroundStyle(LinePayColor.textSecondary)
 
             if model.workEntries.isEmpty {
@@ -191,6 +196,7 @@ struct TodayView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("today.edit-work")
 
             Button(role: .destructive) {
                 deletedEntry = model.deleteWork(id: entry.id)
@@ -200,6 +206,7 @@ struct TodayView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Delete work interval")
+            .accessibilityIdentifier("today.delete-work")
         }
     }
 
@@ -216,10 +223,8 @@ struct TodayView: View {
                 showingStartPeriod = true
             } label: {
                 Label("Start pay period", systemImage: "calendar.badge.plus")
-                    .frame(maxWidth: .infinity, minHeight: 48)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(LinePayColor.brandPrimary)
+            .buttonStyle(LinePayPrimaryButtonStyle())
         }
     }
 
@@ -238,10 +243,12 @@ struct TodayView: View {
                 }
             }
             .fontWeight(.semibold)
+            .frame(minWidth: 44, minHeight: 44)
+            .accessibilityIdentifier("today.undo-delete")
         }
         .padding(.horizontal, LinePaySpacing.section)
         .padding(.vertical, LinePaySpacing.standard)
-        .background(.regularMaterial)
+        .background(LinePayColor.surfaceSecondary)
     }
 
     private var expectedPayText: String {

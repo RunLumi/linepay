@@ -9,6 +9,7 @@ struct PayProfileSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
+    @FocusState private var isEditing: String?
 
     init(
         model: AppModel,
@@ -48,18 +49,31 @@ struct PayProfileSetupView: View {
                     }
                 }
 
-                Section("Pay profile") {
-                    TextField("Profile name", text: $draft.name)
-                    TextField("Base hourly rate", text: $draft.hourlyRate)
-                        .keyboardType(.decimalPad)
-                        .monospacedDigit()
-                        .accessibilityIdentifier("pay-profile.hourly-rate")
+                Section {
+                    LinePayTextField(
+                        "Profile name", text: $draft.name, focus: $isEditing,
+                        identifier: "pay-profile.name")
+                    LinePayTextField(
+                        "Base hourly rate (USD)", text: $draft.hourlyRate, focus: $isEditing,
+                        identifier: "pay-profile.hourly-rate"
+                    )
+                    .keyboardType(.decimalPad)
+                    .monospacedDigit()
 
                     Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
+                        if !Self.usTimeZones.contains(where: {
+                            $0.identifier == draft.timeZoneIdentifier
+                        }) {
+                            Text(draft.timeZoneIdentifier).tag(draft.timeZoneIdentifier)
+                        }
                         ForEach(Self.usTimeZones, id: \.identifier) { option in
                             Text(option.name).tag(option.identifier)
                         }
                     }
+                } header: {
+                    Text("Pay profile")
+                } footer: {
+                    Text("Enter decimals with a point or comma, without thousands separators.")
                 }
 
                 Section {
@@ -109,9 +123,9 @@ struct PayProfileSetupView: View {
                             selection: $draft.regularEndTime,
                             displayedComponents: .hourAndMinute
                         )
-                        TextField(
+                        LinePayTextField(
                             "Outside-schedule multiplier",
-                            text: $draft.outsideScheduleMultiplier
+                            text: $draft.outsideScheduleMultiplier, focus: $isEditing
                         )
                         .keyboardType(.decimalPad)
                         .monospacedDigit()
@@ -128,12 +142,16 @@ struct PayProfileSetupView: View {
                 Section {
                     Toggle("Daily overtime", isOn: $draft.useDailyOvertime)
                     if draft.useDailyOvertime {
-                        TextField("After hours", text: $draft.overtimeAfterHours)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                        TextField("Multiplier", text: $draft.overtimeMultiplier)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
+                        LinePayTextField(
+                            "After hours", text: $draft.overtimeAfterHours, focus: $isEditing
+                        )
+                        .keyboardType(.decimalPad)
+                        .monospacedDigit()
+                        LinePayTextField(
+                            "Multiplier", text: $draft.overtimeMultiplier, focus: $isEditing
+                        )
+                        .keyboardType(.decimalPad)
+                        .monospacedDigit()
                     }
                 } header: {
                     Text("Daily overtime")
@@ -144,9 +162,11 @@ struct PayProfileSetupView: View {
                 Section {
                     Toggle("Sunday premium", isOn: $draft.useSundayPremium)
                     if draft.useSundayPremium {
-                        TextField("Sunday multiplier", text: $draft.sundayMultiplier)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
+                        LinePayTextField(
+                            "Sunday multiplier", text: $draft.sundayMultiplier, focus: $isEditing
+                        )
+                        .keyboardType(.decimalPad)
+                        .monospacedDigit()
                     }
                 } header: {
                     Text("Sunday")
@@ -161,9 +181,12 @@ struct PayProfileSetupView: View {
                                 displayedComponents: .date
                             )
                             HStack {
-                                TextField("Multiplier", text: $premium.multiplier)
-                                    .keyboardType(.decimalPad)
-                                    .monospacedDigit()
+                                LinePayTextField(
+                                    "Multiplier", text: $premium.multiplier, focus: $isEditing,
+                                    identifier: "pay-profile.date-multiplier.\(premium.id)"
+                                )
+                                .keyboardType(.decimalPad)
+                                .monospacedDigit()
                                 Button(role: .destructive) {
                                     draft.datePremiums.removeAll { $0.id == premium.id }
                                 } label: {
@@ -188,9 +211,12 @@ struct PayProfileSetupView: View {
                 Section {
                     Toggle("Callout minimum", isOn: $draft.useCalloutMinimum)
                     if draft.useCalloutMinimum {
-                        TextField("Minimum paid hours", text: $draft.calloutMinimumHours)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
+                        LinePayTextField(
+                            "Minimum paid hours", text: $draft.calloutMinimumHours,
+                            focus: $isEditing
+                        )
+                        .keyboardType(.decimalPad)
+                        .monospacedDigit()
                     }
                 } header: {
                     Text("Callout")
@@ -204,9 +230,12 @@ struct PayProfileSetupView: View {
                 Section {
                     Toggle("Flat per diem", isOn: $draft.usePerDiem)
                     if draft.usePerDiem {
-                        TextField("Amount per worked date", text: $draft.perDiemAmount)
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
+                        LinePayTextField(
+                            "Amount per worked date (USD)", text: $draft.perDiemAmount,
+                            focus: $isEditing
+                        )
+                        .keyboardType(.decimalPad)
+                        .monospacedDigit()
                     }
                 } header: {
                     Text("Per diem")
@@ -234,12 +263,13 @@ struct PayProfileSetupView: View {
                 }
 
                 Section {
-                    TextField("Source title", text: $draft.sourceTitle)
-                    TextField("Source URL", text: $draft.sourceURL)
+                    LinePayTextField("Source title", text: $draft.sourceTitle, focus: $isEditing)
+                    LinePayTextField("Source URL", text: $draft.sourceURL, focus: $isEditing)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    TextField("Section / note", text: $draft.sourceSection)
+                    LinePayTextField(
+                        "Section / note", text: $draft.sourceSection, focus: $isEditing)
                 } header: {
                     Text("Rule source (optional)")
                 } footer: {
@@ -256,16 +286,18 @@ struct PayProfileSetupView: View {
                     Text("Privacy")
                 }
 
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                    }
-                }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
             .navigationTitle(model.profile == nil ? "Set up pay" : "Edit pay rules")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isEditing = nil }
+                        .accessibilityIdentifier("keyboard.done")
+                }
                 if model.profile != nil {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") { dismiss() }
@@ -277,12 +309,23 @@ struct PayProfileSetupView: View {
                         .accessibilityIdentifier("pay-profile.save")
                 }
             }
+            .alert(
+                "Pay rules weren't saved",
+                isPresented: Binding(
+                    get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
+                )
+            ) {
+                Button("Keep editing", role: .cancel) {}
+            } message: {
+                Text(errorMessage ?? "")
+            }
         }
+        .interactiveDismissDisabled()
         .environment(\.timeZone, selectedTimeZone)
         .onChange(of: draft.timeZoneIdentifier) { oldIdentifier, newIdentifier in
             rebaseDraftDates(from: oldIdentifier, to: newIdentifier)
         }
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
     }
 
     private var weekdaySelector: some View {

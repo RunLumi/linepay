@@ -41,6 +41,7 @@ struct PaystubImportView: View {
                     } label: {
                         Label("Enter paycheck manually", systemImage: "keyboard")
                     }
+                    .accessibilityIdentifier("paystub.enter-manually")
                 } header: {
                     Text("Paycheck source")
                 } footer: {
@@ -67,14 +68,17 @@ struct PaystubImportView: View {
                 }
             }
             .navigationTitle("Add paycheck")
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityIdentifier("paystub.cancel")
                 }
             }
         }
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
         .sheet(isPresented: $showingScanner) {
             DocumentScannerView(
                 onScan: { data in
@@ -235,6 +239,7 @@ struct PaystubReviewView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft: PaystubConfirmationDraft
     @State private var errorMessage: String?
+    @FocusState private var isEditing: String?
 
     init(
         model: AppModel,
@@ -266,8 +271,12 @@ struct PaystubReviewView: View {
                     Text("Confirm these dates against the paystub before auditing.")
                 }
 
-                Section("Required") {
-                    moneyField("Gross pay", text: $draft.grossPay)
+                Section {
+                    moneyField("Gross pay", text: $draft.grossPay, identifier: "paystub.gross-pay")
+                } header: {
+                    Text("Required")
+                } footer: {
+                    Text("Enter decimals with a point or comma, without thousands separators.")
                 }
 
                 Section {
@@ -290,6 +299,7 @@ struct PaystubReviewView: View {
                 Section("Notes") {
                     TextField("Anything worth remembering", text: $draft.notes, axis: .vertical)
                         .lineLimit(2...5)
+                        .focused($isEditing, equals: "notes")
                 }
 
                 if let recognizedText = draft.recognizedText, !recognizedText.isEmpty {
@@ -309,27 +319,42 @@ struct PaystubReviewView: View {
                     }
                 }
 
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                    }
-                }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
             .navigationTitle("Confirm paycheck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isEditing = nil }
+                        .accessibilityIdentifier("keyboard.done")
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Back") { dismiss() }
+                        .accessibilityIdentifier("paystub.review-back")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Audit") { confirm() }
                         .fontWeight(.semibold)
+                        .accessibilityIdentifier("paystub.audit")
                 }
             }
+            .alert(
+                "Paycheck needs review",
+                isPresented: Binding(
+                    get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
+                )
+            ) {
+                Button("Keep editing", role: .cancel) {}
+            } message: {
+                Text(errorMessage ?? "")
+            }
         }
+        .interactiveDismissDisabled()
         .environment(\.timeZone, payrollTimeZone)
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
     }
 
     private var payrollTimeZone: TimeZone {
@@ -351,15 +376,17 @@ struct PaystubReviewView: View {
     }
 
     @ViewBuilder
-    private func moneyField(_ title: String, text: Binding<String>) -> some View {
-        TextField(title, text: text)
+    private func moneyField(_ title: String, text: Binding<String>, identifier: String = "")
+        -> some View
+    {
+        LinePayTextField("\(title) (USD)", text: text, focus: $isEditing, identifier: identifier)
             .keyboardType(.decimalPad)
             .monospacedDigit()
     }
 
     @ViewBuilder
     private func optionalNumberField(_ title: String, text: Binding<String>) -> some View {
-        TextField(title, text: text)
+        LinePayTextField(title, text: text, focus: $isEditing)
             .keyboardType(.decimalPad)
             .monospacedDigit()
     }

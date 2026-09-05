@@ -6,6 +6,7 @@ struct AuditStatusView: View {
     var body: some View {
         Label(status.title, systemImage: status.systemImage)
             .font(.subheadline.weight(.semibold))
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(color)
             .accessibilityLabel(status.title)
     }
@@ -13,15 +14,15 @@ struct AuditStatusView: View {
     private var color: Color {
         switch status {
         case .notAudited:
-            .secondary
+            LinePayColor.textSecondary
         case .matches:
-            .green
+            LinePayColor.match
         case .possibleShortfall:
-            .red
+            LinePayColor.difference
         case .possibleOverpayment:
-            .blue
+            LinePayColor.information
         case .needsReview:
-            .orange
+            LinePayColor.review
         }
     }
 }

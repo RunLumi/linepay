@@ -17,6 +17,7 @@ struct RootView: View {
                 OnboardingFlowView(model: model) {}
             }
         }
+        .tint(LinePayColor.actionText)
         .background(LinePayColor.canvas.ignoresSafeArea())
     }
 }

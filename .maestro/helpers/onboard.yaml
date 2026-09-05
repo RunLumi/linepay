@@ -1,0 +1,31 @@
+appId: com.streamentry.linepay
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: onboarding.set-up-pay
+    timeout: 30000
+- takeScreenshot: welcome
+- tapOn:
+    id: onboarding.set-up-pay
+- tapOn:
+    id: pay-profile.save
+- assertVisible: "Pay rules weren't saved"
+- takeScreenshot: invalid-pay-rules
+- tapOn: Keep editing
+- scrollUntilVisible:
+    element:
+      id: pay-profile.hourly-rate
+- tapOn:
+    id: pay-profile.hourly-rate
+- inputText: "58,40"
+- assertVisible:
+    id: keyboard.done
+- takeScreenshot: pay-setup-keyboard
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: pay-profile.save
+- assertVisible:
+    id: today.add-work

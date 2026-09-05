@@ -1,0 +1,91 @@
+appId: com.streamentry.linepay
+name: Short viewport, long profile, and large money values
+tags: [ios, regression, adaptive]
+onFlowComplete:
+  - setOrientation: PORTRAIT
+---
+- runFlow: ../helpers/onboard.yaml
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.edit-pay-rules
+- tapOn:
+    id: settings.edit-pay-rules
+- scrollUntilVisible:
+    element:
+      id: pay-profile.name
+- tapOn:
+    id: pay-profile.name
+- eraseText
+- inputText: "Synthetic QA profile with a deliberately long name for overnight storm restoration"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: pay-profile.save
+- tapOn: Today
+- takeScreenshot: long-profile
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.add-work
+    centerElement: true
+- waitForAnimationToEnd
+- tapOn:
+    id: today.add-work
+- assertVisible:
+    id: work.save
+- scrollUntilVisible:
+    element:
+      id: work.note
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: work.note
+- inputText: Landscape QA draft
+- assertVisible:
+    id: keyboard.done
+- takeScreenshot: landscape-keyboard
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: work.cancel
+- setOrientation: PORTRAIT
+- runFlow: ../helpers/add-work.yaml
+- scrollUntilVisible:
+    element:
+      id: today.open-pay
+- tapOn:
+    id: today.open-pay
+- scrollUntilVisible:
+    element:
+      id: pay.audit-paycheck
+- tapOn:
+    id: pay.audit-paycheck
+- tapOn:
+    id: paystub.enter-manually
+- scrollUntilVisible:
+    element:
+      id: paystub.gross-pay
+- tapOn:
+    id: paystub.gross-pay
+- inputText: "9876543.21"
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: paystub.audit
+- scrollUntilVisible:
+    element:
+      id: pay.open-audit
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: pay.open-audit
+- assertVisible:
+    id: audit.comparison
+- takeScreenshot: large-amount-comparison
+- scrollUntilVisible:
+    element:
+      id: audit.difference
+    centerElement: true
+- takeScreenshot: large-amount-difference

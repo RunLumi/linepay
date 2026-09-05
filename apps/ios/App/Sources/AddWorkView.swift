@@ -15,6 +15,8 @@ struct AddWorkView: View {
     @State private var breakStart: Date
     @State private var breakEnd: Date
     @State private var errorMessage: String?
+    @FocusState private var isEditing: Bool
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(
         model: AppModel,
@@ -91,11 +93,13 @@ struct AddWorkView: View {
                         selection: $start,
                         displayedComponents: [.date, .hourAndMinute]
                     )
+                    .accessibilityIdentifier("work.start")
                     DatePicker(
                         "End",
                         selection: $end,
                         displayedComponents: [.date, .hourAndMinute]
                     )
+                    .accessibilityIdentifier("work.end")
                 } header: {
                     Text("Actual clock time")
                 } footer: {
@@ -103,16 +107,16 @@ struct AddWorkView: View {
                 }
 
                 Section("Work type") {
-                    Picker("Work type", selection: $kind) {
-                        Text("Regular").tag(WorkKind.regular)
-                        Text("Callout").tag(WorkKind.callout)
-                        Text("Other").tag(WorkKind.other)
+                    if dynamicTypeSize.isAccessibilitySize {
+                        workTypePicker.pickerStyle(.menu)
+                    } else {
+                        workTypePicker.pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 Section {
                     Toggle("Unpaid break", isOn: $hasUnpaidBreak)
+                        .accessibilityIdentifier("work.unpaid-break")
                     if hasUnpaidBreak {
                         DatePicker(
                             "Break starts",
@@ -137,6 +141,8 @@ struct AddWorkView: View {
                 Section("Note") {
                     TextField("Storm, crew, location, ticket…", text: $note, axis: .vertical)
                         .lineLimit(1...4)
+                        .focused($isEditing)
+                        .accessibilityIdentifier("work.note")
                 }
 
                 Section("Preview") {
@@ -156,33 +162,57 @@ struct AddWorkView: View {
                     }
                 }
 
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                    }
-                }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
             .navigationTitle(screenTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isEditing = false }
+                        .accessibilityIdentifier("keyboard.done")
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityIdentifier("work.cancel")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .fontWeight(.semibold)
+                        .accessibilityIdentifier("work.save")
                 }
             }
+            .alert(
+                "Work wasn't saved",
+                isPresented: Binding(
+                    get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
+                )
+            ) {
+                Button("Keep editing", role: .cancel) {}
+            } message: {
+                Text(errorMessage ?? "")
+            }
         }
+        .interactiveDismissDisabled()
         .environment(\.timeZone, payrollTimeZone)
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
     }
 
     private var screenTitle: String {
         if existingEntry != nil { return "Edit work" }
         if template != nil { return "Repeat shift" }
         return "Add work"
+    }
+
+    private var workTypePicker: some View {
+        Picker("Work type", selection: $kind) {
+            Text("Regular").tag(WorkKind.regular)
+            Text("Callout").tag(WorkKind.callout)
+            Text("Other").tag(WorkKind.other)
+        }
+        .accessibilityIdentifier("work.type")
     }
 
     private var payrollTimeZone: TimeZone {

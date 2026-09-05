@@ -14,23 +14,33 @@ struct ProPaywallView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
                     header
-                    benefits
                     planSelector
                     actions
+                    benefits
                     footer
                 }
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Button(primaryButtonTitle) { purchaseSelectedPlan() }
+                    .buttonStyle(LinePayPrimaryButtonStyle())
+                    .disabled(!canPurchase || isPurchasing)
+                    .accessibilityIdentifier("paywall.purchase")
+                    .padding(.horizontal, LinePaySpacing.section)
+                    .padding(.vertical, LinePaySpacing.compact)
+                    .background(LinePayColor.canvas)
+            }
             .navigationTitle("LinePaycheck Pro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Not now") { dismiss() }
+                        .accessibilityIdentifier("paywall.not-now")
                 }
             }
         }
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
         .task {
             if SubscriptionStore.commerceEnabled, store.products.isEmpty {
                 await store.load()
@@ -45,8 +55,7 @@ struct ProPaywallView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(LinePayColor.textPrimary)
             Text(
-                "You have seen what a LinePaycheck audit does. Pro keeps that independent check "
-                    + "available for every future paycheck."
+                "Compare every paycheck with the work and pay rules you confirmed."
             )
             .font(.title3)
             .foregroundStyle(LinePayColor.textSecondary)
@@ -83,13 +92,11 @@ struct ProPaywallView: View {
             planRow(
                 productID: SubscriptionStore.yearlyProductID,
                 title: "Yearly",
-                fallbackPrice: "$79.99/year",
                 badge: "Best value"
             )
             planRow(
                 productID: SubscriptionStore.monthlyProductID,
                 title: "Monthly",
-                fallbackPrice: "$9.99/month",
                 badge: nil
             )
             if store.isLoading {
@@ -101,14 +108,6 @@ struct ProPaywallView: View {
 
     private var actions: some View {
         VStack(spacing: LinePaySpacing.standard) {
-            Button(primaryButtonTitle) {
-                purchaseSelectedPlan()
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .frame(maxWidth: .infinity)
-            .disabled(!canPurchase || isPurchasing)
-
             if !SubscriptionStore.commerceEnabled {
                 Text(
                     "Purchasing is disabled in this debug build. Audit access remains open for testing."
@@ -145,12 +144,15 @@ struct ProPaywallView: View {
                 }
             }
             .font(.footnote.weight(.semibold))
+            .frame(minHeight: 44)
+            .accessibilityIdentifier("paywall.restore")
             .disabled(!SubscriptionStore.commerceEnabled)
 
             Text(
                 "Subscriptions renew automatically unless cancelled in App Store subscription "
                     + "settings. The App Store shows the final localized price and billing terms."
             )
+            .accessibilityIdentifier("paywall.terms")
             .font(.caption)
             .foregroundStyle(LinePayColor.textSecondary)
             .multilineTextAlignment(.center)
@@ -163,7 +165,8 @@ struct ProPaywallView: View {
     }
 
     private var primaryButtonTitle: String {
-        if isPurchasing { return "Working…" }
+        if isPurchasing { return "Purchasing…" }
+        if !canPurchase { return store.isLoading ? "Loading prices…" : "Prices unavailable" }
         return selectedProductID == SubscriptionStore.yearlyProductID
             ? "Continue with Yearly"
             : "Continue with Monthly"
@@ -172,14 +175,12 @@ struct ProPaywallView: View {
     private func planRow(
         productID: String,
         title: String,
-        fallbackPrice: String,
         badge: String?
     ) -> some View {
         let isSelected = selectedProductID == productID
         let price = priceLabel(
             product: store.product(id: productID),
-            productID: productID,
-            fallback: fallbackPrice
+            productID: productID
         )
 
         return Button {
@@ -194,17 +195,17 @@ struct ProPaywallView: View {
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: LinePaySpacing.compact) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(title).font(.headline)
                         if let badge {
                             Text(badge)
                                 .font(.caption.weight(.semibold))
-                                .foregroundStyle(LinePayColor.brandPrimary)
+                                .foregroundStyle(LinePayColor.actionText)
                         }
                     }
                     Text(price)
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(LinePayColor.textSecondary)
+                        .font(.headline.monospacedDigit())
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
@@ -221,11 +222,14 @@ struct ProPaywallView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(title), \(price)")
+        .accessibilityIdentifier(
+            productID == SubscriptionStore.yearlyProductID ? "paywall.yearly" : "paywall.monthly"
+        )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private func priceLabel(product: Product?, productID: String, fallback: String) -> String {
-        guard let product else { return fallback }
+    private func priceLabel(product: Product?, productID: String) -> String {
+        guard let product else { return "Price unavailable" }
         return productID == SubscriptionStore.yearlyProductID
             ? "\(product.displayPrice) per year"
             : "\(product.displayPrice) per month"

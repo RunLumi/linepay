@@ -30,7 +30,7 @@ struct AuditDetailView: View {
                         "Re-run the audit after confirming changed work or rules.",
                         systemImage: "arrow.clockwise"
                     )
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(LinePayColor.review)
                 } else {
                     ForEach(findings) { finding in
                         NavigationLink {
@@ -142,12 +142,15 @@ struct AuditDetailView: View {
             if let errorMessage {
                 Section {
                     Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(LinePayColor.difference)
                 }
             }
         }
         .navigationTitle("Paycheck audit")
+        .labeledContentStyle(LinePayValueStyle())
         .navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden)
+        .background(LinePayColor.canvas)
         .sheet(isPresented: $showingEvidence) {
             if let evidenceURL {
                 QuickLookPreview(url: evidenceURL)
@@ -172,10 +175,15 @@ struct AuditDetailView: View {
 
     private var comparisonHeader: some View {
         VStack(spacing: LinePaySpacing.standard) {
-            HStack(alignment: .firstTextBaseline) {
-                amountColumn("EXPECTED", calculation.total)
-                Spacer()
-                amountColumn("PAID", paystub.grossPay)
+            Text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
+                .font(.subheadline)
+                .foregroundStyle(LinePayColor.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            LabeledContent("Expected gross") {
+                Text(LinePayFormat.money(calculation.total)).monospacedDigit().bold()
+            }
+            LabeledContent("Paystub gross") {
+                Text(LinePayFormat.money(paystub.grossPay)).monospacedDigit().bold()
             }
 
             Divider()
@@ -187,6 +195,8 @@ struct AuditDetailView: View {
                         Text(LinePayFormat.money(reconciliation.difference))
                             .font(.title2.bold().monospacedDigit())
                             .foregroundStyle(LinePayColor.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("audit.difference")
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -194,22 +204,16 @@ struct AuditDetailView: View {
                 AuditStatusView(status: .needsReview)
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("audit.comparison")
         .padding(.vertical, LinePaySpacing.standard)
     }
 
-    private func amountColumn(_ label: String, _ money: Money) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption.weight(.semibold))
-                .tracking(0.6)
-                .foregroundStyle(LinePayColor.textSecondary)
-            Text(LinePayFormat.money(money))
-                .font(.title3.bold().monospacedDigit())
-        }
-    }
-
     private func findingRow(_ finding: AuditFinding) -> some View {
-        HStack {
+        LabeledContent {
+            Text(LinePayFormat.money(finding.difference))
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+        } label: {
             VStack(alignment: .leading, spacing: 3) {
                 Text(finding.title)
                     .font(.headline)
@@ -219,9 +223,6 @@ struct AuditDetailView: View {
                 .font(.footnote)
                 .foregroundStyle(LinePayColor.textSecondary)
             }
-            Spacer()
-            Text(LinePayFormat.money(finding.difference))
-                .font(.subheadline.weight(.semibold).monospacedDigit())
         }
     }
 
@@ -339,6 +340,7 @@ private struct FindingDetailView: View {
             }
         }
         .navigationTitle(finding.title)
+        .labeledContentStyle(LinePayValueStyle())
         .navigationBarTitleDisplayMode(.inline)
     }
 }

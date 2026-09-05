@@ -23,9 +23,14 @@ struct SettingsView: View {
                         LabeledContent("Pay cadence", value: profile.preferredCadence.title)
                         LabeledContent("Rule version", value: profile.agreement.version)
 
-                        Button("Edit pay rules") {
+                        Button {
                             showingRuleEditor = true
+                        } label: {
+                            Text("Edit pay rules")
+                                .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
+                        .accessibilityIdentifier("settings.edit-pay-rules")
                     }
 
                     Section("Confirmed rules") {
@@ -37,9 +42,14 @@ struct SettingsView: View {
                     LabeledContent("Status", value: subscriptionStatus)
 
                     if !subscriptionStore.isPro {
-                        Button("View LinePaycheck Pro") {
+                        Button {
                             showingPaywall = true
+                        } label: {
+                            Text("View LinePaycheck Pro")
+                                .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
+                        .accessibilityIdentifier("settings.view-pro")
                     }
 
                     Button("Restore Purchases") {
@@ -101,11 +111,14 @@ struct SettingsView: View {
                 if let errorMessage {
                     Section {
                         Label(errorMessage, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(LinePayColor.difference)
                     }
                 }
             }
             .navigationTitle("Settings")
+            .labeledContentStyle(LinePayValueStyle())
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
         }
         .sheet(isPresented: $showingRuleEditor) {
             PayProfileSetupView(model: model)

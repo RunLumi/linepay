@@ -59,4 +59,4 @@ echo "==> Install LinePay"
 xcrun simctl install "$DEVICE_UDID" "$APP_PATH"
 
 echo "==> Run Maestro: $TEST_TARGET"
-maestro --udid "$DEVICE_UDID" test "$TEST_TARGET"
+maestro --udid "$DEVICE_UDID" test --test-output-dir "$ROOT/.build/maestro-results" "$TEST_TARGET"

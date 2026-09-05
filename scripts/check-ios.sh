@@ -81,6 +81,10 @@ if [[ ! -f "$BUILT_PRIVACY_MANIFEST" ]]; then
     exit 1
 fi
 
+# Without a launch screen, iOS can run the app in a 320 x 480 compatibility viewport.
+BUILT_INFO_PLIST="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/LinePay.app/Info.plist"
+plutil -extract UILaunchScreen xml1 -o /dev/null "$BUILT_INFO_PLIST"
+
 echo "==> Build Release for generic iOS Simulator"
 xcodebuild \
     -project "$IOS_DIR/LinePay.xcodeproj" \
@@ -90,3 +94,6 @@ xcodebuild \
     -derivedDataPath "$DERIVED_DATA" \
     CODE_SIGNING_ALLOWED=NO \
     build
+
+plutil -extract UILaunchScreen xml1 -o /dev/null \
+    "$DERIVED_DATA/Build/Products/Release-iphonesimulator/LinePay.app/Info.plist"

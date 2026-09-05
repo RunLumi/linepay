@@ -254,4 +254,46 @@ struct AppModelTests {
         draft.periodStartDate = start
         return draft
     }
+
+    @Test(
+        "A decimal comma and point preserve the full entered rate",
+        arguments: ["58.40", "58,40", " 58,40 \n"])
+    func decimalRateInput(_ input: String) throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: input, start: testStart))
+        #expect(model.profile?.agreement.hourlyRate.amount == Decimal(5840) / 100)
+    }
+
+    @Test(
+        "Partial numeric input cannot replace saved rules",
+        arguments: ["58.40USD", "1,234.56", "1.234,56", "58.4.0", "1e3", "NaN", "-1"])
+    func invalidRateInputIsAtomic(_ input: String) throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: "50", start: testStart))
+        #expect(throws: (any Error).self) {
+            try model.saveProfile(makeDraft(rate: input, start: testStart))
+        }
+        #expect(model.profile?.agreement.hourlyRate.amount == Decimal(50))
+        #expect(model.profile?.agreement.version == "1")
+    }
+
+    @Test("Paycheck amounts and optional hours keep decimal-comma precision")
+    func decimalPaystubInputIsExact() throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: "50", start: testStart))
+        try model.addWork(
+            start: testStart, end: testStart.addingTimeInterval(8 * 3600), kind: .regular)
+        var draft = PaystubConfirmationDraft()
+        draft.payPeriodStartDate = testStart
+        draft.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 3600)
+        draft.grossPay = "400,50"
+        draft.regularHours = "8,25"
+        try model.confirmPaystub(draft)
+        #expect(model.currentPaystub?.grossPay.amount == Decimal(40050) / 100)
+        #expect(model.currentPaystub?.regularHours == Decimal(825) / 100)
+
+        draft.grossPay = "400.50USD"
+        #expect(throws: (any Error).self) { try model.confirmPaystub(draft) }
+        #expect(model.currentPaystub?.grossPay.amount == Decimal(40050) / 100)
+    }
 }

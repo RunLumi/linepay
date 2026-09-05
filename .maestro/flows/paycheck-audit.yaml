@@ -1,0 +1,70 @@
+appId: com.streamentry.linepay
+name: First paycheck audit, evidence, and archived history
+tags: [smoke, ios, regression]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- scrollUntilVisible:
+    element:
+      id: today.open-pay
+- tapOn:
+    id: today.open-pay
+- scrollUntilVisible:
+    element:
+      id: pay.audit-paycheck
+- tapOn:
+    id: pay.audit-paycheck
+- tapOn:
+    id: paystub.enter-manually
+- tapOn:
+    id: paystub.audit
+- assertVisible: Paycheck needs review
+- takeScreenshot: paycheck-missing-gross
+- tapOn: Keep editing
+- scrollUntilVisible:
+    element:
+      id: paystub.gross-pay
+- tapOn:
+    id: paystub.gross-pay
+- inputText: "450,00"
+- assertVisible:
+    id: keyboard.done
+- takeScreenshot: paycheck-keyboard
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: paystub.audit
+- scrollUntilVisible:
+    element:
+      id: pay.open-audit
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: pay.open-audit
+- assertVisible:
+    id: audit.comparison
+- takeScreenshot: paycheck-comparison
+- scrollUntilVisible:
+    element:
+      id: audit.difference
+    centerElement: true
+- takeScreenshot: paycheck-difference
+- tapOn: Pay
+- scrollUntilVisible:
+    element:
+      id: pay.finish-period
+- tapOn:
+    id: pay.finish-period
+- tapOn: Finish and archive
+- tapOn: History
+- assertVisible:
+    id: history.open-period
+- tapOn:
+    id: history.open-period
+- assertVisible: Snapshot
+- takeScreenshot: archived-pay-period
+- stopApp
+- launchApp
+- tapOn: History
+- assertVisible:
+    id: history.open-period

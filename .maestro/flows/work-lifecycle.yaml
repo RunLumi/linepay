@@ -1,0 +1,48 @@
+appId: com.streamentry.linepay
+name: Work entry, correction, overlap recovery, and undo
+tags: [smoke, ios, regression]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn:
+    id: today.repeat-shift
+- tapOn:
+    id: work.save
+- assertVisible: "Work wasn't saved"
+- takeScreenshot: overlap-error
+- tapOn: Keep editing
+- scrollUntilVisible:
+    element:
+      id: work.note
+- assertVisible: Synthetic QA shift
+- tapOn:
+    id: work.cancel
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- tapOn:
+    id: today.edit-work
+- scrollUntilVisible:
+    element:
+      id: work.note
+- tapOn:
+    id: work.note
+- inputText: " QA correction "
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: work.save
+- scrollUntilVisible:
+    element:
+      id: today.delete-work
+- tapOn:
+    id: today.delete-work
+- assertVisible:
+    id: today.undo-delete
+- tapOn:
+    id: today.undo-delete
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- assertVisible: ".*QA correction.*"
+- takeScreenshot: work-restored

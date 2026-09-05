@@ -230,9 +230,19 @@ Or run only smoke tests:
 maestro test .maestro --include-tags=smoke
 ```
 
-## 6. Current smoke flow
+## 6. Current journeys
 
-The first checked-in flow is:
+The suite covers these independent journeys:
+
+- `onboarding-smoke.yaml`: welcome, invalid-rate recovery, labeled numeric input, keyboard Done, and Today.
+- `work-lifecycle.yaml`: add/edit work, overlap validation without losing the draft, delete, and undo.
+- `paycheck-audit.yaml`: manual paycheck confirmation, missing-gross recovery, audit comparison, archiving, and persistence after relaunch.
+- `pro-sheet.yaml`: monthly/yearly choices, unavailable-price state, readable terms, and the persistent Not now action.
+- `adaptive-layout.yaml`: long profile names, landscape keyboard/cancel behavior, and large comparison values.
+
+Shared setup lives under `.maestro/helpers/` and is not discovered as a standalone test. All records are synthetic. Named screenshots are saved under the selected test output directory.
+
+The onboarding entry point is:
 
 ```text
 .maestro/flows/onboarding-smoke.yaml
@@ -250,10 +260,6 @@ set up pay
 enter hourly rate
     ↓
 save confirmed pay rules
-    ↓
-soft Pro screen
-    ↓
-continue free
     ↓
 Today screen is usable
 ```
@@ -366,18 +372,18 @@ Use `scrollUntilVisible` instead of hardcoded swipe coordinates for normal full-
     direction: DOWN
 ```
 
-### iOS keyboard caveat
+### iOS keyboard dismissal
 
 Maestro's `hideKeyboard` can be unreliable on iOS because the platform does not expose a direct keyboard-dismiss API.
 
-For the current onboarding smoke flow, after entering the decimal hourly rate we tap a safe non-action area near the navigation bar before scrolling to the Save button:
+Pay setup, work notes, and paycheck confirmation expose a native keyboard-toolbar Done action. Test this action directly instead of relying on a coordinate tap:
 
 ```yaml
 - tapOn:
-    point: "50%,12%"
+    id: keyboard.done
 ```
 
-Prefer stable semantic actions when possible. Use coordinate taps only for system-level workarounds like this, not for normal feature navigation.
+Put input identifiers on the actual text field, not a surrounding labeled row; tapping the row's midpoint may miss the input.
 
 ## 10. Authoring flows
 

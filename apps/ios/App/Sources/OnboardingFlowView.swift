@@ -10,6 +10,7 @@ struct OnboardingFlowView: View {
     let onComplete: () -> Void
 
     @State private var step: Step = .welcome
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -27,6 +28,6 @@ struct OnboardingFlowView: View {
                 )
             }
         }
-        .animation(.easeInOut(duration: 0.18), value: step)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: step)
     }
 }
