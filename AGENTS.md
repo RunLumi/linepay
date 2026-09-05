@@ -40,7 +40,8 @@ Do not move iOS code into a generic `shared` module merely because Android may e
 
 ## iOS baseline
 
-- Xcode 26.x stable toolchain, Swift 6.2 language mode.
+- Xcode 26.6 stable toolchain, Swift 6.3 compiler, Swift 6 language mode.
+- XcodeGen >= 2.46.0 defines the app project; generated `.xcodeproj` output is not source of truth.
 - SwiftUI for UI.
 - Swift Testing for unit/integration tests; XCTest/XCUIAutomation only where UI automation requires it.
 - Apple frameworks first: Foundation, SwiftData where appropriate, Vision/VisionKit for scanning/OCR, StoreKit 2 for purchases.
@@ -192,6 +193,7 @@ Do not share implementation merely to make tests pass.
 ## Build and dependency discipline
 
 - Pin or explicitly constrain tools/dependencies used in reproducible builds.
+- Commit application dependency lockfiles such as `Package.resolved` when generated.
 - Prefer no dependency over a small convenience dependency.
 - Never add an SDK only for one helper function.
 - Before adding a dependency, check maintenance, privacy manifest impact, binary size, licenses, transitive dependencies, and whether Apple/Foundation already solves the problem.
