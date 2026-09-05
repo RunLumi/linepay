@@ -42,6 +42,8 @@ check_frontmatter() {
     done
 }
 
+command -v python3 >/dev/null 2>&1 || fail "python3 is required for harness config validation"
+
 echo "==> Shell syntax"
 for script in scripts/*.sh; do
     bash -n "$script"
@@ -52,6 +54,11 @@ for file in \
     AGENTS.md \
     CLAUDE.md \
     GEMINI.md \
+    apps/ios/AGENTS.md \
+    apps/ios/Packages/LinePayDomain/AGENTS.md \
+    apps/android/AGENTS.md \
+    shared/contracts/AGENTS.md \
+    .maestro/AGENTS.md \
     docs/agentic.md \
     .mcp.json \
     .codex/config.toml \
@@ -80,6 +87,7 @@ for file in \
     scripts/agent-context.sh \
     scripts/agent-doctor.sh \
     scripts/agent-verify.sh \
+    scripts/bootstrap-ios.sh \
     scripts/install-xcodegen.sh; do
     require_file "$file"
 done
@@ -148,6 +156,7 @@ echo "==> Pinned developer tools"
 require_text scripts/install-xcodegen.sh "VERSION=\"$XCODEGEN_VERSION\""
 require_text scripts/install-xcodegen.sh "SHA256=\"$XCODEGEN_SHA256\""
 require_text .github/workflows/ios.yml "bash scripts/install-xcodegen.sh"
+require_text scripts/bootstrap-ios.sh "EXPECTED_XCODEGEN_VERSION=\"$XCODEGEN_VERSION\""
 
 echo "==> GitHub Actions supply-chain policy"
 for workflow in .github/workflows/agent-harness.yml .github/workflows/ios.yml; do
