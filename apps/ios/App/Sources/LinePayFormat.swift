@@ -38,4 +38,28 @@ enum LinePayFormat {
         let end = Date(timeIntervalSince1970: TimeInterval(interval.endEpochSeconds))
         return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
     }
+
+    static func payPeriod(
+        _ window: PayPeriodWindow,
+        timeZoneIdentifier: String
+    ) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.timeZone = TimeZone(identifier: timeZoneIdentifier)
+        return "\(formatter.string(from: window.startDate)) – \(formatter.string(from: window.displayEndDate))"
+    }
+
+    static func breakDuration(_ interval: WorkInterval) -> String? {
+        let total = interval.unpaidBreaks.reduce(Decimal.zero) { $0 + $1.durationHours }
+        guard total > 0 else { return nil }
+        return "\(hours(total)) h unpaid break"
+    }
+
+    static func signedMoney(_ money: Money) -> String {
+        if money.amount > 0 {
+            return "+\(self.money(money))"
+        }
+        return self.money(money)
+    }
 }
