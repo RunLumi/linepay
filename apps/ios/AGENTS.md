@@ -2,7 +2,9 @@
 
 The repository-root `AGENTS.md` remains authoritative for engineering and product invariants.
 
-For every user-facing iOS change, **read and follow `../../DESIGN.md` before implementation**.
+For every iOS engineering change, **read and follow `../../docs/best-practices.md` before implementation**.
+
+For every user-facing iOS change, **also read and follow `../../DESIGN.md` before implementation**.
 
 In particular:
 
@@ -19,4 +21,6 @@ In particular:
 - do not introduce gradients, decorative glow, generic fintech dashboards, AI/sparkle motifs, faux industrial textures, or trade cosplay;
 - run the `DESIGN.md` Design QA checklist before considering a user-facing screen complete.
 
-If a feature genuinely requires breaking a rule in `DESIGN.md`, update the design decision deliberately rather than silently drifting from the system.
+Engineering changes must also preserve the tested boundaries in `docs/best-practices.md`, especially Swift 6 concurrency safety, exact money/time semantics, privacy-by-architecture, localization readiness, migration safety, and layered test coverage.
+
+If a feature genuinely requires breaking a rule in `DESIGN.md` or `docs/best-practices.md`, update the relevant decision deliberately rather than silently drifting from the system.
