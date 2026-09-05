@@ -22,7 +22,7 @@ struct ProPaywallView: View {
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
-            .navigationTitle("LinePay Pro")
+            .navigationTitle("LinePaycheck Pro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -45,7 +45,7 @@ struct ProPaywallView: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(LinePayColor.textPrimary)
             Text(
-                "You have seen what a LinePay audit does. Pro keeps that independent check "
+                "You have seen what a LinePaycheck audit does. Pro keeps that independent check "
                     + "available for every future paycheck."
             )
             .font(.title3)
@@ -73,7 +73,7 @@ struct ProPaywallView: View {
             benefit(
                 icon: "lock.shield",
                 title: "Still private",
-                detail: "Pro does not create a LinePay account or upload your paycheck."
+                detail: "Pro does not create a LinePaycheck account or upload your paycheck."
             )
         }
     }
@@ -118,7 +118,7 @@ struct ProPaywallView: View {
                 .multilineTextAlignment(.center)
             } else if store.products.isEmpty, !store.isLoading {
                 Text(
-                    "App Store prices are unavailable right now. Your existing LinePay data is unaffected."
+                    "App Store prices are unavailable right now. Your existing LinePaycheck data is unaffected."
                 )
                 .font(.footnote)
                 .foregroundStyle(LinePayColor.textSecondary)
