@@ -81,7 +81,9 @@ struct StoreKitLifecycleTests {
         // Let accelerated time end grace and prove access is removed without a new purchase.
         await expectAccess(false, store: store, attempts: 300)
     }
-    private func expectAccess(_ expected: Bool, store: SubscriptionStore, attempts: Int = 30) async {
+    private func expectAccess(
+        _ expected: Bool, store: SubscriptionStore, attempts: Int = 30
+    ) async {
         for _ in 0..<attempts {
             await store.refreshEntitlements()
             if store.isPro == expected { return }
