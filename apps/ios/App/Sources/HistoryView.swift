@@ -1,3 +1,4 @@
+import LinePayDomain
 import SwiftUI
 
 struct HistoryView: View {
@@ -214,7 +215,8 @@ private struct HistoricalPayPeriodView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This permanently deletes the historical snapshot and its stored paystub evidence.")
+                "This permanently deletes the historical snapshot and its stored paystub evidence."
+            )
         }
     }
 
