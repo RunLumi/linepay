@@ -75,7 +75,8 @@ targets:
         CURRENT_PROJECT_VERSION: 1
         MARKETING_VERSION: 0.1.0
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: LinePay
+        INFOPLIST_KEY_CFBundleDisplayName: LinePaycheck
+        INFOPLIST_KEY_CFBundleName: LinePaycheck
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"
