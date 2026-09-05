@@ -54,15 +54,24 @@ struct AddWorkView: View {
             let oldStart =
                 origin.map { TimeInterval($0.interval.startEpochSeconds) }
                 ?? start.timeIntervalSince1970
+            let copiedFrom = template.map {
+                Date(timeIntervalSince1970: TimeInterval($0.interval.startEpochSeconds))
+            }
+            let breakStartOffset: TimeInterval =
+                first.map {
+                    TimeInterval($0.startEpochSeconds) - oldStart
+                } ?? 14_400
+            let breakEndOffset: TimeInterval =
+                first.map {
+                    TimeInterval($0.endEpochSeconds) - oldStart
+                } ?? 16_200
             var value = WorkDraft(
                 periodID: periodID, editingEntryID: existingEntry?.id,
                 start: start, end: end, kind: origin?.interval.kind ?? .regular,
                 note: origin?.note ?? "", hasUnpaidBreak: first != nil,
-                breakStart: start.addingTimeInterval(
-                    first.map { TimeInterval($0.startEpochSeconds) - oldStart } ?? 4 * 3600),
-                breakEnd: start.addingTimeInterval(
-                    first.map { TimeInterval($0.endEpochSeconds) - oldStart } ?? 4.5 * 3600),
-                copiedFrom: template?.id)
+                breakStart: start.addingTimeInterval(breakStartOffset),
+                breakEnd: start.addingTimeInterval(breakEndOffset),
+                copiedFrom: copiedFrom)
             value.additionalBreaks =
                 origin?.interval.unpaidBreaks.dropFirst().map {
                     BreakDraft(

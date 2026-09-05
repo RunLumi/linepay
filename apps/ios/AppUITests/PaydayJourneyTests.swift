@@ -58,7 +58,6 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(
             app.staticTexts["$400.00"].firstMatch.waitForExistence(timeout: 10),
             "Auditing A must not overwrite work in B")
-        // Relaunch with real commerce gate enabled, not the ordinary debug bypass.
         app.terminate()
         launch(reset: false, commerce: true)
         tab("Pay")
@@ -93,10 +92,8 @@ final class PaydayJourneyTests: XCTestCase {
     func testDraftRecoveryAndUnsupportedRulePresentation() {
         launch(scenario: "work")
         tap("today.add-work")
-        let note = app.textFields["work.note"].firstMatch
-        scrollTo(note)
-        // Multiline TextField may be represented by a text view depending on the OS.
-        let input = note.exists ? note : app.textViews["work.note"]
+        // Multiline TextField uses a different accessibility type across OS releases.
+        let input = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
         scrollTo(input)
         input.tap()
         input.typeText("SAMPLE unfinished shift")
@@ -162,7 +159,7 @@ final class PaydayJourneyTests: XCTestCase {
         element.tap()
     }
     private func tapContaining(_ text: String) {
-        let element = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", text))
+        let element = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text))
             .firstMatch
         scrollTo(element)
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
