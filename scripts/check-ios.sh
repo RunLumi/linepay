@@ -19,7 +19,7 @@ if ! command -v swift >/dev/null 2>&1; then
     exit 1
 fi
 
-XCODEGEN_VERSION="$(xcodegen --version | awk '{print $2}')"
+XCODEGEN_VERSION="$(xcodegen --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)"
 if [[ "$XCODEGEN_VERSION" != "$EXPECTED_XCODEGEN_VERSION" ]]; then
     echo "error: expected XcodeGen $EXPECTED_XCODEGEN_VERSION, found $XCODEGEN_VERSION" >&2
     echo "Update project.yml, CI, and this check deliberately when upgrading XcodeGen." >&2
