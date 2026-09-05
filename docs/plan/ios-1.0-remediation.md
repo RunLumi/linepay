@@ -23,7 +23,7 @@ A source fix is not release acceptance. Require native compilation, domain/app/S
 | A09 | Undo bound to period and work revision; containment validation | Stale-Undo and intervening-edit regressions |
 | A10 | Retain originals on correction; append audit revisions; explicit removal and retryable physical cleanup | Correction-retains-original test; cleanup fault injection; unconfirmed-original boundary tests |
 | A11 | Signed entitlement refresh independent of product loading; real local StoreKit configuration and lifecycle tests; no guessed live prices | Purchase/renewal/cancellation/restore/expiry, refund, metadata-failure and grace tests |
-| A12 | Schema-2 decoding and v1 migration; reload/recovery; full backup integration; protected temporary export cleanup | Migration/corrupt-state tests; backup/restore atomicity tests |
+| A12 | Schema-3 writer with v1/v2 migration; reload/recovery; full backup integration; protected temporary export cleanup | Migration/corrupt-state tests; backup/restore atomicity tests |
 | A13 | Progressive setup and confirmation; unsupported-rule explanation; multiple tiers/weekday rules; grouped ledger and focused evidence receipts | UI journeys and screen captures, not source presence alone |
 | A14 | Unknown calculation renders Unavailable with actionable context; invalid results cannot finalize an audit | Calculation error source paths plus runtime acceptance |
 | A15 | About/privacy/terms/acknowledgements; adaptive presentation and reduced-motion behavior; existing shared icon retained; launch configuration corrected | Brand/launch tests and light/dark/large-text UI evidence; physical review remains separate |

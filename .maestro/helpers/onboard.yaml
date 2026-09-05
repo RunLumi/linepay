@@ -14,7 +14,7 @@ appId: com.streamentry.linepay
       id: pay-profile.continue
 - tapOn:
     id: pay-profile.continue
-- assertVisible: ".*Check Base hourly rate.*"
+- assertVisible: ".*Check Hourly rate.*"
 - takeScreenshot: invalid-pay-rules
 - scrollUntilVisible:
     element:

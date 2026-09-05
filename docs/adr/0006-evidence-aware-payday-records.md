@@ -30,7 +30,7 @@ An active-period correction validates work containment and overlaps. Future-rule
 
 ### Persist unfinished work and evidence ownership
 
-Schema 2 adds setup, work and paystub-review drafts, audit revisions, and a retryable evidence-deletion queue. Source files remain separate from structured state. The v1 decoder supplies new metadata without recomputing historical money; a legacy comparison without a confirmed basis requires review.
+Schema 3 combines the two independent schema-2 variants (dated timelines and readiness evidence). It preserves setup/work/paystub-review drafts, audit revisions, and retryable evidence deletion. A schema-2 reader must reject the new writer rather than silently discard fields it does not understand. Source files remain separate from structured state. The v1/v2 decoder supplies missing optional metadata without recomputing historical money; a legacy comparison without a confirmed basis requires review.
 
 Import ownership begins before the first asynchronous file/photo read. One operation owns the review, and cancelled/stale completions cannot overwrite a newer session. Progress distinguishes input not yet saved from an original already safely staged before OCR. OCR failure does not delete the staged original.
 
@@ -48,7 +48,7 @@ Explicit evidence removal updates references and retains a retryable cleanup rec
 
 StoreKit entitlement lookup is independent of product-price loading. A metadata/network failure does not prevent checking signed local entitlement information. Backup restore does not grant Pro or reset previously consumed free-audit access. Existing worker-owned records remain accessible without Pro. Audits performed with verified Pro access do not consume an unused Free audit. Annual trial presentation requires actual free-offer metadata and eligibility; duration and renewal dates come from StoreKit.
 
-An optional schema-2 onboarding progress field preserves the first work draft and first expected-pay proof across interruptions. Existing snapshots without this field resume their normal navigation.
+An optional schema-3 onboarding progress field preserves the first work draft and first expected-pay proof across interruptions. Existing snapshots without this field resume their normal navigation.
 
 ## Consequences
 

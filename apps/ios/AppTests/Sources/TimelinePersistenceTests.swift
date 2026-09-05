@@ -26,11 +26,11 @@ struct TimelinePersistenceTests {
         #expect(loaded.persistenceIssue == nil)
         #expect(loaded.history.first?.calculation == decoded.history.first?.calculation)
         #expect(loaded.history.first?.agreementChanges == nil)
-        #expect(try store.load()?.schemaVersion == 2)
+        #expect(try store.load()?.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(try Data(contentsOf: url) == legacy)
     }
 
-    @Test func oldBackupRestoresAsSchemaTwoWithoutRecalculatingHistory() throws {
+    @Test func oldBackupRestoresAsCurrentSchemaWithoutRecalculatingHistory() throws {
         let store = UnitStateStore()
         let model = AppModel(store: store)
         try UnitFixture.populate(model)
@@ -50,7 +50,7 @@ struct TimelinePersistenceTests {
         let session = AppSession(store: restoredStore, evidenceStore: MemoryEvidenceStore())
         try session.restore(archive)
         let old = try JSONDecoder().decode(AppPersistentState.self, from: bytes)
-        #expect(restoredStore.state?.schemaVersion == 2)
+        #expect(restoredStore.state?.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(session.model.history.first?.calculation == old.history.first?.calculation)
     }
 

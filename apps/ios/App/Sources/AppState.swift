@@ -270,7 +270,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 2
+    static let currentSchemaVersion = 3
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -305,7 +305,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1 -> v2 migration. Historical work, calculations and sources are not recalculated.
+        // Additive v1/v2 -> v3 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)
         activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)

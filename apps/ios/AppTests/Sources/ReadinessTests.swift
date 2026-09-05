@@ -194,7 +194,7 @@ struct ReadinessTests {
         object.removeValue(forKey: "pendingEvidenceDeletions")
         let migrated = try JSONDecoder().decode(
             AppPersistentState.self, from: JSONSerialization.data(withJSONObject: object))
-        #expect(migrated.schemaVersion == 2)
+        #expect(migrated.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(migrated.history == before.history)
     }
     @Test func corruptStateIsNotOverwrittenAndCanBeRetried() throws {

@@ -9,6 +9,75 @@ private final class MigrationResourceAnchor: NSObject {}
 @Suite("Integrated payday, migration and cleanup contracts")
 @MainActor
 struct IntegratedReadinessTests {
+    @Test(arguments: ["timeline", "readiness"])
+    func bothSchemaTwoVariantsUpgradeWithoutDroppingTheirEvidence(_ variant: String) throws {
+        let root = UnitFixture.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let originals = LocalEvidenceStore(baseDirectory: root.appendingPathComponent("originals"))
+        let memory = MemoryStateStore()
+        let source = AppModel(store: memory, evidenceStore: originals)
+        try UnitFixture.populate(source, evidence: true)
+        if variant == "timeline" {
+            var draft = UnitFixture.profile(rate: "60")
+            draft.changeEffectiveDate = UnitFixture.start.addingTimeInterval(86_400)
+            try source.saveProfile(draft)
+        }
+        try source.archiveCurrentPeriod()
+        if variant == "readiness" {
+            let current = try #require(source.activePeriod)
+            try source.saveWorkDraft(
+                WorkDraft(
+                    periodID: current.id, editingEntryID: nil,
+                    start: current.window.startDate,
+                    end: current.window.startDate.addingTimeInterval(3_600),
+                    kind: .regular, note: "SYNTHETIC saved draft", hasUnpaidBreak: false,
+                    breakStart: current.window.startDate, breakEnd: current.window.startDate,
+                    copiedFrom: nil))
+            _ = try source.stagePaystub(
+                data: Data("SYNTHETIC draft original".utf8), filename: "draft.pdf",
+                mediaType: "application/pdf", kind: .file,
+                periodID: try #require(source.history.first).id)
+        }
+        let originalState = try #require(try memory.load())
+        let removed: Set<String> =
+            variant == "timeline"
+            ? [
+                "onboardingProgress", "setupDraft", "workDraft", "paystubDraft",
+                "pendingEvidenceDeletions", "auditRevisions", "workRevision", "confirmation",
+                "assessment",
+            ]
+            : ["baselineAgreement", "agreementChanges", "agreementSnapshots", "appliedAgreement"]
+        func strip(_ value: Any) -> Any {
+            if let map = value as? [String: Any] {
+                return map.filter { !removed.contains($0.key) }.mapValues(strip)
+            }
+            if let list = value as? [Any] { return list.map(strip) }
+            return value
+        }
+        var object = try #require(
+            strip(JSONSerialization.jsonObject(with: JSONEncoder().encode(originalState)))
+                as? [String: Any])
+        object["schemaVersion"] = 2
+        let bytes = try JSONSerialization.data(withJSONObject: object)
+        let expected = try JSONDecoder().decode(AppPersistentState.self, from: bytes)
+        let file = root.appendingPathComponent("state-v1.json")
+        try bytes.write(to: file)
+        let store = VersionedLocalStateStore(baseDirectory: root)
+        let loaded = AppModel(store: store, evidenceStore: originals)
+        #expect(loaded.persistenceIssue == nil)
+        #expect(loaded.history == expected.history)
+        #expect(
+            loaded.workDraft == expected.workDraft && loaded.paystubDraft == expected.paystubDraft)
+        #expect(try Data(contentsOf: file) == bytes)
+        for original in loaded.retainedEvidence {
+            #expect(loaded.evidenceURL(for: original) != nil)
+        }
+        try loaded.completeFirstResult()
+        #expect(try store.load()?.schemaVersion == 3)
+        #expect(loaded.history == expected.history)
+        #expect(
+            loaded.workDraft == expected.workDraft && loaded.paystubDraft == expected.paystubDraft)
+    }
     @Test func unfinishedWorkCannotDisappearDuringPeriodClose() throws {
         let store = MemoryStateStore()
         let model = AppModel(store: store)

@@ -23,6 +23,8 @@ A Files save callback establishes provider acceptance, not that remote iCloud up
 
 ## Scope and format
 
+State schemas 1 and 2 migrate in memory to schema 3, retaining recorded calculations and evidence. The backup envelope remains version 1. Older schema-2 apps reject newly saved schema-3 state; they must not silently drop drafts or audit revisions.
+
 A single binary property-list envelope contains a version, format identifier, payload bytes, and SHA-256 payload digest. The payload contains the saved-state JSON, creation date, and original document bytes keyed by evidence ID. Format/UTType: `com.streamentry.linepay.backup`; extension: `.linepaybackup`.
 
 Included: saved profile and exact agreement versions, active and historical periods, work and notes, persisted setup/work/paystub-review drafts, audit revisions, confirmed paystub fields and comparison scope, reconciliation snapshots, free-audit usage, and every retained referenced original paystub with its source metadata.
