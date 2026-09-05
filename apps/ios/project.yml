@@ -20,6 +20,9 @@ configFiles:
   Release: Config/Release.xcconfig
 
 packages:
+  ViewInspector:
+    url: https://github.com/nalexn/ViewInspector
+    exactVersion: 0.10.4
   LinePayDomain:
     path: Packages/LinePayDomain
 
@@ -104,3 +107,4 @@ targets:
     dependencies:
       - target: LinePay
       - package: LinePayDomain
+      - package: ViewInspector

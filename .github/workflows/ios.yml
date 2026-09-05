@@ -45,7 +45,14 @@ jobs:
           swift --version
           xcodegen --version
       - name: Lint, test, and build
-        run: bash scripts/check-ios.sh
+        run: |
+          mkdir -p .test-results
+          set -o pipefail
+          bash scripts/check-ios.sh 2>&1 | tee .test-results/verification.log
+      - name: Retain resolved test dependencies
+        if: always()
+        run: |
+          find apps/ios/LinePay.xcodeproj -name Package.resolved -exec cp '{}' .test-results/Package.resolved \;
       - name: Retain test results and per-file coverage
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
