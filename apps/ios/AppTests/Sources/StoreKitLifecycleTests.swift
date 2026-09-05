@@ -77,11 +77,12 @@ struct StoreKitLifecycleTests {
             try await Task.sleep(for: .milliseconds(200))
         }
         #expect(sawGrace, "StoreKit test environment should enter grace after failed renewal")
-        try session.expireSubscription(productIdentifier: SubscriptionStore.monthlyProductID)
-        await expectAccess(false, store: store)
+        // A grace-period transaction has already expired. Forcing expiry is invalid in StoreKitTest.
+        // Let accelerated time end grace and prove access is removed without a new purchase.
+        await expectAccess(false, store: store, attempts: 300)
     }
-    private func expectAccess(_ expected: Bool, store: SubscriptionStore) async {
-        for _ in 0..<30 {
+    private func expectAccess(_ expected: Bool, store: SubscriptionStore, attempts: Int = 30) async {
+        for _ in 0..<attempts {
             await store.refreshEntitlements()
             if store.isPro == expected { return }
             try? await Task.sleep(for: .milliseconds(200))

@@ -113,7 +113,9 @@ final class AppSession {
         // The state is now committed; retain a retryable queue for failed old-file cleanup.
         model = AppModel(store: store, evidenceStore: evidenceStore)
         var cleanupFailed = false
-        do { try model.retryEvidenceDeletion() } catch { cleanupFailed = true }
+        if model.pendingDeletionCount > 0 {
+            do { try model.retryEvidenceDeletion() } catch { cleanupFailed = true }
+        }
         revision = UUID()
         if model.persistenceIssue != nil {
             restoreNotice =
