@@ -21,9 +21,12 @@ struct AddWorkView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: LinePaySpacing.section) {
-                    Text("Record what actually happened. LinePay uses the timezone from your pay profile.")
-                        .font(.callout)
-                        .foregroundStyle(LinePayColor.textSecondary)
+                    Text(
+                        "Record what actually happened. LinePay uses the timezone from your "
+                            + "pay profile."
+                    )
+                    .font(.callout)
+                    .foregroundStyle(LinePayColor.textSecondary)
 
                     VStack(spacing: LinePaySpacing.standard) {
                         DatePicker(
@@ -98,9 +101,11 @@ struct AddWorkView: View {
             dismiss()
         } catch {
             if end <= start {
-                errorMessage = "End must be later than start. Overnight work should use the next date."
+                errorMessage =
+                    "End must be later than start. Overnight work should use the next date."
             } else {
-                errorMessage = "This work interval conflicts with existing work or your current rules."
+                errorMessage =
+                    "This work interval conflicts with existing work or your current rules."
             }
         }
     }
