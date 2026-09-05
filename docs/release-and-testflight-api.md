@@ -261,7 +261,7 @@ Apple says this release request cannot be canceled. Do not execute it as a readi
 
 Document the source revision/diff, version/build, IPA SHA-256, Apple build/upload/submission IDs, validation results, exact TestFlight groups and notification choices, StoreKit evidence, approved compliance answers, final state and observation time, public URL if verified, and remaining blockers/owner. Exclude secrets and raw contact/tester data.
 
-Mark each step **executed and verified**, **documented but not exercised**, or **blocked**. Build 2 verified local archive/export, API-key upload, processing, metadata updates and build selection; this guide's beta distribution and final App Review/public-release examples have not yet been exercised for LinePaycheck.
+Mark each step **executed and verified**, **documented but not exercised**, or **blocked**. Build 2 verified local archive/export, API-key upload, processing, metadata updates and build selection. On September 5 the user explicitly requested Chrome for the final submission: Apple accepted review submission `b44b871f-7e40-4570-829b-50ce9a640fd0`, and subsequent REST reads confirmed `WAITING_FOR_REVIEW`. That is UI submission plus API readback, not proof that the REST submission-write examples ran. Beta distribution, REST submission writes, and public-release examples remain unexercised for LinePaycheck.
 
 After a future successful release, update the dated run record with the actual TestFlight/review/public readbacks and amend this guide only for newly proven operational details. This documentation request does not itself authorize another upload, tester notification, compliance declaration, or publication.
 
