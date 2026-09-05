@@ -12,7 +12,7 @@ apps/ios/LinePay.xcodeproj/
 # SwiftPM
 .build/
 .swiftpm/
-Package.resolved
+# Application lockfiles such as Package.resolved should be committed when generated.
 
 # XcodeGen
 .xcodegen/
