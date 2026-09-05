@@ -1,0 +1,57 @@
+name: Readiness verification
+on:
+  push:
+    branches: [fix/ios-1.0-readiness]
+    paths:
+      - 'apps/ios/**'
+      - 'scripts/**'
+      - '.github/workflows/readiness-check.yml'
+permissions:
+  contents: read
+concurrency:
+  group: readiness-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: git archive --format=zip --output=/tmp/source.zip HEAD
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: readiness-source
+          path: /tmp/source.zip
+          retention-days: 1
+          if-no-files-found: error
+  native:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Select pinned Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+      - name: Install pinned XcodeGen
+        run: |
+          XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Native tests and release build
+        env:
+          LINEPAY_RESULTS_DIR: ${{ runner.temp }}/linepay-results
+        run: |
+          set -o pipefail
+          mkdir -p "$LINEPAY_RESULTS_DIR"
+          git rev-parse HEAD > "$LINEPAY_RESULTS_DIR/commit.txt"
+          bash scripts/check-ios.sh 2>&1 | tee "$LINEPAY_RESULTS_DIR/native-check.log"
+      - name: Preserve verification results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: readiness-results
+          path: ${{ runner.temp }}/linepay-results
+          retention-days: 3
+          if-no-files-found: error
