@@ -239,6 +239,10 @@ The suite covers these independent journeys:
 - `paycheck-audit.yaml`: manual paycheck confirmation, missing-gross recovery, audit comparison, archiving, and persistence after relaunch.
 - `pro-sheet.yaml`: monthly/yearly choices, unavailable-price state, readable terms, and the persistent Not now action.
 - `adaptive-layout.yaml`: long profile names, landscape keyboard/cancel behavior, and large comparison values.
+- `backup-consent.yaml`: backup access from Settings, sensitive-data consent, cancellation, and return to saved work.
+- `settings-data-controls.yaml`: cancel deletion without losing work, confirmed synthetic-data deletion, and fresh state after relaunch.
+
+Run these data-control journeys with the largest accessibility text size as well as standard text. They verify local consent/reset behavior; backup save/restore round trips, iCloud transfer, and original-paystub removal still need their own evidence. Do not infer them from a consent-dialog pass.
 
 Shared setup lives under `.maestro/helpers/` and is not discovered as a standalone test. All records are synthetic. Named screenshots are saved under the selected test output directory.
 
