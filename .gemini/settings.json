@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/schemas/settings.schema.json",
+  "mcpServers": {
+    "xcodebuildmcp": {
+      "command": "xcodebuildmcp",
+      "args": ["mcp"]
+    },
+    "maestro": {
+      "command": "maestro",
+      "args": ["mcp"]
+    }
+  }
+}
