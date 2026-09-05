@@ -21,6 +21,7 @@ struct TodayView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(LinePayColor.brandPrimary)
+                    .accessibilityIdentifier("today.add-work")
 
                     recentWork
                 }
