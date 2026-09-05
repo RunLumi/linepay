@@ -17,17 +17,10 @@ tags:
 - inputText: "58.40"
 - tapOn:
     point: "50%,12%"
-- scrollUntilVisible:
-    element:
-      id: pay-profile.save
-    direction: DOWN
-    visibilityPercentage: 80
+- assertVisible:
+    id: pay-profile.save
 - tapOn:
     id: pay-profile.save
-- assertVisible:
-    id: paywall.continue-free
-- tapOn:
-    id: paywall.continue-free
 - assertVisible:
     id: today.add-work
 - takeScreenshot: onboarding-complete
