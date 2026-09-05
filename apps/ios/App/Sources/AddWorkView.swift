@@ -129,7 +129,7 @@ struct AddWorkView: View {
                     Text("Break")
                 } footer: {
                     Text(
-                        "LinePay removes only the exact break span you enter. It never shortens the "
+                        "LinePaycheck removes only the exact break span you enter. It never shortens the "
                             + "shift or guesses where a break happened."
                     )
                 }

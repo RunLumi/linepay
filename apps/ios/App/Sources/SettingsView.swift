@@ -57,7 +57,8 @@ struct SettingsView: View {
 
                 Section {
                     Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
-                    Label("No LinePaycheck backend stores your paycheck", systemImage: "server.rack")
+                    Label(
+                        "No LinePaycheck backend stores your paycheck", systemImage: "server.rack")
                     Label("No ad or tracking SDK", systemImage: "eye.slash")
                     Label("Paystub OCR runs on this device", systemImage: "iphone")
                 } header: {

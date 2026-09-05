@@ -138,7 +138,7 @@ struct PayProfileSetupView: View {
                 } header: {
                     Text("Daily overtime")
                 } footer: {
-                    Text("LinePay will not assume an overtime threshold unless you enable it.")
+                    Text("LinePaycheck will not assume an overtime threshold unless you enable it.")
                 }
 
                 Section {
@@ -196,7 +196,7 @@ struct PayProfileSetupView: View {
                     Text("Callout")
                 } footer: {
                     Text(
-                        "LinePay keeps actual worked time unchanged and derives any minimum-pay "
+                        "LinePaycheck keeps actual worked time unchanged and derives any minimum-pay "
                             + "guarantee as a separate ledger line."
                     )
                 }
@@ -244,13 +244,13 @@ struct PayProfileSetupView: View {
                     Text("Rule source (optional)")
                 } footer: {
                     Text(
-                        "A source helps you trace the rule later. LinePay does not treat a typed URL "
+                        "A source helps you trace the rule later. LinePaycheck does not treat a typed URL "
                             + "as independently verified."
                     )
                 }
 
                 Section {
-                    Label("No LinePay account", systemImage: "person.crop.circle.badge.xmark")
+                    Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
                     Label("Pay data stays on this iPhone", systemImage: "iphone.and.arrow.forward")
                 } header: {
                     Text("Privacy")

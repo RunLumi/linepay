@@ -19,9 +19,9 @@ enum PaystubOCRError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedDocument:
-            "LinePay could not open this document. You can still enter the paycheck manually."
+            "LinePaycheck could not open this document. You can still enter the paycheck manually."
         case .noReadablePages:
-            "LinePay could not find readable text. You can still enter the paycheck manually."
+            "LinePaycheck could not find readable text. You can still enter the paycheck manually."
         }
     }
 }

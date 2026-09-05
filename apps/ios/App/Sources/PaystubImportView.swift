@@ -45,7 +45,7 @@ struct PaystubImportView: View {
                     Text("Paycheck source")
                 } footer: {
                     Text(
-                        "Scans and OCR stay on this iPhone. LinePay treats OCR as a suggestion and "
+                        "Scans and OCR stay on this iPhone. LinePaycheck treats OCR as a suggestion and "
                             + "asks you to confirm the numbers before auditing."
                     )
                 }
@@ -224,7 +224,7 @@ private enum PaystubImportError: LocalizedError {
     case couldNotReadSource
 
     var errorDescription: String? {
-        "LinePay could not read that file. Try another copy or enter the paycheck manually."
+        "LinePaycheck could not read that file. Try another copy or enter the paycheck manually."
     }
 }
 
@@ -304,7 +304,7 @@ struct PaystubReviewView: View {
                         Text("Source evidence")
                     } footer: {
                         Text(
-                            "OCR is evidence, not truth. The fields above are what LinePay will trust."
+                            "OCR is evidence, not truth. The fields above are what LinePaycheck will trust."
                         )
                     }
                 }

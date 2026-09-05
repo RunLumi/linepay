@@ -32,7 +32,7 @@ struct HistoryView: View {
                 Text("No finished pay periods yet")
                     .font(.title2.bold())
                 Text(
-                    "When you finish a pay period, LinePay freezes its work facts, rule snapshot, "
+                    "When you finish a pay period, LinePaycheck freezes its work facts, rule snapshot, "
                         + "calculation, and any paycheck audit here."
                 )
                 .foregroundStyle(LinePayColor.textSecondary)
@@ -233,7 +233,7 @@ private struct HistoricalPayPeriodView: View {
                 } ?? []
             )
         } catch {
-            errorMessage = "LinePay could not prepare the report."
+            errorMessage = "LinePaycheck could not prepare the report."
         }
     }
 

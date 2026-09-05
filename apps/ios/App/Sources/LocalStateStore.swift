@@ -114,7 +114,7 @@ enum LocalStateStoreError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .unsupportedSchema(let version):
-            "This LinePay data uses unsupported local schema version \(version)."
+            "This LinePaycheck data uses unsupported local schema version \(version)."
         }
     }
 }

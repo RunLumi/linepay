@@ -132,7 +132,7 @@ struct AuditDetailView: View {
 
             Section {
                 Text(
-                    "LinePay estimates and reconciles pay from the facts and rules you confirmed. "
+                    "LinePaycheck estimates and reconciles pay from the facts and rules you confirmed. "
                         + "A possible difference is a reason to review the paycheck, not a legal determination."
                 )
                 .font(.footnote)
@@ -255,7 +255,7 @@ struct AuditDetailView: View {
             )
             errorMessage = nil
         } catch {
-            errorMessage = "LinePay could not prepare the report."
+            errorMessage = "LinePaycheck could not prepare the report."
         }
     }
 

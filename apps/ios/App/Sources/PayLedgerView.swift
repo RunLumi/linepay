@@ -60,7 +60,7 @@ struct PayLedgerView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "LinePay saves an immutable snapshot of these work facts, rules, calculations, and audit results."
+                "LinePaycheck saves an immutable snapshot of these work facts, rules, calculations, and audit results."
             )
         }
     }
@@ -210,7 +210,7 @@ struct PayLedgerView: View {
                     Text("Your ledger is empty")
                         .font(.title3.bold())
                     Text(
-                        "Add actual work and LinePay will turn it into explainable pay components."
+                        "Add actual work and LinePaycheck will turn it into explainable pay components."
                     )
                     .foregroundStyle(LinePayColor.textSecondary)
                 }

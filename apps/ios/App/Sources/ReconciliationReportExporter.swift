@@ -13,7 +13,7 @@ struct ReconciliationReportExporter {
         findings: [AuditFinding]
     ) throws -> URL {
         let filename =
-            "LinePay-\(dateSlug(window.startDate, timeZoneIdentifier: timeZoneIdentifier)).pdf"
+            "LinePaycheck-\(dateSlug(window.startDate, timeZoneIdentifier: timeZoneIdentifier)).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         let pageBounds = CGRect(x: 0, y: 0, width: 612, height: 792)
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)
@@ -21,7 +21,7 @@ struct ReconciliationReportExporter {
         let data = renderer.pdfData { context in
             var writer = PDFTextWriter(context: context, pageBounds: pageBounds)
             writer.beginPage()
-            writer.title("LinePay paycheck reconciliation")
+            writer.title("LinePaycheck paycheck reconciliation")
             writer.text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
             writer.gap()
 
@@ -74,7 +74,7 @@ struct ReconciliationReportExporter {
 
             writer.section("Important")
             writer.caption(
-                "LinePay is an estimation and reconciliation tool. A flagged difference is a reason "
+                "LinePaycheck is an estimation and reconciliation tool. A flagged difference is a reason "
                     + "to review the paycheck and agreement, not a legal determination of wages owed."
             )
             writer.caption("Original paystub images/PDFs are not included in this report.")

@@ -16,10 +16,10 @@ struct DataRecoveryView: View {
                         .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-                        Text("Your saved LinePay data needs attention")
+                        Text("Your saved LinePaycheck data needs attention")
                             .font(.title.bold())
                         Text(
-                            "LinePay could not safely read the local state file, so it did not "
+                            "LinePaycheck could not safely read the local state file, so it did not "
                                 + "overwrite it or invent a partial recovery."
                         )
                         .foregroundStyle(LinePayColor.textSecondary)
@@ -51,7 +51,7 @@ struct DataRecoveryView: View {
                     Button(role: .destructive) {
                         showingResetConfirmation = true
                     } label: {
-                        Label("Reset local LinePay data", systemImage: "trash")
+                        Label("Reset local LinePaycheck data", systemImage: "trash")
                             .frame(maxWidth: .infinity, minHeight: 48)
                     }
                     .buttonStyle(.bordered)

@@ -749,7 +749,7 @@ final class AppModel {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(
-            "LinePay-backup-\(formatter.string(from: Date())).json"
+            "LinePaycheck-backup-\(formatter.string(from: Date())).json"
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -1225,7 +1225,7 @@ enum AppModelError: LocalizedError, Equatable {
         case .calculationUnavailable:
             "Expected pay could not be calculated with the current facts and rules."
         case .persistenceFailed:
-            "LinePay could not safely save this change. Your previous saved data is unchanged."
+            "LinePaycheck could not safely save this change. Your previous saved data is unchanged."
         }
     }
 }
