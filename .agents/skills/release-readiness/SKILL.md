@@ -39,7 +39,7 @@ Check only the relevant surfaces, then run the full release gate before handoff.
 Before changing project identity, verify:
 
 - `PRODUCT_BUNDLE_IDENTIFIER` remains `com.streamentry.linepay`;
-- public display name remains `LinePaycheck`;
+- home-screen display name remains `LinePay`, while the public product and bundle name remain `LinePaycheck`;
 - version/build numbers move intentionally;
 - no accidental target/scheme/module rename breaks CI/scripts/TestFlight continuity.
 
