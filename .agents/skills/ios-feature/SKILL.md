@@ -19,6 +19,14 @@ Read:
 
 Do not preload unrelated research/docs.
 
+Run `bash scripts/agent-context.sh` when you have a local checkout. If the generated `apps/ios/LinePay.xcodeproj` is absent and you want to use Xcode or XcodeBuildMCP directly, run:
+
+```bash
+bash scripts/bootstrap-ios.sh
+```
+
+The project is generated output and is intentionally not committed. Repository verification scripts generate it themselves when needed.
+
 ## 2. Inspect before designing
 
 Find the nearest existing feature pattern and its tests. Identify:
