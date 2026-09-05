@@ -175,6 +175,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     var window: PayPeriodWindow
     var agreement: AgreementSnapshot
+    var timeZoneIdentifier: String?
     var workEntries: [WorkEntry]
     var paystub: ConfirmedPaystub?
     var reconciliation: ReconciliationResult?
@@ -185,6 +186,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         id: UUID = UUID(),
         window: PayPeriodWindow,
         agreement: AgreementSnapshot,
+        timeZoneIdentifier: String? = nil,
         workEntries: [WorkEntry] = [],
         paystub: ConfirmedPaystub? = nil,
         reconciliation: ReconciliationResult? = nil,
@@ -194,6 +196,7 @@ struct ActivePayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.id = id
         self.window = window
         self.agreement = agreement
+        self.timeZoneIdentifier = timeZoneIdentifier
         self.workEntries = workEntries
         self.paystub = paystub
         self.reconciliation = reconciliation
@@ -206,6 +209,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let id: UUID
     let window: PayPeriodWindow
     let agreement: AgreementSnapshot
+    let timeZoneIdentifier: String?
     let workEntries: [WorkEntry]
     let calculation: CalculationResult
     let paystub: ConfirmedPaystub?
@@ -216,6 +220,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         id: UUID,
         window: PayPeriodWindow,
         agreement: AgreementSnapshot,
+        timeZoneIdentifier: String? = nil,
         workEntries: [WorkEntry],
         calculation: CalculationResult,
         paystub: ConfirmedPaystub?,
@@ -225,6 +230,7 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.id = id
         self.window = window
         self.agreement = agreement
+        self.timeZoneIdentifier = timeZoneIdentifier
         self.workEntries = workEntries
         self.calculation = calculation
         self.paystub = paystub
