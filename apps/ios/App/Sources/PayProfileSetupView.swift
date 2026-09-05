@@ -53,6 +53,7 @@ struct PayProfileSetupView: View {
                     TextField("Base hourly rate", text: $draft.hourlyRate)
                         .keyboardType(.decimalPad)
                         .monospacedDigit()
+                        .accessibilityIdentifier("pay-profile.hourly-rate")
 
                     Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
                         ForEach(Self.usTimeZones, id: \.identifier) { option in
@@ -271,6 +272,7 @@ struct PayProfileSetupView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .fontWeight(.semibold)
+                        .accessibilityIdentifier("pay-profile.save")
                 }
             }
         }
