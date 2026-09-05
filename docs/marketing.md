@@ -29,7 +29,7 @@ This is *not* the same as total company profitability, and it is not the same as
 | Annual trial | **7 days** | Assumption and deliberate payback/conversion compromise |
 | Monthly trial | **None initially** | Allows a lower-commitment immediate-purchase route |
 | Install → annual trial | ~12.2% target | Modeling assumption |
-| Annual trial → paid | ~42.5% target | Ambitious but aligned with RevenueCat's 2026 result for longer-trial cohorts; 7-day trials historically convert less well, so this is a stretch goal citeturn14search6turn14search3 |
+| Annual trial → paid | ~42.5% target | Stretch assumption, not a seven-day benchmark. RevenueCat 2026 reports 37.4% median for 5–9-day trials; compare matched cohorts and actual proceeds. [Source](https://www.revenuecat.com/state-of-subscription-apps) |
 | Direct monthly purchase | ~2.8% of installs | Modeling assumption |
 | Total install → paid | **8% target** | Above market median; required by economics |
 | Small Business commission | 15% | Assumes StreamEntry qualifies and enrolls citeturn9search0turn9search1 |
@@ -119,6 +119,8 @@ This is why I recommend the annual plan rather than a “monthly first” paywal
 RevenueCat reported an average trial-to-paid rate around 37–38% in 2024, while longer trials generally converted better; its 2026 analysis reported approximately **42.5% for 17+ day trials versus 25.5% for shorter cohorts**. Seven-day trials have historically shown higher very-early cancellation behavior than longer ones. citeturn14search16turn14search6turn14search3
 
 I nevertheless recommend a **7-day annual trial initially**, because LinePaycheck should demonstrate value much faster than a habit-building app and the business is intentionally optimizing for early payback. This is an assumption to test, not a claim that seven days is universally optimal.
+
+**September 5 reconciliation:** [onboarding.md](onboarding.md) now owns the first-work proof → annual trial offer → seven-day activation sequence, eligibility states, and exact funnel denominators. [pricing.md](pricing.md) confirms Annual trial / Monthly immediate paid; [the setup record](research/onboarding-trial-2026-09-05.md) records actual App Store state. Funnel targets below are model inputs, not results. Do not attribute aggregated ratios to linked install cohorts when Apple reporting cannot establish that linkage.
 
 Base modeled funnel:
 
@@ -682,7 +684,7 @@ This makes the month-one Apple-heavy recommendation even stronger: it is not jus
 
 ### Events that should exist
 
-Keep event names behavioral and **never include wages, employer names, union affiliation, OCR text or specific pay-rule values**.
+Keep event names behavioral and **never include wages, employer names, union affiliation, OCR text or specific pay-rule values**. These are proposed events, not proof of existing production instrumentation. Start with local development counters and Apple's aggregate reports. Remote events or ad-attribution integration require an explicit data-flow/privacy decision before implementation; do not silently add telemetry to obtain a cleaner funnel.
 
 ```text
 first_open
@@ -792,7 +794,7 @@ If September 28 installs start seven-day trials and convert in October, Septembe
 | P0 | Hero screenshot: expected pay vs generic time tracker | Money outcome beats time-recording message | Store CVR | Keep winner |
 | P0 | Paywall annual-first vs neutral plan order | Annual emphasis raises first-receipt value without harming total paid conversion | Net proceeds/install | Not annual mix alone |
 | P0 | “Know what you should be paid” vs “Track hours & pay” | Outcome beats feature list | Paid CR / CAC | CAC winner |
-| P1 | 7-day annual trial vs sequential 14/17-day trial | Longer evaluation raises trial→paid enough to offset slower payback | D30 proceeds/install | Revenue, not trial conversion |
+| P1 | 7-day annual trial vs sequential 2-week trial | Longer evaluation raises trial→paid enough to offset slower payback | D30/D60 proceeds/install | Revenue, not trial conversion; sequential cohorts are time-confounded |
 | P1 | Paywall after first expected-pay result vs earlier paywall | Demonstrated value raises paid conversion | D30 paid/install | No activation collapse |
 | P1 | Meta “Pay Gap” vs “Storm Week” | Concrete discrepancy beats contextual narrative | Paid CAC | Do not optimize CTR |
 | P2 | es-US localized winning creative | Spanish creative opens incremental profitable audience | Paid CAC | Must match English economics within tolerance |

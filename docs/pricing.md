@@ -1,4 +1,4 @@
-# LinePay Pricing
+# LinePaycheck Pricing
 
 > **Canonical pricing strategy.** If another document conflicts with this file, this file wins.
 
@@ -14,11 +14,13 @@ For launch, keep pricing deliberately simple:
 
 **No weekly plan. No lifetime plan. No multiple paid tiers. No credit system. No introductory pricing maze.**
 
-The activation mechanic is not a calendar trial:
+**September 5, 2026 decision:** eligible new subscribers in configured storefronts (initially U.S.) can start a **seven-day free trial on Annual**, then renew at the localized yearly price. Monthly is an immediate paid alternative with no introductory trial. This deliberately supersedes the earlier no-calendar-trial policy and aligns with `docs/marketing.md`.
+
+Free sampling remains available separately:
 
 > **The first complete paycheck audit is free.**
 
-After that, recurring paycheck audits require LinePay Pro.
+After that, recurring paycheck audits require an active verified LinePaycheck Pro trial or paid subscription. An App Store trial does not consume an unused Free audit; see [onboarding.md](onboarding.md) for the state contract.
 
 This pricing is a commercial hypothesis. StoreKit/product code must not hard-code prices or assume they never change.
 
@@ -28,17 +30,17 @@ This pricing is a commercial hypothesis. StoreKit/product code must not hard-cod
 
 Pricing should optimize the small number of variables that matter most:
 
-1. a worker reaches the real value moment before paying;
+1. a worker sees a credible expected-pay result before the optional trial offer;
 2. the price is trivial compared with a plausible payroll mistake;
 3. the product is positioned as a specialized audit tool, not a cheap calculator;
-4. annual billing creates healthy retention and economics;
+4. annual billing improves first-receipt economics while actual usage, refunds, and renewal prove retention;
 5. the choice is understandable in seconds.
 
-Do **not** optimize early for coupon systems, segmentation, sophisticated trials, regional experimentation, lifetime value models, or many packages.
+Keep the offer simple: one annual introductory trial, one monthly alternative, one Pro entitlement. Measure activation and paid outcomes before adding coupons, segmentation, or more packages.
 
 The launch question is simply:
 
-> After LinePay has audited one real paycheck, will the worker pay about $10/month to have every future paycheck checked?
+> Will a worker who understands their expected pay start an annual trial, experience recurring audit value, and choose to remain subscribed?
 
 ---
 
@@ -78,7 +80,7 @@ This is the intended trade:
 - Annual rewards conviction without halving the product's value.
 - A roughly one-third discount is large enough to matter while preserving strong annual revenue.
 
-The annual plan should be visually labeled **Best value** and shown first, but the monthly option must remain obvious and equally easy to purchase.
+The annual plan should be selected initially, labeled **Recommended**, and shown first. Monthly remains obvious and equally easy to select. Show the full annual charge prominently; a monthly equivalent and savings are secondary. Never imply that $6.67 is charged monthly.
 
 Do not add a third duration merely to make annual look cheaper.
 
@@ -129,13 +131,13 @@ Do not scatter random conveniences behind the paywall simply to manufacture a fe
 
 ---
 
-## 6. Why the first audit is free instead of a 7-day trial
+## 6. Seven-day annual trial and first-audit sampling
 
 LinePay's natural cadence is payday, not app-install day.
 
 A seven-day trial can expire before the worker receives the paycheck needed to experience LinePay's core value.
 
-The preferred funnel is therefore event-based:
+The trial funnel now begins with an immediate expected-pay proof:
 
 ```text
 Install
@@ -146,31 +148,31 @@ Set pay rules
   ↓
 Log actual work
   ↓
-See expected pay
+See and understand expected pay
   ↓
-Paycheck arrives
-  ↓
-Scan / enter paystub
-  ↓
-FIRST COMPLETE AUDIT FREE
-  ↓
-See match or possible discrepancy
-  ↓
-Offer LinePay Pro for future audits
+Optional Annual offer: 7 days free, then $79.99/year
+  ├── Start verified annual trial → activate recurring Pro value
+  ├── Buy monthly at $9.99 → Pro
+  └── Continue free → first complete paycheck audit remains free
 ```
 
-Do not create authentication or a central backend merely to prevent people from reinstalling the app to obtain another free audit. Some leakage is cheaper than architectural complexity at this stage.
+Seven days is a launch hypothesis, not a universal optimum. It can end before payday, so let users check an existing paycheck when matching work facts exist, and preserve a useful Free path. Do not pretend a partial work record explains a complete paycheck.
+
+The offer belongs to existing product `linepay.pro.yearly`, in the existing `LinePaycheck Pro` subscription group. Do not create a trial product or a new group. Eligibility and actual offer metadata come from StoreKit, not a device-local timer. A used introduction cannot be repeated by changing durations in the same group.
+
+No LinePaycheck account/backend is added to police the Free audit. The detailed eligibility, Free-audit interaction, reminder, and failure contract lives in [onboarding.md](onboarding.md).
 
 ---
 
 ## 7. The paywall
 
-The entire paywall should answer four questions:
+The entire paywall should answer five questions:
 
 1. What does Pro do?
 2. What does it cost?
 3. Which option is best value?
-4. Does LinePay upload my pay data?
+4. When does the trial become a paid subscription, and how do I cancel?
+5. Does LinePaycheck upload my pay data?
 
 Suggested hierarchy:
 
@@ -180,19 +182,23 @@ Audit every paycheck
 Compare your recorded work and confirmed rules
 with what your paycheck actually paid.
 
-BEST VALUE
-$79.99 / year
+ANNUAL — RECOMMENDED
+7 days free, then $79.99 / year
+Billed yearly
 Save $39.89 vs monthly
 
-$9.99 / month
+$9.99 / month — billed today, no free trial
 
-[ Continue with Yearly ]
+[ Start my 7-day free trial ]
+Then $79.99/year, automatically renewing.
+Cancel at least 24 hours before trial end to avoid renewal.
+Continue free
 
 Your pay data stays on this device.
-Restore Purchases · Manage Subscription
+Restore Purchases · Manage Subscription · Terms · Privacy
 ```
 
-If the user selects monthly, the CTA changes clearly to `Continue with Monthly`.
+For monthly, use `Subscribe monthly`. For ineligible annual customers or absent offers, use `Subscribe yearly` with the immediate price. Never display a free-trial CTA solely because annual is selected.
 
 Do not use fake urgency, countdowns, hidden close buttons, misleading weekly equivalents, giant discount typography, or fear copy such as `Your employer may be stealing from you`.
 
@@ -212,7 +218,7 @@ For example, if an audit flags a plausible `$184` missing callout payment, that 
 
 The product should never promise that it will find a discrepancy or claim that an estimated discrepancy is legally owed. But when a real audit identifies a credible difference, the value proposition becomes self-evident.
 
-This is why the first complete audit should happen before the subscription decision.
+A real completed audit is strong contextual evidence for a later offer. The first optional offer now follows a real expected-pay result; the seven-day trial should then help the worker reach and repeat the audit outcome.
 
 ---
 
@@ -244,16 +250,16 @@ The 80/20 answer is **one entitlement: Pro**.
 
 Use one StoreKit subscription group:
 
-`LinePay Pro`
+`LinePaycheck Pro`
 
 with two durations at the same entitlement level:
 
 - `linepay.pro.monthly`
 - `linepay.pro.yearly`
 
-Product identifiers are implementation suggestions and may be adjusted before App Store Connect creation.
+These products already exist in App Store Connect. Treat their identifiers as immutable.
 
-Annual should be the recommended option because it better matches recurring paycheck auditing and reduces subscription-management churn.
+Annual is recommended because its recurring-use proposition and first-receipt economics fit this launch hypothesis. Measure usage and actual renewal; annual billing does not itself establish lower churn.
 
 Monthly remains strategically important because it:
 
@@ -282,7 +288,9 @@ Do not let international pricing work delay U.S. validation.
 
 Do not A/B test five variables simultaneously.
 
-The experiment order is:
+First complete the activation and offer-presentation experiments in [onboarding.md](onboarding.md). The price-only experiments below come afterward; they do not override the funnel experiment order.
+
+Within price experiments, the order is:
 
 ### Experiment 0: prove value
 
@@ -353,15 +361,15 @@ Those are product problems.
 
 Keep the pricing dashboard small.
 
-The critical metrics are:
+Use the exact denominators and maturity windows in [onboarding.md](onboarding.md). The critical metrics are:
 
-1. **First audit completion**
-2. **First audit → Pro conversion**
-3. **Annual share of new Pro subscriptions**
+1. **First real expected-pay result and first audit completion**
+2. **Download → annual trial → first paid conversion**
+3. **Annual share of new first-paid subscribers**
 4. **Paid retention / renewal**
 5. **Refund rate**
-6. **Percentage of audits that surface a review-worthy difference**
-7. **Median credible discrepancy value when one is found**
+6. **D30 net proceeds per first-time download**
+7. **First-audit → Pro conversion**, where a linked cohort is actually measurable
 
 Secondary metrics can wait.
 
@@ -395,11 +403,11 @@ Unless real customer evidence changes the decision:
 >
 > **LinePay Pro Monthly: $9.99/month**
 >
-> **LinePay Pro Annual: $79.99/year, recommended**
+> **LinePaycheck Pro Annual: seven days free for eligible customers, then $79.99/year, recommended**
 
 And the governing Pareto principle is:
 
-> **One paid tier. Two billing options. One free value moment. Optimize the audit, not the paywall.**
+> **One paid tier. Two billing options. A seven-day annual trial. Prove value early, then earn paid renewal.**
 
 ---
 
