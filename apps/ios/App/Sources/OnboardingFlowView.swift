@@ -50,9 +50,9 @@ struct OnboardingFlowView: View {
 
     private var shouldPresentPaywall: Bool {
         #if DEBUG
-        true
+            true
         #else
-        SubscriptionStore.commerceEnabled
+            SubscriptionStore.commerceEnabled
         #endif
     }
 }
