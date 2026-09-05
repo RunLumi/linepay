@@ -62,7 +62,7 @@ struct SettingsView: View {
                 .tracking(0.6)
                 .foregroundStyle(LinePayColor.textSecondary)
 
-            Label("No LinePay account", systemImage: "person.crop.circle.badge.xmark")
+            Label("No LinePaycheck account", systemImage: "person.crop.circle.badge.xmark")
             Label("Pay data stays on device by default", systemImage: "iphone")
             Label("No ad or tracking SDK", systemImage: "eye.slash")
 
