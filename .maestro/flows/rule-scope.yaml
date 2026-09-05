@@ -68,10 +68,10 @@ tags: [ios, regression, payroll-scope]
       id: pay-profile.change-scope
     direction: DOWN
     timeout: 60000
-    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: pay-profile.change-scope
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: Recalculate this entire current period
