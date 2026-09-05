@@ -36,7 +36,8 @@ struct AuditScopeRegressionTests {
         let frozen = try #require(model.history.first)
         #expect(model.auditStatus(for: frozen) == .needsReview)
         let reloaded = AppModel(store: store)
-        #expect(reloaded.auditStatus(for: #require(reloaded.history.first)) == .needsReview)
+        let reloadedPeriod = try #require(reloaded.history.first)
+        #expect(reloaded.auditStatus(for: reloadedPeriod) == .needsReview)
     }
 
     @Test func grossOnlyAndConfirmedItemsHaveDifferentScope() throws {
