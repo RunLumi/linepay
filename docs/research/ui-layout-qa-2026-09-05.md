@@ -1,6 +1,6 @@
 # Adaptive iPhone layout and Maestro QA
 
-Date: 2026-09-05. Source checkout: `a802eab` plus this UI change.
+Date: 2026-09-05. Baseline: `a802eab`. The shared checkout advanced to `1206fa2` during verification, incorporating this UI work and concurrent logo changes; final checks target that checkout.
 
 ## Root cause and fix
 
@@ -34,10 +34,10 @@ Toolchain: Xcode 26.6 / Swift 6.3.3 / XcodeGen 2.46.0 / Maestro CLI 2.6.1.
 
 | Device and condition | Evidence |
 |---|---|
-| iPhone SE 3rd generation, iOS 18.5, 375 x 667 points, light | Full `agent-verify.sh ui` passed, including all five Maestro flows |
-| iPhone 17 Pro, iOS 26.5, 402 x 874 points, dark + increased contrast + largest accessibility text | Final verification in progress |
+| iPhone SE 3rd generation, iOS 18.5, 375 x 667 points, light | Full `agent-verify.sh ui` passed on `1206fa2`; all five Maestro flows passed in 3m 7s |
+| iPhone 17 Pro, iOS 26.5, 402 x 874 points, dark + increased contrast + largest accessibility text | All five flows passed before the concurrent logo sync (6m 47s). The affected adaptive-layout and Pro journeys were then rebuilt and revalidated on `1206fa2`: 2/2 passed in 3m 40s |
 
-The native gate passed Swift formatting, 37 domain tests, app orchestration tests including numeric-entry regressions, privacy-manifest bundling, Release compilation, and the launch-screen checks.
+The current-checkout native gate passed Swift formatting, 37 domain tests, app orchestration tests including numeric-entry regressions, the new logo-bundling test, privacy-manifest bundling, Release compilation, and the launch-screen checks.
 
 Five independent Maestro journeys cover onboarding/validation/keyboard dismissal; add/edit/overlap recovery/delete/undo; manual paycheck confirmation/audit/archive/relaunch; Pro options/terms/dismissal; and long names/landscape keyboards/large negative monetary comparisons. Shared helpers reset only the dedicated QA simulators and use synthetic data.
 
@@ -52,10 +52,15 @@ bash scripts/agent-verify.sh ui
 Local evidence:
 
 - `.build/ui-qa-evidence/full-ui-gate.log`
+- `.build/ui-qa-evidence/current-checkout-ui-gate.log`
 - `.build/maestro-results/screenshots/`
 - `.build/ui-qa-evidence/final-large-text.log`
 - `.build/ui-qa-evidence/final-large-text/screenshots/`
+- `.build/ui-qa-evidence/current-checkout-large-text.log`
+- `.build/ui-qa-evidence/current-checkout-large-text/screenshots/`
 
-Early failures were retained in other `.build/ui-qa-evidence/` directories for debugging; they are not final passing evidence. One concurrent run reported an app stop without a LinePay crash report; simulator logs showed XCTest accessibility errors. Final passes run independently of native compilation.
+Early failures were retained in other `.build/ui-qa-evidence/` directories for debugging; they are not final passing evidence. One concurrent run reported an app stop without a LinePay crash report; simulator logs showed XCTest accessibility errors. Subsequent independent passes completed successfully. The current-checkout log and affected-screen captures supersede the earlier artwork captures.
+
+Visual inspection covered the new-logo welcome screen, normal and accessibility-sized work forms, decimal keyboards, landscape note entry, validation alerts, restored work, large negative comparisons, archived history, and the end of the Pro billing terms. The keyboard and bottom actions reserve visible space; long values reflow without removing their signs or cents.
 
 This verifies the listed simulator journeys and inspected layouts. It does not claim physical-device camera/OCR testing, a real StoreKit purchase, VoiceOver certification, or lineworker usability-study results.
