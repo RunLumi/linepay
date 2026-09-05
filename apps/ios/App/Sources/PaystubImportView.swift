@@ -14,11 +14,12 @@ struct PaystubImportView: View {
     @State private var showingFileImporter = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showingReview = false
-    @State private var isProcessing = false
+    @State private var operation = PaystubImportOperation()
     @State private var errorMessage: String?
     @State private var cameraDenied = false
     @State private var processingTask: Task<Void, Never>?
     @State private var discardOther = false
+    private var isProcessing: Bool { operation.isProcessing }
     private var anotherDraft: Bool {
         model.paystubDraft != nil && model.paystubDraft?.targetPeriodID != periodID
     }
@@ -78,7 +79,7 @@ struct PaystubImportView: View {
                     }
                 }
                 if isProcessing {
-                    Section { ProgressView("Reading on this device. Original saved.") }
+                    Section { ProgressView(operation.message) }
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
@@ -93,6 +94,7 @@ struct PaystubImportView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Keep draft and close") {
+                        operation.cancel()
                         processingTask?.cancel()
                         dismiss()
                     }
@@ -128,26 +130,28 @@ struct PaystubImportView: View {
             result in
             switch result {
             case .success(let url):
-                processingTask?.cancel()
+                guard let token = beginLoading() else { return }
                 processingTask = Task {
+                    defer { operation.finish(token) }
                     do {
                         let data = try await Self.readFile(url)
                         try Task.checkCancellation()
                         await process(
                             data: data, filename: url.lastPathComponent,
                             mediaType: UTType(filenameExtension: url.pathExtension)?
-                                .preferredMIMEType ?? "application/octet-stream", sourceKind: .file)
+                                .preferredMIMEType ?? "application/octet-stream", sourceKind: .file,
+                            token: token)
                     } catch is CancellationError {} catch {
-                        errorMessage = error.localizedDescription
+                        if operation.owns(token) { errorMessage = error.localizedDescription }
                     }
                 }
             case .failure(let error): errorMessage = error.localizedDescription
             }
         }
         .onChange(of: selectedPhoto) { _, value in
-            guard let value else { return }
-            processingTask?.cancel()
+            guard let value, let token = beginLoading() else { return }
             processingTask = Task {
+                defer { operation.finish(token) }
                 do {
                     guard let data = try await value.loadTransferable(type: Data.self) else {
                         throw CocoaError(.fileReadUnknown)
@@ -156,8 +160,11 @@ struct PaystubImportView: View {
                     let type = value.supportedContentTypes.first ?? .jpeg
                     await process(
                         data: data, filename: "Paystub.\(type.preferredFilenameExtension ?? "jpg")",
-                        mediaType: type.preferredMIMEType ?? "image/jpeg", sourceKind: .photo)
-                } catch is CancellationError {} catch { errorMessage = error.localizedDescription }
+                        mediaType: type.preferredMIMEType ?? "image/jpeg", sourceKind: .photo,
+                        token: token)
+                } catch is CancellationError {} catch {
+                    if operation.owns(token) { errorMessage = error.localizedDescription }
+                }
             }
         }
         .confirmationDialog(
@@ -182,43 +189,52 @@ struct PaystubImportView: View {
             showingReview = true
         } catch { errorMessage = error.localizedDescription }
     }
+    private func beginLoading() -> UUID? {
+        guard let token = operation.begin() else { return nil }
+        errorMessage = nil
+        return token
+    }
     private func scan() {
-        Task {
+        guard let token = beginLoading() else { return }
+        processingTask = Task {
+            defer { operation.finish(token) }
+            let allowed: Bool
             switch AVCaptureDevice.authorizationStatus(for: .video) {
-            case .authorized: showingScanner = true
-            case .notDetermined:
-                if await AVCaptureDevice.requestAccess(for: .video) {
-                    showingScanner = true
-                } else {
-                    cameraDenied = true
-                }
-            default: cameraDenied = true
+            case .authorized: allowed = true
+            case .notDetermined: allowed = await AVCaptureDevice.requestAccess(for: .video)
+            default: allowed = false
             }
+            guard operation.owns(token), !Task.isCancelled else { return }
+            showingScanner = allowed
+            cameraDenied = !allowed
         }
     }
     private func begin(
         _ data: Data, filename: String, mediaType: String, sourceKind: PaystubSourceKind
     ) {
-        processingTask?.cancel()
+        guard let token = beginLoading() else { return }
         processingTask = Task {
+            defer { operation.finish(token) }
             await process(
-                data: data, filename: filename, mediaType: mediaType, sourceKind: sourceKind)
+                data: data, filename: filename, mediaType: mediaType, sourceKind: sourceKind,
+                token: token)
         }
     }
     private func process(
-        data: Data, filename: String, mediaType: String, sourceKind: PaystubSourceKind
+        data: Data, filename: String, mediaType: String, sourceKind: PaystubSourceKind,
+        token: UUID
     ) async {
-        isProcessing = true
-        errorMessage = nil
-        defer { isProcessing = false }
+        guard operation.owns(token), !Task.isCancelled else { return }
         do {
             var draft = try model.stagePaystub(
                 data: data, filename: filename, mediaType: mediaType, kind: sourceKind,
                 periodID: periodID)
+            operation.didSaveOriginal(token)
             do {
                 let result = try await PaystubOCRService().recognize(
                     data: data, fileExtension: URL(fileURLWithPath: filename).pathExtension)
                 try Task.checkCancellation()
+                guard operation.owns(token) else { return }
                 draft.suggestions = result.suggestions
                 draft.recognizedText = result.recognizedText
                 draft.processingNotice = result.notice
@@ -252,9 +268,12 @@ struct PaystubImportView: View {
                 draft.processingNotice =
                     "Automatic reading was incomplete. The original is saved. Review and enter the values manually."
             }
+            guard operation.owns(token), !Task.isCancelled else { return }
             try model.savePaystubDraft(draft)
             showingReview = true
-        } catch { errorMessage = error.localizedDescription }
+        } catch {
+            if operation.owns(token) { errorMessage = error.localizedDescription }
+        }
     }
     private static func readFile(_ url: URL) async throws -> Data {
         try await Task.detached(priority: .userInitiated) {

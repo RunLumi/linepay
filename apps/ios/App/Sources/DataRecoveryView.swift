@@ -54,6 +54,7 @@ struct DataRecoveryView: View {
                             errorMessage = nil
                         } catch { errorMessage = error.localizedDescription }
                     }.buttonStyle(LinePayPrimaryButtonStyle())
+                    .accessibilityIdentifier("recovery.retry")
                     NavigationLink("Support and recovery information") {
                         LegalTextView(kind: .support)
                     }

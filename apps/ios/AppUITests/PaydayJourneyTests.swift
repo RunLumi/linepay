@@ -112,8 +112,8 @@ final class PaydayJourneyTests: XCTestCase {
     }
 
     func testLargeTextDarkSettingsAndRecovery() {
-        launch(scenario: "review", largeText: true)
         XCUIDevice.shared.appearance = .dark
+        launch(scenario: "review", largeText: true)
         capture("large-dark-today")
         tab("Pay")
         tap("Open paycheck audit")
@@ -126,10 +126,10 @@ final class PaydayJourneyTests: XCTestCase {
         capture("42-privacy")
         app.terminate()
         launch(scenario: "corrupt")
-        XCTAssertTrue(app.buttons["Try again"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["recovery.retry"].waitForExistence(timeout: 10))
         capture("46-data-recovery")
-        tap("Try again")
-        XCTAssertTrue(app.buttons["Try again"].exists, "Unreadable data must not silently reset")
+        tap("recovery.retry")
+        XCTAssertTrue(app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
     private func launch(
@@ -146,6 +146,9 @@ final class PaydayJourneyTests: XCTestCase {
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
         app.launch()
+        XCTAssertGreaterThan(
+            app.windows.firstMatch.frame.height, 600,
+            "Supported iPhones must not use the legacy 320-by-480 launch window")
     }
     private func tab(_ label: String) {
         let element = app.tabBars.buttons[label]
