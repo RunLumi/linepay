@@ -53,7 +53,7 @@ struct StoreKitLifecycleTests {
             identifier: SubscriptionStore.yearlyProductID)
         let store = SubscriptionStore(testCommerceEnabled: true)
         await expectAccess(true, store: store)
-        let identifier = try #require(Int(exactly: transaction.id))
+        let identifier = try #require(UInt(exactly: transaction.id))
         try session.refundTransaction(identifier: identifier)
         await expectAccess(false, store: store)
     }
