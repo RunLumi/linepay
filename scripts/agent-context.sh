@@ -33,12 +33,23 @@ git rev-parse --short HEAD 2>/dev/null || echo "unknown"
 echo
 echo "Working tree"
 echo "------------"
-if git diff --quiet && git diff --cached --quiet; then
-    echo "No tracked changes."
+STATUS="$(git status --porcelain=v1 --untracked-files=all)"
+if [[ -z "$STATUS" ]]; then
+    echo "Clean working tree."
 else
-    git status --short
-    echo
-    git diff --stat
+    printf '%s\n' "$STATUS"
+
+    if ! git diff --quiet; then
+        echo
+        echo "Unstaged diff summary:"
+        git diff --stat
+    fi
+
+    if ! git diff --cached --quiet; then
+        echo
+        echo "Staged diff summary:"
+        git diff --cached --stat
+    fi
 fi
 
 echo
@@ -85,5 +96,5 @@ Verification
   bash scripts/agent-verify.sh ios     # full native iOS gate
   bash scripts/agent-verify.sh ui      # native gate + Maestro smoke
 
-Before editing, inspect the nearest existing implementation and tests. Do not overwrite unrelated working-tree changes.
+Before editing, inspect the nearest existing implementation and tests. Do not overwrite unrelated working-tree changes, including untracked files.
 EOF
