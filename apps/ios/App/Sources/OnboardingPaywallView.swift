@@ -263,11 +263,12 @@ struct ProPaywallView: View {
 
 struct LineGapMark: View {
     var body: some View {
-        HStack(spacing: 7) {
-            Rectangle().frame(width: 64, height: 1)
-            Rectangle().frame(width: 32, height: 1)
-        }
-        .foregroundStyle(LinePayColor.brandCopper)
-        .accessibilityHidden(true)
+        Image(decorative: "LinePaycheckLogo")
+            .renderingMode(.original)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 72, height: 72)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .accessibilityHidden(true)
     }
 }
