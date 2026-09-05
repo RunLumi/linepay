@@ -78,14 +78,14 @@ struct PayLedgerView: View {
                 .foregroundStyle(LinePayColor.textPrimary)
                 .minimumScaleFactor(0.75)
 
-            if let profile = model.profile {
-                Text(
-                    LinePayFormat.payPeriod(
-                        active.window, timeZoneIdentifier: profile.timeZoneIdentifier)
+            Text(
+                LinePayFormat.payPeriod(
+                    active.window,
+                    timeZoneIdentifier: model.currentTimeZoneIdentifier
                 )
-                .font(.subheadline)
-                .foregroundStyle(LinePayColor.textSecondary)
-            }
+            )
+            .font(.subheadline)
+            .foregroundStyle(LinePayColor.textSecondary)
 
             HStack(spacing: LinePaySpacing.standard) {
                 Text("\(LinePayFormat.hours(model.totalHours)) h")
@@ -110,8 +110,7 @@ struct PayLedgerView: View {
                 NavigationLink {
                     AuditDetailView(
                         window: active.window,
-                        timeZoneIdentifier: model.profile?.timeZoneIdentifier
-                            ?? TimeZone.current.identifier,
+                        timeZoneIdentifier: model.currentTimeZoneIdentifier,
                         agreement: active.agreement,
                         calculation: calculation,
                         paystub: paystub,

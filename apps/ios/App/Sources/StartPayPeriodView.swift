@@ -11,7 +11,8 @@ struct StartPayPeriodView: View {
     init(model: AppModel) {
         self.model = model
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current
+        calendar.timeZone =
+            TimeZone(identifier: model.profile?.timeZoneIdentifier ?? "") ?? .current
         let start = calendar.startOfDay(for: Date())
         _startDate = State(initialValue: start)
         _endDate = State(

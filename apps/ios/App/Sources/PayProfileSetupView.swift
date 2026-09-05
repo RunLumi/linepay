@@ -279,6 +279,9 @@ struct PayProfileSetupView: View {
             }
         }
         .environment(\.timeZone, selectedTimeZone)
+        .onChange(of: draft.timeZoneIdentifier) { oldIdentifier, newIdentifier in
+            rebaseDraftDates(from: oldIdentifier, to: newIdentifier)
+        }
         .tint(LinePayColor.brandPrimary)
     }
 
@@ -315,6 +318,81 @@ struct PayProfileSetupView: View {
 
     private var selectedTimeZone: TimeZone {
         TimeZone(identifier: draft.timeZoneIdentifier) ?? .current
+    }
+
+    private func rebaseDraftDates(from oldIdentifier: String, to newIdentifier: String) {
+        guard oldIdentifier != newIdentifier else { return }
+        draft.regularStartTime = rebaseTime(
+            draft.regularStartTime,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        draft.regularEndTime = rebaseTime(
+            draft.regularEndTime,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        draft.periodStartDate = rebaseDate(
+            draft.periodStartDate,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        draft.manualPeriodEndDate = rebaseDate(
+            draft.manualPeriodEndDate,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        draft.effectiveStartDate = rebaseDate(
+            draft.effectiveStartDate,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        draft.effectiveEndDate = rebaseDate(
+            draft.effectiveEndDate,
+            from: oldIdentifier,
+            to: newIdentifier
+        )
+        for index in draft.datePremiums.indices {
+            draft.datePremiums[index].date = rebaseDate(
+                draft.datePremiums[index].date,
+                from: oldIdentifier,
+                to: newIdentifier
+            )
+        }
+    }
+
+    private func rebaseTime(
+        _ date: Date,
+        from oldIdentifier: String,
+        to newIdentifier: String
+    ) -> Date {
+        var oldCalendar = Calendar(identifier: .gregorian)
+        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current
+        var newCalendar = Calendar(identifier: .gregorian)
+        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current
+        let values = oldCalendar.dateComponents([.hour, .minute], from: date)
+        var components = DateComponents()
+        components.timeZone = newCalendar.timeZone
+        components.year = 2001
+        components.month = 1
+        components.day = 1
+        components.hour = values.hour
+        components.minute = values.minute
+        return newCalendar.date(from: components) ?? date
+    }
+
+    private func rebaseDate(
+        _ date: Date,
+        from oldIdentifier: String,
+        to newIdentifier: String
+    ) -> Date {
+        var oldCalendar = Calendar(identifier: .gregorian)
+        oldCalendar.timeZone = TimeZone(identifier: oldIdentifier) ?? .current
+        var newCalendar = Calendar(identifier: .gregorian)
+        newCalendar.timeZone = TimeZone(identifier: newIdentifier) ?? .current
+        var components = oldCalendar.dateComponents([.year, .month, .day], from: date)
+        components.timeZone = newCalendar.timeZone
+        return newCalendar.date(from: components) ?? date
     }
 
     private func save() {

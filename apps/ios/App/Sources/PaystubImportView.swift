@@ -328,7 +328,12 @@ struct PaystubReviewView: View {
                 }
             }
         }
+        .environment(\.timeZone, payrollTimeZone)
         .tint(LinePayColor.brandPrimary)
+    }
+
+    private var payrollTimeZone: TimeZone {
+        TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
     }
 
     private var periodStartBinding: Binding<Date> {

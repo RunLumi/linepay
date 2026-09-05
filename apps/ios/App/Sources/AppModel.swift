@@ -70,11 +70,13 @@ struct PayProfileDraft: Hashable, Sendable {
             regularWeekdays = Set(agreement.regularSchedule.map(\.weekday))
             regularStartTime = Self.clockDate(
                 hour: firstWindow.start.hour,
-                minute: firstWindow.start.minute
+                minute: firstWindow.start.minute,
+                timeZoneIdentifier: profile.timeZoneIdentifier
             )
             regularEndTime = Self.clockDate(
                 hour: firstWindow.end.hour,
-                minute: firstWindow.end.minute
+                minute: firstWindow.end.minute,
+                timeZoneIdentifier: profile.timeZoneIdentifier
             )
             outsideScheduleMultiplier = LinePayFormat.decimal(agreement.outsideScheduleMultiplier)
         }
@@ -129,14 +131,21 @@ struct PayProfileDraft: Hashable, Sendable {
         }
     }
 
-    private static func clockDate(hour: Int, minute: Int) -> Date {
+    private static func clockDate(
+        hour: Int,
+        minute: Int,
+        timeZoneIdentifier: String = TimeZone.current.identifier
+    ) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: timeZoneIdentifier) ?? .current
         var components = DateComponents()
+        components.timeZone = calendar.timeZone
         components.year = 2001
         components.month = 1
         components.day = 1
         components.hour = hour
         components.minute = minute
-        return Calendar(identifier: .gregorian).date(from: components) ?? Date()
+        return calendar.date(from: components) ?? Date()
     }
 
     private static func date(from localDate: LocalDate, timeZoneIdentifier: String) -> Date {
@@ -220,6 +229,19 @@ final class AppModel {
     var isOnboarded: Bool { state.profile != nil }
     var recoveryFileURL: URL? { store.recoveryFileURL }
 
+    var currentTimeZoneIdentifier: String {
+        state.activePeriod?.agreementTimeZone(fallback: profile?.timeZoneIdentifier)
+            ?? profile?.timeZoneIdentifier
+            ?? TimeZone.current.identifier
+    }
+
+    func timeZoneIdentifier(for period: CompletedPayPeriod) -> String {
+        period.timeZoneIdentifier
+            ?? period.workEntries.first?.interval.timeZoneIdentifier
+            ?? profile?.timeZoneIdentifier
+            ?? TimeZone.current.identifier
+    }
+
     var totalHours: Decimal {
         workIntervals.reduce(0) { $0 + $1.durationHours }
     }
@@ -278,7 +300,8 @@ final class AppModel {
             )
             candidate.activePeriod = ActivePayPeriod(
                 window: window,
-                agreement: agreement
+                agreement: agreement,
+                timeZoneIdentifier: draft.timeZoneIdentifier
             )
         }
 
@@ -306,7 +329,8 @@ final class AppModel {
         var candidate = state
         candidate.activePeriod = ActivePayPeriod(
             window: window,
-            agreement: profile.agreement
+            agreement: profile.agreement,
+            timeZoneIdentifier: profile.timeZoneIdentifier
         )
         try commit(candidate)
     }
@@ -440,6 +464,28 @@ final class AppModel {
             throw AppModelError.calculationUnavailable
         }
 
+        let periodTimeZoneIdentifier = active.agreementTimeZone(
+            fallback: profile?.timeZoneIdentifier
+        )
+        let expectedStart = localDate(
+            from: active.window.startDate,
+            timeZoneIdentifier: periodTimeZoneIdentifier
+        )
+        let expectedEnd = localDate(
+            from: active.window.displayEndDate,
+            timeZoneIdentifier: periodTimeZoneIdentifier
+        )
+        if let providedStart = draft.payPeriodStartDate.map({
+            localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)
+        }), providedStart != expectedStart {
+            throw AppModelError.invalidPayPeriod
+        }
+        if let providedEnd = draft.payPeriodEndDate.map({
+            localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)
+        }), providedEnd != expectedEnd {
+            throw AppModelError.invalidPayPeriod
+        }
+
         let gross = try positiveDecimal(draft.grossPay, field: "Gross pay", allowZero: true)
         let currencyCode = active.agreement.hourlyRate.currencyCode
         let oldEvidence = active.paystub?.evidence
@@ -458,10 +504,10 @@ final class AppModel {
         do {
             let confirmed = ConfirmedPaystub(
                 payPeriodStart: draft.payPeriodStartDate.map {
-                    localDate(from: $0, timeZoneIdentifier: activeTimeZoneIdentifier)
+                    localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)
                 },
                 payPeriodEnd: draft.payPeriodEndDate.map {
-                    localDate(from: $0, timeZoneIdentifier: activeTimeZoneIdentifier)
+                    localDate(from: $0, timeZoneIdentifier: periodTimeZoneIdentifier)
                 },
                 grossPay: Money(amount: gross, currencyCode: currencyCode),
                 regularHours: try optionalDecimal(draft.regularHours, field: "Regular hours"),
@@ -560,6 +606,9 @@ final class AppModel {
             id: active.id,
             window: active.window,
             agreement: active.agreement,
+            timeZoneIdentifier: active.agreementTimeZone(
+                fallback: profile.timeZoneIdentifier
+            ),
             workEntries: active.workEntries,
             calculation: calculation,
             paystub: active.paystub,
@@ -579,7 +628,8 @@ final class AppModel {
             )
             candidate.activePeriod = ActivePayPeriod(
                 window: nextWindow,
-                agreement: profile.agreement
+                agreement: profile.agreement,
+                timeZoneIdentifier: profile.timeZoneIdentifier
             )
         case .manual:
             candidate.activePeriod = nil
@@ -626,6 +676,7 @@ final class AppModel {
             id: original.id,
             window: original.window,
             agreement: original.agreement,
+            timeZoneIdentifier: original.timeZoneIdentifier,
             workEntries: original.workEntries,
             calculation: original.calculation,
             paystub: copy(paystub: paystub, evidence: nil),
@@ -771,7 +822,7 @@ final class AppModel {
     }
 
     private var activeTimeZoneIdentifier: String {
-        profile?.timeZoneIdentifier ?? TimeZone.current.identifier
+        currentTimeZoneIdentifier
     }
 
     private func commit(_ candidate: AppPersistentState) throws {
@@ -886,8 +937,14 @@ final class AppModel {
             guard !draft.regularWeekdays.isEmpty else {
                 throw AppModelError.invalidField("Regular workdays")
             }
-            let start = try localTime(from: draft.regularStartTime)
-            let end = try localTime(from: draft.regularEndTime)
+            let start = try localTime(
+                from: draft.regularStartTime,
+                timeZoneIdentifier: draft.timeZoneIdentifier
+            )
+            let end = try localTime(
+                from: draft.regularEndTime,
+                timeZoneIdentifier: draft.timeZoneIdentifier
+            )
             regularSchedule = try draft.regularWeekdays
                 .sorted { $0.rawValue < $1.rawValue }
                 .map { try RegularScheduleWindow(weekday: $0, start: start, end: end) }
@@ -1175,9 +1232,16 @@ final class AppModel {
         )
     }
 
-    private func localTime(from date: Date) throws -> LocalTime {
-        let components = Calendar(identifier: .gregorian).dateComponents(
-            [.hour, .minute], from: date)
+    private func localTime(
+        from date: Date,
+        timeZoneIdentifier: String
+    ) throws -> LocalTime {
+        guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
+            throw AppModelError.invalidField("Time zone")
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let components = calendar.dateComponents([.hour, .minute], from: date)
         return try LocalTime(
             hour: components.hour ?? 0,
             minute: components.minute ?? 0
@@ -1191,7 +1255,13 @@ final class AppModel {
 
 extension ActivePayPeriod {
     fileprivate func agreementTimeZone(fallback: String?) -> String {
-        fallback ?? TimeZone.current.identifier
+        if let timeZoneIdentifier {
+            return timeZoneIdentifier
+        }
+        if let workTimeZone = workEntries.first?.interval.timeZoneIdentifier {
+            return workTimeZone
+        }
+        return fallback ?? TimeZone.current.identifier
     }
 }
 

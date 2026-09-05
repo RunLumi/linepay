@@ -48,8 +48,7 @@ struct HistoryView: View {
             Text(
                 LinePayFormat.payPeriod(
                     period.window,
-                    timeZoneIdentifier: model.profile?.timeZoneIdentifier
-                        ?? TimeZone.current.identifier
+                    timeZoneIdentifier: model.timeZoneIdentifier(for: period)
                 )
             )
             .font(.headline)

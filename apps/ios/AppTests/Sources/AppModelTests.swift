@@ -172,6 +172,79 @@ struct AppModelTests {
         #expect(restored.calculation?.total.amount == Decimal(488))
     }
 
+    @Test("Regular schedule wall-clock time uses the payroll timezone")
+    func regularScheduleUsesPayrollTimeZone() throws {
+        let model = AppModel()
+        var draft = makeDraft(rate: "50", start: testStart)
+        draft.useRegularSchedule = true
+        draft.regularWeekdays = [.monday]
+
+        var payrollCalendar = Calendar(identifier: .gregorian)
+        payrollCalendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+        draft.regularStartTime = try #require(
+            payrollCalendar.date(
+                from: DateComponents(year: 2001, month: 1, day: 1, hour: 7, minute: 0)
+            )
+        )
+        draft.regularEndTime = try #require(
+            payrollCalendar.date(
+                from: DateComponents(year: 2001, month: 1, day: 1, hour: 15, minute: 30)
+            )
+        )
+
+        try model.saveProfile(draft)
+
+        let window = try #require(model.profile?.agreement.regularSchedule.first)
+        #expect(window.start.hour == 7)
+        #expect(window.start.minute == 0)
+        #expect(window.end.hour == 15)
+        #expect(window.end.minute == 30)
+    }
+
+    @Test("Archived pay period keeps its original payroll timezone")
+    func archivedPayPeriodKeepsTimeZone() throws {
+        let model = AppModel()
+        var draft = makeDraft(rate: "50", start: testStart)
+        try model.saveProfile(draft)
+        try model.addWork(
+            start: testStart,
+            end: testStart.addingTimeInterval(8 * 60 * 60),
+            kind: .regular
+        )
+        try model.archiveCurrentPeriod()
+
+        draft.timeZoneIdentifier = "America/New_York"
+        try model.saveProfile(draft)
+
+        let archived = try #require(model.history.first)
+        #expect(archived.timeZoneIdentifier == "America/Los_Angeles")
+        #expect(model.timeZoneIdentifier(for: archived) == "America/Los_Angeles")
+        #expect(model.activePeriod?.timeZoneIdentifier == "America/Los_Angeles")
+        #expect(model.profile?.timeZoneIdentifier == "America/New_York")
+    }
+
+    @Test("Paystub period dates must match the active pay period")
+    func paystubPeriodMismatchIsRejected() throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: "50", start: testStart))
+        try model.addWork(
+            start: testStart,
+            end: testStart.addingTimeInterval(8 * 60 * 60),
+            kind: .regular
+        )
+
+        var paystub = PaystubConfirmationDraft()
+        paystub.payPeriodStartDate = testStart.addingTimeInterval(24 * 60 * 60)
+        paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
+        paystub.grossPay = "400"
+
+        #expect(throws: AppModelError.invalidPayPeriod) {
+            try model.confirmPaystub(paystub)
+        }
+        #expect(model.currentPaystub == nil)
+        #expect(!model.hasUsedFreeAudit)
+    }
+
     private func makeDraft(rate: String, start: Date) -> PayProfileDraft {
         var draft = PayProfileDraft()
         draft.name = "Test agreement"
