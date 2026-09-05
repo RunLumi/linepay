@@ -228,6 +228,7 @@ struct BackupTests {
         stub.payPeriodStartDate = period.window.startDate
         stub.payPeriodEndDate = period.window.displayEndDate
         stub.grossPay = "400"
+        stub.workComplete = true
         stub.grossBasis = .wagesOnly
         stub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         stub.sourceData = syntheticOriginal

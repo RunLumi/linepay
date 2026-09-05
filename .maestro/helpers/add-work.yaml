@@ -1,0 +1,32 @@
+appId: com.streamentry.linepay
+---
+- scrollUntilVisible:
+    element:
+      id: today.add-work
+    centerElement: true
+- tapOn:
+    id: today.add-work
+- assertVisible:
+    id: work.start
+- takeScreenshot: work-form
+- scrollUntilVisible:
+    element:
+      id: work.note
+    centerElement: true
+- tapOn:
+    id: work.note
+- inputText: Synthetic QA shift
+- tapOn:
+    id: keyboard.done
+- scrollUntilVisible:
+    element:
+      id: work.save
+- tapOn:
+    id: work.save
+- assertVisible:
+    id: activation.keep-logging
+- takeScreenshot: first-real-result
+- tapOn:
+    id: activation.keep-logging
+- assertVisible:
+    id: today.repeat-shift

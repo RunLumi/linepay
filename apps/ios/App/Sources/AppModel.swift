@@ -7,6 +7,7 @@ import Observation
 final class AppModel {
     @ObservationIgnored private let store: any AppStateStoring
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
+    @ObservationIgnored private let now: () -> Date
 
     private var state: AppPersistentState
     private(set) var calculation: CalculationResult?
@@ -16,19 +17,28 @@ final class AppModel {
 
     init(
         store: any AppStateStoring = MemoryStateStore(),
-        evidenceStore: any EvidenceStoring = MemoryEvidenceStore()
+        evidenceStore: any EvidenceStoring = MemoryEvidenceStore(),
+        now: @escaping () -> Date = { Date() }
     ) {
         self.store = store
         self.evidenceStore = evidenceStore
+        self.now = now
 
         do {
             state = try store.load() ?? AppPersistentState()
+            try AppStateValidation.validate(state)
         } catch {
             state = AppPersistentState()
             persistenceIssue = error.localizedDescription
         }
 
         recalculate()
+        if persistenceIssue == nil {
+            do { try discoverUnreferencedEvidence() } catch {
+                lastPersistenceError =
+                    "Interrupted original-file cleanup could not be recorded. Free storage and retry from Privacy and local data."
+            }
+        }
     }
 
     static func production() -> AppModel {
@@ -46,6 +56,7 @@ final class AppModel {
     var currentPaystub: ConfirmedPaystub? { state.activePeriod?.paystub }
     var reconciliation: ReconciliationResult? { state.activePeriod?.reconciliation }
     var hasUsedFreeAudit: Bool { state.hasUsedFreeAudit }
+    var onboardingProgress: OnboardingProgress? { state.onboardingProgress }
     var isOnboarded: Bool { state.profile != nil }
     var recoveryFileURL: URL? { store.recoveryFileURL }
 
@@ -131,6 +142,7 @@ final class AppModel {
             invalidateAudit(&active)
             candidate.activePeriod = active
         } else if existing == nil {
+            candidate.onboardingProgress = .firstWork
             candidate.activePeriod = ActivePayPeriod(
                 window: try makePeriodWindow(
                     cadence: draft.preferredCadence, startDate: draft.periodStartDate,
@@ -208,6 +220,11 @@ final class AppModel {
         invalidateAudit(&candidateActive)
         candidate.activePeriod = candidateActive
         candidate.workDraft = nil
+        if candidate.onboardingProgress == .firstWork
+            || candidate.onboardingProgress == .waitingForFirstResult
+        {
+            candidate.onboardingProgress = .proof
+        }
         try commit(candidate)
     }
 
@@ -265,6 +282,7 @@ final class AppModel {
         else { return nil }
         var candidate = state
         active.workEntries.removeAll { $0.id == id }
+        if candidate.workDraft?.editingEntryID == id { candidate.workDraft = nil }
         invalidateAudit(&active)
         candidate.activePeriod = active
         do {
@@ -357,6 +375,7 @@ final class AppModel {
         let assessment = try PaycheckAssessor().assess(
             calculation: calculation, agreement: context.agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: draft.workComplete == true,
                 grossPay: gross, amounts: amounts, hours: hours,
                 grossBasis: draft.grossBasis, lineLayout: draft.lineLayout,
                 hoursBasis: draft.hoursBasis, guaranteeLayout: draft.guaranteeLayout,
@@ -379,12 +398,14 @@ final class AppModel {
             overtimeHours: hours[.overtimeHours], overtimePay: amounts[.overtimePay],
             doubleTimeHours: hours[.doubleTimeHours], doubleTimePay: amounts[.doubleTimePay],
             calloutPay: amounts[.calloutPay], perDiemPay: amounts[.perDiemPay],
-            notes: draft.notes, evidence: evidence,
+            notes: draft.notes.trimmingCharacters(in: .whitespacesAndNewlines), evidence: evidence,
+            confirmedEpochSeconds: Int64(now().timeIntervalSince1970.rounded()),
             confirmation: PaystubConfirmation(
                 grossBasis: draft.grossBasis,
                 lineLayout: draft.lineLayout, hoursBasis: draft.hoursBasis,
                 guaranteeLayout: draft.guaranteeLayout, reviewedFields: draft.reviewedFields,
-                suggestions: draft.suggestions, hasAdditionalUnmappedPay: hasUnreviewed),
+                suggestions: draft.suggestions, hasAdditionalUnmappedPay: hasUnreviewed,
+                workComplete: draft.workComplete),
             assessment: assessment
         )
         let reconciliation = assessment.expectedGross.flatMap { expected -> ReconciliationResult? in
@@ -432,7 +453,7 @@ final class AppModel {
                     || consumesAccess
             )
         }
-        candidate.hasUsedFreeAudit = candidate.hasUsedFreeAudit || consumesAccess
+        candidate.hasUsedFreeAudit = candidate.hasUsedFreeAudit || (consumesAccess && !hasProAccess)
         if candidate.paystubDraft?.targetPeriodID == context.id { candidate.paystubDraft = nil }
         do { try commit(candidate) } catch {
             if let createdEvidence { queueUnreferencedEvidence(createdEvidence) }
@@ -477,6 +498,7 @@ final class AppModel {
             calculation: calculation,
             paystub: active.paystub,
             reconciliation: active.reconciliation,
+            archivedEpochSeconds: Int64(now().timeIntervalSince1970.rounded()),
             auditRevisions: active.auditRevisions,
             hasConsumedAuditAccess: active.hasConsumedAuditAccess
         )
@@ -600,6 +622,18 @@ final class AppModel {
     }
 
     var setupDraft: PayProfileDraft? { state.setupDraft }
+
+    func deferFirstWork() throws {
+        var candidate = state
+        candidate.onboardingProgress = .waitingForFirstResult
+        try commit(candidate)
+    }
+
+    func completeFirstResult() throws {
+        var candidate = state
+        candidate.onboardingProgress = nil
+        try commit(candidate)
+    }
     var workDraft: WorkDraft? { state.workDraft }
     var paystubDraft: PaystubConfirmationDraft? { state.paystubDraft }
     var retainedEvidence: [PaystubEvidence] {
@@ -657,6 +691,7 @@ final class AppModel {
         try commit(candidate)
     }
     func savePaystubDraft(_ draft: PaystubConfirmationDraft?) throws {
+        guard state.paystubDraft != draft else { return }
         if let draft, let existing = state.paystubDraft,
             draft.targetPeriodID != existing.targetPeriodID
         {
@@ -727,6 +762,7 @@ final class AppModel {
         draft.notes = paid.notes
         draft.sourceEvidence = paid.evidence
         if let confirmation = paid.confirmation {
+            draft.workComplete = confirmation.workComplete
             draft.grossBasis = confirmation.grossBasis
             draft.lineLayout = confirmation.lineLayout
             draft.hoursBasis = confirmation.hoursBasis
@@ -797,6 +833,8 @@ final class AppModel {
     }
 
     func retryEvidenceDeletion() throws {
+        try discoverUnreferencedEvidence()
+        guard !state.pendingEvidenceDeletions.isEmpty else { return }
         var candidate = state
         var remaining: [PaystubEvidence] = []
         for evidence in state.pendingEvidenceDeletions {
@@ -808,6 +846,16 @@ final class AppModel {
         candidate.pendingEvidenceDeletions = remaining
         try commit(candidate)
         if !remaining.isEmpty { throw AppModelError.evidenceDeletionPending }
+    }
+
+    private func discoverUnreferencedEvidence() throws {
+        let retained = Set(
+            (state.allEvidence + state.pendingEvidenceDeletions).map(\.storedFilename))
+        let interrupted = try evidenceStore.unreferencedFiles(excluding: retained)
+        guard !interrupted.isEmpty else { return }
+        var candidate = state
+        candidate.pendingEvidenceDeletions += interrupted
+        try commit(candidate)
     }
 
     private func enqueue(_ references: [PaystubEvidence], in candidate: inout AppPersistentState) {
@@ -837,7 +885,9 @@ final class AppModel {
     }
 
     private func commit(_ candidate: AppPersistentState) throws {
+        guard persistenceIssue == nil else { throw AppModelError.persistenceFailed }
         do {
+            try AppStateValidation.validate(candidate)
             try store.save(candidate)
             let payChanged =
                 state.activePeriod?.id != candidate.activePeriod?.id
@@ -1114,7 +1164,7 @@ final class AppModel {
             sources: sources,
             unsupportedRuleNotes: draft.unsupportedRuleNotes.trimmingCharacters(
                 in: .whitespacesAndNewlines),
-            confirmedEpochSeconds: Int64(Date().timeIntervalSince1970)
+            confirmedEpochSeconds: Int64(now().timeIntervalSince1970)
         )
     }
 

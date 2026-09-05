@@ -1,0 +1,39 @@
+appId: com.streamentry.linepay
+name: First paycheck audit, evidence, and archived history
+tags: [smoke, ios, regression]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn:
+    id: today.open-pay
+- scrollUntilVisible:
+    element:
+      id: pay.check-paycheck
+- tapOn:
+    id: pay.check-paycheck
+- runFlow:
+    file: ../helpers/confirm-paystub.yaml
+    env:
+      GROSS: "450.00"
+- assertVisible: Possible shortfall
+- takeScreenshot: paycheck-comparison
+- tapOn:
+    text: Pay
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: pay.finish-period
+- tapOn:
+    id: pay.finish-period
+- tapOn:
+    id: period.confirm-close
+- tapOn: History
+- tapOn:
+    id: history.period.*
+- assertVisible: Possible shortfall
+- takeScreenshot: archived-pay-period
+- stopApp
+- launchApp
+- tapOn: History
+- assertVisible:
+    id: history.period.*

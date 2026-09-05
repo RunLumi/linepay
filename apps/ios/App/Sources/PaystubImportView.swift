@@ -111,7 +111,7 @@ struct PaystubImportView: View {
                 }
             }
         }
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
         .sheet(isPresented: $showingScanner) {
             DocumentScannerView(
                 onScan: { data in
@@ -336,6 +336,20 @@ struct PaystubReviewView: View {
                 }
             }
             Section {
+                Toggle(
+                    "All work for this paycheck period is recorded",
+                    isOn: Binding(
+                        get: { draft.workComplete == true }, set: { draft.workComplete = $0 })
+                )
+                .toggleStyle(.button)
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .accessibilityValue(draft.workComplete == true ? "Confirmed" : "Not confirmed")
+                .accessibilityAddTraits(draft.workComplete == true ? .isSelected : [])
+                .accessibilityIdentifier("paystub.complete-work")
+                Text(
+                    "Check the full work period, including earlier shifts and any unpaid breaks. A partial work log cannot establish a full-paycheck difference."
+                )
+                .font(.footnote)
                 Picker("What does gross include?", selection: $draft.grossBasis) {
                     ForEach(PaystubGrossBasis.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.accessibilityIdentifier("paystub.gross-basis")
@@ -394,6 +408,7 @@ struct PaystubReviewView: View {
             }
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden).background(LinePayColor.canvas)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
             do { try model.savePaystubDraft(value) } catch {
@@ -474,7 +489,7 @@ struct PaystubFieldReviewView: View {
                 if field.isDate {
                     DatePicker(field.title, selection: dateBinding, displayedComponents: .date)
                 } else {
-                    TextField(field.title, text: numberBinding).keyboardType(.decimalPad)
+                    TextField(field.title, text: numberBinding).keyboardType(.numbersAndPunctuation)
                         .monospacedDigit()
                         .accessibilityIdentifier("paystub.value")
                 }
@@ -490,7 +505,7 @@ struct PaystubFieldReviewView: View {
                                 allowDollarSign: !field.isHours)
                         }
                         draft.reviewedFields.insert(field)
-                        dismiss()
+                        if persistDraft() { dismiss() }
                     } catch {
                         errorMessage =
                             "Use a complete nonnegative number such as 1,250.00. No text or ambiguous separators."
@@ -502,7 +517,7 @@ struct PaystubFieldReviewView: View {
                         draft[field] = ""
                         draft.reviewedFields.remove(field)
                         draft.hasAdditionalUnmappedPay = true
-                        dismiss()
+                        if persistDraft() { dismiss() }
                     }
                 }
             }
@@ -512,6 +527,7 @@ struct PaystubFieldReviewView: View {
         }
         .linePayKeyboardDismiss()
         .navigationTitle(field.title).navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden).background(LinePayColor.canvas)
         .environment(\.timeZone, timeZone)
     }
     private var numberBinding: Binding<String> {
@@ -520,6 +536,7 @@ struct PaystubFieldReviewView: View {
             set: {
                 draft[field] = $0
                 draft.reviewedFields.remove(field)
+                _ = persistDraft()
             })
     }
     private var dateBinding: Binding<Date> {
@@ -535,6 +552,21 @@ struct PaystubFieldReviewView: View {
                     draft.payPeriodEndDate = $0
                 }
                 draft.reviewedFields.remove(field)
+                _ = persistDraft()
             })
+    }
+
+    private func persistDraft() -> Bool {
+        // The review-list view is inactive while this pushed field editor is visible.
+        // Save here so interruption never depends on the parent's onChange running.
+        do {
+            try model.savePaystubDraft(draft)
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage =
+                "This field could not be saved. Keep it open and free storage before leaving."
+            return false
+        }
     }
 }

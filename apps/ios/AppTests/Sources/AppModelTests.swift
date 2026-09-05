@@ -109,6 +109,7 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.workComplete = true
         paystub.grossBasis = .wagesOnly
         paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         try model.confirmPaystub(paystub)
@@ -239,6 +240,7 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart.addingTimeInterval(24 * 60 * 60)
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.workComplete = true
         paystub.grossBasis = .wagesOnly
         paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
 
@@ -257,5 +259,50 @@ struct AppModelTests {
         draft.preferredCadence = .weekly
         draft.periodStartDate = start
         return draft
+    }
+
+    @Test(
+        "Declared decimal-point input preserves the full entered rate",
+        arguments: ["58.40", "$58.40", " 58.40 \n"])
+    func decimalRateInput(_ input: String) throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: input, start: testStart))
+        #expect(model.profile?.agreement.hourlyRate.amount == Decimal(5840) / 100)
+    }
+
+    @Test(
+        "Partial numeric input cannot replace saved rules",
+        arguments: ["58.40USD", "58,40", "1.234,56", "58.4.0", "1e3", "NaN", "-1"])
+    func invalidRateInputIsAtomic(_ input: String) throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: "50", start: testStart))
+        #expect(throws: (any Error).self) {
+            try model.saveProfile(makeDraft(rate: input, start: testStart))
+        }
+        #expect(model.profile?.agreement.hourlyRate.amount == Decimal(50))
+        #expect(model.profile?.agreement.version == "1")
+    }
+
+    @Test("Paycheck amounts and confirmed hours keep decimal precision")
+    func decimalPaystubInputIsExact() throws {
+        let model = AppModel()
+        try model.saveProfile(makeDraft(rate: "50", start: testStart))
+        try model.addWork(
+            start: testStart, end: testStart.addingTimeInterval(8 * 3600), kind: .regular)
+        var draft = PaystubConfirmationDraft()
+        draft.payPeriodStartDate = testStart
+        draft.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 3600)
+        draft.grossPay = "400.50"
+        draft.workComplete = true
+        draft.grossBasis = .wagesOnly
+        draft.reviewedFields = [.periodStart, .periodEnd, .grossPay, .regularHours]
+        draft.regularHours = "8.25"
+        try model.confirmPaystub(draft)
+        #expect(model.currentPaystub?.grossPay.amount == Decimal(40050) / 100)
+        #expect(model.currentPaystub?.regularHours == Decimal(825) / 100)
+
+        draft.grossPay = "400.50USD"
+        #expect(throws: (any Error).self) { try model.confirmPaystub(draft) }
+        #expect(model.currentPaystub?.grossPay.amount == Decimal(40050) / 100)
     }
 }

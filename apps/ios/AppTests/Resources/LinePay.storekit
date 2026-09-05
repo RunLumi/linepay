@@ -45,7 +45,13 @@
           "familyShareable": false,
           "groupNumber": 1,
           "internalID": "linepay-pro-yearly",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "internalID": "linepay-pro-yearly-intro",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W",
+            "displayPrice": "0.00"
+          },
           "localizations": [
             {
               "description": "Future paycheck audits. Existing records remain accessible.",

@@ -6,8 +6,13 @@ struct BackupSource: Sendable {
     let url: URL
 }
 
+protocol BackupHandling: Sendable {
+    func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data
+    func open(_ url: URL) async throws -> BackupArchive
+}
+
 /// File-provider coordination and serialization never run on the UI actor.
-actor BackupIO {
+actor BackupIO: BackupHandling {
     func create(state: AppPersistentState, sources: [BackupSource]) throws -> Data {
         var files: [BackupArchive.EvidenceFile] = []
         var total = 0

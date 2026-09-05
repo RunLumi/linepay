@@ -9,6 +9,7 @@ struct PayProfileSetupView: View {
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
     @State private var showingUnsupported = false
+    @FocusState private var editingField: String?
 
     init(model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil) {
         self.model = model
@@ -72,7 +73,7 @@ struct PayProfileSetupView: View {
             }
         }
         .environment(\.timeZone, zone)
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
         .onChange(of: draft) { _, value in
             do { try model.saveSetupDraft(value) } catch {
                 errorMessage =
@@ -110,14 +111,14 @@ struct PayProfileSetupView: View {
 
     private var basics: some View {
         Section {
-            TextField("Profile name", text: $draft.name).accessibilityIdentifier("pay-profile.name")
-            LabeledContent("Base hourly rate, USD") {
-                TextField("58.40", text: $draft.hourlyRate)
-                    .keyboardType(.decimalPad).monospacedDigit()
-                    .multilineTextAlignment(.trailing)
-                    .accessibilityLabel("Hourly rate in US dollars")
-                    .accessibilityIdentifier("pay-profile.hourly-rate")
-            }
+            LinePayTextField(
+                "Profile name", text: $draft.name, focus: $editingField,
+                identifier: "pay-profile.name")
+            LinePayTextField(
+                "Base hourly rate, USD", text: $draft.hourlyRate, focus: $editingField,
+                identifier: "pay-profile.hourly-rate"
+            )
+            .keyboardType(.numbersAndPunctuation).monospacedDigit()
             Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
                 ForEach(timeZones, id: \.self) { Text($0).tag($0) }
             }
@@ -345,7 +346,7 @@ struct PayProfileSetupView: View {
     private func number(_ label: String, _ binding: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.subheadline)
-            TextField(label, text: binding).keyboardType(.decimalPad).monospacedDigit()
+            TextField(label, text: binding).keyboardType(.numbersAndPunctuation).monospacedDigit()
         }
     }
     private func sourceRulePicker(_ selection: Binding<PayRuleKey?>) -> some View {

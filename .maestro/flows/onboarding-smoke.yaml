@@ -1,38 +1,10 @@
 appId: com.streamentry.linepay
-name: Fresh install onboarding smoke
+name: Onboarding and keyboard-safe pay setup
 tags:
   - smoke
   - ios
 ---
-- launchApp:
-    clearState: true
-- assertVisible:
-    id: onboarding.set-up-pay
-- tapOn:
-    id: onboarding.set-up-pay
-- assertVisible:
-    id: pay-profile.hourly-rate
-- tapOn:
-    id: pay-profile.hourly-rate
-- inputText: "58.40"
-- tapOn:
-    id: keyboard.done
-- tapOn:
-    id: pay-profile.continue
-- tapOn:
-    id: pay-profile.continue
-- scrollUntilVisible:
-    element:
-      id: pay-profile.continue
-    direction: DOWN
-- tapOn:
-    id: pay-profile.continue
-- scrollUntilVisible:
-    element:
-      id: pay-profile.save
-    direction: DOWN
-- tapOn:
-    id: pay-profile.save
+- runFlow: ../helpers/onboard.yaml
 - assertVisible:
     id: today.add-work
 - takeScreenshot: onboarding-complete

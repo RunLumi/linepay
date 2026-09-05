@@ -40,13 +40,22 @@ struct SettingsView: View {
                     LabeledContent(
                         "Status",
                         value: subscriptionStore.isPro
-                            ? "Pro active"
+                            ? (subscriptionStore.isTrial ? "Pro trial active" : "Pro active")
                             : model.hasUsedFreeAudit ? "First audit used" : "First audit free")
                     if let notice = subscriptionStore.notice { Text(notice).font(.footnote) }
+                    if let date = subscriptionStore.renewalDate {
+                        LabeledContent(subscriptionStore.willAutoRenew == true ? "Renews" : "Ends")
+                        {
+                            Text(date.formatted(date: .abbreviated, time: .shortened))
+                        }
+                    }
                     Button("View Pro options") { paywall = true }
+                        .frame(minHeight: 48).accessibilityIdentifier("settings.view-pro")
                     Button("Restore Purchases") {
                         Task { await subscriptionStore.restorePurchases() }
                     }
+                    Link("Manage subscription", destination: AppLinks.subscriptions).frame(
+                        minHeight: 44)
                     if let error = subscriptionStore.errorMessage {
                         Text(error).foregroundStyle(LinePayColor.review).font(.footnote)
                     }
@@ -64,9 +73,15 @@ struct SettingsView: View {
                 Section("About") {
                     NavigationLink("About LinePaycheck") { AboutLinePayView() }
                         .accessibilityIdentifier("settings.about")
+                    Link("Support", destination: AppLinks.support).accessibilityIdentifier(
+                        "settings.support")
+                    Link("Privacy policy", destination: AppLinks.privacy).accessibilityIdentifier(
+                        "settings.privacy-policy")
+                    Link("Terms of use", destination: AppLinks.terms)
                 }
             }
             .navigationTitle("Settings")
+            .labeledContentStyle(LinePayValueStyle())
             .scrollContentBackground(.hidden).background(LinePayColor.canvas)
         }
         .sheet(isPresented: $editor) { PayProfileSetupView(model: model) }
@@ -172,12 +187,12 @@ struct PrivacyDataView: View {
             Section("Deletion and recovery") {
                 if model.pendingDeletionCount > 0 {
                     Text("\(model.pendingDeletionCount) original(s) queued for removal.")
-                    Button("Retry original cleanup") {
-                        do {
-                            try model.retryEvidenceDeletion()
-                            errorMessage = nil
-                        } catch { errorMessage = error.localizedDescription }
-                    }
+                }
+                Button("Retry original cleanup") {
+                    do {
+                        try model.retryEvidenceDeletion()
+                        errorMessage = nil
+                    } catch { errorMessage = error.localizedDescription }
                 }
                 BackupRestoreEntryPoint(title: "Backup and restore")
                 Button("Delete all local data", role: .destructive) { deleteAll = true }

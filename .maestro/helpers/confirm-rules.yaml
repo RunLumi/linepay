@@ -1,0 +1,17 @@
+appId: com.streamentry.linepay
+---
+- repeat:
+    times: 3
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: pay-profile.continue
+          centerElement: true
+      - tapOn:
+          id: pay-profile.continue
+- scrollUntilVisible:
+    element:
+      id: pay-profile.save
+    centerElement: true
+- tapOn:
+    id: pay-profile.save

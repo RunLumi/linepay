@@ -45,7 +45,7 @@ struct TodayView: View {
                     Section {
                         if let last = model.lastWorkEntry {
                             Button("Repeat last shift") { repeating = last }.frame(minHeight: 48)
-                                .accessibilityIdentifier("today.repeat")
+                                .accessibilityIdentifier("today.repeat-shift")
                         }
                         Button(model.workDraft != nil ? "Resume work draft" : "Add work") {
                             showingAdd = true
@@ -53,6 +53,7 @@ struct TodayView: View {
                         .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
                             "today.add-work")
                         Button("Check paycheck") { onOpenPay() }.frame(minHeight: 44)
+                            .accessibilityIdentifier("today.open-pay")
                     }
                     Section("Work log") {
                         if model.workEntries.isEmpty {
@@ -74,6 +75,7 @@ struct TodayView: View {
                                     if !entry.note.isEmpty { Text(entry.note).font(.footnote) }
                                 }.foregroundStyle(LinePayColor.textPrimary).padding(.vertical, 6)
                             }
+                            .accessibilityIdentifier("today.edit-work")
                             .swipeActions {
                                 Button("Delete", role: .destructive) {
                                     undo = model.deleteWork(id: entry.id)
@@ -120,14 +122,16 @@ struct TodayView: View {
                                 errorMessage = error.localizedDescription
                                 self.undo = nil
                             }
-                        }.frame(minHeight: 48).accessibilityIdentifier("today.undo")
+                        }.frame(minHeight: 48).accessibilityIdentifier("today.undo-delete")
                     }.padding(.horizontal, 24).background(LinePayColor.surfacePrimary)
                 }
             }
         }
         .sheet(isPresented: $showingAdd) { AddWorkView(model: model) }
         .sheet(isPresented: $showingStart) { StartPayPeriodView(model: model) }
-        .sheet(item: $editing) { AddWorkView(model: model, existingEntry: $0) }
+        .sheet(item: $editing) {
+            AddWorkView(model: model, existingEntry: $0, onDeleted: { undo = $0 })
+        }
         .sheet(item: $repeating) { AddWorkView(model: model, template: $0) }
         .onChange(of: model.activePeriod?.id) { _, _ in undo = nil }
     }

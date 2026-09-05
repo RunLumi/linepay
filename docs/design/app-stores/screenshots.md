@@ -29,7 +29,7 @@
 - [App Store playbook](../../appstore.md): canonical metadata and screenshot sequence.
 - [Logo and app icon](../logo.md): identity artwork and lettering.
 - [Pricing](../../pricing.md): actual Free/Pro boundary; never invent one for artwork.
-- [Onboarding](../../onboarding.md): soft paywall and first-audit-free policy.
+- [Onboarding](../../onboarding.md): proof-first seven-day annual trial offer and separate first-audit-free access.
 - [iOS release plan](../../plan/ios-1.0.md): shipping capability, not marketing aspiration.
 - [Mobile QA](../../maestro.md): the existing capture/verification context.
 

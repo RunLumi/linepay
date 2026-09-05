@@ -39,4 +39,14 @@ struct OCRParserTests {
             PaystubTextParser.parse([line("Gross 400.00"), line("Gross 500.00")])[.grossPay]?.value
                 == nil)
     }
+
+    @Test func separateYearToDateHeaderDoesNotTurnAnnualGrossIntoCurrentPay() {
+        let result = PaystubTextParser.parse([line("YEAR TO DATE"), line("Gross $12,000.00")])
+        #expect(result[.grossPay]?.value == nil)
+        #expect(result[.grossPay]?.reason != nil)
+        let explicit = PaystubTextParser.parse([
+            line("YEAR TO DATE"), line("Current gross $1,000.00"),
+        ])
+        #expect(explicit[.grossPay]?.value == "1000")
+    }
 }

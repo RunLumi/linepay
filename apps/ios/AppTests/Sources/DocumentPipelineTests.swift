@@ -53,9 +53,18 @@ struct DocumentPipelineTests {
         let report = try #require(PDFDocument(url: url))
         let text = try #require(report.string)
         #expect(report.pageCount > 2)
-        #expect(text.contains("Expected wage pay: $400.00"))
-        #expect(text.contains("Expected per diem: $125.00"))
-        #expect(text.contains("Expected on the same basis: $400.00"))
+        #expect(
+            text.contains(
+                "Expected wage pay: \(LinePayFormat.money(Money(amount: 400, currencyCode: "USD")))"
+            ))
+        #expect(
+            text.contains(
+                "Expected per diem: \(LinePayFormat.money(Money(amount: 125, currencyCode: "USD")))"
+            ))
+        #expect(
+            text.contains(
+                "Expected on the same basis: \(LinePayFormat.money(Money(amount: 400, currencyCode: "USD")))"
+            ))
         #expect(!text.contains("Possible shortfall"))
         #expect(text.contains("Report created:"))
         #expect(text.contains("END OF LONG SOURCE"))

@@ -677,11 +677,15 @@ Canonical launch hypothesis:
 - Annual: **$79.99/year**
 - annual recommended;
 - first complete paycheck audit free;
-- no calendar trial at launch;
+- seven-day introductory free trial on Annual for eligible customers; Monthly has no trial;
 - no weekly plan;
 - no lifetime plan.
 
 Actual displayed price inside the app must come from StoreKit so localization and storefront pricing remain correct.
+
+The trial decision supersedes the original no-calendar-trial policy. [Onboarding](onboarding.md) owns offer timing, eligibility-aware copy, the seven-day activation sequence, and measured conversion targets. [Setup evidence](research/onboarding-trial-2026-09-05.md) distinguishes saved App Store configuration from tested purchasing.
+
+Use “7 days free, then [localized annual price]/year” only where eligibility and the offer are verified. The full annual charge must remain prominent. Public listing copy should say “Eligible new annual subscribers can try Pro free for 7 days” only after the purchase path and the supported storefronts are verified. The current launch description above does not promise a trial; do not publish an unverified universal claim.
 
 ---
 
@@ -979,7 +983,7 @@ Lead with the customer-visible improvement. Mention meaningful fixes when they i
 ### Metadata
 
 - [ ] App Store name set to `LinePaycheck: Lineman Pay`
-- [ ] Device/display name remains `LinePaycheck`
+- [ ] Home-screen display name remains `LinePay`; public product branding remains `LinePaycheck`
 - [ ] Subtitle set to `Overtime, Callout & Per Diem`
 - [ ] Keyword field verified at <=100 bytes
 - [ ] Promotional text pasted exactly and proofread
@@ -1014,6 +1018,9 @@ Lead with the customer-visible improvement. Mention meaningful fixes when they i
 - [ ] `LinePaycheck Pro` subscription group configured
 - [ ] Monthly and annual display names localized
 - [ ] Monthly and annual descriptions localized
+- [ ] Annual introductory offer is seven days free in the intended storefronts; Monthly remains immediate paid
+- [ ] Eligible, ineligible, unknown-eligibility, and unavailable-offer paywall states tested
+- [ ] Trial duration, full renewal price, cancellation, Terms, and Privacy are visible
 - [ ] StoreKit returns localized prices correctly
 - [ ] Restore Purchases works
 - [ ] Subscription-management path works
@@ -1047,11 +1054,11 @@ Watch:
 3. product page conversion rate;
 4. downloads by source;
 5. top search terms where available through Apple acquisition tooling;
-6. first audit completion;
-7. first audit → Pro conversion;
+6. first expected-pay result and first audit completion;
+7. download → annual trial → first paid conversion, plus annual share of first-paid subscribers;
 8. ratings volume and average rating;
 9. review themes;
-10. refunds and subscription retention.
+10. D30 net proceeds per download, refunds, and actual subscription renewal.
 
 Diagnose before changing metadata.
 
@@ -1060,7 +1067,7 @@ Examples:
 - impressions low + conversion strong → discoverability/ASO problem;
 - impressions strong + conversion weak → screenshot/positioning/trust problem;
 - downloads strong + first-audit completion weak → product/onboarding problem;
-- first audits strong + Pro conversion weak → recurring value or pricing problem;
+- trial starts strong + paid conversion weak → trial activation, recurring value, or billing-confidence problem;
 - Pro conversion strong + retention weak → product value does not persist after purchase.
 
 Do not respond to every weekly fluctuation with new metadata.

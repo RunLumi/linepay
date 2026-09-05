@@ -14,7 +14,7 @@ struct LinePayApp: App {
                 .disabled(session.isBusy)
                 .task { await subscriptionStore.start() }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { Task { await subscriptionStore.refreshEntitlements() } }
+                    if phase == .active { Task { await subscriptionStore.load() } }
                 }
                 .alert(
                     "Backup restore",

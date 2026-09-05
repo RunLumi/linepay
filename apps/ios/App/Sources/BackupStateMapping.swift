@@ -76,7 +76,8 @@ extension ConfirmedPaystub {
                 hoursBasis: $0.hoursBasis, guaranteeLayout: $0.guaranteeLayout,
                 reviewedFields: $0.reviewedFields,
                 suggestions: evidence != nil && mapped == nil ? [:] : $0.suggestions,
-                hasAdditionalUnmappedPay: $0.hasAdditionalUnmappedPay)
+                hasAdditionalUnmappedPay: $0.hasAdditionalUnmappedPay, workComplete: $0.workComplete
+            )
         }
         return ConfirmedPaystub(
             id: id, payPeriodStart: payPeriodStart, payPeriodEnd: payPeriodEnd,

@@ -264,6 +264,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
+    var onboardingProgress: OnboardingProgress?
     var setupDraft: PayProfileDraft?
     var workDraft: WorkDraft?
     var paystubDraft: PaystubConfirmationDraft?
@@ -274,6 +275,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
+        case onboardingProgress
     }
 
     init(from decoder: any Decoder) throws {
@@ -288,6 +290,8 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)
         history = try values.decodeIfPresent([CompletedPayPeriod].self, forKey: .history) ?? []
         hasUsedFreeAudit = try values.decodeIfPresent(Bool.self, forKey: .hasUsedFreeAudit) ?? false
+        onboardingProgress = try values.decodeIfPresent(
+            OnboardingProgress.self, forKey: .onboardingProgress)
         setupDraft = try values.decodeIfPresent(PayProfileDraft.self, forKey: .setupDraft)
         workDraft = try values.decodeIfPresent(WorkDraft.self, forKey: .workDraft)
         paystubDraft = try values.decodeIfPresent(
@@ -296,6 +300,11 @@ struct AppPersistentState: Codable, Hashable, Sendable {
             try values.decodeIfPresent(
                 [PaystubEvidence].self, forKey: .pendingEvidenceDeletions) ?? []
     }
+}
+
+/// Absent in older snapshots: returning workers keep their existing navigation.
+enum OnboardingProgress: String, Codable, Hashable, Sendable {
+    case firstWork, waitingForFirstResult, proof
 }
 
 struct AuditRevision: Identifiable, Codable, Hashable, Sendable {

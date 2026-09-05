@@ -1,0 +1,41 @@
+appId: com.streamentry.linepay
+---
+- tapOn:
+    id: paystub.manual
+- assertVisible:
+    id: paystub.audit
+    enabled: false
+- tapOn:
+    id: paystub.field.periodStart
+- tapOn:
+    id: paystub.confirm-field
+- tapOn:
+    id: paystub.field.periodEnd
+- tapOn:
+    id: paystub.confirm-field
+- tapOn:
+    id: paystub.field.grossPay
+- tapOn:
+    id: paystub.value
+- inputText: ${GROSS}
+- tapOn:
+    id: keyboard.done
+- takeScreenshot: manual-paystub-field
+- tapOn:
+    id: paystub.confirm-field
+- scrollUntilVisible:
+    element:
+      id: paystub.complete-work
+- tapOn:
+    id: paystub.complete-work
+- scrollUntilVisible:
+    element:
+      id: paystub.gross-basis
+- tapOn:
+    id: paystub.gross-basis
+- tapOn: ".*Wages only.*"
+- scrollUntilVisible:
+    element:
+      id: paystub.audit
+- tapOn:
+    id: paystub.audit

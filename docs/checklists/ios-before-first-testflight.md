@@ -2,6 +2,8 @@
 
 Use this checklist before the first build is distributed outside development. Its purpose is to catch decisions that become annoying or irreversible once users have data or App Store records exist.
 
+Execution procedure: [Release and TestFlight through the Apple API](../release-and-testflight-api.md). Complete this checklist before distribution; a successful API upload alone is not readiness evidence.
+
 ## Identity and signing
 
 - [ ] Confirm the final Apple Developer team/legal entity.
@@ -70,6 +72,9 @@ If subscriptions exist:
 - [ ] Transaction updates are observed correctly across launches.
 - [ ] Calculation correctness and access to the user's existing records do not depend on a successful App Store network call.
 - [ ] Paywall copy communicates what Pro unlocks without implying legal certainty.
+- [ ] Annual introductory offer is configured and tested as seven days free; Monthly has no introductory trial.
+- [ ] Trial copy depends on both actual offer metadata and eligibility; full renewal price and cancellation timing are visible.
+- [ ] Sandbox/TestFlight proves eligible purchase, ineligible purchase, trial-to-paid, expiry, and restore; a saved App Store offer is not purchase-path proof.
 
 ## Release engineering
 

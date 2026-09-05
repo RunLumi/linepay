@@ -94,6 +94,7 @@ struct PayLedgerView: View {
             }
             .listStyle(.plain).scrollContentBackground(.hidden).background(LinePayColor.canvas)
             .navigationTitle("Pay")
+            .labeledContentStyle(LinePayValueStyle())
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Add work", systemImage: "plus") { showingAdd = true }.disabled(

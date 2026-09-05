@@ -41,11 +41,12 @@ struct LegalTextView: View {
                         destination: url
                     ).frame(minHeight: 44)
                 }
-                if kind == .privacy, let url = configuredURL("LINEPAY_PRIVACY_POLICY_URL") {
-                    Link("Open published privacy policy", destination: url).frame(minHeight: 44)
+                if kind == .privacy {
+                    Link("Open published privacy policy", destination: AppLinks.privacy).frame(
+                        minHeight: 44)
                 }
-                if kind == .support, let url = configuredURL("LINEPAY_SUPPORT_URL") {
-                    Link("Open support website", destination: url).frame(minHeight: 44)
+                if kind == .support {
+                    Link("Open support website", destination: AppLinks.support).frame(minHeight: 44)
                 }
             }.padding(24).frame(maxWidth: .infinity, alignment: .leading)
         }.navigationTitle(title).navigationBarTitleDisplayMode(.inline)
@@ -67,13 +68,7 @@ struct LegalTextView: View {
         case .acknowledgements:
             "Built with Swift, SwiftUI and Apple platform frameworks. The payroll domain is maintained as a separate local Swift package. No third-party tracking or advertising framework is included.\n\nXcodeGen and testing tools are development dependencies, not runtime services. Apple and framework names belong to their respective owners. LinePaycheck is not affiliated with, endorsed by or an authority for a union, employer or payroll provider."
         case .support:
-            "Keep your saved data until a problem is understood. From Settings, create a complete backup when the app can read your records. If data cannot be opened, export the recovery file before choosing a destructive reset or replacement restore.\n\nFor an incorrect amount, note the app version, pay-period timezone, rule version, work facts and exact comparison. Use synthetic or redacted examples when contacting support. Never include Social Security numbers, bank details or employer credentials.\n\nYour App Store product page provides the publisher's current support contact. A public support URL and privacy policy URL must be configured before this app is released."
+            "Keep your saved data until a problem is understood. From Settings, create a complete backup when the app can read your records. If data cannot be opened, export the recovery file before choosing a destructive reset or replacement restore.\n\nFor an incorrect amount, note the app version, pay-period timezone, rule version, work facts and exact comparison. Use synthetic or redacted examples when contacting support. Never include Social Security numbers, bank details or employer credentials.\n\nOpen the support website below for the publisher's current contact and recovery guidance."
         }
-    }
-    private func configuredURL(_ key: String) -> URL? {
-        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
-            return nil
-        }
-        return AppModel.safeSourceURL(value)
     }
 }

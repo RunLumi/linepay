@@ -11,6 +11,11 @@ struct RecognizedPaystubLine: Sendable {
 enum PaystubTextParser {
     static func parse(_ lines: [RecognizedPaystubLine]) -> [PaystubField: OCRFieldSuggestion] {
         var result: [PaystubField: OCRFieldSuggestion] = [:]
+        let hasYearToDateHeader = lines.contains {
+            $0.text.range(
+                of: #"\b(?:ytd|year[ -]to[ -]date)\b"#,
+                options: [.regularExpression, .caseInsensitive]) != nil
+        }
         for field in PaystubField.allCases {
             let candidates = lines.filter { matches($0.text, field: field) }
             guard let source = candidates.first else { continue }
@@ -51,6 +56,11 @@ enum PaystubTextParser {
                 }
                 let piece = String(source.text[current.upperBound..<year.lowerBound])
                 result[field] = valueSuggestion(piece, field: field, source: source)
+            } else if hasYearToDateHeader && !lower.contains("current") {
+                result[field] = suggestion(
+                    nil, source,
+                    "Year-to-date columns appear elsewhere on this document. Confirm which amount is current pay."
+                )
             } else {
                 result[field] = valueSuggestion(source.text, field: field, source: source)
             }
@@ -63,7 +73,10 @@ enum PaystubTextParser {
         source: RecognizedPaystubLine
     ) -> OCRFieldSuggestion {
         // Do not convert negative adjustments to positive earnings.
-        if text.contains("-") || text.contains("(") {
+        if text.range(
+            of: #"(?:[-−(]\s*\$?\s*\d)|(?:\d\s*[-−)])"#,
+            options: .regularExpression) != nil
+        {
             return suggestion(
                 nil, source, "Possible adjustment or negative amount. Review this row manually.")
         }
@@ -94,7 +107,7 @@ enum PaystubTextParser {
     }
 
     private static func matches(_ text: String, field: PaystubField) -> Bool {
-        let lower = text.lowercased()
+        let lower = text.lowercased().replacingOccurrences(of: "-", with: " ")
         switch field {
         case .periodStart:
             return lower.contains("pay period") || lower.contains("period starts")
@@ -102,7 +115,9 @@ enum PaystubTextParser {
         case .periodEnd:
             return lower.contains("pay period") || lower.contains("period ends")
                 || lower.contains("period ending")
-        case .grossPay: return lower.contains("gross") && !lower.contains("net")
+        case .grossPay:
+            return lower.range(of: #"\bgross\b"#, options: .regularExpression) != nil
+                && lower.range(of: #"\bnet\b"#, options: .regularExpression) == nil
         case .regularHours: return lower.contains("regular") && lower.contains("hours")
         case .overtimeHours:
             return (lower.contains("overtime") || lower.contains("ot hours"))

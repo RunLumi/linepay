@@ -44,15 +44,13 @@ struct OnboardingWelcomeView: View {
             }
             .padding(LinePaySpacing.section)
             .padding(.top, LinePaySpacing.section)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             Button("Set up my pay") {
                 onContinue()
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(LinePayColor.brandPrimary)
-            .frame(maxWidth: .infinity)
+            .buttonStyle(LinePayPrimaryButtonStyle())
             .padding(.horizontal, LinePaySpacing.section)
             .padding(.vertical, LinePaySpacing.standard)
             .background(LinePayColor.canvas)
@@ -66,7 +64,7 @@ struct OnboardingWelcomeView: View {
         HStack(alignment: .top, spacing: LinePaySpacing.standard) {
             Image(systemName: icon)
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(LinePayColor.brandPrimary)
+                .foregroundStyle(LinePayColor.actionText)
                 .frame(width: 28)
                 .accessibilityHidden(true)
 

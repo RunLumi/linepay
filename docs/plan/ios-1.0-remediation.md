@@ -30,6 +30,18 @@ A source fix is not release acceptance. Require native compilation, domain/app/S
 
 The [ADR](../adr/0005-evidence-aware-payday-records.md) supersedes the old plan's gross-total-only and single-period lifecycle assumptions. ADR 0004 remains the accepted JSON-store decision; an unchecked SwiftData item in the original planning sequence is not a direction to rewrite persistence.
 
+## Current execution checkpoint — September 5, 2026
+
+Live checkout began clean at `859167a1a8d5dacfb879336f6910a8e1876d0a6f`. PR #2 was open/conflicting; fetched `origin/main` was `f0449710d6a2bff2e259cfaa1cf0f5aa142d5e8f`. Integration is in progress, retaining main's backup, branding, release records, contrast and coverage work. Do not use the older checkpoint below as current acceptance.
+
+Baseline `agent-doctor.sh`: exit 0. Baseline `agent-verify.sh ios`: exit 65; 47 domain tests passed, 55/56 app tests and 3/4 UI journeys passed on iPhone 16 Pro / iOS 18.5 (`6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9`), Xcode 26.6 / Swift 6.3.3 / XcodeGen 2.46.0. The two failing tests assumed US currency display on a simulator using decimal-comma formatting. Release did not run after that failing test gate. Logs and screenshots: `.build/readiness/859167a/`.
+
+Integrated `build-for-testing` succeeded on iOS 26.5. That runtime's StoreKitTest service rejected configuration with `SKInternalErrorDomain Code=3`, ignored dialog suppression and opened checkout. This is not passing commerce evidence. Native commerce verification will use the working iOS 18.5 runtime; current-runtime UI checks remain independent.
+
+Integrated app run `.build/readiness/integration/app-tests-18b.xcresult`: 121 app tests passed on iOS 18.5, including native seven-day trial-to-paid, cancellation, pending approval, interrupted purchase, grace, restore and refund; static v1 migration, malformed saved values and interrupted-file recovery passed. This run preceded the final UI fixes and work-completeness requirement, so it is an intermediate checkpoint.
+
+UI execution exposed missed rate-field focus and an inactive-parent save callback that lost pushed field edits on interruption. The controls now own focus explicitly and the field editor persists directly. The new work-completeness confirmation prevents a partial work log from producing a full-paycheck verdict. A stale simulator test-runner installation was removed after Xcode reported a deleted container; no worker data was reset. Final candidate SHA and final gates remain pending.
+
 ## Recorded verification checkpoint
 
 On source `3b007475cdcd987ab6d9f306ab94a13ce02cbf4f`, native workflow run `33970361677` compiled the app and executed tests on iPhone 17 Pro Simulator with Xcode 26.6 / Swift 6.3.3:

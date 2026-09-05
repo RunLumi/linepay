@@ -1,0 +1,41 @@
+appId: com.streamentry.linepay
+name: Pro options remain readable and dismissible
+tags: [smoke, ios, regression]
+---
+- runFlow: ../helpers/onboard.yaml
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.view-pro
+    centerElement: true
+- waitForAnimationToEnd
+- tapOn:
+    id: settings.view-pro
+- assertVisible:
+    id: paywall.dismiss
+- scrollUntilVisible:
+    element:
+      id: paywall.monthly
+- tapOn:
+    id: paywall.monthly
+- assertVisible:
+    id: paywall.purchase
+    enabled: false
+- takeScreenshot: pro-options
+- scrollUntilVisible:
+    element:
+      id: paywall.restore
+- takeScreenshot: pro-terms
+- scrollUntilVisible:
+    element:
+      id: paywall.terms
+    visibilityPercentage: 30
+- scroll
+- takeScreenshot: pro-terms-end
+- tapOn:
+    id: paywall.dismiss
+- assertVisible:
+    id: settings.view-pro
+- tapOn: Today
+- assertVisible:
+    id: today.add-work

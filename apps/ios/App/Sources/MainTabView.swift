@@ -22,6 +22,6 @@ struct MainTabView: View {
                 Destination.history)
             SettingsView(model: model, subscriptionStore: subscriptionStore)
                 .tabItem { Label("Settings", systemImage: "gearshape") }.tag(Destination.settings)
-        }.tint(LinePayColor.brandPrimary)
+        }.tint(LinePayColor.actionText)
     }
 }

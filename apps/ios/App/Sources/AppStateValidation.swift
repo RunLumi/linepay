@@ -43,9 +43,23 @@ enum AppStateValidation {
                 zone: revision.timeZoneIdentifier)
             try validate(revision.agreement)
             try validate(calculation: revision.calculation, agreement: revision.agreement)
+            try validate(
+                paystub: revision.paystub, calculation: revision.calculation,
+                currency: revision.agreement.hourlyRate.currencyCode)
+        }
+        if let active = state.activePeriod, let paystub = active.paystub {
+            try validate(
+                paystub: paystub, calculation: nil,
+                currency: active.agreement.hourlyRate.currencyCode)
         }
         for period in state.history {
             try validate(calculation: period.calculation, agreement: period.agreement)
+            if let paystub = period.paystub {
+                try validate(
+                    paystub: paystub,
+                    calculation: period.reconciliation == nil ? nil : period.calculation,
+                    currency: period.agreement.hourlyRate.currencyCode)
+            }
         }
     }
 
@@ -62,12 +76,102 @@ enum AppStateValidation {
             calculation.agreementVersion == agreement.version,
             !calculation.total.amount.isNaN, calculation.total.amount >= 0,
             calculation.total.currencyCode == agreement.hourlyRate.currencyCode,
+            Set(calculation.components.map(\.id)).count == calculation.components.count,
             calculation.components.allSatisfy({
                 !$0.amount.amount.isNaN && $0.amount.amount >= 0
                     && $0.amount.currencyCode == calculation.total.currencyCode
             })
         else { throw invalid() }
+        let sum = Money(
+            amount: calculation.components.reduce(0) { $0 + $1.amount.amount },
+            currencyCode: calculation.total.currencyCode
+        ).rounded(using: agreement.rounding)
+        guard sum == calculation.total else { throw invalid() }
         // Do not recalculate historical amounts with a new engine version.
+    }
+
+    private static func validate(
+        paystub: ConfirmedPaystub, calculation: CalculationResult?, currency: String
+    ) throws {
+        let money = [
+            paystub.grossPay, paystub.regularPay, paystub.overtimePay,
+            paystub.doubleTimePay, paystub.calloutPay, paystub.perDiemPay,
+        ].compactMap { $0 }
+        guard
+            money.allSatisfy({ !$0.amount.isNaN && $0.amount >= 0 && $0.currencyCode == currency }),
+            [paystub.regularHours, paystub.overtimeHours, paystub.doubleTimeHours].compactMap({ $0 }
+            )
+            .allSatisfy({ !$0.isNaN && $0 >= 0 && $0 <= 10_000 })
+        else { throw invalid() }
+        if let date = paystub.payPeriodStart { try validate(date) }
+        if let date = paystub.payPeriodEnd { try validate(date) }
+        if let start = paystub.payPeriodStart, let end = paystub.payPeriodEnd, start > end {
+            throw invalid()
+        }
+        if let confirmation = paystub.confirmation {
+            for suggestion in confirmation.suggestions.values {
+                let region = suggestion.region
+                guard suggestion.confidence.isFinite, (0...1).contains(suggestion.confidence),
+                    region.page >= 0, region.page < 10_000,
+                    [region.x, region.y, region.width, region.height].allSatisfy({
+                        $0.isFinite && (0...1).contains($0)
+                    }),
+                    region.x + region.width <= 1.000001, region.y + region.height <= 1.000001
+                else { throw invalid() }
+            }
+        }
+        // Legacy audits remain review-only.
+        guard let assessment = paystub.assessment else { return }
+        guard (1...2).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,
+            Set(assessment.comparisons.map(\.id)).count == assessment.comparisons.count
+        else { throw invalid() }
+        for comparison in assessment.comparisons {
+            guard
+                [comparison.expected, comparison.paid, comparison.difference].allSatisfy({
+                    !$0.isNaN
+                }),
+                comparison.expected >= 0, comparison.paid >= 0, comparison.currencyCode == currency,
+                comparison.unit == (comparison.field.isHours ? .hours : .money)
+            else { throw invalid() }
+            if let calculation {
+                guard
+                    Set(comparison.componentIDs).isSubset(of: Set(calculation.components.map(\.id)))
+                else { throw invalid() }
+            }
+        }
+        if let expected = assessment.expectedGross {
+            guard !expected.amount.isNaN, expected.amount >= 0, expected.currencyCode == currency,
+                let difference = assessment.difference, !difference.amount.isNaN,
+                difference.currencyCode == currency,
+                assessment.comparisons.first(where: { $0.field == .grossPay })?.difference
+                    == difference.amount
+            else { throw invalid() }
+            if let calculation, let basis = paystub.confirmation?.grossBasis {
+                let recordedExpected =
+                    basis == .wagesOnly ? calculation.expectedWages : calculation.total
+                guard basis != .unconfirmed, expected == recordedExpected else { throw invalid() }
+            }
+        } else if assessment.verdict != .notComparable || assessment.difference != nil {
+            throw invalid()
+        }
+        switch assessment.verdict {
+        case .matches:
+            guard assessment.difference?.amount == 0, assessment.reviewReasons.isEmpty,
+                assessment.comparisons.allSatisfy({ !$0.differs })
+            else { throw invalid() }
+        case .possibleShortfall:
+            guard let difference = assessment.difference, difference.amount > 0,
+                assessment.reviewReasons.isEmpty
+            else { throw invalid() }
+        case .possibleOverpayment:
+            guard let difference = assessment.difference, difference.amount < 0,
+                assessment.reviewReasons.isEmpty
+            else { throw invalid() }
+        case .needsReview:
+            guard !assessment.reviewReasons.isEmpty else { throw invalid() }
+        case .notComparable:
+            guard assessment.expectedGross == nil else { throw invalid() }
+        }
     }
 
     private static func validate(_ agreement: AgreementSnapshot) throws {

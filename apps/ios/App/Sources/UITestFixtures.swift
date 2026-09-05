@@ -1,6 +1,7 @@
 #if DEBUG
     import Foundation
     import LinePayDomain
+    import UIKit
 
     /// Available only in Debug and only with an explicit UI-test launch argument. Test cleanup never
     /// addresses the production state directory. Every record is synthetic and locally generated.
@@ -49,9 +50,26 @@
                 try model.addWork(
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,
                     note: "Synthetic test shift")
+                try model.completeFirstResult()
                 if scenario == "work" || scenario == "unsupported" { return session }
                 guard let id = model.activePeriod?.id else {
                     throw AppModelError.missingActivePayPeriod
+                }
+                if scenario == "intake" {
+                    let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+                    let bytes = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                        context.beginPage()
+                        ("SYNTHETIC PAYSTUB\nGross pay $550.00" as NSString).draw(
+                            at: CGPoint(x: 48, y: 100),
+                            withAttributes: [.font: UIFont.systemFont(ofSize: 20)])
+                    }
+                    var draft = try model.stagePaystub(
+                        data: bytes, filename: "synthetic-intake.pdf",
+                        mediaType: "application/pdf", kind: .file, periodID: id)
+                    draft.grossPay = "550"
+                    draft.notes = "Synthetic staged source; no OCR confirmation is assumed."
+                    try model.savePaystubDraft(draft)
+                    return session
                 }
                 if scenario == "awaiting" {
                     try model.archiveCurrentPeriod()
@@ -60,6 +78,7 @@
                 var stub = try model.paycheckDraft(for: id)
                 stub.grossPay =
                     scenario == "shortfall" ? "500" : scenario == "overpayment" ? "600" : "550"
+                stub.workComplete = true
                 stub.grossBasis = scenario == "not-comparable" ? .unconfirmed : .wagesOnly
                 stub.reviewedFields = [.periodStart, .periodEnd, .grossPay]
                 if scenario == "review" {

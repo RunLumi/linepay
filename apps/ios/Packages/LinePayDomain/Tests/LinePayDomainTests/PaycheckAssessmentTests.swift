@@ -49,6 +49,7 @@ struct PaycheckAssessmentTests {
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: true,
                 grossPay: Money(amount: 550, currencyCode: "USD"),
                 amounts: [
                     .regularPay: Money(amount: 350, currencyCode: "USD"),
@@ -63,6 +64,7 @@ struct PaycheckAssessmentTests {
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: true,
                 grossPay: Money(amount: 550, currencyCode: "USD"),
                 amounts: [.perDiemPay: Money(amount: 125, currencyCode: "USD")],
                 grossBasis: .wagesOnly))
@@ -76,6 +78,7 @@ struct PaycheckAssessmentTests {
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: true,
                 grossPay: Money(amount: 550, currencyCode: "USD"),
                 amounts: [
                     .regularPay: Money(amount: 500, currencyCode: "USD"),
@@ -91,7 +94,8 @@ struct PaycheckAssessmentTests {
         let (agreement, calculation) = try example()
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
-            facts: PaycheckFacts(grossPay: calculation.total, grossBasis: .unconfirmed))
+            facts: PaycheckFacts(
+                hasCompleteWork: true, grossPay: calculation.total, grossBasis: .unconfirmed))
         #expect(result.verdict == .notComparable)
         #expect(result.difference == nil)
     }
@@ -99,7 +103,8 @@ struct PaycheckAssessmentTests {
         let (agreement, calculation) = try example()
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
-            facts: PaycheckFacts(grossPay: calculation.total, grossBasis: .wagesOnly))
+            facts: PaycheckFacts(
+                hasCompleteWork: true, grossPay: calculation.total, grossBasis: .wagesOnly))
         #expect(result.scope == .grossOnly)
         #expect(result.verdict == .matches)
         #expect(result.scopeNotes.contains { $0.contains("Gross total only") })
@@ -109,6 +114,7 @@ struct PaycheckAssessmentTests {
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: true,
                 grossPay: calculation.total,
                 amounts: [.overtimePay: Money(amount: 150, currencyCode: "USD")],
                 grossBasis: .wagesOnly, hasUnreviewedFields: true, hasUnsupportedRules: true))
@@ -120,6 +126,7 @@ struct PaycheckAssessmentTests {
         let result = try PaycheckAssessor().assess(
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
+                hasCompleteWork: true,
                 grossPay: calculation.total,
                 hours: [.regularHours: 7], grossBasis: .wagesOnly,
                 lineLayout: .fullRateBuckets, hoursBasis: .actualWork))

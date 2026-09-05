@@ -1,0 +1,67 @@
+appId: com.streamentry.linepay
+name: Short viewport, long profile, and large money values
+tags: [ios, regression, adaptive]
+onFlowComplete:
+  - setOrientation: PORTRAIT
+---
+- runFlow: ../helpers/onboard.yaml
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings.edit-rules
+- tapOn:
+    id: settings.edit-rules
+- scrollUntilVisible:
+    element:
+      id: pay-profile.name
+- tapOn:
+    id: pay-profile.name
+- eraseText
+- inputText: "Synthetic QA profile with a deliberately long name for overnight storm restoration"
+- tapOn:
+    id: keyboard.done
+- runFlow: ../helpers/confirm-rules.yaml
+- tapOn: Today
+- takeScreenshot: long-profile
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.add-work
+    centerElement: true
+- waitForAnimationToEnd
+- tapOn:
+    id: today.add-work
+- scrollUntilVisible:
+    element:
+      id: work.note
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: work.note
+- inputText: Landscape QA draft
+- assertVisible:
+    id: keyboard.done
+- takeScreenshot: landscape-keyboard
+- tapOn:
+    id: keyboard.done
+- tapOn:
+    id: work.cancel
+- setOrientation: PORTRAIT
+- runFlow: ../helpers/add-work.yaml
+- scrollUntilVisible:
+    element:
+      id: today.open-pay
+- tapOn:
+    id: today.open-pay
+- scrollUntilVisible:
+    element:
+      id: pay.check-paycheck
+- tapOn:
+    id: pay.check-paycheck
+- runFlow:
+    file: ../helpers/confirm-paystub.yaml
+    env:
+      GROSS: "9876543.21"
+- assertVisible: Possible overpayment
+- takeScreenshot: large-amount-comparison

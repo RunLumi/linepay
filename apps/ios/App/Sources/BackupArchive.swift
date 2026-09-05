@@ -115,10 +115,10 @@ struct BackupArchive: Sendable {
     }
 
     private static func validate(state: AppPersistentState, files: [EvidenceFile]) throws {
-        try AppStateValidation.validate(state)
         guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
             throw BackupError.newerVersion
         }
+        try AppStateValidation.validate(state)
         let references = try evidence(in: state)
         guard files.count <= maximumEvidenceCount,
             Set(files.map(\.id)).count == files.count,

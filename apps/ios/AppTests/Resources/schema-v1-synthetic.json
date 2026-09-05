@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "profile": {
+    "id": "00000000-0000-4000-8000-000000000006",
+    "name": "Synthetic legacy profile",
+    "timeZoneIdentifier": "UTC",
+    "agreement": {
+      "id": "legacy-synthetic",
+      "version": "2",
+      "displayName": "Synthetic legacy rules",
+      "hourlyRate": {
+        "amount": 60,
+        "currencyCode": "USD"
+      },
+      "regularSchedule": [],
+      "outsideScheduleMultiplier": 1,
+      "weekdayPremiums": [],
+      "datePremiums": [],
+      "dailyOvertimeTiers": [],
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp"
+      },
+      "sources": []
+    },
+    "preferredCadence": "weekly"
+  },
+  "activePeriod": {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "window": {
+      "id": "00000000-0000-4000-8000-000000000008",
+      "startEpochSeconds": 1786694400,
+      "endEpochSeconds": 1787299200,
+      "cadence": "weekly"
+    },
+    "agreement": {
+      "id": "legacy-synthetic",
+      "version": "2",
+      "displayName": "Synthetic legacy rules",
+      "hourlyRate": {
+        "amount": 60,
+        "currencyCode": "USD"
+      },
+      "regularSchedule": [],
+      "outsideScheduleMultiplier": 1,
+      "weekdayPremiums": [],
+      "datePremiums": [],
+      "dailyOvertimeTiers": [],
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp"
+      },
+      "sources": []
+    },
+    "timeZoneIdentifier": "UTC",
+    "workEntries": [],
+    "hasConsumedAuditAccess": false
+  },
+  "history": [
+    {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "window": {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "startEpochSeconds": 1786089600,
+        "endEpochSeconds": 1786694400,
+        "cadence": "weekly"
+      },
+      "agreement": {
+        "id": "legacy-synthetic",
+        "version": "1",
+        "displayName": "Synthetic legacy rules",
+        "hourlyRate": {
+          "amount": 50,
+          "currencyCode": "USD"
+        },
+        "regularSchedule": [],
+        "outsideScheduleMultiplier": 1,
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "dailyOvertimeTiers": [],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp"
+        },
+        "sources": []
+      },
+      "timeZoneIdentifier": "UTC",
+      "workEntries": [
+        {
+          "interval": {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "startEpochSeconds": 1786089600,
+            "endEpochSeconds": 1786118400,
+            "timeZoneIdentifier": "UTC",
+            "kind": "regular",
+            "unpaidBreaks": []
+          },
+          "note": "Synthetic legacy shift"
+        }
+      ],
+      "calculation": {
+        "agreementID": "legacy-synthetic",
+        "agreementVersion": "1",
+        "components": [
+          {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "category": "workedHours",
+            "workIntervalID": "00000000-0000-4000-8000-000000000002",
+            "localDate": {
+              "year": 2026,
+              "month": 8,
+              "day": 7
+            },
+            "hours": 8,
+            "multiplier": 1,
+            "amount": {
+              "amount": 400,
+              "currencyCode": "USD"
+            },
+            "explanation": "regular scheduled hours"
+          }
+        ],
+        "total": {
+          "amount": 400,
+          "currencyCode": "USD"
+        }
+      },
+      "paystub": {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "payPeriodStart": {
+          "year": 2026,
+          "month": 8,
+          "day": 7
+        },
+        "payPeriodEnd": {
+          "year": 2026,
+          "month": 8,
+          "day": 13
+        },
+        "grossPay": {
+          "amount": 390,
+          "currencyCode": "USD"
+        },
+        "notes": "Legacy confirmed facts",
+        "evidence": {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "storedFilename": "00000000-0000-4000-8000-000000000004.pdf",
+          "originalFilename": "synthetic-legacy.pdf",
+          "mediaType": "application/pdf",
+          "sourceKind": "file",
+          "createdEpochSeconds": 1786694400
+        },
+        "confirmedEpochSeconds": 1786694400
+      },
+      "reconciliation": {
+        "expectedGross": {
+          "amount": 400,
+          "currencyCode": "USD"
+        },
+        "actualGross": {
+          "amount": 390,
+          "currencyCode": "USD"
+        },
+        "difference": {
+          "amount": 10,
+          "currencyCode": "USD"
+        },
+        "direction": "possibleUnderpayment"
+      },
+      "archivedEpochSeconds": 1786694400
+    }
+  ],
+  "hasUsedFreeAudit": true
+}

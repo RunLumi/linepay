@@ -11,14 +11,18 @@ struct RootView: View {
             } else if !model.isOnboarded && model.pendingDeletionCount > 0 {
                 PendingRemovalView(model: model)
             } else if model.isOnboarded {
-                MainTabView(
-                    model: model,
-                    subscriptionStore: subscriptionStore
-                )
+                if model.onboardingProgress == .firstWork {
+                    FirstWorkIntroductionView(model: model)
+                } else if model.onboardingProgress == .proof {
+                    FirstPayResultView(model: model, subscriptionStore: subscriptionStore)
+                } else {
+                    MainTabView(model: model, subscriptionStore: subscriptionStore)
+                }
             } else {
                 OnboardingFlowView(model: model) {}
             }
         }
+        .tint(LinePayColor.actionText)
         .background(LinePayColor.canvas.ignoresSafeArea())
     }
 }

@@ -26,6 +26,7 @@ struct ReadinessTests {
         let context = try #require(model.periodContext(id: periodID))
         var draft = try model.paycheckDraft(for: context.id)
         draft.grossPay = "400"
+        draft.workComplete = true
         draft.grossBasis = .wagesOnly
         draft.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         return draft

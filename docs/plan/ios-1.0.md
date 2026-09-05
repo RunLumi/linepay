@@ -337,7 +337,7 @@ Requirements:
 - no legal-entitlement claim;
 - visible but restrained local-first privacy statement.
 
-**Production rule:** the current `OnboardingPaywallView` must not interrupt onboarding in release builds. A subscription offer belongs after demonstrated audit value.
+**Production rule, revised September 5, 2026:** follow `docs/onboarding.md`: show an optional seven-day annual trial offer after the first real expected-pay result has been read, with Monthly and Continue free available. No paywall on welcome or before meaningful proof. This deliberately supersedes the earlier prohibition on all onboarding offers; implementing the new flow remains a release task.
 
 ### F2. Pay-profile setup — P0
 
@@ -729,17 +729,19 @@ Launch pricing hypothesis:
 
 - `$9.99/month`;
 - `$79.99/year`, recommended.
+- eligible annual subscribers receive a seven-day introductory free trial; monthly starts paid immediately.
 
 #### Paywall timing
 
-Do not show the production paywall during onboarding.
+Use the proof-first trial flow in `docs/onboarding.md`.
 
 Preferred triggers:
 
-1. immediately **after** the first free audit result, as an optional `Audit every paycheck` continuation offer; or
-2. when the user starts a second audit after the free audit is consumed.
+1. after the first real expected-pay result, as an optional seven-day annual trial offer;
+2. after the first free audit result, as an optional contextual continuation offer; or
+3. when the user starts a second new audit after the Free audit is consumed.
 
-The first trigger may be dismissed without degrading the completed audit.
+Dismissal preserves work and completed results. Suppress unsolicited repeats for the session. An active verified Pro trial grants recurring access without consuming an unused Free audit; expiry follows the access rules in `docs/onboarding.md`.
 
 Paywall must preserve:
 
@@ -967,7 +969,7 @@ Hardening required before calling Slice A done:
 - [ ] add `Repeat last shift`;
 - [ ] preserve drafts on recoverable failures;
 - [ ] separate actual work from minimum/guaranteed paid entitlements visibly;
-- [ ] remove production onboarding paywall placement;
+- [ ] add the proof-first optional annual trial offer after the first real expected-pay result;
 - [ ] complete accessibility pass for current screens;
 - [ ] update screens to match `mockups.md` hierarchy.
 
@@ -1017,7 +1019,7 @@ Exit condition: a tester understands the result in <5 seconds and can explain ev
 ### Slice E — monetization + export
 
 - [ ] first-free-audit entitlement;
-- [ ] move paywall out of onboarding;
+- [ ] implement proof-first annual trial placement, eligibility-aware terms, and Continue free;
 - [ ] StoreKit 2 entitlement adapter;
 - [ ] local StoreKit config/tests;
 - [ ] yearly/monthly offer according to `docs/pricing.md`;
@@ -1110,7 +1112,7 @@ Do not ship 1.0 until:
 - first-time users understand why a number exists;
 - the audit verdict is clear in under five seconds in usability testing;
 - every discrepancy has an evidence path;
-- no production paywall appears before first audit value;
+- no production paywall appears before the first real expected-pay proof; trial offer is optional with clear renewal terms;
 - the first free audit can be completed end-to-end without account creation.
 
 ### Privacy/reliability

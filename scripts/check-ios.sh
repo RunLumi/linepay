@@ -7,12 +7,10 @@ DOMAIN_DIR="$IOS_DIR/Packages/LinePayDomain"
 PRIVACY_MANIFEST="$IOS_DIR/App/Resources/PrivacyInfo.xcprivacy"
 EXPECTED_XCODEGEN_VERSION="2.46.0"
 DERIVED_DATA="$(mktemp -d "${TMPDIR:-/tmp}/linepay-derived.XXXXXX")"
-RESULTS_DIR="${LINEPAY_RESULTS_DIR:-$ROOT/.build/ios-results}"
-mkdir -p "$RESULTS_DIR"
 cleanup() {
-    if [[ -d "$RESULTS_DIR/LinePay.xcresult" ]]; then
-        xcrun xcresulttool export attachments --path "$RESULTS_DIR/LinePay.xcresult" \
-            --output-path "$RESULTS_DIR/screenshots" || true
+    if [[ -d "${RESULTS_DIR:-}/AppTests.xcresult" ]]; then
+        xcrun xcresulttool export attachments --path "$RESULTS_DIR/AppTests.xcresult" \
+            --output-path "$RESULTS_DIR/screenshots" > "$RESULTS_DIR/attachments.log" 2>&1 || true
     fi
     rm -rf "$DERIVED_DATA"
 }
@@ -47,6 +45,14 @@ if [[ "$XCODEGEN_VERSION" != "$EXPECTED_XCODEGEN_VERSION" ]]; then
     exit 1
 fi
 
+RESULTS_DIR="${LINEPAY_RESULTS_DIR:-${LINEPAY_TEST_RESULTS_DIR:-$ROOT/.test-results}}"
+mkdir -p "$RESULTS_DIR"
+RESULTS_DIR="$(cd "$RESULTS_DIR" && pwd)"
+if [[ -e "$RESULTS_DIR/AppTests.xcresult" ]]; then
+    echo "error: $RESULTS_DIR/AppTests.xcresult already exists; use a fresh results directory" >&2
+    exit 1
+fi
+
 echo "==> Toolchain"
 xcodebuild -version
 swift --version
@@ -65,8 +71,18 @@ plutil -lint "$PRIVACY_MANIFEST"
 echo "==> Test pure domain package"
 (
     cd "$DOMAIN_DIR"
-    swift test --parallel
+    swift test --parallel --enable-code-coverage
 )
+
+DOMAIN_COVERAGE="$(find "$DOMAIN_DIR/.build" -path '*/codecov/LinePayDomain.json' -print -quit)"
+if [[ -z "$DOMAIN_COVERAGE" ]]; then
+    echo "error: SwiftPM did not produce the requested coverage report" >&2
+    exit 1
+fi
+cp "$DOMAIN_COVERAGE" "$RESULTS_DIR/domain-coverage.json"
+
+echo "==> Test repository scripts"
+python3 -m unittest discover -s "$ROOT/scripts/tests" -v
 
 echo "==> Generate Xcode project"
 (
@@ -81,16 +97,24 @@ xcodebuild \
     -configuration Debug \
     -destination "$SIMULATOR_DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
-    -resultBundlePath "$RESULTS_DIR/LinePay.xcresult" \
+    -resultBundlePath "$RESULTS_DIR/AppTests.xcresult" \
+    -enableCodeCoverage YES \
     -parallel-testing-enabled NO \
     CODE_SIGNING_ALLOWED=NO \
     test
+
+xcrun xccov view --report --json "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.json"
+xcrun xccov view --report "$RESULTS_DIR/AppTests.xcresult" > "$RESULTS_DIR/app-coverage.txt"
 
 BUILT_PRIVACY_MANIFEST="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/LinePay.app/PrivacyInfo.xcprivacy"
 if [[ ! -f "$BUILT_PRIVACY_MANIFEST" ]]; then
     echo "error: PrivacyInfo.xcprivacy was not bundled into LinePay.app" >&2
     exit 1
 fi
+
+# Without a launch screen, iOS can run the app in a 320 x 480 compatibility viewport.
+BUILT_INFO_PLIST="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/LinePay.app/Info.plist"
+plutil -extract UILaunchScreen xml1 -o /dev/null "$BUILT_INFO_PLIST"
 
 echo "==> Build Release for generic iOS Simulator"
 xcodebuild \
@@ -101,3 +125,6 @@ xcodebuild \
     -derivedDataPath "$DERIVED_DATA" \
     CODE_SIGNING_ALLOWED=NO \
     build
+
+plutil -extract UILaunchScreen xml1 -o /dev/null \
+    "$DERIVED_DATA/Build/Products/Release-iphonesimulator/LinePay.app/Info.plist"

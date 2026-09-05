@@ -6,6 +6,7 @@ struct AddWorkView: View {
     let model: AppModel
     let existingEntry: WorkEntry?
     let template: WorkEntry?
+    let onDeleted: ((DeletedWorkUndo) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
     @State private var quick: Bool
@@ -13,10 +14,14 @@ struct AddWorkView: View {
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
 
-    init(model: AppModel, existingEntry: WorkEntry? = nil, template: WorkEntry? = nil) {
+    init(
+        model: AppModel, existingEntry: WorkEntry? = nil, template: WorkEntry? = nil,
+        onDeleted: ((DeletedWorkUndo) -> Void)? = nil
+    ) {
         self.model = model
         self.existingEntry = existingEntry
         self.template = template
+        self.onDeleted = onDeleted
         let periodID = model.activePeriod?.id ?? UUID()
         let zone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
         if let saved = model.workDraft, saved.periodID == periodID,
@@ -197,6 +202,16 @@ struct AddWorkView: View {
                         .disabled(conflict != nil || draft.end <= draft.start)
                         .accessibilityIdentifier("work.save")
                     Button("Discard this draft", role: .destructive) { discardConfirmation = true }
+                    if let existingEntry {
+                        Button("Delete work", role: .destructive) {
+                            if let undo = model.deleteWork(id: existingEntry.id) {
+                                onDeleted?(undo)
+                                dismiss()
+                            } else {
+                                errorMessage = model.lastPersistenceError
+                            }
+                        }.frame(minHeight: 48).accessibilityIdentifier("work.delete")
+                    }
                 }
             }
             .scrollContentBackground(.hidden).background(LinePayColor.canvas)
@@ -206,11 +221,13 @@ struct AddWorkView: View {
             )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Keep draft") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Keep draft") { dismiss() }.accessibilityIdentifier("work.cancel")
+                }
             }
         }
         .environment(\.timeZone, zone)
-        .tint(LinePayColor.brandPrimary)
+        .tint(LinePayColor.actionText)
         .onChange(of: draft, initial: true) { _, value in
             do { try model.saveWorkDraft(value) } catch {
                 errorMessage = "Draft could not be saved. Your earlier records are unchanged."

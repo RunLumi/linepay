@@ -53,6 +53,7 @@ public struct PaycheckComparison: Codable, Hashable, Sendable, Identifiable {
 
 public struct PaycheckFacts: Hashable, Sendable {
     public let grossPay: Money
+    public var hasCompleteWork: Bool
     public var amounts: [PaystubField: Money]
     public var hours: [PaystubField: Decimal]
     public var grossBasis: PaystubGrossBasis
@@ -63,7 +64,7 @@ public struct PaycheckFacts: Hashable, Sendable {
     public var hasUnsupportedRules: Bool
 
     public init(
-        grossPay: Money, amounts: [PaystubField: Money] = [:],
+        hasCompleteWork: Bool = false, grossPay: Money, amounts: [PaystubField: Money] = [:],
         hours: [PaystubField: Decimal] = [:], grossBasis: PaystubGrossBasis,
         lineLayout: PaystubLineLayout = .unconfirmed,
         hoursBasis: PaystubHoursBasis = .unconfirmed,
@@ -71,6 +72,7 @@ public struct PaycheckFacts: Hashable, Sendable {
         hasUnreviewedFields: Bool = false, hasUnsupportedRules: Bool = false
     ) {
         self.grossPay = grossPay
+        self.hasCompleteWork = hasCompleteWork
         self.amounts = amounts
         self.hours = hours
         self.grossBasis = grossBasis
@@ -119,20 +121,28 @@ public struct PaycheckAssessor: Sendable {
         var reasons: [String] = []
         var comparisons: [PaycheckComparison] = []
         let expectedGross: Money?
-        switch facts.grossBasis {
-        case .unconfirmed:
+        if !facts.hasCompleteWork {
             expectedGross = nil
             reasons.append(
-                "Confirm whether the paystub gross includes per diem before comparing totals.")
-        case .wagesOnly:
-            expectedGross = wages
-            if !allowances.isEmpty {
-                notes.append("Per diem is excluded from this gross-wage comparison.")
+                "Confirm that all work for this paycheck period is recorded before comparing the full paycheck."
+            )
+        } else {
+            switch facts.grossBasis {
+            case .unconfirmed:
+                expectedGross = nil
+                reasons.append(
+                    "Confirm whether the paystub gross includes per diem before comparing totals.")
+            case .wagesOnly:
+                expectedGross = wages
+                if !allowances.isEmpty {
+                    notes.append("Per diem is excluded from this gross-wage comparison.")
+                }
+            case .wagesAndPerDiem:
+                expectedGross = calculation.total
+                notes.append(
+                    "You confirmed that this gross figure includes the per diem shown in the ledger."
+                )
             }
-        case .wagesAndPerDiem:
-            expectedGross = calculation.total
-            notes.append(
-                "You confirmed that this gross figure includes the per diem shown in the ledger.")
         }
         if let expectedGross {
             comparisons.append(
@@ -281,7 +291,7 @@ public struct PaycheckAssessor: Sendable {
             verdict = .matches
         }
         return PaycheckAssessment(
-            engineVersion: 1, verdict: verdict, scope: scope,
+            engineVersion: 2, verdict: verdict, scope: scope,
             expectedGross: expectedGross, paidGross: facts.grossPay,
             difference: grossDifference.map { Money(amount: $0, currencyCode: currency) },
             comparisons: comparisons, reviewReasons: reasons, scopeNotes: notes

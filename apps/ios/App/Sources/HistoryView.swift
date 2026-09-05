@@ -79,6 +79,7 @@ struct HistoricalPeriodView: View {
     let periodID: UUID
     @Environment(\.dismiss) private var dismiss
     @State private var showingImport = false
+    @State private var showingResult = false
     @State private var showingPaywall = false
     @State private var showingDelete = false
     @State private var errorMessage: String?
@@ -140,10 +141,13 @@ struct HistoricalPeriodView: View {
             }
         }
         .navigationTitle("Pay period").navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showingResult) {
+            LiveAuditView(model: model, subscriptionStore: subscriptionStore, periodID: periodID)
+        }
         .sheet(isPresented: $showingImport) {
             PaystubImportView(
                 model: model, subscriptionStore: subscriptionStore, periodID: periodID
-            ) {}
+            ) { showingResult = true }
         }
         .sheet(isPresented: $showingPaywall) {
             ProPaywallView(store: subscriptionStore) { showingPaywall = false }

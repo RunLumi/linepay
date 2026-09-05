@@ -181,6 +181,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
 
 struct PaystubConfirmationDraft: Codable, Hashable, Sendable {
     var targetPeriodID: UUID?
+    var workComplete: Bool?
     var grossBasis: PaystubGrossBasis = .unconfirmed
     var lineLayout: PaystubLineLayout = .unconfirmed
     var hoursBasis: PaystubHoursBasis = .unconfirmed
@@ -288,6 +289,7 @@ struct PaystubConfirmation: Codable, Hashable, Sendable {
     let reviewedFields: Set<PaystubField>
     let suggestions: [PaystubField: OCRFieldSuggestion]
     let hasAdditionalUnmappedPay: Bool
+    let workComplete: Bool?
 }
 
 extension PaystubConfirmationDraft {

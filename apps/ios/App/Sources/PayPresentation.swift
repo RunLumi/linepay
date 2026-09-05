@@ -2,6 +2,15 @@ import Foundation
 import LinePayDomain
 import SwiftUI
 
+struct LineGapMark: View {
+    var body: some View {
+        Image(decorative: "LinePaycheckLogo")
+            .resizable().scaledToFit().frame(width: 72, height: 72)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .accessibilityHidden(true)
+    }
+}
+
 extension PaystubField {
     var title: String {
         switch self {
@@ -84,22 +93,6 @@ extension AuditDisplayStatus {
     }
 }
 
-struct LinePayPrimaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .foregroundStyle(LinePayColor.onAction)
-            .background(
-                LinePayColor.brandPrimary.opacity(configuration.isPressed ? 0.8 : 1),
-                in: RoundedRectangle(cornerRadius: 10)
-            )
-            .contentShape(Rectangle())
-            .opacity(isEnabled ? 1 : 0.5)
-    }
-}
-
 struct PayAmount: View {
     let label: String
     let money: Money?
@@ -123,8 +116,10 @@ struct ComparisonAmounts: View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .top, spacing: 24) {
                 PayAmount(label: "Expected, same basis", money: expected)
+                    .fixedSize(horizontal: true, vertical: true)
                 Spacer(minLength: 0)
                 PayAmount(label: "Confirmed paid", money: paid)
+                    .fixedSize(horizontal: true, vertical: true)
             }
             VStack(alignment: .leading, spacing: 16) {
                 PayAmount(label: "Expected, same basis", money: expected)

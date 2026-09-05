@@ -10,7 +10,7 @@ final class PaydayJourneyTests: XCTestCase {
     }
 
     func testFirstPaydayThenNextWorkAndDelayedPaycheck() throws {
-        launch()
+        launch(commerce: true)
         capture("01-welcome")
         tap("onboarding.set-up-pay")
         let rate = app.textFields["pay-profile.hourly-rate"]
@@ -26,16 +26,18 @@ final class PaydayJourneyTests: XCTestCase {
         tap("pay-profile.continue")
         capture("05-confirm-rules")
         tap("pay-profile.save")
-        XCTAssertTrue(app.buttons["today.add-work"].waitForExistence(timeout: 10))
-        capture("07-today-empty")
-        tap("today.add-work")
+        XCTAssertTrue(app.buttons["activation.add-work"].waitForExistence(timeout: 10))
+        capture("07-first-work")
+        tap("activation.add-work")
         capture("09-add-work")
         tap("work.save")
         XCTAssertTrue(app.staticTexts["$400.00"].firstMatch.waitForExistence(timeout: 10))
         capture("08-today-work")
         app.terminate()
-        launch(reset: false)
+        launch(reset: false, commerce: true)
         XCTAssertTrue(app.staticTexts["$400.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("first-expected-pay-proof")
+        tap("activation.keep-logging")
         tab("Pay")
         capture("15-pay-ledger")
         tap("pay.finish-period")
@@ -51,6 +53,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("33-historical-period")
         tap("history.audit")
         confirmManualGross("400")
+        capture("late-paycheck-result")
         XCTAssertTrue(
             app.staticTexts["Gross total matches"].firstMatch.waitForExistence(timeout: 10))
         capture("24-late-paycheck-matches")
@@ -133,12 +136,46 @@ final class PaydayJourneyTests: XCTestCase {
             app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
+    func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {
+        launch(scenario: "intake")
+        tab("Pay")
+        tap("pay.check-paycheck")
+        tap("paystub.resume")
+        tap("paystub.field.grossPay")
+        tap("View original paystub")
+        capture("29-original-before-correction")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let value = app.textFields["paystub.value"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
+        value.tap()
+        value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "549.50")
+        dismissKeyboard()
+        app.terminate()
+        launch(reset: false)
+        tab("Pay")
+        tap("pay.check-paycheck")
+        tap("paystub.resume")
+        tap("paystub.field.grossPay")
+        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "549.50")
+        tap("View original paystub")
+        capture("29-original-after-interruption")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        tap("paystub.confirm-field")
+        scrollTo(app.buttons["paystub.audit"])
+        capture("23-partially-confirmed-review")
+        XCTAssertFalse(
+            app.buttons["paystub.audit"].isEnabled,
+            "Unconfirmed dates must not become trusted because a draft survived restart")
+    }
+
     private func launch(
         reset: Bool = true, scenario: String = "empty", commerce: Bool = false,
         largeText: Bool = false
     ) {
         app = XCUIApplication()
-        app.launchArguments = ["--ui-testing"] + (reset ? ["--reset-ui-state"] : [])
+        app.launchArguments =
+            ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+            + (reset ? ["--reset-ui-state"] : [])
         if largeText {
             app.launchArguments += [
                 "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
@@ -195,6 +232,12 @@ final class PaydayJourneyTests: XCTestCase {
             capture("21-confirm-\(field)")
             tap("paystub.confirm-field")
         }
+        let completeWork = app.descendants(matching: .any)
+            .matching(identifier: "paystub.complete-work").firstMatch
+        scrollTo(completeWork)
+        completeWork.tap()
+        capture("confirmed-period-work")
+        XCTAssertTrue(completeWork.isSelected)
         tap("paystub.gross-basis")
         tapContaining("Wages only")
         tap("paystub.audit")

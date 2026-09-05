@@ -22,23 +22,32 @@ final class SubscriptionStore {
     private(set) var hasCheckedEntitlements = false
     private(set) var errorMessage: String?
     private(set) var notice: String?
+    private(set) var annualTrialDuration: String?
+    private(set) var renewalDate: Date?
+    private(set) var willAutoRenew: Bool?
+    private(set) var isTrial = false
     @ObservationIgnored private var transactionTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
     @ObservationIgnored private var refreshGeneration = 0
-    @ObservationIgnored private let productLoader: @MainActor ([String]) async throws -> [Product]
+    @ObservationIgnored private let operations: SubscriptionOperations
+    @ObservationIgnored private let observesStoreKit: Bool
 
     init(
-        testCommerceEnabled: Bool? = nil,
-        productLoader: @escaping @MainActor ([String]) async throws -> [Product] = {
-            try await Product.products(for: $0)
-        }
+        commerceEnabled: Bool? = nil,
+        productLoader: (@MainActor ([String]) async throws -> [Product])? = nil,
+        operations: SubscriptionOperations? = nil
     ) {
         #if DEBUG
-            purchasingEnabled = testCommerceEnabled ?? Self.commerceEnabled
+            purchasingEnabled = commerceEnabled ?? Self.commerceEnabled
         #else
             purchasingEnabled = true
         #endif
-        self.productLoader = productLoader
+        var selected = operations ?? .live
+        if let productLoader {
+            selected.loadProducts = { try await productLoader(Self.productIDs) }
+        }
+        self.operations = selected
+        observesStoreKit = operations == nil
     }
     deinit {
         transactionTask?.cancel()
@@ -49,7 +58,7 @@ final class SubscriptionStore {
 
     func start() async {
         guard purchasingEnabled else { return }
-        if transactionTask == nil {
+        if observesStoreKit, transactionTask == nil {
             transactionTask = Task { [weak self] in
                 for await update in Transaction.updates {
                     guard let self, !Task.isCancelled else { return }
@@ -80,12 +89,19 @@ final class SubscriptionStore {
         await refreshEntitlements()
         guard !isLoading else { return }
         isLoading = true
+        annualTrialDuration = nil
         defer { isLoading = false }
         do {
-            products = try await productLoader(Self.productIDs).sorted { rank($0.id) < rank($1.id) }
+            products = try await operations.loadProducts().sorted { rank($0.id) < rank($1.id) }
             errorMessage =
                 products.isEmpty
                 ? "App Store prices are unavailable. Your saved pay data remains accessible." : nil
+            if let annual = product(id: Self.yearlyProductID)?.subscription,
+                let offer = annual.introductoryOffer, offer.paymentMode == .freeTrial,
+                await annual.isEligibleForIntroOffer
+            {
+                annualTrialDuration = Self.duration(of: offer)
+            }
             await refreshEntitlements()
         } catch {
             products = []
@@ -102,20 +118,16 @@ final class SubscriptionStore {
         }
         refreshGeneration += 1
         let generation = refreshGeneration
-        var entitled = false
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result else { continue }
-            if Self.productIDs.contains(transaction.productID), transaction.revocationDate == nil,
-                !transaction.isUpgraded
-            {
-                entitled = true
-            }
-        }
+        let identifiers = await operations.entitlementIDs()
+        let entitled = !identifiers.isDisjoint(with: Self.productIDs)
         guard generation == refreshGeneration else { return }
         isPro = entitled
         hasCheckedEntitlements = true
         // Never reject an entitlement just because its paid period expired: StoreKit includes grace.
         notice = nil
+        renewalDate = nil
+        willAutoRenew = nil
+        isTrial = false
         for product in products {
             guard let subscription = product.subscription,
                 let statuses = try? await subscription.status
@@ -126,6 +138,13 @@ final class SubscriptionStore {
                     case .verified(let transaction) = status.transaction,
                     Self.productIDs.contains(transaction.productID)
                 else { continue }
+                if entitled, transaction.revocationDate == nil, !transaction.isUpgraded,
+                    status.state == .subscribed || status.state == .inGracePeriod
+                {
+                    renewalDate = transaction.expirationDate
+                    willAutoRenew = renewal.willAutoRenew
+                    isTrial = transaction.offer?.paymentMode == .freeTrial
+                }
                 if status.state == .inGracePeriod, entitled {
                     notice =
                         "Pro remains active during Apple's billing grace period. Review payment details in your App Store account."
@@ -143,31 +162,36 @@ final class SubscriptionStore {
     }
 
     func purchase(_ product: Product) async -> Bool {
+        await purchase(productID: product.id)
+    }
+
+    func purchase(productID: String) async -> Bool {
         guard purchasingEnabled else {
             errorMessage = "Purchasing is disabled in this debug build."
             return false
         }
         do {
-            switch try await product.purchase() {
-            case .success(let result):
-                guard case .verified(let transaction) = result else {
-                    errorMessage = "The App Store could not verify the purchase."
-                    return false
-                }
+            switch try await operations.purchase(productID, products) {
+            case .verified:
                 await refreshEntitlements()
-                await transaction.finish()
                 errorMessage = nil
                 return isPro
+            case .unverified:
+                errorMessage = "The App Store could not verify the purchase."
+                return false
             case .pending:
                 errorMessage = "This purchase is awaiting App Store approval."
                 return false
-            case .userCancelled:
+            case .cancelled:
                 errorMessage = nil
                 return false
-            @unknown default:
+            case .unknown:
                 errorMessage = "The purchase could not be completed."
                 return false
             }
+        } catch StoreKitError.userCancelled {
+            errorMessage = nil
+            return false
         } catch {
             errorMessage = "The purchase could not be completed. Try again later."
             return false
@@ -179,7 +203,7 @@ final class SubscriptionStore {
             return
         }
         do {
-            try await AppStore.sync()
+            try await operations.synchronize()
             await refreshEntitlements()
             errorMessage = isPro ? nil : "No active Pro purchase was found for this Apple account."
             if isPro { notice = "LinePaycheck Pro restored." }
@@ -190,4 +214,16 @@ final class SubscriptionStore {
         }
     }
     private func rank(_ id: String) -> Int { id == Self.yearlyProductID ? 0 : 1 }
+
+    private static func duration(of offer: Product.SubscriptionOffer) -> String? {
+        let count = offer.period.value * offer.periodCount
+        guard count > 0 else { return nil }
+        switch offer.period.unit {
+        case .day: return "\(count) \(count == 1 ? "day" : "days")"
+        case .week: return "\(count * 7) days"
+        case .month: return "\(count) \(count == 1 ? "month" : "months")"
+        case .year: return "\(count) \(count == 1 ? "year" : "years")"
+        @unknown default: return nil
+        }
+    }
 }

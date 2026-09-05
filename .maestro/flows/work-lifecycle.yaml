@@ -1,0 +1,52 @@
+appId: com.streamentry.linepay
+name: Work correction, overlap review, and period-bound Undo
+tags: [smoke, ios, regression]
+---
+- runFlow: ../helpers/onboard.yaml
+- runFlow: ../helpers/add-work.yaml
+- tapOn:
+    id: today.repeat-shift
+- assertVisible: ".*Overlaps.*"
+- assertVisible:
+    id: work.save
+    enabled: false
+- takeScreenshot: overlap-error
+- tapOn:
+    id: work.cancel
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- tapOn:
+    id: today.edit-work
+- scrollUntilVisible:
+    element:
+      id: work.note
+- tapOn:
+    id: work.note
+- inputText: " QA correction "
+- tapOn:
+    id: keyboard.done
+- scrollUntilVisible:
+    element:
+      id: work.save
+- tapOn:
+    id: work.save
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- tapOn:
+    id: today.edit-work
+- scrollUntilVisible:
+    element:
+      id: work.delete
+- tapOn:
+    id: work.delete
+- assertVisible:
+    id: today.undo-delete
+- tapOn:
+    id: today.undo-delete
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- assertVisible: ".*QA correction.*"
+- takeScreenshot: work-restored
