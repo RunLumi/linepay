@@ -108,6 +108,11 @@ struct AppFailurePathTests {
         let old = try #require(model.currentPaystub?.evidence)
         try model.archiveCurrentPeriod()
         let id = try #require(model.history.first).id
+        try model.addWork(
+            start: UnitFixture.start + 7 * 86_400,
+            end: UnitFixture.start + 7 * 86_400 + 8 * 3_600,
+            kind: .regular
+        )
         var next = UnitFixture.paystub(
             model, gross: "0", original: Data("new synthetic original".utf8))
         next.originalFilename = "next.png"
