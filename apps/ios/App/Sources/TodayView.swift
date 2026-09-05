@@ -5,6 +5,7 @@ struct TodayView: View {
     let model: AppModel
 
     @State private var showingAddWork = false
+    @State private var editingInterval: WorkInterval?
 
     var body: some View {
         NavigationStack {
@@ -30,6 +31,9 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showingAddWork) {
             AddWorkView(model: model)
+        }
+        .sheet(item: $editingInterval) { interval in
+            AddWorkView(model: model, existingInterval: interval)
         }
     }
 
@@ -112,14 +116,25 @@ struct TodayView: View {
 
             Spacer()
 
-            Button(role: .destructive) {
-                model.deleteWork(id: interval.id)
-            } label: {
-                Image(systemName: "trash")
-                    .frame(width: 44, height: 44)
+            HStack(spacing: 0) {
+                Button {
+                    editingInterval = interval
+                } label: {
+                    Image(systemName: "pencil")
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Edit work interval")
+
+                Button(role: .destructive) {
+                    model.deleteWork(id: interval.id)
+                } label: {
+                    Image(systemName: "trash")
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Delete work interval")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Delete work interval")
         }
     }
 
