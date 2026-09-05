@@ -31,7 +31,8 @@ struct OnboardingWelcomeView: View {
                     trustRow(
                         icon: "iphone",
                         title: "Private by default",
-                        detail: "Your hours, pay rules, and paycheck data stay on this iPhone."
+                        detail:
+                            "Your pay data stays on this iPhone unless you choose to export or back it up."
                     )
                     trustRow(
                         icon: "equal.circle",
@@ -39,6 +40,7 @@ struct OnboardingWelcomeView: View {
                         detail: "See how your confirmed rules turn worked hours into expected pay."
                     )
                 }
+                BackupRestoreEntryPoint(title: "Restore from iCloud Drive")
             }
             .padding(LinePaySpacing.section)
             .padding(.top, LinePaySpacing.section)
