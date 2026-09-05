@@ -6,16 +6,14 @@ on:
     paths:
       - "apps/ios/**"
       - "shared/contracts/**"
-      - "scripts/check-ios.sh"
-      - "scripts/install-xcodegen.sh"
+      - "scripts/**"
       - ".swift-format"
       - ".github/workflows/ios.yml"
   pull_request:
     paths:
       - "apps/ios/**"
       - "shared/contracts/**"
-      - "scripts/check-ios.sh"
-      - "scripts/install-xcodegen.sh"
+      - "scripts/**"
       - ".swift-format"
       - ".github/workflows/ios.yml"
 
@@ -30,26 +28,29 @@ jobs:
   check:
     runs-on: macos-26
     timeout-minutes: 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
       - name: Select Xcode 26.6
         run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
-
       - name: Install pinned XcodeGen 2.46.0
         run: |
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
       - name: Toolchain
         run: |
           xcodebuild -version
           swift --version
           xcodegen --version
-
       - name: Lint, test, and build
         run: bash scripts/check-ios.sh
+      - name: Retain test results and per-file coverage
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-tests-${{ github.sha }}
+          path: .test-results/
+          retention-days: 7
+          if-no-files-found: warn

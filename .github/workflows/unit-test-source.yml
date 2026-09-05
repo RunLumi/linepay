@@ -1,25 +1,44 @@
-name: Unit test source snapshot
+name: Apply reviewed test patch
 
-# Temporary development helper. Removed before this PR is ready for review.
+# One-shot branch-only development helper; removed before review.
 on:
   push:
     branches: [test/comprehensive-unit-coverage]
     paths: [.github/workflows/unit-test-source.yml]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  snapshot:
-    runs-on: ubuntu-latest
+  apply:
+    runs-on: macos-26
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: test/comprehensive-unit-coverage
+          fetch-depth: 0
           persist-credentials: false
-      - name: Archive tracked repository source only
-        run: git archive --format=zip -o source.zip HEAD
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: unit-test-source
-          path: source.zip
-          retention-days: 1
-          if-no-files-found: error
+      - name: Select pinned formatter
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+      - name: Apply reviewed changes and format changed Swift files
+        run: |
+          set -euo pipefail
+          git apply --check .test-patches/reviewed.patch
+          git apply --index .test-patches/reviewed.patch
+          git rm .test-patches/reviewed.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('apps/ios/App/Sources/SubscriptionOperations.swift')
+          p.write_text(p.read_text().replace('enum SubscriptionOperationError: Error {', 'enum SubscriptionOperationError: Error, Equatable {'))
+          PY
+          git diff --name-only -z 03dedaaab71131aa182c1ac3aa9777c753183817 -- '*.swift' | while IFS= read -r -d '' file; do
+            swift format format --in-place --configuration .swift-format "$file"
+            git add "$file"
+          done
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'test: apply regression fixes and normalize new Swift suites'
+      - name: Push branch without rewriting history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git -c credential.helper='!gh auth git-credential' push origin HEAD:test/comprehensive-unit-coverage
