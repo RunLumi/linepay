@@ -49,19 +49,44 @@ public enum WorkKind: String, Codable, Hashable, Sendable {
     case other
 }
 
+public struct WorkBreak: Codable, Hashable, Identifiable, Sendable {
+    public let id: UUID
+    public let startEpochSeconds: Int64
+    public let endEpochSeconds: Int64
+
+    public init(
+        id: UUID = UUID(),
+        startEpochSeconds: Int64,
+        endEpochSeconds: Int64
+    ) throws {
+        guard endEpochSeconds > startEpochSeconds else {
+            throw DomainValidationError.invalidWorkBreak
+        }
+        self.id = id
+        self.startEpochSeconds = startEpochSeconds
+        self.endEpochSeconds = endEpochSeconds
+    }
+
+    public var durationHours: Decimal {
+        Decimal(endEpochSeconds - startEpochSeconds) / 3_600
+    }
+}
+
 public struct WorkInterval: Codable, Hashable, Identifiable, Sendable {
     public let id: UUID
     public let startEpochSeconds: Int64
     public let endEpochSeconds: Int64
     public let timeZoneIdentifier: String
     public let kind: WorkKind
+    public let unpaidBreaks: [WorkBreak]
 
     public init(
         id: UUID = UUID(),
         startEpochSeconds: Int64,
         endEpochSeconds: Int64,
         timeZoneIdentifier: String,
-        kind: WorkKind = .regular
+        kind: WorkKind = .regular,
+        unpaidBreaks: [WorkBreak] = []
     ) throws {
         guard endEpochSeconds > startEpochSeconds else {
             throw DomainValidationError.invalidWorkInterval
@@ -69,16 +94,47 @@ public struct WorkInterval: Codable, Hashable, Identifiable, Sendable {
         guard TimeZone(identifier: timeZoneIdentifier) != nil else {
             throw DomainValidationError.invalidTimeZone(timeZoneIdentifier)
         }
+        guard Set(unpaidBreaks.map(\.id)).count == unpaidBreaks.count else {
+            throw DomainValidationError.duplicateWorkBreakID
+        }
+
+        let sortedBreaks = unpaidBreaks.sorted { $0.startEpochSeconds < $1.startEpochSeconds }
+        for workBreak in sortedBreaks {
+            guard
+                workBreak.startEpochSeconds >= startEpochSeconds,
+                workBreak.endEpochSeconds <= endEpochSeconds
+            else {
+                throw DomainValidationError.workBreakOutsideInterval
+            }
+        }
+        for pair in zip(sortedBreaks, sortedBreaks.dropFirst()) {
+            guard pair.1.startEpochSeconds >= pair.0.endEpochSeconds else {
+                throw DomainValidationError.overlappingWorkBreaks
+            }
+        }
+
+        let unpaidSeconds = sortedBreaks.reduce(Int64(0)) {
+            $0 + ($1.endEpochSeconds - $1.startEpochSeconds)
+        }
+        guard endEpochSeconds - startEpochSeconds - unpaidSeconds > 0 else {
+            throw DomainValidationError.workBreakConsumesEntireInterval
+        }
 
         self.id = id
         self.startEpochSeconds = startEpochSeconds
         self.endEpochSeconds = endEpochSeconds
         self.timeZoneIdentifier = timeZoneIdentifier
         self.kind = kind
+        self.unpaidBreaks = sortedBreaks
     }
 
-    public var durationHours: Decimal {
+    public var elapsedHours: Decimal {
         Decimal(endEpochSeconds - startEpochSeconds) / 3_600
+    }
+
+    /// Paid worked hours represented by this interval after exact unpaid-break spans are removed.
+    public var durationHours: Decimal {
+        elapsedHours - unpaidBreaks.reduce(0) { $0 + $1.durationHours }
     }
 }
 
@@ -299,6 +355,11 @@ public enum DomainValidationError: Error, Equatable, Sendable {
     case invalidLocalTime(hour: Int, minute: Int)
     case invalidWorkInterval
     case invalidTimeZone(String)
+    case invalidWorkBreak
+    case duplicateWorkBreakID
+    case workBreakOutsideInterval
+    case overlappingWorkBreaks
+    case workBreakConsumesEntireInterval
     case overnightScheduleWindowUnsupported
     case invalidMultiplier
     case invalidOvertimeTier
