@@ -97,6 +97,7 @@ struct TodayView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(LinePayColor.brandPrimary)
+            .accessibilityIdentifier("today.add-work")
 
             if let last = model.lastWorkEntry {
                 Button {
