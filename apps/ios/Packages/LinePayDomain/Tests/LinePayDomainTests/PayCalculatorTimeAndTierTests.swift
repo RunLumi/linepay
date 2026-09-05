@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-
 @testable import LinePayDomain
 
 @Test("Daily overtime begins exactly at configured threshold")

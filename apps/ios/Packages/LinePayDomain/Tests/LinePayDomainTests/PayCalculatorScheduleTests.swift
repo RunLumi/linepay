@@ -1,5 +1,4 @@
 import Testing
-
 @testable import LinePayDomain
 
 @Test("Eight scheduled hours pay straight time")

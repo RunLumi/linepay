@@ -1,5 +1,4 @@
 import Testing
-
 @testable import LinePayDomain
 
 @Test("Reconciliation reports exact match")

@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-
 @testable import LinePayDomain
 
 @Test("Money addition uses Decimal, not binary floating point")
