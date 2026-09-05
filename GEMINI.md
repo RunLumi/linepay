@@ -19,4 +19,6 @@ bash scripts/agent-verify.sh ios
 bash scripts/agent-verify.sh ui
 ```
 
+Gemini workspace MCP configuration lives in `.gemini/settings.json`. Canonical task workflows live in `.agents/skills/`, which Gemini can discover as workspace Agent Skills.
+
 Do not duplicate repository policy here. Update `AGENTS.md` or the relevant focused skill/doc instead.
