@@ -91,7 +91,18 @@ struct AddWorkView: View {
                 }
             }
         }
+        .environment(\.timeZone, payrollTimeZone)
         .tint(LinePayColor.brandPrimary)
+    }
+
+    private var payrollTimeZone: TimeZone {
+        guard
+            let identifier = model.profile?.timeZoneIdentifier,
+            let timeZone = TimeZone(identifier: identifier)
+        else {
+            return .current
+        }
+        return timeZone
     }
 
     private func save() {
