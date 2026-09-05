@@ -5,39 +5,50 @@ struct TodayView: View {
     let model: AppModel
 
     @State private var showingAddWork = false
-    @State private var editingInterval: WorkInterval?
+    @State private var showingStartPeriod = false
+    @State private var editingEntry: WorkEntry?
+    @State private var repeatingEntry: WorkEntry?
+    @State private var deletedEntry: WorkEntry?
+    @State private var undoError: String?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
-                    expectedPayHeader
-
-                    Button {
-                        showingAddWork = true
-                    } label: {
-                        Label("Add work", systemImage: "plus")
-                            .frame(maxWidth: .infinity, minHeight: 48)
+                    if let active = model.activePeriod {
+                        expectedPayHeader(active)
+                        primaryActions
+                        auditState
+                        recentWork
+                    } else {
+                        noActivePeriod
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(LinePayColor.brandPrimary)
-
-                    recentWork
                 }
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
             .navigationTitle("Today")
+            .safeAreaInset(edge: .bottom) {
+                if let deletedEntry {
+                    undoBar(deletedEntry)
+                }
+            }
         }
         .sheet(isPresented: $showingAddWork) {
             AddWorkView(model: model)
         }
-        .sheet(item: $editingInterval) { interval in
-            AddWorkView(model: model, existingInterval: interval)
+        .sheet(isPresented: $showingStartPeriod) {
+            StartPayPeriodView(model: model)
+        }
+        .sheet(item: $editingEntry) { entry in
+            AddWorkView(model: model, existingEntry: entry)
+        }
+        .sheet(item: $repeatingEntry) { entry in
+            AddWorkView(model: model, template: entry)
         }
     }
 
-    private var expectedPayHeader: some View {
+    private func expectedPayHeader(_ active: ActivePayPeriod) -> some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
             Text("EXPECTED GROSS")
                 .font(.caption.weight(.semibold))
@@ -50,9 +61,15 @@ struct TodayView: View {
                 .foregroundStyle(LinePayColor.textPrimary)
                 .minimumScaleFactor(0.75)
 
+            if let profile = model.profile {
+                Text(LinePayFormat.payPeriod(active.window, timeZoneIdentifier: profile.timeZoneIdentifier))
+                    .font(.subheadline)
+                    .foregroundStyle(LinePayColor.textSecondary)
+            }
+
             HStack(spacing: LinePaySpacing.standard) {
                 Label(
-                    "\(LinePayFormat.hours(model.totalHours)) h logged",
+                    "\(LinePayFormat.hours(model.totalHours)) h paid work",
                     systemImage: "clock"
                 )
                 if let profile = model.profile {
@@ -70,6 +87,47 @@ struct TodayView: View {
         }
     }
 
+    private var primaryActions: some View {
+        VStack(spacing: LinePaySpacing.compact) {
+            Button {
+                showingAddWork = true
+            } label: {
+                Label("Add work", systemImage: "plus")
+                    .frame(maxWidth: .infinity, minHeight: 48)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(LinePayColor.brandPrimary)
+
+            if let last = model.lastWorkEntry {
+                Button {
+                    repeatingEntry = last
+                } label: {
+                    Label("Repeat last shift", systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .tint(LinePayColor.brandPrimary)
+            }
+        }
+    }
+
+    private var auditState: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("PAYCHECK")
+                    .font(.caption.weight(.semibold))
+                    .tracking(0.6)
+                    .foregroundStyle(LinePayColor.textSecondary)
+                AuditStatusView(status: model.currentAuditStatus)
+            }
+            Spacer()
+            Text(model.currentPaystub == nil ? "Waiting for paystub" : "See Pay tab")
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+        }
+        .padding(.vertical, LinePaySpacing.compact)
+    }
+
     private var recentWork: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
             Text("WORK LOG")
@@ -77,71 +135,113 @@ struct TodayView: View {
                 .tracking(0.6)
                 .foregroundStyle(LinePayColor.textSecondary)
 
-            if model.workIntervals.isEmpty {
+            if model.workEntries.isEmpty {
                 VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
                     Text("No work logged yet")
                         .font(.headline)
-                    Text(
-                        "Add the hours you actually worked. Your expected pay updates "
-                            + "immediately."
-                    )
-                    .font(.callout)
-                    .foregroundStyle(LinePayColor.textSecondary)
+                    Text("Add what actually happened. Expected pay updates immediately.")
+                        .font(.callout)
+                        .foregroundStyle(LinePayColor.textSecondary)
                 }
                 .padding(.vertical, LinePaySpacing.standard)
             } else {
-                ForEach(model.workIntervals.reversed()) { interval in
-                    workRow(interval)
+                ForEach(model.workEntries.reversed()) { entry in
+                    workRow(entry)
                     Divider()
                 }
             }
         }
     }
 
-    private func workRow(_ interval: WorkInterval) -> some View {
+    private func workRow(_ entry: WorkEntry) -> some View {
         HStack(alignment: .top, spacing: LinePaySpacing.standard) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(workKindLabel(interval.kind))
-                    .font(.headline)
-                    .foregroundStyle(LinePayColor.textPrimary)
+            Button {
+                editingEntry = entry
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(workKindLabel(entry.interval.kind))
+                        .font(.headline)
+                        .foregroundStyle(LinePayColor.textPrimary)
 
-                Text(LinePayFormat.workDateRange(interval))
-                    .font(.callout)
+                    Text(LinePayFormat.workDateRange(entry.interval))
+                        .font(.callout)
+                        .foregroundStyle(LinePayColor.textSecondary)
+
+                    HStack(spacing: LinePaySpacing.compact) {
+                        Text("\(LinePayFormat.hours(entry.interval.durationHours)) h")
+                            .monospacedDigit()
+                        if let breakText = LinePayFormat.breakDuration(entry.interval) {
+                            Text("· \(breakText)")
+                        }
+                    }
+                    .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
 
-                Text("\(LinePayFormat.hours(interval.durationHours)) h")
-                    .font(.callout.monospacedDigit())
-                    .foregroundStyle(LinePayColor.textSecondary)
-            }
-
-            Spacer()
-
-            HStack(spacing: 0) {
-                Button {
-                    editingInterval = interval
-                } label: {
-                    Image(systemName: "pencil")
-                        .frame(width: 44, height: 44)
+                    if !entry.note.isEmpty {
+                        Text(entry.note)
+                            .font(.footnote)
+                            .foregroundStyle(LinePayColor.textSecondary)
+                            .lineLimit(2)
+                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Edit work interval")
-
-                Button(role: .destructive) {
-                    model.deleteWork(id: interval.id)
-                } label: {
-                    Image(systemName: "trash")
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Delete work interval")
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .buttonStyle(.plain)
+
+            Button(role: .destructive) {
+                deletedEntry = model.deleteWork(id: entry.id)
+            } label: {
+                Image(systemName: "trash")
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Delete work interval")
         }
     }
 
-    private var expectedPayText: String {
-        guard let calculation = model.calculation else {
-            return "$0.00"
+    private var noActivePeriod: some View {
+        VStack(alignment: .leading, spacing: LinePaySpacing.section) {
+            Text("Ready for the next check")
+                .font(.title2.bold())
+                .foregroundStyle(LinePayColor.textPrimary)
+            Text(
+                "Your last manual pay period is finished. Start the next one before logging work."
+            )
+            .foregroundStyle(LinePayColor.textSecondary)
+            Button {
+                showingStartPeriod = true
+            } label: {
+                Label("Start pay period", systemImage: "calendar.badge.plus")
+                    .frame(maxWidth: .infinity, minHeight: 48)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(LinePayColor.brandPrimary)
         }
+    }
+
+    private func undoBar(_ entry: WorkEntry) -> some View {
+        HStack(spacing: LinePaySpacing.standard) {
+            Text(undoError ?? "Work entry deleted")
+                .font(.callout)
+            Spacer()
+            Button("Undo") {
+                do {
+                    try model.restoreWork(entry)
+                    deletedEntry = nil
+                    undoError = nil
+                } catch {
+                    undoError = error.localizedDescription
+                }
+            }
+            .fontWeight(.semibold)
+        }
+        .padding(.horizontal, LinePaySpacing.section)
+        .padding(.vertical, LinePaySpacing.standard)
+        .background(.regularMaterial)
+    }
+
+    private var expectedPayText: String {
+        guard let calculation = model.calculation else { return "$0.00" }
         return LinePayFormat.money(calculation.total)
     }
 
