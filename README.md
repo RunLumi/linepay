@@ -21,10 +21,45 @@ shared/
 docs/
   adr/          Architectural decision records
   research/     Source-backed product/technical research
-scripts/        Reproducible developer checks
+scripts/        Reproducible developer and agent checks
 ```
 
 We intentionally do **not** share UI or platform runtime code between iOS and Android. What may be shared is the specification: rule schemas, canonical test vectors, fixtures, and behavioral contracts.
+
+## Agentic development
+
+The repository is designed for coding agents that can inspect, implement, build, test, and visually verify mobile work.
+
+Start with:
+
+```bash
+bash scripts/agent-context.sh
+bash scripts/agent-doctor.sh
+```
+
+Then choose the narrowest verification tier that proves the change:
+
+```bash
+bash scripts/agent-verify.sh quick   # Swift format + pure payroll-domain tests
+bash scripts/agent-verify.sh ios     # full native iOS test/build/privacy gate
+bash scripts/agent-verify.sh ui      # native gate + Simulator Maestro smoke suite
+```
+
+Agent context is progressively disclosed rather than placed in one giant prompt:
+
+```text
+AGENTS.md                     canonical repository contract
+apps/ios/AGENTS.md            native iOS scope
+.github/instructions/         path-specific Copilot/Xcode guidance
+.agents/skills/               on-demand portable workflows
+.github/agents/               specialist Copilot subagents
+.xcodebuildmcp/config.yaml     interactive iOS agent defaults
+.mcp.json / .codex/           optional project MCP wiring
+```
+
+Optional mobile-agent tools are **XcodeBuildMCP** for interactive build/run/screenshot/accessibility/debug loops and **Maestro** for durable black-box E2E flows. The checked-in scripts and tests remain source of truth, so MCP availability is not required for CI correctness.
+
+See `docs/agentic.md` for the architecture and `AGENTS.md` for the operating contract.
 
 ## Local iOS development
 
