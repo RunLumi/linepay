@@ -46,14 +46,21 @@ for file in \
     .agents/skills/mobile-ui-qa/SKILL.md \
     .agents/skills/release-readiness/SKILL.md \
     .xcodebuildmcp/config.yaml \
+    .github/workflows/agent-harness.yml \
     scripts/agent-context.sh \
     scripts/agent-doctor.sh \
     scripts/agent-verify.sh; do
     require_file "$file"
 done
 
-echo "==> JSON syntax"
+echo "==> Config syntax"
 python3 -m json.tool .mcp.json >/dev/null
+python3 - <<'PY'
+import tomllib
+
+with open('.codex/config.toml', 'rb') as handle:
+    tomllib.load(handle)
+PY
 
 echo "==> Product identity invariants"
 require_text apps/ios/project.yml "PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay"
