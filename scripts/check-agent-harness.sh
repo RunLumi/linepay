@@ -27,11 +27,20 @@ done
 echo "==> Required harness files"
 for file in \
     AGENTS.md \
+    CLAUDE.md \
+    GEMINI.md \
     docs/agentic.md \
+    .mcp.json \
+    .codex/config.toml \
     .github/copilot-instructions.md \
     .github/instructions/ios.instructions.md \
     .github/instructions/domain.instructions.md \
     .github/instructions/maestro.instructions.md \
+    .github/agents/ios-engineer.agent.md \
+    .github/agents/payroll-reviewer.agent.md \
+    .github/agents/mobile-qa.agent.md \
+    .github/pull_request_template.md \
+    .github/ISSUE_TEMPLATE/agent-task.md \
     .agents/skills/ios-feature/SKILL.md \
     .agents/skills/payroll-domain/SKILL.md \
     .agents/skills/mobile-ui-qa/SKILL.md \
@@ -43,11 +52,16 @@ for file in \
     require_file "$file"
 done
 
+echo "==> JSON syntax"
+python3 -m json.tool .mcp.json >/dev/null
+
 echo "==> Product identity invariants"
 require_text apps/ios/project.yml "PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay"
 require_text apps/ios/project.yml "INFOPLIST_KEY_CFBundleDisplayName: LinePaycheck"
 require_text .xcodebuildmcp/config.yaml "bundleId: 'com.streamentry.linepay'"
 require_text .xcodebuildmcp/config.yaml "scheme: 'LinePay'"
+require_text CLAUDE.md "com.streamentry.linepay"
+require_text GEMINI.md "com.streamentry.linepay"
 
 if grep -Eq 'PRODUCT_BUNDLE_IDENTIFIER:[[:space:]]+com\.streamentry\.linepaycheck' apps/ios/project.yml; then
     fail "bundle ID was incorrectly renamed to the public brand"
@@ -79,6 +93,25 @@ for instruction in .github/instructions/*.instructions.md; do
         END { exit !apply_to }
     ' "$instruction" || fail "$instruction requires applyTo frontmatter"
 done
+
+echo "==> Custom agent metadata"
+for agent in .github/agents/*.agent.md; do
+    first_line="$(head -n 1 "$agent")"
+    [[ "$first_line" == "---" ]] || fail "$agent must start with YAML frontmatter"
+
+    awk '
+        NR == 1 { next }
+        /^---$/ { exit }
+        /^description:[[:space:]]+[^[:space:]]/ { description = 1 }
+        END { exit !description }
+    ' "$agent" || fail "$agent requires description frontmatter"
+done
+
+echo "==> MCP commands"
+require_text .mcp.json '"command": "xcodebuildmcp"'
+require_text .mcp.json '"command": "maestro"'
+require_text .codex/config.toml '[mcp_servers.xcodebuildmcp]'
+require_text .codex/config.toml '[mcp_servers.maestro]'
 
 echo "==> Verification commands are discoverable"
 require_text AGENTS.md "bash scripts/agent-verify.sh quick"
