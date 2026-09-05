@@ -1,0 +1,4 @@
+appId: com.streamentry.linepay
+flows:
+  - "flows/**"
+testOutputDir: ../.build/maestro-results

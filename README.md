@@ -24,6 +24,22 @@ scripts/        Reproducible developer checks
 
 We intentionally do **not** share UI or platform runtime code between iOS and Android. What may be shared is the specification: rule schemas, canonical test vectors, fixtures, and behavioral contracts.
 
+## Local iOS development
+
+Run the native quality gate:
+
+```bash
+bash scripts/check-ios.sh
+```
+
+Build, install, and run the local Maestro smoke suite:
+
+```bash
+bash scripts/test-ios-maestro.sh
+```
+
+See `docs/maestro.md` for prerequisites, manual Simulator commands, selector conventions, flow authoring, and debugging.
+
 ## Current sequencing
 
 1. Validate willingness to pay with real linemen.
