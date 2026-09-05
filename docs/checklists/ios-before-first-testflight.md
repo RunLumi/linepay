@@ -70,6 +70,9 @@ If subscriptions exist:
 - [ ] Transaction updates are observed correctly across launches.
 - [ ] Calculation correctness and access to the user's existing records do not depend on a successful App Store network call.
 - [ ] Paywall copy communicates what Pro unlocks without implying legal certainty.
+- [ ] Annual introductory offer is configured and tested as seven days free; Monthly has no introductory trial.
+- [ ] Trial copy depends on both actual offer metadata and eligibility; full renewal price and cancellation timing are visible.
+- [ ] Sandbox/TestFlight proves eligible purchase, ineligible purchase, trial-to-paid, expiry, and restore; a saved App Store offer is not purchase-path proof.
 
 ## Release engineering
 

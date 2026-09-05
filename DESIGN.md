@@ -450,7 +450,7 @@ A setup preview can demonstrate entered rules with clearly labeled sample work. 
 
 ## 17. Onboarding and soft paywall
 
-Follow `docs/onboarding.md`: value/trust, real pay setup, an optional Pro offer when available, then the working app. Do not create another tour to showcase the design system.
+Follow `docs/onboarding.md`: value/trust, confirmed pay basics, one real work interval and its expected-pay result, then an optional seven-day annual trial offer. Keep the full renewal price and Continue free clear. Do not create another tour to showcase the design system.
 
 The welcome screen uses one clear headline, a short outcome explanation, one primary action, and the Line Gap mark. Avoid both a blank dashboard and a long marketing poster.
 

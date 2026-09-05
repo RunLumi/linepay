@@ -1,626 +1,291 @@
-# LinePay Onboarding & Soft Paywall
+# LinePaycheck Onboarding and Seven-Day Trial
 
-> **Canonical onboarding strategy.** If implementation or another product document conflicts with this file, this file wins unless the product decision is deliberately revised.
+> Canonical onboarding, trial presentation, and activation specification. Revised September 5, 2026.
+> This is the implementation target, not a claim that the current binary implements it or that conversion lift has been demonstrated.
 
-## Decision
+## 1. Decision and scope
 
-LinePay 1.0 uses a **short, interactive onboarding flow with a soft paywall**.
+Use **a short path to a real expected-pay result, followed by a dismissible seven-day annual Pro trial offer**. Annual is selected initially; monthly remains a clear paid alternative. The objective is more downloads becoming satisfied paying subscribers, with a strong annual mix.
 
-The first-session sequence is:
+This deliberately replaces the previous no-calendar-trial decision and the blanket ban on an onboarding offer. It aligns with the annual-trial hypothesis in [marketing.md](marketing.md). [pricing.md](pricing.md) owns prices and Free/Pro access; this file owns the experience. [The iOS plan](plan/ios-1.0.md) and QA checklists must use the same decision.
+
+| Package | U.S. baseline | First-time offer |
+|---|---|---|
+| Free | $0 | Useful work log, expected-pay ledger, first complete paycheck audit |
+| Pro Annual — recommended | $79.99 billed yearly | Seven days free for eligible customers, then yearly renewal |
+| Pro Monthly | $9.99 billed monthly | Immediate paid subscription; no introductory trial |
+
+These are commercial choices, not experimentally established optima. The initial trial offer is configured for the U.S. storefront only; eligibility elsewhere does not imply an offer exists. Use localized StoreKit prices and offer eligibility in the app. Keep the existing products `linepay.pro.yearly` and `linepay.pro.monthly`, the `LinePaycheck Pro` group, and bundle `com.streamentry.linepay`.
+
+The strongest objection: a worker paid every two weeks may not receive a paycheck during a seven-day trial. The answer is to create useful evidence on Day 0, make an existing paycheck check possible when matching work facts exist, and retain the first free audit for workers who need more time. A sample demonstrates mechanics; it cannot stand in for personal proof or count as activation.
+
+**Success hierarchy:** D30 net proceeds per new download, D35 first-paid conversion, trial-to-paid conversion, and annual share of first paid subscribers. Trial starts alone are a leading indicator. Annual billing alone does not prove retention or satisfaction.
+
+This task updates the specification and App Store offer configuration. Shipping the new SwiftUI flow, reminders, and StoreKit presentation is a separate implementation step with explicit acceptance criteria below.
+
+## 2. Evidence and what it does not prove
+
+Research checked September 5, 2026:
+
+| Source | Observed evidence | Implication for this design |
+|---|---|---|
+| RevenueCat 2026 [R1] | North America median download-to-trial is 7.1%; upper quartile exceeds 15%. Business trial starts are 89.9% Day 0. Median trial-to-paid is 37.4% for 5–9 days and 42.5% for 17–32 days. Hard-paywall D35 conversion is 10.7% versus 2.1% for freemium. | Offer within the first useful session. These are observational cohorts with different apps, audiences, prices, and acquisition—not treatment effects or LinePaycheck forecasts. |
+| Apple onboarding guidance [R2] | Interactive, brief, optional instruction is preferred. | Let the worker enter work and inspect its calculation. Avoid a questionnaire or feature carousel. |
+| Apple subscription presentation [R3] | The billed amount must be the dominant price; trial duration and subsequent price must be clear. | Show the full annual renewal amount near the trial CTA, with monthly equivalents subordinate. |
+| Yoganarasimhan, Barzegary, and Pani, Management Science [R4] | A SaaS field experiment found shorter trials maximized acquisition, retention, and profitability on average in its setting. | Causal evidence from another product does not determine our duration. Seven days remains a testable launch choice. |
+| RevenueCat trial-design analysis [R5] | Practical cases emphasize matching trial design to time-to-value and measuring revenue and retention. | Build an activation sequence during the week; changing a duration field alone is insufficient. |
+
+The old document treated cross-app hard-paywall data as evidence against a hard paywall for this app; it establishes neither conclusion. A proof-first soft offer is our starting judgment because saved work is useful on Free and trust matters for pay calculations. Reconsider placement after measured cohorts. Do not introduce a coercive launch gate because another category's median is higher.
+
+## 3. First-session flow
 
 ```text
-Open app
-  ↓
-1. Value + trust
-  ↓
-2. Set real pay rules
-  ↓
-3. Soft Pro offer
-  ├── Subscribe, if Pro is actually available
-  └── Continue free
-  ↓
-Today / start logging work
+Welcome → confirm pay basics → enter one real work interval → expected-pay proof
+                                                               ↓
+                                               annual seven-day trial offer
+                                              /             |              \
+                                  Start annual trial    Buy monthly     Continue free
+                                              \             |              /
+                                               next useful work/pay action
 ```
 
-The second monetization moment is **not another arbitrary timer**. It is triggered by real intent:
+Budget friction by actions, not screen count. Internal usability target: a prepared worker reaches a credible expected-pay result in a median of two minutes; this is a test target, not a performance claim. No mandatory account, union/local survey, employer name, acquisition survey, or notification prompt.
+
+Persist real inputs before the offer. Dismissing or cancelling a purchase must return to the same saved work. Returning users resume their task, not the welcome screen.
+
+### Welcome: recognizable outcome
+
+Headline: **Know what your work should pay.**
+
+Support: **Log your work. See the math. Check the paycheck.**
+
+Trust: **No LinePaycheck account. Your pay data stays on this iPhone by default.**
+
+CTA: **Calculate my work pay**.
+
+Use the actual product's ledger visual or the Line Gap mark. Optional **See an example** opens clearly labeled synthetic data in a separate, discardable preview. It must never write a sample into the worker's real ledger or imply recovered wages. No purchase or permission request on this screen.
+
+### Pay basics: minimum necessary truth
+
+Default the editable profile label to **My current pay**. Ask for hourly rate and show currency and work timezone explicitly. Suggest a timezone for confirmation; never silently equate payroll timezone with device timezone. Keep optional rules off.
+
+A compact **Add overtime or other rules** disclosure exposes overtime thresholds, premiums, callout guarantees, and per diem. Each additional rule requires explicit confirmation. A short flow must still represent the worker's actual agreement; do not calculate a complicated shift with a silently incomplete rule set.
+
+CTA: **Save my pay rules**. Show validation next to the field. Preserve drafts, keyboard access, and large-text layout.
+
+### First work: make the calculation personal
+
+Ask for one actual recent work interval: date, start/end, and any unpaid break. Make overnight dates explicit. Use confirmed rules without inventing a “typical” eight-hour shift.
+
+CTA: **See expected pay**.
+
+Allow **I'll log work later**. That route enters Today with one useful next action; it does not claim personal proof or automatically open the proof-triggered offer. An explicit **Try Pro** action remains available. A returning user sees the offer once after their first real result.
+
+Workers arriving with a paycheck may follow **Check a paycheck I have** as a secondary route after setup. Ask for matching work facts and pay-period dates. Never compare a full paycheck to one shift and label the difference an underpayment.
+
+### Expected-pay proof: the monetization hinge
+
+Display the computed gross estimate, exact interval/period, currency, applied rule summary, and a tappable explanation. Label the scope **Expected gross for this work**. A base-rate-only result must say **Using the rules you confirmed; add any missing premiums**.
+
+Make this result a real readable screen; no timed auto-advance or immediate modal covering the number.
+
+Primary continuation: **Check every paycheck** → trial offer.
+Secondary: **Keep logging work** → Today.
+
+The offer is the next step after a result, not a reward for completing a form. A match is a successful check; do not require or manufacture a discrepancy to sell Pro.
+
+## 4. Annual trial offer: exact interaction contract
+
+Show at most three paid benefits, each supported by the current binary:
+
+- **Check every paycheck** with scanning or manual entry and confirmed work.
+- **Follow every possible difference** back to its inputs and calculation.
+- **Keep and share your audit record** for your own review.
+
+Private calculation is a trust property shared with Free, not a fictional Pro-exclusive benefit.
+
+For an eligible annual customer, the content hierarchy is:
 
 ```text
-First complete paycheck audit
-  ↓
-Show actual audit result
-  ↓
-User attempts another audit
-  ↓
-Contextual Pro paywall
-```
+Check every paycheck.
 
-LinePay does **not** use a hard launch paywall, mandatory account creation, a 3-day countdown trial, fake urgency, or a paywall before the user understands what the product does.
+[Real result summary, only if available and accurately scoped]
 
-The guiding rule is:
+Annual — Recommended
+7 days free, then $79.99 per year
+Billed yearly. About $6.67/month equivalent.
+Save about 33% compared with 12 monthly payments.
 
-> **Earn trust first. Ask early enough to monetize Day 0 intent. Ask again only when the user reaches the paid boundary.**
+Monthly
+$9.99 per month. Billed today. No free trial.
 
----
+[ Start my 7-day free trial ]
+Then $79.99/year, automatically renewing.
+Cancel at least 24 hours before the trial ends to avoid renewal.
 
-## 1. Why this structure
-
-### What current subscription evidence says
-
-RevenueCat's *State of Subscription Apps 2026* reports:
-
-- hard-paywall apps have much higher median D35 download-to-paid conversion than freemium apps (10.7% vs. 2.1%);
-- most subscription decisions are heavily front-loaded in the first session;
-- roughly one-third of conversions happen on Day 0;
-- 60%+ of conversions happen within the first week;
-- Business apps start almost 90% of their trials on Day 0;
-- longer trials outperform very short trials on trial-to-paid conversion;
-- two-plan paywalls are the dominant simple structure across many categories;
-- countdown timers and progress bars are rare, not normal best practice.
-
-Source: https://www.revenuecat.com/state-of-subscription-apps
-
-Adapty's 2026 research similarly emphasizes that most trial starts happen on Day 0 and that onboarding/paywall **structure, placement, trial design, and plan duration** tend to matter more than cosmetic copy/color changes.
-
-Sources:
-
-- https://adapty.io/blog/how-to-personalize-onboarding-and-paywalls-in-your-mobile-app/
-- https://adapty.io/blog/what-is-adapty-flow-builder/
-
-### What Apple's platform guidance says
-
-Apple's HIG recommends that onboarding be:
-
-- fast;
-- optional where practical;
-- interactive rather than lecture-like;
-- focused on the app's actual experience;
-- light on nonessential setup;
-- delayed only when setup is not required;
-- respectful of the user's ability to experience the app before ratings or purchase prompts.
-
-Apple also explicitly recommends explaining subscription benefits during onboarding and considering limited free access before requiring a purchase.
-
-Sources:
-
-- https://developer.apple.com/design/human-interface-guidelines/onboarding
-- https://developer.apple.com/design/human-interface-guidelines/in-app-purchase
-- https://developer.apple.com/app-store/review/guidelines/
-
-### LinePay-specific conclusion
-
-A generic hard paywall would likely increase immediate purchase attempts, but it would undermine LinePay's strongest product advantages:
-
-- trust;
-- privacy;
-- immediate local utility;
-- no account;
-- proof through actual pay calculations;
-- first real paycheck audit as the decisive value moment.
-
-Therefore the correct optimization target is **qualified conversion + retention**, not maximum first-screen purchase rate.
-
----
-
-## 2. The onboarding job
-
-Onboarding has only four jobs:
-
-1. communicate the outcome;
-2. establish privacy/trust;
-3. collect the minimum facts required to calculate expected pay;
-4. expose the Pro offer without blocking Free.
-
-It is **not** a product tour.
-
-Do not teach:
-
-- every tab;
-- every future feature;
-- OCR mechanics;
-- agreement internals;
-- export/reporting;
-- settings;
-- terminology the worker has not needed yet.
-
-Contextual tips can teach later features when the user reaches them.
-
----
-
-## 3. Screen 1: value + trust
-
-### Goal
-
-Make the worker understand LinePay within 5 seconds.
-
-### Recommended copy
-
-**Headline**
-
-> Know what your work should pay.
-
-**Supporting copy**
-
-> Track the hours and pay rules that matter. LinePay calculates expected pay and helps you check the paycheck against your work.
-
-**Trust proof**
-
-> No account. Your pay data stays on this iPhone.
-
-**Primary CTA**
-
-> Set up my pay
-
-### Visual rules
-
-Use the Line Gap motif once. No illustration carousel. No generated lineworker photo. No three-card feature grid.
-
-The screen should feel like opening a precision instrument, not watching an ad.
-
----
-
-## 4. Screen 2: interactive pay setup
-
-This is the core onboarding interaction.
-
-Ask only for information needed to make LinePay useful immediately:
-
-### Required
-
-- profile/agreement label;
-- hourly rate;
-- work timezone.
-
-### Optional, off by default
-
-- daily overtime tier;
-- Sunday premium;
-- callout minimum;
-- per diem.
-
-Never pre-enable a rule merely because it is common among linemen.
-
-The user should feel:
-
-> **I am teaching LinePay how I get paid.**
-
-not:
-
-> I am filling in a registration form.
-
-### Completion CTA
-
-> Save my pay rules
-
-After successful validation, move directly to the soft paywall. Preserve the completed profile regardless of whether the user buys.
-
----
-
-## 5. Screen 3: onboarding soft paywall
-
-### Purpose
-
-Expose the subscription while Day 0 intent is strongest, but do not prevent the worker from using Free.
-
-### Headline
-
-> Audit every paycheck.
-
-Avoid generic copy such as:
-
-- Unlock premium;
-- Go Pro;
-- Supercharge your pay;
-- AI-powered payroll insights.
-
-### Personalized proof
-
-Reflect the rules the worker just configured.
-
-Examples:
-
-> Your LinePay profile is ready for **daily OT + callout minimums**.
-
-or:
-
-> Your LinePay profile is ready at **$58.40/hr**.
-
-Do not invent a rule or imply the rules are legally authoritative.
-
-### Benefits
-
-Keep to three concrete benefits maximum:
-
-1. **Check every paycheck** against recorded work and confirmed rules.
-2. **See possible differences** with an explainable Pay Ledger.
-3. **Keep pay data private** on the device by default.
-
-Only advertise features that are actually available in the shipping build.
-
-### Plans
-
-Follow `docs/pricing.md`:
-
-- **Yearly**: recommended / Best value;
-- **Monthly**: clearly visible alternative;
-- no weekly plan;
-- no lifetime plan;
-- no fake third plan used as a decoy.
-
-Prices must come from StoreKit `Product` data, not hard-coded UI strings.
-
-### Primary action
-
-When Yearly is selected:
-
-> Continue with Yearly
-
-When Monthly is selected:
-
-> Continue with Monthly
-
-### Soft escape
-
-A visible secondary action is mandatory:
-
-> Continue free
-
-Do not:
-
-- hide it behind an X in the corner;
-- delay its appearance;
-- use 30% opacity;
-- label it ambiguously (`Maybe later` is less clear);
-- make users decline twice.
-
-A soft paywall should be genuinely soft.
-
-### Trust footer
-
-Show:
-
-> No LinePay account. Pay data stays on this device by default.
-
-Also provide:
-
-- Restore Purchases;
-- clear auto-renewal language when purchase is available;
-- subscription management/help path before App Store release.
-
----
-
-## 6. Do not use a calendar trial at launch
-
-The pricing strategy already establishes:
-
-> **First complete paycheck audit is free.**
-
-That is a better LinePay trial than `3 days free` or `7 days free` because the product's natural value cadence is payday.
-
-A short timer can expire before the user receives a paycheck.
-
-RevenueCat's 2026 data also shows that longer trials tend to convert materially better than ≤4-day trials, reinforcing that ultra-short timers are not automatically superior.
-
-Do not add a calendar trial until real data demonstrates that event-based sampling is inferior.
-
----
-
-## 7. The second paywall: contextual intent
-
-The onboarding paywall is an offer.
-
-The **paid-boundary paywall** is where LinePay should eventually convert best because the worker has expressed explicit intent.
-
-Preferred trigger:
-
-```text
-First complete audit consumed
-       +
-User starts another paycheck audit
-       ↓
-Feature-specific paywall
-```
-
-Copy should reflect the attempted action:
-
-> Check every paycheck
-
-> Your first paycheck check was free. LinePay Pro keeps auditing future paychecks against your recorded work and confirmed rules.
-
-This is superior to showing the exact same generic paywall every three launches.
-
-Do not paywall:
-
-- opening the app;
-- viewing one's own recorded work;
-- editing existing work;
-- reading the first audit result;
-- correcting a mistaken pay rule.
-
----
-
-## 8. Purchase implementation rules
-
-Use StoreKit 2 directly unless a demonstrated growth requirement justifies another dependency.
-
-### Product IDs
-
-Canonical entitlement: `LinePay Pro`
-
-Current product identifier proposal from `docs/pricing.md`:
-
-- `linepay.pro.monthly`
-- `linepay.pro.yearly`
-
-Before App Store Connect creation, identifiers may be finalized once. After creation, treat them as immutable external identifiers.
-
-### Store behavior
-
-The app must:
-
-- load product metadata asynchronously;
-- display `Product.displayPrice` / localized store data;
-- handle verified transactions only;
-- listen for transaction updates;
-- restore purchases;
-- unlock Pro from current verified entitlements;
-- remain usable as Free if StoreKit is unavailable;
-- never make pay calculation depend on StoreKit availability.
-
-### Pre-launch safety
-
-Until Pro's paid audit value is actually implemented, the onboarding paywall may render as a **preview**, but purchase buttons must not sell unavailable functionality.
-
-Do not ship a purchasable subscription whose core promised paid feature does not yet exist.
-
----
-
-## 9. Paywall design rules
-
-Follow `DESIGN.md`.
-
-### Structure
-
-One continuous vertical hierarchy, not a pile of cards:
-
-```text
-Line Gap
-
-Audit every paycheck.
-Short outcome copy
-
-Profile-ready personalization
-
-✓ Check every paycheck
-✓ Explain possible differences
-✓ Private by default
-
-[ Yearly — Best value ]
-[ Monthly ]
-
-[ Continue with Yearly ]
 Continue free
-
-Restore Purchases
-Renewal / privacy note
+Restore Purchases · Manage Subscription · Terms · Privacy
 ```
 
-### Avoid AI subscription slop
+The displayed prices above are U.S. examples. Render the complete annual charge prominently. Calculate any savings using the loaded annual and monthly products in the same currency with Decimal; hide savings if products or comparison validity are unavailable. Do not make the monthly equivalent look like the billing schedule.
 
-No:
+The trial starts only when Apple's purchase flow completes successfully with a verified transaction. Opening the app, tapping the CTA, closing the sheet, or saving a profile does not start it.
 
-- giant `SAVE 67%` bursts;
-- countdowns;
-- pulsing CTA buttons;
-- fake testimonials;
-- fake review stars;
-- fake scarcity;
-- blurred workers in the background;
-- gradient-purple Pro cards;
-- weekly-equivalent price tricks;
-- preselected consent checkboxes;
-- confetti before purchase;
-- fear copy about wage theft;
-- dark-pattern close buttons.
+### CTA and eligibility matrix
 
-The value proposition itself must carry the sale.
+| Selected product / state | CTA | Pricing and behavior |
+|---|---|---|
+| Annual, actual seven-day free offer present, eligible | **Start my 7-day free trial** | Show free duration and full annual renewal price |
+| Annual, ineligible or no active offer | **Subscribe yearly** | Show immediate full yearly charge; no trial claim |
+| Annual, eligibility unresolved | **Checking trial availability…** | Keep Free and retry available; no speculative free claim |
+| Monthly | **Subscribe monthly** | Show immediate monthly charge and no trial |
+| Products unavailable | **Retry App Store prices** | Keep **Continue free**; preserve work |
+| Existing active Pro | **Continue to my work** | Do not sell a duplicate plan; provide management |
+| Purchase pending | **Waiting for approval** | Explain status; no Pro unlock yet |
+| Purchase cancelled | Same selected plan and terms | Quiet return; no alarm or repeated confirmation |
 
----
+A visible **Continue free** action is required on the onboarding offer. Contextual sheets may use **Not now**, but must return to the attempted task/result. No delayed close control, false urgency, ambiguous trial toggle, fake social proof, fabricated savings, or annual label such as “Most popular” before evidence exists.
 
-## 10. Personalization rules
+Have Terms and Privacy links available before promoting this as launch-ready. Do not copy a policy URL from another app.
 
-Personalization is valuable only when it reflects facts the user supplied.
+## 5. The seven-day activation sequence
 
-Good:
+The week is an opportunity to build evidence, not seven push messages. All prompts are conditional and stop when their task is complete.
 
-> Ready for daily OT, Sunday premium, and callout minimums.
+| Moment | User need | Product response and action |
+|---|---|---|
+| Immediately after verified start | “What did I start?” | Confirm annual plan, actual expiry/renewal date and price. Return to saved work. CTA **Log my next work** or **Check my paycheck**, based on available facts. |
+| Day 0 | Make setup useful | Ensure one real work record has a reviewed ledger. Offer one optional reminder for the user's chosen work-log time. |
+| Days 1–2 | Repeat without re-entering everything | **Add today's work**; offer reviewable reuse of the previous shift. Never automatically mark hours as worked. |
+| Days 2–4 | Experience recurring audit value | If matching paycheck/work facts exist: scan/import, confirm uncertain OCR, show comparison and source evidence. Otherwise help complete the current work period. |
+| Before renewal, preferably 48 hours ahead | Decide with confidence | Show a factual recap of records/checks, renewal amount/date, and **Manage Subscription**. Offer an opt-in local reminder only if implemented and successfully scheduled. |
+| At expiry or first paid transaction | Understand access | Reconcile verified StoreKit state. Show actual paid/expired status. Keep all existing records and results accessible. |
+| Following pay cycles | Reason to remain subscribed | Make repeated logging, checks, source review, and reports easier. Show usefulness, including matching paychecks, without guilt or monetary recovery claims. |
 
-Good:
+The app must not promise “we'll remind you” unless permission and scheduling succeeded. Permission refusal has no effect on access. Use neutral lock-screen copy such as **Review your LinePaycheck subscription**; do not include wage values. Calculate dates from verified store status, not seven device-calendar dates after install. Follow Apple's cancellation guidance [R6].
 
-> Your profile is set to $58.40/hr.
+If renewal is already disabled, show **Ends on [date]** instead of **Renews on [date]**. Do not confuse cancelling renewal with immediate entitlement revocation. Follow verified entitlement state; do not promise future access the store has removed.
 
-Bad:
+After payment, prevent involuntary churn through understandable billing recovery and verified grace-period handling when configured. Do not silently enable new billing settings during trial setup. A yearly customer's first renewal takes a year to observe; annual “retention” in a first-month dashboard is not a renewal metric.
 
-> We found you could be losing $427 every paycheck.
+## 6. Free access and later conversion
 
-Bad:
+Keep the first complete paycheck audit available without an App Store trial. It serves workers without a paycheck during the week and workers who decline an annual commitment.
 
-> Most linemen like you recover $2,300/year.
+The app-managed free audit and Apple's introductory offer are separate:
 
-Unless LinePay has real evidence for those claims, they are fabricated persuasion.
+- Completing a free audit never changes Apple's trial eligibility.
+- Audits while an active verified Pro trial/subscription exists must not consume the unused Free audit.
+- Preserve the used Free-audit state with saved/restored work; cancellation does not reset it. Reinstalling or deleting all local data may erase that device-local allowance. Accept that limitation rather than adding an account/backend to police it; Apple's introductory eligibility remains independent.
+- If a trial expires with the Free audit unused, that one audit remains available.
+- Correcting/re-running the already-free audit period remains available.
+- Existing work, recorded rules, saved audit evidence, and completed results remain readable after expiry.
 
----
+Contextual offer triggers: an explicit Pro action, an attempt at another new audit beyond Free, or the first free audit's optional completion offer. After a dismissal, suppress unsolicited repeat offers for that session. Do not add a launch-count timer or show another paywall after every edit.
 
-## 11. Onboarding state
+For eligible Free users at a later boundary: **Try checking every paycheck free for 7 days**, with the annual terms. For ineligible users: **Keep checking every paycheck**, with normal prices. No resetting the trial clock or alternate group to obtain another introduction.
 
-Onboarding is product state, not authentication state.
+## 7. StoreKit implementation requirements
 
-Minimum conceptual state:
+Use StoreKit 2 directly. Query product data and introductory eligibility before rendering trial-specific purchase copy. `isEligibleForIntroOffer` can be true even when no offer is configured; both eligibility and a real `introductoryOffer` are required [R7, R8].
 
-```text
-welcome
-paySetup
-softPaywall
-complete
-```
+For the requested trial, validate offer payment mode is free and total offer duration is seven days. A future configuration change must update the rendered duration, not retain a hard-coded promise. Track storefront/product refresh and stale UI states. Normal `Product.purchase()` invokes Apple's applicable introductory terms; no coupon product, app bundle, local trial entitlement, or extra subscription group is needed.
 
-Once persistence exists:
+Entitlement authority remains verified transactions and subscription status. Keep purchase, trial, renewal-disabled, grace, expired, refunded/revoked, pending, and unavailable states distinguishable. An annual trial is not a paid annual conversion. Handle foreground/launch refresh as well as transaction updates; never grant Pro from a local start date.
 
-- persist completion locally;
-- never show first-run onboarding again merely because StoreKit failed;
-- preserve pay setup if the app terminates at the paywall;
-- let users revisit pay rules from Settings;
-- let users revisit Pro from Settings / a contextual feature boundary.
+Apple allows one introductory redemption per group. Restoring on another device and selecting another duration must not offer an additional trial [R9].
 
-No user account or backend is required.
+App Store configuration evidence is recorded in [the trial setup record](research/onboarding-trial-2026-09-05.md). Server configuration, a successful StoreKit test, and App Review approval prove different things.
 
----
+## 8. Measurement contract
 
-## 12. Failure behavior
+At launch, use App Store Connect offer/subscription reports and privacy-safe local observation. Apple exposes completed-offer conversion and subscription lifecycle reporting [R10, R11]. A calendar-period ratio of trial starts divided by downloads is a directional proxy, not a linked install-cohort conversion rate.
 
-### Pay-rule validation fails
+No new remote analytics, tracking SDK, or wage-data backend is authorized by this specification. Local counters do not provide a production funnel dashboard. If aggregate Apple reports cannot answer an experiment, document the blind spot; a minimal remote-event proposal requires an explicit privacy/data-flow decision before shipping.
 
-Stay on setup and explain the exact field that needs correction.
+| Metric | Definition and window |
+|---|---|
+| Download → trial | Unique eligible annual trial starters within 30 days of first download / first-time downloads in that cohort; report true linked cohort only when available |
+| Offer → trial | Verified introductory starts / eligible unique viewers of the offer; local QA or approved measurement only |
+| Trial → paid | Trials with a verified first nonzero standard-price charge / trials whose free period has ended; include cancelled trials in denominator |
+| D35 download → paid | Unique first-paid customers within 35 days / first-time downloads of the same cohort |
+| Annual share | New annual first-paid customers / all new first-paid customers; exclude free starts, restores, renewals, and switches |
+| D30 net proceeds/download | Estimated developer proceeds through Day 30, net of refunds exactly once / cohort downloads; record tax/commission/reporting lag |
+| Retention | D30 usage separately from monthly first renewal and annual first renewal; count only subscriptions due to renew |
+| Activation | First real work saved + first expected-pay explanation viewed; sample activity excluded |
+| Audit value | Confirmed real audit completed; match and possible difference both count |
 
-### Store products fail to load
+De-duplicate transactions by store transaction identity. Treat switches separately to avoid double-counting payers. Exclude sandbox/TestFlight and re-downloads from first-acquisition denominators. Segment by storefront, app version, acquisition source, eligibility, and plan where reporting permits. Do not divide today's conversions by today's trial starts.
 
-Never trap the user.
+For cohort trial conversion, freeze the readout after all enrolled trials have ended plus a 48-hour reporting buffer; report unresolved billing separately and revise when later charges arrive. For D30/D35 revenue, use full matured windows. Do not erase failed billing or auto-renew-disabled users to improve the rate.
 
-Show:
+Proposed local development events: `first_open`, `pay_basics_saved`, `first_real_work_saved`, `first_expected_pay_viewed`, `trial_offer_viewed`, `plan_selected`, `purchase_attempted`, `verified_trial_started`, `verified_first_paid`, `first_real_audit_completed`, `manage_subscription_opened`. Store only stage, coarse variant, product identifier, and result; no wage, rule, employer, union, paystub, or raw purchase identity in analytics logs.
 
-> Pro isn't available right now.
+## 9. Experiments and decision thresholds
 
-and keep:
+The economic model in `marketing.md` assumes 12.2% annual trial starts × 42.5% trial-to-paid + 2.8% direct monthly purchases ≈ 8.0% paid/download and 65% annual payer share. Those are stretch targets, not measured performance. In particular, 42.5% is not the published benchmark for seven-day trials.
 
-> Continue free
+Internal gates before paid scale:
 
-available.
-
-### Purchase is cancelled
-
-Return to the paywall without alarm copy.
-
-### Purchase fails
-
-Display an actionable, non-technical error and preserve the selected plan.
-
-### Purchase succeeds
-
-Confirm quietly and enter the main app.
-
-No casino animation.
-
----
-
-## 13. Accessibility
-
-- Dynamic Type throughout onboarding and paywall.
-- VoiceOver order follows visual hierarchy.
-- Plan selection communicates selected state without color alone.
-- Buttons meet LinePay field-ready target sizes.
-- The close/free path remains accessible.
-- Do not place critical renewal text at unreadably small sizes.
-- Respect Reduce Motion.
-
----
-
-## 14. Conversion metrics
-
-Do not add a third-party analytics SDK solely for this funnel.
-
-At launch, the minimum evidence set is:
-
-1. install / App Store product-page data;
-2. purchase and subscription data from App Store Connect;
-3. TestFlight observation/interviews;
-4. local debug-only funnel instrumentation during development;
-5. direct user interviews around where onboarding felt confusing or untrustworthy.
-
-If LinePay later needs remote funnel analytics, add the minimum privacy-preserving events under an explicit ADR. Never send wage, hours, rule details, employer names, or paystub content as analytics.
-
-### Target diagnostic questions
-
-Do not worship a generic industry conversion benchmark. Instead diagnose:
-
-- Are users reaching pay setup?
-- Are they completing pay setup?
-- Are they seeing the onboarding paywall?
-- Are they continuing into the app rather than abandoning?
-- Are they logging work?
-- Are they completing the first paycheck audit?
-- Do first-audit completers convert to Pro?
-- Do subscribers retain because audits remain useful?
-
-The most important LinePay conversion metric is eventually:
-
-> **first completed real audit → paid Pro**
-
-not install → paywall tap.
-
----
-
-## 15. Experiment order
-
-Do not begin with button-color experiments.
-
-### Experiment 0: product truth
-
-Validate that real workers finish setup, log real work, and want recurring audits.
-
-### Experiment 1: paywall placement
-
-Compare:
-
-- after pay setup (default);
-- only after first audit.
-
-Do not test until there is enough traffic to learn something.
-
-### Experiment 2: package emphasis
-
-Keep $9.99 monthly fixed and compare annual emphasis / annual price only if purchase volume supports it.
-
-### Experiment 3: personalized benefit ordering
-
-Examples:
-
-- callout-first for workers who enabled callout rules;
-- OT-first for workers who enabled overtime;
-- privacy-first for workers who did not enable advanced rules.
-
-### Experiment 4: trial mechanics
-
-Only after first-audit-free has meaningful data should LinePay test a calendar trial.
-
-Structural experiments outrank cosmetic experiments.
-
----
-
-## 16. Implementation acceptance criteria
-
-The onboarding implementation is correct when:
-
-- first launch shows the value/trust screen;
-- onboarding contains no account creation;
-- the worker can set a valid pay profile interactively;
-- all optional pay rules default off;
-- successful setup preserves the profile before the paywall;
-- the onboarding Pro offer is dismissible via `Continue free`;
-- StoreKit product prices are not hard-coded in the purchase surface;
-- StoreKit failure cannot block Free usage;
-- purchasing is disabled if promised Pro value is not shipping/configured;
-- Restore Purchases exists when StoreKit products are active;
-- accessibility labels and Dynamic Type work;
-- design follows `DESIGN.md`;
-- no pay-rule or wage information leaves the device.
-
----
-
-## 17. Final rule
-
-The onboarding system should feel like this:
-
-> **LinePay understands why I'm here, lets me configure the real rules quickly, tells me exactly what Pro buys, and doesn't hold my own work hostage.**
-
-The monetization principle is:
-
-> **Value before coercion. Day-0 offer without Day-0 captivity. Contextual paywall when intent is strongest.**
+- Five observed representative workers: at least four reach a correct, explainable real-work result within two minutes; all can state the annual renewal amount and find Free/cancellation. Any charge misunderstanding is a release defect.
+- First 100 matured trials: descriptive readout with uncertainty and cancellation/activation interviews. This is a diagnostic sample, not proof of a winning experiment.
+- Review product/offer design if matured trial-to-paid is below 30% or annual share below 50%. Investigate before lowering price.
+- Ambition: annual trial starts ≥12.2%, trial-to-paid ≥42.5%, total paid/download ≥8%, annual first-paid share ≥65%. Do not scale from these point estimates without actual cohort proceeds covering acquisition cost and tolerable refund/support outcomes.
+- Stop a variant immediately for incorrect trial terms, unverified unlock, inaccessible Free access, lost work, or misleading comparison. Pause scaling if refunds exceed 5% of first charges or users report unexpected billing; this threshold is an internal guardrail, not an Apple rule.
+
+Ordered experiments, one variable at a time:
+
+| Order | Comparison | Primary outcome | Guardrail |
+|---|---|---|---|
+| 0 | Observe actual users before quantitative testing | Correct first-result and renewal understanding | No invented work/pay rules |
+| 1 | Proof → offer versus setup → offer | D35 paid/download, then D30 proceeds/download | First-result completion, refunds |
+| 2 | Annual recommended versus neutral plan presentation | Net proceeds/download | Total paid conversion, price comprehension |
+| 3 | Trial roadmap versus concise benefit offer | Mature trial-to-paid | Actual audit/return use, cancellation clarity |
+| 4 | Seven-day annual trial versus a supported longer duration | D30/D60 proceeds/download | Time to first useful result and cash payback |
+
+Do not mix price, traffic, screenshots, offer duration, and copy in one experiment. Use a stable local assignment for presentation only if results can be measured lawfully. Apple offers are storefront/product schedules, not per-user randomized durations; test duration sequentially with fixed acquisition/version where possible and disclose time/seasonality confounding. Apple supports one week, two weeks, and month-based free offers—not an arbitrary 17-day offer.
+
+Predefine enrollment, minimum effect, readout date, confidence method, and stop rules. As a rough two-proportion planning example, detecting 37% versus 47% conversion with 80% power and two-sided 5% significance needs about 382 matured trials per arm. Budget at least 400 per arm before losses; recompute for the actual baseline. With small traffic, prioritize observed task completion and cohort diagnostics over claims of statistical wins.
+
+## 10. Implementation gap and acceptance matrix
+
+Inspection at source commit `03dedaa` found:
+
+- `OnboardingFlowView` has welcome/setup and completes immediately after saving.
+- `ProPaywallView` selects annual first but uses generic purchase copy and no trial eligibility presentation.
+- `SubscriptionStore` verifies purchases and current entitlements but exposes no trial/renewal presentation model.
+- No checked-in `.storekit` file was found.
+- First-work proof, trial roadmap/reminders, and production funnel measurement are specified here; they are not established by this docs change.
+
+A saved App Store offer alone does not close these gaps. Build the flow without modifying payroll arithmetic or retroactively changing stored agreement snapshots.
+
+| Requirement | Acceptance evidence |
+|---|---|
+| No-login first session, minimal explicit pay facts | Fresh install/manual QA; optional rules remain off |
+| Real work → correct scoped result → optional offer | Simulator journey; preserved inputs and explainable ledger |
+| Eligible annual / ineligible annual / monthly | StoreKit configuration plus sandbox cases; CTA and charge terms match the selected product |
+| Product missing / network failure / unknown eligibility | Free remains usable and no false trial promise appears |
+| Purchase cancel / failure / pending / unverified | No false success; inputs survive; duplicate taps prevented |
+| Trial start / paid renewal / expiry / revoke / restore | Verified state transitions and no local timer-based Pro |
+| Active Pro skip; restored purchase skip | No duplicate trial invitation |
+| Trial/free-audit interaction | Focused tests for unused, used, active-trial, expired-trial, and same-period recheck cases |
+| Renewal reminder | Opt-in, verified date, scheduled confirmation, denied-permission path, cancelled-renewal handling |
+| Accessibility | Small/large iPhone, large text, dark mode, VoiceOver reading of price and selected plan, reachable Free/terms |
+| Retention | End-to-end repeat-work and second-paycheck journey; history remains accessible after cancellation |
+| Release | Full native gate, relevant Maestro flows, StoreKit sandbox/TestFlight evidence; no readiness claim from docs or configuration alone |
+
+Deliver in this order: trial eligibility/pricing presentation → first-work proof and offer placement → trial activation/renewal state → test matrix and real-worker observation. Do not launch paid acquisition until the first two slices and purchase-path verification are complete.
+
+## References
+
+- [R1] RevenueCat, State of Subscription Apps 2026: https://www.revenuecat.com/state-of-subscription-apps
+- [R2] Apple HIG, Onboarding: https://developer.apple.com/design/human-interface-guidelines/onboarding
+- [R3] Apple, Auto-renewable Subscriptions, presentation: https://developer.apple.com/app-store/subscriptions/
+- [R4] Yoganarasimhan, Barzegary, Pani, Design and Evaluation of Optimal Free Trials: https://pubsonline.informs.org/doi/10.1287/mnsc.2022.4507
+- [R5] RevenueCat, The 7-day trial and other free trial myths, March 19, 2026: https://www.revenuecat.com/blog/growth/7-day-trial-subscription-app
+- [R6] Apple Support, Cancel a subscription: https://support.apple.com/en-us/118428
+- [R7] Apple StoreKit, Introductory offer eligibility: https://developer.apple.com/documentation/storekit/product/subscriptioninfo/iseligibleforintrooffer
+- [R8] Apple StoreKit, Introductory offer metadata: https://developer.apple.com/documentation/storekit/product/subscriptioninfo/introductoryoffer
+- [R9] Apple, Set up introductory offers: https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-introductory-offers-for-auto-renewable-subscriptions
+- [R10] Apple, Sales and Trends metrics: https://developer.apple.com/help/app-store-connect/reference/reporting/sales-and-trends-metrics-and-dimensions/
+- [R11] Apple, Subscription analytics: https://developer.apple.com/help/app-store-connect-analytics/monetization/subscriptions

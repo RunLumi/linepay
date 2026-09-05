@@ -56,7 +56,12 @@ Run on a real iPhone before App Store submission. Use synthetic pay data only.
 ## Pricing / StoreKit
 
 - [ ] First complete paycheck audit is possible before subscribing.
-- [ ] No Pro paywall appears in onboarding.
+- [ ] Welcome has no paywall; the first real expected-pay result leads to an optional annual trial offer with Continue free.
+- [ ] Eligible Annual shows seven days free then the full localized yearly charge; ineligible Annual and Monthly show immediate paid terms.
+- [ ] Unknown eligibility, missing offer, or unavailable products never produce a false free-trial claim.
+- [ ] Trial start, renewal, disabled renewal, expiry, revocation, and restore follow verified StoreKit state.
+- [ ] Audits during Pro/trial do not consume an unused Free audit; same-period corrections remain available.
+- [ ] Renewal reminder is promised only after opt-in and successful scheduling; denied permissions preserve access.
 - [ ] A later new pay-period audit asks for Pro in a Release/TestFlight build.
 - [ ] Yearly and monthly products show App Store localized prices.
 - [ ] Yearly is recommended without hiding monthly.
