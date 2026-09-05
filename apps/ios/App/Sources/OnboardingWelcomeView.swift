@@ -15,8 +15,8 @@ struct OnboardingWelcomeView: View {
                     .foregroundStyle(LinePayColor.textPrimary)
 
                 Text(
-                    "Track the hours and pay rules that matter. LinePay calculates expected pay "
-                        + "and helps you check the paycheck against your work."
+                    "Track the hours and pay rules that matter. LinePaycheck calculates expected "
+                        + "pay and helps you check the paycheck against your work."
                 )
                 .font(.title3)
                 .foregroundStyle(LinePayColor.textSecondary)
@@ -27,7 +27,7 @@ struct OnboardingWelcomeView: View {
                 trustRow(
                     icon: "person.crop.circle.badge.xmark",
                     title: "No account",
-                    detail: "Start using LinePay without an email or password."
+                    detail: "Start using LinePaycheck without an email or password."
                 )
                 trustRow(
                     icon: "iphone",
