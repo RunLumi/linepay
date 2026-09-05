@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+CHECKOUT_SHA="3d3c42e5aac5ba805825da76410c181273ba90b1"
+MAX_ROOT_AGENTS_BYTES=12000
+MAX_CLAUDE_LINES=200
+MAX_SKILL_LINES=500
+
 fail() {
     echo "error: $1" >&2
     exit 1
@@ -19,6 +24,22 @@ require_text() {
     grep -Fq -- "$text" "$file" || fail "$file is missing required text: $text"
 }
 
+check_frontmatter() {
+    local file="$1"
+    shift
+
+    [[ "$(head -n 1 "$file")" == "---" ]] || fail "$file must start with YAML frontmatter"
+
+    for key in "$@"; do
+        awk -v wanted="$key" '
+            NR == 1 { next }
+            /^---$/ { exit }
+            index($0, wanted ":") == 1 { found = 1 }
+            END { exit !found }
+        ' "$file" || fail "$file requires $key frontmatter"
+    done
+}
+
 echo "==> Shell syntax"
 for script in scripts/*.sh; do
     bash -n "$script"
@@ -32,6 +53,7 @@ for file in \
     docs/agentic.md \
     .mcp.json \
     .codex/config.toml \
+    .gemini/settings.json \
     .github/copilot-instructions.md \
     .github/instructions/ios.instructions.md \
     .github/instructions/domain.instructions.md \
@@ -39,6 +61,11 @@ for file in \
     .github/agents/ios-engineer.agent.md \
     .github/agents/payroll-reviewer.agent.md \
     .github/agents/mobile-qa.agent.md \
+    .github/agents/release-reviewer.agent.md \
+    .claude/agents/ios-engineer.md \
+    .claude/agents/payroll-reviewer.md \
+    .claude/agents/mobile-qa.md \
+    .claude/agents/release-reviewer.md \
     .github/pull_request_template.md \
     .github/ISSUE_TEMPLATE/agent-task.md \
     .agents/skills/ios-feature/SKILL.md \
@@ -47,6 +74,7 @@ for file in \
     .agents/skills/release-readiness/SKILL.md \
     .xcodebuildmcp/config.yaml \
     .github/workflows/agent-harness.yml \
+    .github/workflows/ios.yml \
     scripts/agent-context.sh \
     scripts/agent-doctor.sh \
     scripts/agent-verify.sh; do
@@ -55,12 +83,28 @@ done
 
 echo "==> Config syntax"
 python3 -m json.tool .mcp.json >/dev/null
+python3 -m json.tool .gemini/settings.json >/dev/null
 python3 - <<'PY'
 import tomllib
 
 with open('.codex/config.toml', 'rb') as handle:
     tomllib.load(handle)
 PY
+
+echo "==> Instruction budgets"
+root_agents_bytes="$(wc -c < AGENTS.md | tr -d ' ')"
+(( root_agents_bytes <= MAX_ROOT_AGENTS_BYTES )) \
+    || fail "AGENTS.md is ${root_agents_bytes} bytes; move focused guidance to skills/docs before exceeding ${MAX_ROOT_AGENTS_BYTES}"
+
+claude_lines="$(wc -l < CLAUDE.md | tr -d ' ')"
+(( claude_lines <= MAX_CLAUDE_LINES )) \
+    || fail "CLAUDE.md is ${claude_lines} lines; keep compatibility context concise (max ${MAX_CLAUDE_LINES})"
+
+for skill in .agents/skills/*/SKILL.md; do
+    skill_lines="$(wc -l < "$skill" | tr -d ' ')"
+    (( skill_lines <= MAX_SKILL_LINES )) \
+        || fail "$skill is ${skill_lines} lines; split supporting detail/resources before exceeding ${MAX_SKILL_LINES}"
+done
 
 echo "==> Product identity invariants"
 require_text apps/ios/project.yml "PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay"
@@ -76,42 +120,17 @@ fi
 
 echo "==> Agent Skill metadata"
 for skill in .agents/skills/*/SKILL.md; do
-    first_line="$(head -n 1 "$skill")"
-    [[ "$first_line" == "---" ]] || fail "$skill must start with YAML frontmatter"
-
-    awk '
-        NR == 1 { next }
-        /^---$/ { exit }
-        /^name:[[:space:]]+[^[:space:]]/ { name = 1 }
-        /^description:[[:space:]]+[^[:space:]]/ { description = 1 }
-        END { exit !(name && description) }
-    ' "$skill" || fail "$skill requires name and description frontmatter"
+    check_frontmatter "$skill" name description
 done
 
 echo "==> Path-specific instruction metadata"
 for instruction in .github/instructions/*.instructions.md; do
-    first_line="$(head -n 1 "$instruction")"
-    [[ "$first_line" == "---" ]] || fail "$instruction must start with YAML frontmatter"
-
-    awk '
-        NR == 1 { next }
-        /^---$/ { exit }
-        /^applyTo:[[:space:]]+.+/ { apply_to = 1 }
-        END { exit !apply_to }
-    ' "$instruction" || fail "$instruction requires applyTo frontmatter"
+    check_frontmatter "$instruction" applyTo
 done
 
 echo "==> Custom agent metadata"
-for agent in .github/agents/*.agent.md; do
-    first_line="$(head -n 1 "$agent")"
-    [[ "$first_line" == "---" ]] || fail "$agent must start with YAML frontmatter"
-
-    awk '
-        NR == 1 { next }
-        /^---$/ { exit }
-        /^description:[[:space:]]+[^[:space:]]/ { description = 1 }
-        END { exit !description }
-    ' "$agent" || fail "$agent requires description frontmatter"
+for agent in .github/agents/*.agent.md .claude/agents/*.md; do
+    check_frontmatter "$agent" name description
 done
 
 echo "==> MCP commands"
@@ -119,6 +138,18 @@ require_text .mcp.json '"command": "xcodebuildmcp"'
 require_text .mcp.json '"command": "maestro"'
 require_text .codex/config.toml '[mcp_servers.xcodebuildmcp]'
 require_text .codex/config.toml '[mcp_servers.maestro]'
+require_text .gemini/settings.json '"xcodebuildmcp"'
+require_text .gemini/settings.json '"maestro"'
+
+echo "==> GitHub Actions supply-chain policy"
+for workflow in .github/workflows/agent-harness.yml .github/workflows/ios.yml; do
+    require_text "$workflow" "uses: actions/checkout@$CHECKOUT_SHA"
+    require_text "$workflow" "persist-credentials: false"
+done
+
+if grep -R -En 'uses:[[:space:]]+actions/checkout@(v|main|master)' .github/workflows >/dev/null; then
+    fail "actions/checkout must be pinned to the reviewed full commit SHA"
+fi
 
 echo "==> Verification commands are discoverable"
 require_text AGENTS.md "bash scripts/agent-verify.sh quick"
