@@ -119,7 +119,11 @@ struct AddWorkView: View {
                             "\(LinePayFormat.hours(worked)) worked hours, excluding the recorded breaks."
                         )
                         DatePicker(
-                            "New date", selection: Binding(get: { draft.start }, set: moveTemplate),
+                            "New date",
+                            selection: Binding(
+                                get: { draft.start },
+                                set: { newDate in moveTemplate(newDate) }
+                            ),
                             displayedComponents: .date)
                         Button("Edit details") { quick = false }
                     }
