@@ -219,7 +219,8 @@ struct ScreenContractTests {
         // Reflection cannot propagate this custom @Environment key into EntryPoint.
         // Its navigation/sheet contract requires native UI testing, not a false text assertion.
         let save = try backupView.inspect().find(viewWithAccessibilityIdentifier: "backup.save")
-        let restore = try backupView.inspect().find(viewWithAccessibilityIdentifier: "backup.restore")
+        let restore = try backupView.inspect().find(
+            viewWithAccessibilityIdentifier: "backup.restore")
         #expect(try !save.button().isDisabled())
         #expect(try !restore.button().isDisabled())
         let paywall = try text(ProPaywallView(store: commerce()) {})
