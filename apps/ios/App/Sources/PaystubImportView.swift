@@ -351,11 +351,14 @@ struct PaystubReviewView: View {
                     "Check the full work period, including earlier shifts and any unpaid breaks. A partial work log cannot establish a full-paycheck difference."
                 )
                 .font(.footnote)
-                Picker("What does gross include?", selection: $draft.grossBasis) {
-                    ForEach(PaystubGrossBasis.allCases, id: \.self) { Text($0.title).tag($0) }
+                VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
+                    Text("What does gross include?")
+                    Picker("Gross basis", selection: $draft.grossBasis) {
+                        ForEach(PaystubGrossBasis.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden().pickerStyle(.navigationLink)
+                    .accessibilityIdentifier("paystub.gross-basis")
                 }
-                .pickerStyle(.navigationLink)
-                .accessibilityIdentifier("paystub.gross-basis")
                 Text(
                     "Compare wage gross with wages, not take-home pay. Confirm whether per diem is already inside this gross number; LinePaycheck does not infer tax treatment."
                 ).font(.footnote)
