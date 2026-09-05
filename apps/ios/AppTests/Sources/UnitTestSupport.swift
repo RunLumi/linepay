@@ -13,7 +13,8 @@ enum UnitFixture {
         try #require(Decimal(string: text, locale: Locale(identifier: "en_US_POSIX")))
     }
 
-    static func profile(rate: String = "50", cadence: PayPeriodCadence = .weekly) -> PayProfileDraft {
+    static func profile(rate: String = "50", cadence: PayPeriodCadence = .weekly) -> PayProfileDraft
+    {
         var draft = PayProfileDraft()
         draft.hourlyRate = rate
         draft.timeZoneIdentifier = "UTC"
@@ -25,11 +26,17 @@ enum UnitFixture {
 
     static func populate(_ model: AppModel, evidence: Bool = false) throws {
         try model.saveProfile(profile())
-        try model.addWork(start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular, note: "Synthetic shift")
-        if evidence { try model.confirmPaystub(paystub(model, original: Data("SYNTHETIC ORIGINAL".utf8))) }
+        try model.addWork(
+            start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular,
+            note: "Synthetic shift")
+        if evidence {
+            try model.confirmPaystub(paystub(model, original: Data("SYNTHETIC ORIGINAL".utf8)))
+        }
     }
 
-    static func paystub(_ model: AppModel, gross: String = "400", original: Data? = nil) -> PaystubConfirmationDraft {
+    static func paystub(_ model: AppModel, gross: String = "400", original: Data? = nil)
+        -> PaystubConfirmationDraft
+    {
         var draft = PaystubConfirmationDraft()
         draft.payPeriodStartDate = model.activePeriod?.window.startDate
         draft.payPeriodEndDate = model.activePeriod?.window.displayEndDate
@@ -42,7 +49,8 @@ enum UnitFixture {
     }
 
     static func temporaryDirectory() -> URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true)
     }
 }
 

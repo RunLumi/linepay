@@ -9,7 +9,8 @@ struct DomainContractTests {
     func validClock(_ hour: Int, _ minute: Int) throws {
         let value = try LocalTime(hour: hour, minute: minute)
         #expect(value.minuteOfDay == hour * 60 + minute)
-        #expect(try JSONDecoder().decode(LocalTime.self, from: JSONEncoder().encode(value)) == value)
+        #expect(
+            try JSONDecoder().decode(LocalTime.self, from: JSONEncoder().encode(value)) == value)
     }
 
     @Test(arguments: [(-1, 0), (24, 0), (0, -1), (0, 60)])
@@ -20,9 +21,11 @@ struct DomainContractTests {
     }
 
     @Test func localDatesSortAcrossMonthAndYear() {
-        let dates = [LocalDate(year: 2027, month: 1, day: 1),
-                     LocalDate(year: 2026, month: 12, day: 31),
-                     LocalDate(year: 2026, month: 1, day: 1)]
+        let dates = [
+            LocalDate(year: 2027, month: 1, day: 1),
+            LocalDate(year: 2026, month: 12, day: 31),
+            LocalDate(year: 2026, month: 1, day: 1),
+        ]
         #expect(dates.sorted() == dates.reversed())
         #expect(!(dates[0] < dates[0]))
         #expect(Weekday.allCases.map(\.rawValue) == Array(1...7))
@@ -40,34 +43,40 @@ struct DomainContractTests {
 
     @Test func invalidTimeZone() {
         #expect(throws: DomainValidationError.invalidTimeZone("Not/AZone")) {
-            try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                             timeZoneIdentifier: "Not/AZone")
+            try WorkInterval(
+                startEpochSeconds: 0, endEpochSeconds: 3_600,
+                timeZoneIdentifier: "Not/AZone")
         }
     }
 
     @Test func breakContracts() throws {
         let first = try WorkBreak(startEpochSeconds: 600, endEpochSeconds: 900)
         let second = try WorkBreak(startEpochSeconds: 900, endEpochSeconds: 1_200)
-        let value = try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                                    timeZoneIdentifier: "UTC", unpaidBreaks: [second, first])
+        let value = try WorkInterval(
+            startEpochSeconds: 0, endEpochSeconds: 3_600,
+            timeZoneIdentifier: "UTC", unpaidBreaks: [second, first])
         #expect(value.unpaidBreaks == [first, second])
         #expect(value.elapsedHours == 1)
         #expect(value.durationHours == 1 - Decimal(600) / 3_600)
         #expect(first.durationHours == Decimal(300) / 3_600)
-        #expect(try JSONDecoder().decode(WorkInterval.self, from: JSONEncoder().encode(value)) == value)
+        #expect(
+            try JSONDecoder().decode(WorkInterval.self, from: JSONEncoder().encode(value)) == value)
         #expect(throws: DomainValidationError.duplicateWorkBreakID) {
-            try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                             timeZoneIdentifier: "UTC", unpaidBreaks: [first, first])
+            try WorkInterval(
+                startEpochSeconds: 0, endEpochSeconds: 3_600,
+                timeZoneIdentifier: "UTC", unpaidBreaks: [first, first])
         }
         let overlap = try WorkBreak(startEpochSeconds: 800, endEpochSeconds: 1_000)
         #expect(throws: DomainValidationError.overlappingWorkBreaks) {
-            try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                             timeZoneIdentifier: "UTC", unpaidBreaks: [first, overlap])
+            try WorkInterval(
+                startEpochSeconds: 0, endEpochSeconds: 3_600,
+                timeZoneIdentifier: "UTC", unpaidBreaks: [first, overlap])
         }
         let whole = try WorkBreak(startEpochSeconds: 0, endEpochSeconds: 3_600)
         #expect(throws: DomainValidationError.workBreakConsumesEntireInterval) {
-            try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                             timeZoneIdentifier: "UTC", unpaidBreaks: [whole])
+            try WorkInterval(
+                startEpochSeconds: 0, endEpochSeconds: 3_600,
+                timeZoneIdentifier: "UTC", unpaidBreaks: [whole])
         }
     }
 
@@ -75,8 +84,9 @@ struct DomainContractTests {
     func breakOutsideShift(_ start: Int64, _ end: Int64) throws {
         let pause = try WorkBreak(startEpochSeconds: start, endEpochSeconds: end)
         #expect(throws: DomainValidationError.workBreakOutsideInterval) {
-            try WorkInterval(startEpochSeconds: 0, endEpochSeconds: 3_600,
-                             timeZoneIdentifier: "UTC", unpaidBreaks: [pause])
+            try WorkInterval(
+                startEpochSeconds: 0, endEpochSeconds: 3_600,
+                timeZoneIdentifier: "UTC", unpaidBreaks: [pause])
         }
     }
 
@@ -110,28 +120,35 @@ struct DomainContractTests {
         #expect(throws: DomainValidationError.duplicateOvertimeThreshold) {
             try agreement(dailyOvertimeTiers: [a, a])
         }
-        #expect(try JSONDecoder().decode(AgreementSnapshot.self,
-                                        from: JSONEncoder().encode(snapshot)) == snapshot)
+        #expect(
+            try JSONDecoder().decode(
+                AgreementSnapshot.self,
+                from: JSONEncoder().encode(snapshot)) == snapshot)
     }
 
     @Test(arguments: [(8, 8), (16, 8)])
     func scheduleRejectsEmptyAndOvernight(_ start: Int, _ end: Int) {
         #expect(throws: DomainValidationError.overnightScheduleWindowUnsupported) {
-            try RegularScheduleWindow(weekday: .monday,
-                                      start: LocalTime(hour: start, minute: 0),
-                                      end: LocalTime(hour: end, minute: 0))
+            try RegularScheduleWindow(
+                weekday: .monday,
+                start: LocalTime(hour: start, minute: 0),
+                end: LocalTime(hour: end, minute: 0))
         }
     }
 
     @Test func invalidCurrencyAndSourceRoundTrip() throws {
         #expect(throws: DomainValidationError.invalidCurrencyCode("US")) {
-            try AgreementSnapshot(id: "a", version: "1", displayName: "Synthetic",
-                                  hourlyRate: Money(amount: 10, currencyCode: "US"), regularSchedule: [])
+            try AgreementSnapshot(
+                id: "a", version: "1", displayName: "Synthetic",
+                hourlyRate: Money(amount: 10, currencyCode: "US"), regularSchedule: [])
         }
-        let source = AgreementSource(title: "Synthetic source", url: "https://example.invalid/rule",
-                                     section: "7", verifiedEpochSeconds: 42)
-        #expect(try JSONDecoder().decode(AgreementSource.self,
-                                        from: JSONEncoder().encode(source)) == source)
+        let source = AgreementSource(
+            title: "Synthetic source", url: "https://example.invalid/rule",
+            section: "7", verifiedEpochSeconds: 42)
+        #expect(
+            try JSONDecoder().decode(
+                AgreementSource.self,
+                from: JSONEncoder().encode(source)) == source)
     }
 }
 
@@ -139,16 +156,19 @@ struct DomainContractTests {
 struct ExactMoneyContractTests {
     @Test(arguments: [MoneyRoundingMode.halfUp, .bankers, .down, .up])
     func roundingModes(_ mode: MoneyRoundingMode) throws {
-        let expected: Decimal = switch mode {
-        case .halfUp, .up: decimal("1.23")
-        case .bankers, .down: decimal("1.22")
-        }
+        let expected: Decimal =
+            switch mode {
+            case .halfUp, .up: decimal("1.23")
+            case .bankers, .down: decimal("1.22")
+            }
         let amount = Money(amount: decimal("1.225"), currencyCode: "usd")
         #expect(amount.rounded(using: .init(scale: 2, mode: mode)).amount == expected)
         #expect(amount.amount == decimal("1.225"))
         let rule = MoneyRoundingRule(scale: 2, mode: mode)
-        #expect(try JSONDecoder().decode(MoneyRoundingRule.self,
-                                        from: JSONEncoder().encode(rule)) == rule)
+        #expect(
+            try JSONDecoder().decode(
+                MoneyRoundingRule.self,
+                from: JSONEncoder().encode(rule)) == rule)
     }
 
     @Test func arithmeticDoesNotLoseCentsOrCurrency() throws {
@@ -168,19 +188,28 @@ struct ExactMoneyContractTests {
     @Test(arguments: ["0.004", "0.005", "-0.004", "-0.005"])
     func comparisonRoundsDifferenceOnly(_ delta: String) throws {
         let expected = Money(amount: 100 + decimal(delta), currencyCode: "USD")
-        let calculation = CalculationResult(agreementID: "a", agreementVersion: "1",
-                                            components: [], total: expected)
+        let calculation = CalculationResult(
+            agreementID: "a", agreementVersion: "1",
+            components: [], total: expected)
         let actual = Money(amount: 100, currencyCode: "USD")
-        let result = try PayReconciler().reconcile(expected: calculation,
-                                                  paystub: PaystubSummary(grossPay: actual))
-        let rounded = delta == "0.005" ? decimal("0.01")
+        let result = try PayReconciler().reconcile(
+            expected: calculation,
+            paystub: PaystubSummary(grossPay: actual))
+        let rounded =
+            delta == "0.005"
+            ? decimal("0.01")
             : delta == "-0.005" ? decimal("-0.01") : 0
         #expect(result.difference.amount == rounded)
-        #expect(result.direction == (rounded == 0 ? .matches
-                                      : rounded > 0 ? .possibleUnderpayment : .possibleOverpayment))
+        #expect(
+            result.direction
+                == (rounded == 0
+                    ? .matches
+                    : rounded > 0 ? .possibleUnderpayment : .possibleOverpayment))
         #expect(result.expectedGross == expected)
         #expect(result.actualGross == actual)
-        #expect(try JSONDecoder().decode(ReconciliationResult.self,
-                                        from: JSONEncoder().encode(result)) == result)
+        #expect(
+            try JSONDecoder().decode(
+                ReconciliationResult.self,
+                from: JSONEncoder().encode(result)) == result)
     }
 }

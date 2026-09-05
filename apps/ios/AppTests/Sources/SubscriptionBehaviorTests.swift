@@ -8,7 +8,9 @@ import Testing
 struct SubscriptionBehaviorTests {
     @Test(arguments: [SubscriptionStore.monthlyProductID, SubscriptionStore.yearlyProductID])
     func existingOwnershipSurvivesCatalogFailure(_ identifier: String) async {
-        let client = TestStorefront(); client.identifiers = [identifier]; client.catalogFails = true
+        let client = TestStorefront()
+        client.identifiers = [identifier]
+        client.catalogFails = true
         let store = SubscriptionStore(commerceEnabled: true, operations: client.operations)
         await store.start()
         #expect(store.isPro && store.hasAuditAccess && store.products.isEmpty)
@@ -18,20 +20,29 @@ struct SubscriptionBehaviorTests {
     }
 
     @Test func unknownProductsNeverGrantProAndExpirationRemovesAccess() async {
-        let client = TestStorefront(); client.identifiers = [SubscriptionStore.monthlyProductID]
+        let client = TestStorefront()
+        client.identifiers = [SubscriptionStore.monthlyProductID]
         let store = SubscriptionStore(commerceEnabled: true, operations: client.operations)
-        await store.load(); #expect(store.isPro)
+        await store.load()
+        #expect(store.isPro)
         client.identifiers = ["some.other.product"]
-        await store.load(); #expect(!store.isPro && !store.hasAuditAccess)
+        await store.load()
+        #expect(!store.isPro && !store.hasAuditAccess)
         // Expiry and revocation both remove the verified current entitlement.
         client.identifiers = []
-        await store.load(); #expect(!store.isPro)
+        await store.load()
+        #expect(!store.isPro)
         #expect(!store.isLoading && store.errorMessage == nil)
     }
 
-    @Test(arguments: [SubscriptionOperations.PurchaseOutcome.pending, .cancelled, .unverified, .unknown])
-    func unsuccessfulPurchasesNeverGrantAccess(_ outcome: SubscriptionOperations.PurchaseOutcome) async {
-        let client = TestStorefront(); client.outcome = outcome
+    @Test(arguments: [
+        SubscriptionOperations.PurchaseOutcome.pending, .cancelled, .unverified, .unknown,
+    ])
+    func unsuccessfulPurchasesNeverGrantAccess(_ outcome: SubscriptionOperations.PurchaseOutcome)
+        async
+    {
+        let client = TestStorefront()
+        client.outcome = outcome
         let store = SubscriptionStore(commerceEnabled: true, operations: client.operations)
         #expect(!(await store.purchase(productID: SubscriptionStore.monthlyProductID)))
         #expect(!store.isPro && client.purchases == [SubscriptionStore.monthlyProductID])
@@ -61,18 +72,25 @@ struct SubscriptionBehaviorTests {
         await store.restorePurchases()
         #expect(store.isPro && store.errorMessage == nil && client.syncs == 1)
         client.syncFails = true
-        await store.restorePurchases(); #expect(store.isPro && store.errorMessage != nil)
-        client.syncFails = false; client.identifiers = []
-        await store.restorePurchases(); #expect(!store.isPro && store.errorMessage != nil)
+        await store.restorePurchases()
+        #expect(store.isPro && store.errorMessage != nil)
+        client.syncFails = false
+        client.identifiers = []
+        await store.restorePurchases()
+        #expect(!store.isPro && store.errorMessage != nil)
     }
 
     @Test func disabledInstanceNeverCallsAnExternalService() async {
         let client = TestStorefront()
         let store = SubscriptionStore(commerceEnabled: false, operations: client.operations)
-        await store.start(); await store.load(); await store.restorePurchases()
+        await store.start()
+        await store.load()
+        await store.restorePurchases()
         #expect(!(await store.purchase(productID: SubscriptionStore.monthlyProductID)))
         #expect(store.hasAuditAccess && !store.isPro)
-        #expect(client.loads == 0 && client.syncs == 0 && client.purchases.isEmpty && client.entitlementReads == 0)
+        #expect(
+            client.loads == 0 && client.syncs == 0 && client.purchases.isEmpty
+                && client.entitlementReads == 0)
     }
 
     @Test func liveAdapterRejectsUnavailableProductWithoutPurchase() async {

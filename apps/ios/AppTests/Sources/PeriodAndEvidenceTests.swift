@@ -14,11 +14,16 @@ struct PeriodAndEvidenceTests {
         try model.saveProfile(UnitFixture.profile(cadence: cadence))
         let first = try #require(model.activePeriod)
         let days = cadence == .weekly ? 7 : cadence == .biweekly ? 14 : 3
-        #expect(first.window.endEpochSeconds - first.window.startEpochSeconds == Int64(days * 86_400))
+        #expect(
+            first.window.endEpochSeconds - first.window.startEpochSeconds == Int64(days * 86_400))
         #expect(first.window.displayEndDate.addingTimeInterval(1) == first.window.endDate)
         #expect(first.window.contains(start: first.window.startDate, end: first.window.endDate))
-        #expect(!first.window.contains(start: first.window.startDate.addingTimeInterval(-1), end: first.window.endDate))
-        #expect(!first.window.contains(start: first.window.startDate, end: first.window.endDate.addingTimeInterval(1)))
+        #expect(
+            !first.window.contains(
+                start: first.window.startDate.addingTimeInterval(-1), end: first.window.endDate))
+        #expect(
+            !first.window.contains(
+                start: first.window.startDate, end: first.window.endDate.addingTimeInterval(1)))
         #expect(throws: AppModelError.activePayPeriodAlreadyExists) {
             try model.startNewPayPeriod(startDate: UnitFixture.start)
         }
@@ -26,9 +31,11 @@ struct PeriodAndEvidenceTests {
         #expect(model.history.first?.id == first.id)
         if cadence == .manual {
             #expect(model.activePeriod == nil)
-            try model.startNewPayPeriod(startDate: first.window.endDate,
-                                        manualEndDate: first.window.endDate)
-            #expect(model.activePeriod?.window.endEpochSeconds == first.window.endEpochSeconds + 86_400)
+            try model.startNewPayPeriod(
+                startDate: first.window.endDate,
+                manualEndDate: first.window.endDate)
+            #expect(
+                model.activePeriod?.window.endEpochSeconds == first.window.endEpochSeconds + 86_400)
         } else {
             #expect(model.activePeriod?.window.startEpochSeconds == first.window.endEpochSeconds)
             #expect(model.activePeriod?.id != first.id)
@@ -39,15 +46,20 @@ struct PeriodAndEvidenceTests {
     }
 
     @Test(arguments: [(2026, 3, 7, 167), (2026, 10, 31, 169)])
-    func weeklyWindowUsesCalendarDaysAcrossDST(_ year: Int, _ month: Int, _ day: Int, _ hours: Int) throws {
+    func weeklyWindowUsesCalendarDaysAcrossDST(_ year: Int, _ month: Int, _ day: Int, _ hours: Int)
+        throws
+    {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
         var draft = UnitFixture.profile()
         draft.timeZoneIdentifier = calendar.timeZone.identifier
-        draft.periodStartDate = try #require(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)))
-        let model = AppModel(); try model.saveProfile(draft)
+        draft.periodStartDate = try #require(
+            calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)))
+        let model = AppModel()
+        try model.saveProfile(draft)
         let period = try #require(model.activePeriod)
-        #expect(period.window.endEpochSeconds - period.window.startEpochSeconds == Int64(hours * 3_600))
+        #expect(
+            period.window.endEpochSeconds - period.window.startEpochSeconds == Int64(hours * 3_600))
         #expect(calendar.component(.hour, from: period.window.startDate) == 0)
         #expect(calendar.component(.hour, from: period.window.endDate) == 0)
     }
@@ -110,7 +122,8 @@ struct PeriodAndEvidenceTests {
         #expect(model.history.first?.calculation == period.calculation)
         #expect(model.history.first?.paystub?.grossPay == period.paystub?.grossPay)
         #expect(model.history.first?.paystub?.id == period.paystub?.id)
-        #expect(model.history.first?.paystub?.evidence == nil && originals.url(for: original) == nil)
+        #expect(
+            model.history.first?.paystub?.evidence == nil && originals.url(for: original) == nil)
     }
 
     @Test func failedHistoryDeleteRetainsOriginal() throws {
@@ -123,7 +136,9 @@ struct PeriodAndEvidenceTests {
         try model.archiveCurrentPeriod()
         let period = try #require(model.history.first)
         store.failSave = true
-        #expect(throws: AppModelError.persistenceFailed) { try model.deleteHistoryPeriod(id: period.id) }
+        #expect(throws: AppModelError.persistenceFailed) {
+            try model.deleteHistoryPeriod(id: period.id)
+        }
         #expect(model.history.first == period)
         #expect(originals.url(for: try #require(period.paystub?.evidence)) != nil)
     }

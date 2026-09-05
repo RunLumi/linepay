@@ -25,25 +25,34 @@ final class SubscriptionStore {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
+    @ObservationIgnored private let operations: SubscriptionOperations
+    @ObservationIgnored private let isCommerceEnabled: Bool
+    @ObservationIgnored private let observesStoreKit: Bool
     @ObservationIgnored
     private var transactionUpdatesTask: Task<Void, Never>?
+
+    init(commerceEnabled: Bool? = nil, operations: SubscriptionOperations? = nil) {
+        self.isCommerceEnabled = commerceEnabled ?? Self.commerceEnabled
+        self.operations = operations ?? .live
+        self.observesStoreKit = operations == nil
+    }
 
     deinit {
         transactionUpdatesTask?.cancel()
     }
 
     var hasAuditAccess: Bool {
-        isPro || !Self.commerceEnabled
+        isPro || !isCommerceEnabled
     }
 
     func start() async {
-        guard Self.commerceEnabled else { return }
-        startTransactionUpdatesIfNeeded()
+        guard isCommerceEnabled else { return }
+        if observesStoreKit { startTransactionUpdatesIfNeeded() }
         await load()
     }
 
     func load() async {
-        guard Self.commerceEnabled else {
+        guard isCommerceEnabled else {
             products = []
             isPro = false
             errorMessage = nil
@@ -54,17 +63,18 @@ final class SubscriptionStore {
         defer { isLoading = false }
 
         do {
-            products = try await Product.products(for: Self.productIDs)
+            products = try await operations.loadProducts()
                 .sorted { lhs, rhs in
                     rank(lhs.id) < rank(rhs.id)
                 }
             errorMessage = nil
-            await refreshEntitlements()
         } catch {
             products = []
             errorMessage = "Pro isn't available right now. You can keep using LinePaycheck Free."
             LinePayLog.storeKit.error("Failed to load StoreKit products")
         }
+        // Local verified ownership must not depend on a successful catalog/network request.
+        await refreshEntitlements()
     }
 
     func product(id: String) -> Product? {
@@ -72,33 +82,37 @@ final class SubscriptionStore {
     }
 
     func purchase(_ product: Product) async -> Bool {
-        guard Self.commerceEnabled else {
+        await purchase(productID: product.id)
+    }
+
+    func purchase(productID: String) async -> Bool {
+        guard isCommerceEnabled else {
             errorMessage = "Purchases are disabled in this debug build."
             return false
         }
 
         do {
-            let result = try await product.purchase()
+            let result = try await operations.purchase(productID, products)
             switch result {
-            case .success(let verification):
-                guard case .verified(let transaction) = verification else {
-                    errorMessage = "The App Store couldn't verify this purchase."
-                    LinePayLog.storeKit.error("StoreKit returned an unverified purchase")
-                    return false
-                }
-                await transaction.finish()
+            case .verified:
                 await refreshEntitlements()
+                errorMessage = nil
                 return isPro
+
+            case .unverified:
+                errorMessage = "The App Store couldn't verify this purchase."
+                LinePayLog.storeKit.error("StoreKit returned an unverified purchase")
+                return false
 
             case .pending:
                 errorMessage = "This purchase is waiting for App Store approval."
                 return false
 
-            case .userCancelled:
+            case .cancelled:
                 errorMessage = nil
                 return false
 
-            @unknown default:
+            case .unknown:
                 errorMessage = "The purchase couldn't be completed. Try again later."
                 LinePayLog.storeKit.error("StoreKit returned an unknown purchase result")
                 return false
@@ -111,13 +125,13 @@ final class SubscriptionStore {
     }
 
     func restorePurchases() async {
-        guard Self.commerceEnabled else {
+        guard isCommerceEnabled else {
             errorMessage = "Purchases are disabled in this debug build."
             return
         }
 
         do {
-            try await AppStore.sync()
+            try await operations.synchronize()
             await refreshEntitlements()
             errorMessage = isPro ? nil : "No active LinePaycheck Pro purchase was found."
         } catch {
@@ -145,17 +159,8 @@ final class SubscriptionStore {
     }
 
     private func refreshEntitlements() async {
-        var hasPro = false
-
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result else { continue }
-            if Self.productIDs.contains(transaction.productID) {
-                hasPro = true
-                break
-            }
-        }
-
-        isPro = hasPro
+        let identifiers = await operations.entitlementIDs()
+        isPro = !identifiers.isDisjoint(with: Self.productIDs)
     }
 
     private func rank(_ productID: String) -> Int {

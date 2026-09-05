@@ -16,7 +16,9 @@ struct SubscriptionOperations {
     static var live: SubscriptionOperations {
         SubscriptionOperations(
             loadProducts: {
-                try await Product.products(for: [SubscriptionStore.monthlyProductID, SubscriptionStore.yearlyProductID])
+                try await Product.products(for: [
+                    SubscriptionStore.monthlyProductID, SubscriptionStore.yearlyProductID,
+                ])
             },
             entitlementIDs: {
                 var identifiers: Set<String> = []
@@ -46,4 +48,4 @@ struct SubscriptionOperations {
     }
 }
 
-enum SubscriptionOperationError: Error { case productUnavailable }
+enum SubscriptionOperationError: Error, Equatable { case productUnavailable }

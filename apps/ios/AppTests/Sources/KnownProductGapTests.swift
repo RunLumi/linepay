@@ -13,7 +13,9 @@ struct KnownProductGapTests {
         draft.useEffectiveStart = true
         draft.effectiveStartDate = UnitFixture.start.addingTimeInterval(86_400)
         try model.saveProfile(draft)
-        withKnownIssue("RULE-SCOPE: profile editing replaces the active agreement; effective-dated work allocation is not implemented. See docs/testing.md.") {
+        withKnownIssue(
+            "RULE-SCOPE: profile editing replaces the active agreement; effective-dated work allocation is not implemented. See docs/testing.md."
+        ) {
             #expect(model.calculation?.total.amount == 400)
         }
     }
@@ -25,7 +27,9 @@ struct KnownProductGapTests {
         stub.regularPay = "350"
         stub.overtimePay = "50"
         try model.confirmPaystub(stub)
-        withKnownIssue("AUDIT-SCOPE: header compares gross only even when confirmed components differ. See docs/testing.md.") {
+        withKnownIssue(
+            "AUDIT-SCOPE: header compares gross only even when confirmed components differ. See docs/testing.md."
+        ) {
             #expect(model.currentAuditStatus != .matches)
         }
     }

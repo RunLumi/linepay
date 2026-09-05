@@ -448,6 +448,15 @@ final class AppModel {
             return
         }
 
+        guard
+            active.window.contains(
+                start: Date(timeIntervalSince1970: TimeInterval(entry.interval.startEpochSeconds)),
+                end: Date(timeIntervalSince1970: TimeInterval(entry.interval.endEpochSeconds))
+            )
+        else {
+            throw AppModelError.workOutsideCurrentPayPeriod
+        }
+
         var candidate = state
         active.workEntries = sorted(active.workEntries + [entry])
         try validate(period: active)
@@ -545,7 +554,8 @@ final class AppModel {
                     currencyCode: currencyCode
                 ),
                 notes: draft.notes.trimmingCharacters(in: .whitespacesAndNewlines),
-                evidence: savedEvidence
+                // A manual correction changes facts, not ownership of the original document.
+                evidence: savedEvidence ?? oldEvidence
             )
             let reconciliation = try PayReconciler().reconcile(
                 expected: calculation,
@@ -563,7 +573,7 @@ final class AppModel {
             candidate.hasUsedFreeAudit = true
             try commit(candidate)
 
-            if let oldEvidence, oldEvidence != savedEvidence {
+            if let oldEvidence, let savedEvidence, oldEvidence != savedEvidence {
                 try? evidenceStore.delete(oldEvidence)
             }
         } catch {

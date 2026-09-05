@@ -7,6 +7,9 @@ DOMAIN_DIR="$IOS_DIR/Packages/LinePayDomain"
 MODE="${1:-quick}"
 
 run_quick() {
+    echo "==> Test repository scripts"
+    python3 -m unittest discover -s "$ROOT/scripts/tests" -v
+
     echo "==> Lint Swift"
     swift format lint \
         --strict \

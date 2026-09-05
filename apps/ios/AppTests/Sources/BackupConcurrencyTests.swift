@@ -19,7 +19,8 @@ struct BackupConcurrencyTests {
             try await session.inspectBackup(at: URL(fileURLWithPath: "/synthetic"))
         }
         #expect(throws: BackupError.operationInProgress) {
-            try session.restore(BackupArchive(createdAt: UnitFixture.start, state: AppPersistentState(), files: []))
+            try session.restore(
+                BackupArchive(createdAt: UnitFixture.start, state: AppPersistentState(), files: []))
         }
         first.cancel()
         await io.release()
@@ -30,7 +31,8 @@ struct BackupConcurrencyTests {
 
     @Test func failedReadLeavesExistingAppLifetimeUntouched() async throws {
         let store = MemoryStateStore()
-        let session = AppSession(store: store, evidenceStore: MemoryEvidenceStore(), io: FailingBackupIO())
+        let session = AppSession(
+            store: store, evidenceStore: MemoryEvidenceStore(), io: FailingBackupIO())
         try UnitFixture.populate(session.model)
         let state = try store.load()
         let revision = session.revision

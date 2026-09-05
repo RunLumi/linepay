@@ -8,14 +8,18 @@ import Testing
 @Suite("Backup validation and evidence remapping")
 @MainActor
 struct BackupValidationTests {
-    @Test(arguments: ["schema", "profile-zone", "period-zone", "duplicate-work", "duplicate-period", "window", "rate", "rounding", "missing-profile"])
+    @Test(arguments: [
+        "schema", "profile-zone", "period-zone", "duplicate-work", "duplicate-period", "window",
+        "rate", "rounding", "missing-profile",
+    ])
     func invalidSnapshotCannotReachCommit(_ defect: String) throws {
         let store = UnitStateStore()
         let model = AppModel(store: store)
         try UnitFixture.populate(model)
         try model.archiveCurrentPeriod()
         let state = try #require(store.state)
-        var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        var object = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
         var profile = try #require(object["profile"] as? [String: Any])
         var active = try #require(object["activePeriod"] as? [String: Any])
         var history = try #require(object["history"] as? [[String: Any]])
@@ -53,12 +57,14 @@ struct BackupValidationTests {
     @Test func wrongFormatAndMalformedPayloadAreRejected() throws {
         let bytes = try wrap(stateJSON: Data("invalid state JSON".utf8))
         #expect(throws: BackupError.invalidArchive) { try BackupArchive.decode(bytes) }
-        let envelope = BackupArchive.Envelope(format: "not-linepay", version: 1, payload: Data(), sha256: Data())
+        let envelope = BackupArchive.Envelope(
+            format: "not-linepay", version: 1, payload: Data(), sha256: Data())
         #expect(throws: BackupError.invalidArchive) {
             try BackupArchive.decode(PropertyListEncoder().encode(envelope))
         }
         #expect(throws: BackupError.newerVersion) {
-            var future = AppPersistentState(); future.schemaVersion = 2
+            var future = AppPersistentState()
+            future.schemaVersion = 2
             try BackupArchive(createdAt: Date(), state: future, files: []).validate()
         }
     }
@@ -70,7 +76,8 @@ struct BackupValidationTests {
         try model.archiveCurrentPeriod()
         let state = try #require(store.state)
         let source = try #require(state.history.first?.paystub?.evidence)
-        let replacement = PaystubEvidence(id: source.id, storedFilename: "new-physical.pdf",
+        let replacement = PaystubEvidence(
+            id: source.id, storedFilename: "new-physical.pdf",
             originalFilename: source.originalFilename, mediaType: source.mediaType,
             sourceKind: source.sourceKind, createdEpochSeconds: source.createdEpochSeconds,
             recognizedText: source.recognizedText)
@@ -78,9 +85,13 @@ struct BackupValidationTests {
         #expect(updated.history.first?.paystub?.evidence == replacement)
         #expect(updated.history.first?.calculation == state.history.first?.calculation)
         #expect(updated.history.first?.reconciliation == state.history.first?.reconciliation)
-        #expect(updated.history.first?.archivedEpochSeconds == state.history.first?.archivedEpochSeconds)
+        #expect(
+            updated.history.first?.archivedEpochSeconds == state.history.first?.archivedEpochSeconds
+        )
         #expect(updated.activePeriod == state.activePeriod && updated.profile == state.profile)
-        #expect(updated.history.first?.paystub?.confirmedEpochSeconds == state.history.first?.paystub?.confirmedEpochSeconds)
+        #expect(
+            updated.history.first?.paystub?.confirmedEpochSeconds
+                == state.history.first?.paystub?.confirmedEpochSeconds)
     }
 
     @Test func emptyAndOversizedOriginalsAreNotSilentlyOmitted() throws {
@@ -90,18 +101,24 @@ struct BackupValidationTests {
         let state = try #require(store.state)
         let source = try #require(model.currentPaystub?.evidence)
         for count in [0, BackupArchive.maximumEvidenceBytes + 1] {
-            let archive = BackupArchive(createdAt: UnitFixture.start, state: state,
+            let archive = BackupArchive(
+                createdAt: UnitFixture.start, state: state,
                 files: [.init(id: source.id, bytes: Data(count: count))])
             #expect(throws: BackupError.tooLarge) { try archive.validate() }
         }
     }
 
     @Test func unreadableAndRemoteURLNeverCreateBackups() async throws {
-        let store = UnitStateStore(); store.failLoad = true
+        let store = UnitStateStore()
+        store.failLoad = true
         let session = AppSession(store: store, evidenceStore: MemoryEvidenceStore())
-        await #expect(throws: BackupError.currentDataUnreadable) { try await session.prepareBackup() }
+        await #expect(throws: BackupError.currentDataUnreadable) {
+            try await session.prepareBackup()
+        }
         let remote = try #require(URL(string: "https://example.invalid/private-paystub"))
-        await #expect(throws: BackupError.unavailableFile) { try await session.inspectBackup(at: remote) }
+        await #expect(throws: BackupError.unavailableFile) {
+            try await session.inspectBackup(at: remote)
+        }
         #expect(!session.isBusy && store.saveCount == 0)
     }
 
@@ -114,7 +131,8 @@ struct BackupValidationTests {
     }
 
     @Test func emptySnapshotHasZeroCountsAndStableRoundTrip() throws {
-        let archive = BackupArchive(createdAt: UnitFixture.start, state: AppPersistentState(), files: [])
+        let archive = BackupArchive(
+            createdAt: UnitFixture.start, state: AppPersistentState(), files: [])
         let decoded = try BackupArchive.decode(archive.encoded())
         #expect(decoded.createdAt == archive.createdAt)
         #expect(decoded.workCount == 0 && decoded.periodCount == 0 && decoded.files.isEmpty)
@@ -122,9 +140,13 @@ struct BackupValidationTests {
     }
 
     private func wrap(stateJSON: Data) throws -> Data {
-        let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
-        let payload = try encoder.encode(BackupArchive.Payload(createdAt: UnitFixture.start, stateJSON: stateJSON, files: []))
-        return try encoder.encode(BackupArchive.Envelope(format: "com.streamentry.linepay.backup", version: 1,
-            payload: payload, sha256: Data(SHA256.hash(data: payload))))
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        let payload = try encoder.encode(
+            BackupArchive.Payload(createdAt: UnitFixture.start, stateJSON: stateJSON, files: []))
+        return try encoder.encode(
+            BackupArchive.Envelope(
+                format: "com.streamentry.linepay.backup", version: 1,
+                payload: payload, sha256: Data(SHA256.hash(data: payload))))
     }
 }

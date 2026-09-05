@@ -8,14 +8,19 @@ import Observation
 final class AppSession {
     @ObservationIgnored private let store: any AppStateStoring
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
-    @ObservationIgnored private let io = BackupIO()
+    @ObservationIgnored private let io: any BackupHandling
 
     private(set) var model: AppModel
     private(set) var revision = UUID()
     private(set) var isBusy = false
     var restoreNotice: String?
 
-    init(store: any AppStateStoring, evidenceStore: any EvidenceStoring) {
+    init(
+        store: any AppStateStoring,
+        evidenceStore: any EvidenceStoring,
+        io: any BackupHandling = BackupIO()
+    ) {
+        self.io = io
         self.store = store
         self.evidenceStore = evidenceStore
         model = AppModel(store: store, evidenceStore: evidenceStore)
