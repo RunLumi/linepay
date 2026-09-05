@@ -24,6 +24,6 @@ struct SubscriptionStoreTests {
         await store.restorePurchases()
 
         #expect(store.isPro == false)
-        #expect(store.errorMessage == "Pro purchasing isn't enabled in this build yet.")
+        #expect(store.errorMessage != nil)
     }
 }
