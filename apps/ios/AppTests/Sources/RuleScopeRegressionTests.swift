@@ -179,7 +179,7 @@ struct RuleScopeRegressionTests {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
         // UnitFixture.start is 08:00, not midnight. Anchor boundary tests to the calendar.
-        return try #require(
-            calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: UnitFixture.start)))
+        let midnight = calendar.startOfDay(for: UnitFixture.start)
+        return try #require(calendar.date(byAdding: .day, value: 1, to: midnight))
     }
 }
