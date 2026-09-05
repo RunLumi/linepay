@@ -4,12 +4,17 @@ import Testing
 
 @Test("Money addition uses Decimal, not binary floating point")
 func addsMoneyExactly() throws {
-    let lhs = Money(amount: Decimal(string: "0.10")!, currencyCode: "usd")
-    let rhs = Money(amount: Decimal(string: "0.20")!, currencyCode: "USD")
+    let locale = Locale(identifier: "en_US_POSIX")
+    let tenCents = try #require(Decimal(string: "0.10", locale: locale))
+    let twentyCents = try #require(Decimal(string: "0.20", locale: locale))
+    let thirtyCents = try #require(Decimal(string: "0.30", locale: locale))
+
+    let lhs = Money(amount: tenCents, currencyCode: "usd")
+    let rhs = Money(amount: twentyCents, currencyCode: "USD")
 
     let result = try lhs.adding(rhs)
 
-    #expect(result == Money(amount: Decimal(string: "0.30")!, currencyCode: "USD"))
+    #expect(result == Money(amount: thirtyCents, currencyCode: "USD"))
 }
 
 @Test("Money from different currencies cannot be combined")
