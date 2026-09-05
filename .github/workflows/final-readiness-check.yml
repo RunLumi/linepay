@@ -1,0 +1,57 @@
+name: Normalize and verify readiness fixes
+on:
+  push:
+    branches: [fix/ios-1.0-readiness]
+    paths: [.github/workflows/final-readiness-check.yml]
+permissions:
+  contents: write
+jobs:
+  verify:
+    if: github.repository == 'streamentry/linepay' && github.ref == 'refs/heads/fix/ios-1.0-readiness'
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+      - name: Isolate mutating operations from assertion macros
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('apps/ios/AppTests/Sources/PaystubImportOperationTests.swift')
+          s = p.read_text()
+          for name in ['token', 'old', 'current']:
+              before = f'let {name} = try #require(operation.begin())'
+              after = f'let {name}Result = operation.begin()\n        let {name} = try #require({name}Result)'
+              assert s.count(before) == 1, before
+              s = s.replace(before, after)
+          s = s.replace('#expect(operation.begin() == nil)', 'let concurrent = operation.begin()\n        #expect(concurrent == nil)')
+          p.write_text(s)
+          PY
+          swift format format -i --configuration .swift-format \
+            apps/ios/AppTests/Sources/PaystubImportOperationTests.swift \
+            apps/ios/App/Sources/DataRecoveryView.swift \
+            apps/ios/AppUITests/PaydayJourneyTests.swift
+          git add apps/ios/AppTests/Sources/PaystubImportOperationTests.swift apps/ios/App/Sources/DataRecoveryView.swift apps/ios/AppUITests/PaydayJourneyTests.swift
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(test): normalize recovery selectors and single-owner intake assertions'
+          git push origin HEAD:refs/heads/fix/ios-1.0-readiness
+      - name: Install pinned XcodeGen
+        run: |
+          XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Native tests and release build
+        env:
+          LINEPAY_RESULTS_DIR: ${{ runner.temp }}/linepay-results
+        run: |
+          set -o pipefail
+          mkdir -p "$LINEPAY_RESULTS_DIR"
+          git rev-parse HEAD > "$LINEPAY_RESULTS_DIR/commit.txt"
+          bash scripts/check-ios.sh 2>&1 | tee "$LINEPAY_RESULTS_DIR/native-check.log"
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-readiness-results
+          path: ${{ runner.temp }}/linepay-results
+          retention-days: 3
+          if-no-files-found: ignore
