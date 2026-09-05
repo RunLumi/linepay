@@ -53,6 +53,7 @@ struct PayProfileSetupView: View {
                     .controlSize(.large)
                     .tint(LinePayColor.brandPrimary)
                     .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("pay-profile.save")
                     .accessibilityHint(
                         "Saves the rules you entered and uses them for expected pay calculations"
                     )
@@ -115,6 +116,7 @@ struct PayProfileSetupView: View {
                     .frame(maxWidth: 140)
                     .textFieldStyle(.roundedBorder)
                     .accessibilityLabel("Hourly rate in US dollars")
+                    .accessibilityIdentifier("pay-profile.hourly-rate")
             }
 
             Text("USD for the initial US release. LinePay stores currency with each amount.")
