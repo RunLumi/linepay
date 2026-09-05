@@ -5,8 +5,10 @@ tags: [ios, regression, payroll-scope]
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Pay
+- waitForAnimationToEnd
 - tapOn:
     id: pay.check-paycheck
+- waitForAnimationToEnd
 - runFlow:
     file: ../helpers/confirm-paystub.yaml
     env:
@@ -15,49 +17,70 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: audit.correct
+- waitForAnimationToEnd
 - tapOn:
     id: audit.correct
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.correct-existing
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element: Review optional line details
+- waitForAnimationToEnd
 - tapOn: Review optional line details
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.regularPay
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.value
+- waitForAnimationToEnd
 - inputText: "417.20"
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.field.overtimePay
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.overtimePay
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.value
+- waitForAnimationToEnd
 - inputText: "50.00"
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element: How earnings lines are reported
+- waitForAnimationToEnd
 - tapOn: How earnings lines are reported
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.line-layout
+- waitForAnimationToEnd
 - tapOn: Each line includes its full hourly pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.audit
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: audit.status
     direction: UP
+- waitForAnimationToEnd
 - assertVisible: Needs review
 - assertVisible:
     id: audit.scope
@@ -65,6 +88,8 @@ tags: [ios, regression, payroll-scope]
 - stopApp
 - launchApp
 - tapOn: Pay
+- waitForAnimationToEnd
 - tapOn:
     id: pay.open-audit
+- waitForAnimationToEnd
 - assertVisible: Needs review

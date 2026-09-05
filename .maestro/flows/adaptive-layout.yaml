@@ -6,61 +6,76 @@ onFlowComplete:
 ---
 - runFlow: ../helpers/onboard.yaml
 - tapOn: Settings
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.edit-rules
+- waitForAnimationToEnd
 - tapOn:
     id: settings.edit-rules
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.name
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.name
+- waitForAnimationToEnd
 - eraseText
 - inputText: "Synthetic QA profile with a deliberately long name for overnight storm restoration"
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - runFlow: ../helpers/confirm-rules.yaml
 - tapOn:
     id: pay-profile.confirm-change
+- waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.add-work
-    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: today.add-work
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: work.note
     timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: work.note
+- waitForAnimationToEnd
 - inputText: Landscape QA draft
 - assertVisible:
     id: keyboard.done
 - takeScreenshot: landscape-keyboard
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - tapOn:
     id: work.cancel
+- waitForAnimationToEnd
 - setOrientation: PORTRAIT
 - runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
     element:
       id: today.open-pay
+- waitForAnimationToEnd
 - tapOn:
     id: today.open-pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay.check-paycheck
+- waitForAnimationToEnd
 - tapOn:
     id: pay.check-paycheck
+- waitForAnimationToEnd
 - runFlow:
     file: ../helpers/confirm-paystub.yaml
     env:

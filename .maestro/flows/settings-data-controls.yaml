@@ -5,40 +5,48 @@ tags: [ios, regression, settings]
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Settings
-- runFlow:
-    when:
-      visible: Privacy and local data
-    commands:
-      - tapOn: Privacy and local data
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Privacy and local data
+- waitForAnimationToEnd
+- tapOn: Privacy and local data
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.delete-all
     timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: settings.delete-all
+- waitForAnimationToEnd
 - assertVisible:
     id: settings.confirm-delete-all
 - takeScreenshot: delete-all-confirmation
 - tapOn: Cancel
+- waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
 - assertVisible:
     id: today.repeat-shift
 - tapOn: Settings
+- waitForAnimationToEnd
 - runFlow:
     when:
       visible: Privacy and local data
     commands:
       - tapOn: Privacy and local data
+      - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.delete-all
     timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: settings.delete-all
+- waitForAnimationToEnd
 - tapOn:
     id: settings.confirm-delete-all
+- waitForAnimationToEnd
 - assertVisible:
     id: onboarding.set-up-pay
 - stopApp

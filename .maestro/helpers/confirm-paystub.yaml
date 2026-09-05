@@ -2,9 +2,11 @@ appId: com.streamentry.linepay
 ---
 - tapOn:
     id: paystub.manual
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+- waitForAnimationToEnd
 - assertVisible:
     id: paystub.audit
     enabled: false
@@ -12,37 +14,53 @@ appId: com.streamentry.linepay
     element:
       id: paystub.field.periodStart
     direction: UP
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodStart
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodEnd
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.field.grossPay
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.value
+- waitForAnimationToEnd
 - inputText: ${GROSS}
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - takeScreenshot: manual-paystub-field
 - tapOn:
     id: paystub.confirm-field
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.complete-work
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.complete-work
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.gross-basis
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.gross-basis
+- waitForAnimationToEnd
 - tapOn: ".*Wages only.*"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.audit
+- waitForAnimationToEnd
 - tapOn:
     id: paystub.audit
+- waitForAnimationToEnd

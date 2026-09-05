@@ -6,6 +6,7 @@ tags: [smoke, ios, regression]
 - runFlow: ../helpers/add-work.yaml
 - tapOn:
     id: today.repeat-shift
+- waitForAnimationToEnd
 - assertVisible: ".*Overlaps.*"
 - assertVisible:
     id: work.save
@@ -13,42 +14,58 @@ tags: [smoke, ios, regression]
 - takeScreenshot: overlap-error
 - scrollUntilVisible:
     element: Discard this draft
+- waitForAnimationToEnd
 - tapOn: Discard this draft
+- waitForAnimationToEnd
 - tapOn: Discard draft
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.edit-work
+- waitForAnimationToEnd
 - tapOn:
     id: today.edit-work
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: work.note
+- waitForAnimationToEnd
 - tapOn:
     id: work.note
+- waitForAnimationToEnd
 - inputText: " QA correction "
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: work.save
+- waitForAnimationToEnd
 - tapOn:
     id: work.save
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.edit-work
+- waitForAnimationToEnd
 - tapOn:
     id: today.edit-work
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: work.delete
+- waitForAnimationToEnd
 - tapOn:
     id: work.delete
+- waitForAnimationToEnd
 - assertVisible:
     id: today.undo-delete
 - tapOn:
     id: today.undo-delete
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.edit-work
+- waitForAnimationToEnd
 - assertVisible: ".*QA correction.*"
 - takeScreenshot: work-restored

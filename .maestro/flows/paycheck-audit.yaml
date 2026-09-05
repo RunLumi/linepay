@@ -6,11 +6,14 @@ tags: [smoke, ios, regression]
 - runFlow: ../helpers/add-work.yaml
 - tapOn:
     id: today.open-pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay.check-paycheck
+- waitForAnimationToEnd
 - tapOn:
     id: pay.check-paycheck
+- waitForAnimationToEnd
 - runFlow:
     file: ../helpers/confirm-paystub.yaml
     env:
@@ -20,20 +23,27 @@ tags: [smoke, ios, regression]
 - tapOn:
     text: Pay
     index: 0
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay.finish-period
+- waitForAnimationToEnd
 - tapOn:
     id: pay.finish-period
+- waitForAnimationToEnd
 - tapOn:
     id: period.confirm-close
+- waitForAnimationToEnd
 - tapOn: History
+- waitForAnimationToEnd
 - tapOn:
     id: history.period.*
+- waitForAnimationToEnd
 - assertVisible: Possible shortfall
 - takeScreenshot: archived-pay-period
 - stopApp
 - launchApp
 - tapOn: History
+- waitForAnimationToEnd
 - assertVisible:
     id: history.period.*

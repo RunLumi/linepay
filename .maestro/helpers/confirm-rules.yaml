@@ -6,12 +6,14 @@ appId: com.streamentry.linepay
       - scrollUntilVisible:
           element:
             id: pay-profile.continue
-          centerElement: true
+      - waitForAnimationToEnd
       - tapOn:
           id: pay-profile.continue
+      - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.save
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.save
+- waitForAnimationToEnd

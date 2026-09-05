@@ -8,20 +8,26 @@ tags: [ios, regression, payroll-scope]
     id: today.expected-wages
 - evalScript: ${output.beforeRateChange = maestro.copiedText}
 - tapOn: Settings
+- waitForAnimationToEnd
 - tapOn:
     id: settings.edit-rules
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.hourly-rate
+- waitForAnimationToEnd
 - eraseText
 - inputText: "60"
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
 - runFlow: ../helpers/confirm-rules.yaml
 - assertVisible: Review rule change
 - takeScreenshot: prospective-rule-preview
 - tapOn:
     id: pay-profile.confirm-change
+- waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
 - copyTextFrom:
     id: today.expected-wages
 - assertTrue: ${maestro.copiedText == output.beforeRateChange}
@@ -32,30 +38,39 @@ tags: [ios, regression, payroll-scope]
     id: today.expected-wages
 - assertTrue: ${maestro.copiedText == output.beforeRateChange}
 - tapOn: Settings
+- waitForAnimationToEnd
 - tapOn:
     id: settings.edit-rules
+- waitForAnimationToEnd
 - repeat:
     times: 3
     commands:
       - scrollUntilVisible:
           element:
             id: pay-profile.continue
-          centerElement: true
+      - waitForAnimationToEnd
       - tapOn:
           id: pay-profile.continue
+      - waitForAnimationToEnd
 - scrollUntilVisible:
     element: Recalculate this entire current period
+- waitForAnimationToEnd
 - tapOn: Recalculate this entire current period
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.save
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.save
+- waitForAnimationToEnd
 - assertVisible: Review rule change
 - takeScreenshot: correction-preview
 - tapOn:
     id: pay-profile.confirm-change
+- waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
 - assertVisible:
     id: today.expected-wages
     text: '.*480[.,]00.*'
