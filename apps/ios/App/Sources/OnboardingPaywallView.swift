@@ -35,8 +35,8 @@ struct OnboardingPaywallView: View {
                 .foregroundStyle(LinePayColor.textPrimary)
 
             Text(
-                "LinePay Pro is built for recurring paycheck checks. Free still lets you track "
-                    + "work, calculate expected pay, and complete your first paycheck audit."
+                "LinePaycheck Pro is built for recurring paycheck checks. Free still lets you "
+                    + "track work, calculate expected pay, and complete your first paycheck audit."
             )
             .font(.title3)
             .foregroundStyle(LinePayColor.textSecondary)
@@ -79,7 +79,7 @@ struct OnboardingPaywallView: View {
             benefit(
                 icon: "lock.shield",
                 title: "Private by default",
-                detail: "No LinePay account. Pay data stays on this device by default."
+                detail: "No LinePaycheck account. Pay data stays on this device by default."
             )
         }
     }
@@ -128,7 +128,7 @@ struct OnboardingPaywallView: View {
             .foregroundStyle(LinePayColor.brandPrimary)
             .frame(minHeight: 48)
             .accessibilityIdentifier("paywall.continue-free")
-            .accessibilityHint("Skips the Pro offer and continues with LinePay Free")
+            .accessibilityHint("Skips the Pro offer and continues with LinePaycheck Free")
 
             if !SubscriptionStore.commerceEnabled {
                 Text("Pro purchasing is disabled until recurring paycheck audits are shipping.")
@@ -137,7 +137,7 @@ struct OnboardingPaywallView: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
             } else if store.products.isEmpty && !store.isLoading {
-                Text("Pro isn't available right now. You can keep using LinePay Free.")
+                Text("Pro isn't available right now. You can keep using LinePaycheck Free.")
                     .font(.footnote)
                     .foregroundStyle(LinePayColor.textSecondary)
                     .multilineTextAlignment(.center)
