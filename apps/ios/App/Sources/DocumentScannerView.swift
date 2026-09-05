@@ -33,10 +33,14 @@ struct DocumentScannerView: UIViewControllerRepresentable {
             self.parent = parent
         }
 
-        func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+        @MainActor
+        func documentCameraViewControllerDidCancel(
+            _ controller: VNDocumentCameraViewController
+        ) {
             parent.onCancel()
         }
 
+        @MainActor
         func documentCameraViewController(
             _ controller: VNDocumentCameraViewController,
             didFailWithError error: Error
@@ -44,6 +48,7 @@ struct DocumentScannerView: UIViewControllerRepresentable {
             parent.onError(error)
         }
 
+        @MainActor
         func documentCameraViewController(
             _ controller: VNDocumentCameraViewController,
             didFinishWith scan: VNDocumentCameraScan
@@ -60,7 +65,9 @@ struct DocumentScannerView: UIViewControllerRepresentable {
                     context.beginPage()
                     let image = scan.imageOfPage(at: index)
                     let target = aspectFitRect(
-                        for: image.size, inside: pageBounds.insetBy(dx: 24, dy: 24))
+                        for: image.size,
+                        inside: pageBounds.insetBy(dx: 24, dy: 24)
+                    )
                     image.draw(in: target)
                 }
             }
