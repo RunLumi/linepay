@@ -87,6 +87,10 @@ bash scripts/test-ios-maestro.sh
 
 See `docs/maestro.md` for prerequisites, Simulator commands, selector conventions, flow authoring, and debugging.
 
+## Release and TestFlight
+
+Use the [API release workflow](docs/release-and-testflight-api.md) for authenticated build upload, processing verification, TestFlight distribution, App Review submission, and public-release readback. The workflow separates required approvals from API permissions and keeps release evidence distinct from build success.
+
 ## Current sequencing
 
 1. Validate willingness to pay with real linemen.

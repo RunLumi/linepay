@@ -156,6 +156,11 @@ struct ProPaywallView: View {
             .font(.caption)
             .foregroundStyle(LinePayColor.textSecondary)
             .multilineTextAlignment(.center)
+
+            Link("Privacy policy", destination: AppLinks.privacy)
+                .frame(minHeight: 44)
+            Link("Terms of use", destination: AppLinks.terms)
+                .frame(minHeight: 44)
         }
         .frame(maxWidth: .infinity)
     }

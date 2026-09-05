@@ -2,6 +2,8 @@
 
 Use this checklist before the first build is distributed outside development. Its purpose is to catch decisions that become annoying or irreversible once users have data or App Store records exist.
 
+Execution procedure: [Release and TestFlight through the Apple API](../release-and-testflight-api.md). Complete this checklist before distribution; a successful API upload alone is not readiness evidence.
+
 ## Identity and signing
 
 - [ ] Confirm the final Apple Developer team/legal entity.

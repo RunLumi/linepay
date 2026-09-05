@@ -2,9 +2,11 @@
 
 ## Committed application logo
 
-`brand/linepaycheck-icon-1024.png` is the 1024 × 1024 RGB PNG used by the iOS application. The same bytes are installed in `AppIcon.appiconset/AppIcon-1024.png` and `LinePaycheckLogo.imageset/LinePaycheckLogo.png`. `LineGapMark` uses the bundled `LinePaycheckLogo` image on the welcome and Pro screens. Technical bundle/product identifiers remain unchanged.
+`brand/linepaycheck-icon-1024.png` is the user-selected receipt/checkmark logo source. Despite its filename, this source is 1254 × 1254 pixels. Preserve the source; the iOS asset catalogs use its opaque, proportionally resized 1024 × 1024 derivative. Identical derivatives are installed in `AppIcon.appiconset/AppIcon-1024.png` and `LinePaycheckLogo.imageset/LinePaycheckLogo.png`. `LineGapMark` uses the bundled `LinePaycheckLogo` image on the welcome and Pro screens. Technical bundle/product identifiers remain unchanged.
 
-The generated source had a rounded outer square with white corners. The application derivative removes that baked-in outer mask, keeps the selected symbol, normalizes its palette, and uses an opaque full-bleed graphite field. iOS supplies the Home Screen mask. The original remains unmodified in the accompanying asset package.
+The selected source already has an opaque full-bleed dark background. Asset preparation changes only pixel dimensions; it does not redraw the logo or alter its composition. iOS supplies the Home Screen mask.
+
+The revision-2 ZIP documented below is historical and contains the superseded line-mark icon. Its three logo hashes no longer match the current assets, so the protective importer will refuse that package. Do not overwrite the newly selected logo to satisfy the historical manifest.
 
 ## Full-resolution asset package: import still required
 

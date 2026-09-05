@@ -57,6 +57,10 @@ struct SettingsView: View {
                     }
                     .disabled(!SubscriptionStore.commerceEnabled)
 
+                    Link(
+                        "Manage subscription",
+                        destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
+
                     if let message = subscriptionStore.errorMessage {
                         Text(message)
                             .font(.footnote)
@@ -99,6 +103,11 @@ struct SettingsView: View {
                 }
 
                 Section("About") {
+                    Link("Support", destination: AppLinks.support)
+                        .accessibilityIdentifier("settings.support")
+                    Link("Privacy policy", destination: AppLinks.privacy)
+                        .accessibilityIdentifier("settings.privacy-policy")
+                    Link("Terms of use", destination: AppLinks.terms)
                     LabeledContent("Architecture", value: "Local-first")
                     Text(
                         "LinePaycheck estimates expected pay and flags possible differences. It is not "
