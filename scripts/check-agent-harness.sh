@@ -119,7 +119,8 @@ done
 
 echo "==> Product identity invariants"
 require_text apps/ios/project.yml "PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay"
-require_text apps/ios/project.yml "INFOPLIST_KEY_CFBundleDisplayName: LinePaycheck"
+require_text apps/ios/project.yml "INFOPLIST_KEY_CFBundleDisplayName: LinePay"
+require_text apps/ios/project.yml "INFOPLIST_KEY_CFBundleName: LinePaycheck"
 require_text .xcodebuildmcp/config.yaml "bundleId: 'com.streamentry.linepay'"
 require_text .xcodebuildmcp/config.yaml "scheme: 'LinePay'"
 require_text CLAUDE.md "com.streamentry.linepay"

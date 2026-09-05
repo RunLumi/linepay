@@ -10,7 +10,7 @@ Read `AGENTS.md`, then use `.agents/skills/release-readiness/SKILL.md` and `docs
 Focus on irreversible or production-critical risks:
 
 - bundle ID remains `com.streamentry.linepay`;
-- public display name remains LinePaycheck;
+- home-screen display name remains LinePay, while the public product and bundle name remain LinePaycheck;
 - version/build numbers change intentionally;
 - privacy manifest and permissions match actual data flow;
 - StoreKit state and products are not assumed from mock behavior;
