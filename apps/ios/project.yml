@@ -22,7 +22,7 @@ configFiles:
 packages:
   ViewInspector:
     url: https://github.com/nalexn/ViewInspector
-    exactVersion: 0.10.4
+    revision: f110d97d84f7a3a2fe89b897d63c814c538f695e
   LinePayDomain:
     path: Packages/LinePayDomain
 
