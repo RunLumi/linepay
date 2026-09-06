@@ -17,5 +17,6 @@
   "docs/qa/ios-1.0/ledger-light.png": "docs/testing/evidence/ios-1.0/ledger-light.png",
   "docs/qa/ios-1.0/audit-needs-review.png": "docs/testing/evidence/ios-1.0/audit-needs-review.png",
   "docs/qa/ios-1.0/README.md": "docs/testing/evidence/ios-1.0/README.md",
-  "docs/qa/ios-1.0/audit-dark-large.png": "docs/testing/evidence/ios-1.0/audit-dark-large.png"
+  "docs/qa/ios-1.0/audit-dark-large.png": "docs/testing/evidence/ios-1.0/audit-dark-large.png",
+  "docs/legal.md": "docs/legal/risk-and-compliance.md"
 }

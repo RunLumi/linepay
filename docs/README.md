@@ -17,6 +17,7 @@ Start with the product handbook for behavior, not a historical implementation re
 | Storage/privacy boundaries and architectural decisions | [Architecture](architecture/README.md), [ADRs](adr/README.md) |
 | Engineering and agent execution | [Engineering](engineering/README.md) |
 | Tests, manual gates, and audit history | [Testing](testing/README.md), [original readiness audit](testing/audits/linepay-1.0-readiness-audit.md) |
+| Legal risk, publisher obligations, and compliance review | [Legal](legal/README.md) |
 | Distribution, store metadata and release evidence | [Release](release/README.md) |
 | Positioning and acquisition | [Growth](growth/README.md) |
 | Dated external research | [Research](research/README.md) |
@@ -32,6 +33,7 @@ docs/
   testing/       Test guide, Maestro, checklists, audits, evidence
   design/        Logo and store-screenshot design; root DESIGN.md stays authoritative
   plan/          Release scope, mockups, implementation and remediation records
+  legal/         Legal-risk register and compliance review
   release/       Store metadata, API/TestFlight procedures, checklists and evidence
   growth/        Marketing strategy
   research/      Dated research and source notes
@@ -44,7 +46,7 @@ Root `AGENTS.md` and `DESIGN.md`, numbered ADR paths, and current `docs/plan/` p
 
 An external source defines a rule only within its applicable scope. A product requirement is not a legal entitlement; a source file is not proof of successful execution; a historical test run is not evidence for a newer commit. [Product evidence labels](product/README.md) and [coverage gates](product/payroll/coverage-and-gaps.md) make these distinctions explicit.
 
-Pricing owns commercial policy; the release plan owns scope; the product/payroll handbook owns business semantics; design owns presentation; ADRs own architecture. Resolve conflicts with a dated decision and affected references rather than silently allowing multiple sources of truth.
+Pricing owns commercial policy; the release plan owns scope; the product/payroll handbook owns business semantics; design owns presentation; ADRs own architecture. The legal-risk register owns its scoped assessment of business and release risks, not a blanket override of those documents. Resolve conflicts with a dated decision and affected references rather than silently allowing multiple sources of truth.
 
 **Important:** current pricing includes the eligible annual introductory trial as well as separate first-audit sampling. Historical “no calendar trial” proposals are not current policy. Current payroll configuration is not automatically a complete US legal-pay check.
 
