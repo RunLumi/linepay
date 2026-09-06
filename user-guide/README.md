@@ -48,36 +48,37 @@ Only `user-guide/public` is uploaded. A project path and a domain root are teste
 
 ## Cloudflare Pages
 
-The production guide is a Direct Upload Cloudflare Pages project at
-`https://linepaycheck-guide.pages.dev/`. It has no custom domain, Pages Function,
-Worker, DNS record, secret, or repository connection.
+The production guide is a Git-connected Cloudflare Pages project at
+`https://linepaycheck-guide.pages.dev/`. Cloudflare watches
+`streamentry/linepay` and automatically deploys the `main` branch after a
+successful build. Preview deployments cover non-production branches and use
+their own `CF_PAGES_URL` with noindex output.
 
 | Setting | Value |
 | --- | --- |
 | Project | `linepaycheck-guide` |
+| Repository | `streamentry/linepay` |
 | Production URL | `https://linepaycheck-guide.pages.dev/` |
 | Source branch | `main` |
-| Build command | `GUIDE_BASE_URL=https://linepaycheck-guide.pages.dev/ bash user-guide/scripts/build.sh` |
-| Upload directory | `user-guide/public` |
+| Root directory | `user-guide` |
+| Build command | `bash scripts/build.sh` |
+| Build output directory | `public` |
+| Production `HUGO_VERSION` | `0.165.0` |
+| Production `GUIDE_BASE_URL` | `https://linepaycheck-guide.pages.dev/` |
 
-To publish a reviewed `main` commit, build the site with its production URL and upload
-the generated directory with Wrangler. Attach the commit SHA and message to the
-deployment. A Direct Upload project does not deploy from Git automatically; do not
-claim that future merges are public until their own upload succeeds.
+Pushes and merges to `main` now trigger the Pages build automatically. Keep the
+root directory, command, output directory, and pinned Hugo version aligned with
+the table above. `GUIDE_BASE_URL` is required for production so canonical URLs
+stay on the stable help URL; preview builds use the per-deployment
+`CF_PAGES_URL` instead.
 
-```sh
-GUIDE_BASE_URL=https://linepaycheck-guide.pages.dev/ bash user-guide/scripts/build.sh
-wrangler pages deploy user-guide/public \
-  --project-name=linepaycheck-guide \
-  --branch=main \
-  --commit-hash=<reviewed-main-sha> \
-  --commit-message='<reviewed main commit message>' \
-  --commit-dirty=false
-```
-
-Preview builds use `CF_PAGES_URL` and emit noindex/robots exclusions; production requires an explicit stable base rather than a per-deployment hash URL. The `_headers` file supplies same-origin-only content security policy, no-referrer, frame protection, and disables camera/microphone/geolocation for this help site.
-
-There is no Worker, Pages Function, secret, API key, custom domain, or upload handler. Wrangler is used only for authenticated Direct Upload. Do not add a CNAME or change DNS until the intended domain is separately approved.
+The Pages project currently lists `docs.linepaycheck.com` as an additional
+production domain alongside `linepaycheck-guide.pages.dev`. This repository
+documentation records the observed Pages configuration; it does not claim DNS
+ownership or change custom-domain settings. There is no Worker or Pages
+Function. The `_headers` file supplies same-origin-only content security policy,
+no-referrer, frame protection, and disables camera/microphone/geolocation for
+this help site.
 
 ## Content and navigation
 
@@ -97,6 +98,8 @@ Researched September 6, 2026:
 - https://gohugo.io/configuration/output-formats/
 - https://github.com/gohugoio/hugo/releases/tag/v0.165.0
 
-The default Pages URL was deployed from `ce7d0dc` as production deployment
-`6dd92bb0-abc7-4f88-be25-b20a5629016d` on September 6, 2026. Record each later
-deployment separately before adding a new Help URL to the app.
+The initial Direct Upload deployment was `6dd92bb0-abc7-4f88-be25-b20a5629016d`
+from `ce7d0dc`. After Git integration was enabled, the current production
+deployment is `d95a8204-d339-4b62-90ec-d6dfd29c57e1` from `445234e` on
+September 6, 2026. Record each later deployment separately before adding a new
+Help URL to the app.
