@@ -109,6 +109,42 @@ struct StorageContractTests {
         #expect(try Data(contentsOf: blocked) == Data([1]))
     }
 
+    @Test(arguments: ["grossPay", "regularPay"])
+    func inconsistentSavedComparisonsAreRejected(field: String) throws {
+        let store = MemoryStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        var draft = UnitFixture.paystub(model)
+        draft.regularPay = "400"
+        draft.lineLayout = .fullRateBuckets
+        draft.reviewedFields.insert(.regularPay)
+        try model.confirmPaystub(draft)
+        let state = try #require(try store.load())
+        try AppStateValidation.validate(state)
+
+        var document = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        var active = try #require(document["activePeriod"] as? [String: Any])
+        var paystub = try #require(active["paystub"] as? [String: Any])
+        var assessment = try #require(paystub["assessment"] as? [String: Any])
+        var comparisons = try #require(assessment["comparisons"] as? [[String: Any]])
+        let index = try #require(comparisons.firstIndex { $0["field"] as? String == field })
+        comparisons[index]["expected"] = 401
+        if field == "grossPay" {
+            // An internally balanced line must also agree with its saved gross summary.
+            comparisons[index]["paid"] = 401
+        }
+        assessment["comparisons"] = comparisons
+        paystub["assessment"] = assessment
+        active["paystub"] = paystub
+        document["activePeriod"] = active
+        let invalid = try JSONDecoder().decode(
+            AppPersistentState.self, from: JSONSerialization.data(withJSONObject: document))
+        #expect(throws: LocalStateStoreError.invalidState) {
+            try AppStateValidation.validate(invalid)
+        }
+    }
+
     @Test(arguments: ["same.PDF", "no-extension", "../../outside.pdf"])
     func originalsUseUniqueGeneratedLocalPaths(_ filename: String) throws {
         let root = UnitFixture.temporaryDirectory()

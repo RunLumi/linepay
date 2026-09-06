@@ -56,12 +56,12 @@ enum AppStateValidation {
             try validate(calculation: revision.calculation, agreement: revision.agreement)
             try validate(
                 paystub: revision.paystub, calculation: revision.calculation,
-                currency: revision.agreement.hourlyRate.currencyCode)
+                agreement: revision.agreement)
         }
         if let active = state.activePeriod, let paystub = active.paystub {
             try validate(
                 paystub: paystub, calculation: nil,
-                currency: active.agreement.hourlyRate.currencyCode)
+                agreement: active.agreement)
         }
         for period in state.history {
             try validate(calculation: period.calculation, agreement: period.agreement)
@@ -69,7 +69,7 @@ enum AppStateValidation {
                 try validate(
                     paystub: paystub,
                     calculation: period.reconciliation == nil ? nil : period.calculation,
-                    currency: period.agreement.hourlyRate.currencyCode)
+                    agreement: period.agreement)
             }
         }
     }
@@ -110,8 +110,9 @@ enum AppStateValidation {
     }
 
     private static func validate(
-        paystub: ConfirmedPaystub, calculation: CalculationResult?, currency: String
+        paystub: ConfirmedPaystub, calculation: CalculationResult?, agreement: AgreementSnapshot
     ) throws {
+        let currency = agreement.hourlyRate.currencyCode
         let money = [
             paystub.grossPay, paystub.regularPay, paystub.overtimePay,
             paystub.doubleTimePay, paystub.calloutPay, paystub.perDiemPay,
@@ -152,6 +153,12 @@ enum AppStateValidation {
                 comparison.expected >= 0, comparison.paid >= 0, comparison.currencyCode == currency,
                 comparison.unit == (comparison.field.isHours ? .hours : .money)
             else { throw invalid() }
+            let difference = Money(
+                amount: comparison.expected - comparison.paid, currencyCode: currency
+            ).rounded(
+                using: comparison.unit == .hours
+                    ? MoneyRoundingRule(scale: 4) : agreement.rounding)
+            guard comparison.difference == difference.amount else { throw invalid() }
             if let calculation {
                 guard
                     Set(comparison.componentIDs).isSubset(of: Set(calculation.components.map(\.id)))
@@ -162,8 +169,9 @@ enum AppStateValidation {
             guard !expected.amount.isNaN, expected.amount >= 0, expected.currencyCode == currency,
                 let difference = assessment.difference, !difference.amount.isNaN,
                 difference.currencyCode == currency,
-                assessment.comparisons.first(where: { $0.field == .grossPay })?.difference
-                    == difference.amount
+                let gross = assessment.comparisons.first(where: { $0.field == .grossPay }),
+                gross.expected == expected.amount, gross.paid == assessment.paidGross.amount,
+                gross.difference == difference.amount
             else { throw invalid() }
             if let calculation, let basis = paystub.confirmation?.grossBasis {
                 let recordedExpected =
