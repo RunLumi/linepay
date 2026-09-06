@@ -1,5 +1,5 @@
 baseURL = 'https://streamentry.github.io/linepay/'
-languageCode = 'en-US'
+locale = 'en-US'
 title = 'LinePaycheck User Guide'
 enableRobotsTXT = true
 disableKinds = ['taxonomy', 'term', 'RSS']

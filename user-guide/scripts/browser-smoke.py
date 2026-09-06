@@ -76,8 +76,8 @@ def run():
             assert page.get_by_role('navigation', name='User guide', exact=True).is_visible()
             assert page.locator('main').inner_text().find('Set up your pay') >= 0
             page.goto(base + 'search/')
-            assert page.get_by_text('All guides remain available', exact=False).is_visible()
             assert page.locator('.browse-list a').count() == 20
+            assert page.locator('main').inner_text().find('Browse all guides') >= 0
             context.close()
             context = browser.new_context(viewport={'width': 390, 'height': 844})
             page = context.new_page()

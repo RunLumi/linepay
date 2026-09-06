@@ -25,7 +25,7 @@
 <div class="home-copy prose">{{ .Content }}</div>
 <section class="task-directory" aria-labelledby="task-heading">
   <h2 id="task-heading">What do you need to do?</h2>
-  {{ range .Site.Data.navigation }}
+  {{ range hugo.Data.navigation }}
     <div class="directory-group"><h3>{{ .title }}</h3><ul>
       {{ range .pages }}{{ with site.GetPage (printf "/%s" .) }}
         <li><a href="{{ .RelPermalink }}"><span>{{ .Title }}</span><span aria-hidden="true">↗</span></a><p>{{ .Description }}</p></li>
