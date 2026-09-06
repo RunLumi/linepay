@@ -141,12 +141,12 @@ struct RepeatWorkView: View {
                             Text("Other").tag(WorkKind.other)
                         }
                         DatePicker(
-                            "Start", selection: manualBinding(\.start),
+                            "Start", selection: manualBinding("start", \.start),
                             displayedComponents: [.date, .hourAndMinute]
                         )
                         .accessibilityIdentifier("repeat.start")
                         DatePicker(
-                            "End", selection: manualBinding(\.end),
+                            "End", selection: manualBinding("end", \.end),
                             displayedComponents: [.date, .hourAndMinute]
                         )
                         .accessibilityIdentifier("repeat.end")
@@ -155,15 +155,27 @@ struct RepeatWorkView: View {
                         ).font(.footnote)
                     }
                     Section("Unpaid breaks") {
-                        Toggle("Unpaid break", isOn: $draft.hasUnpaidBreak)
+                        Toggle("Unpaid break", isOn: firstBreakToggle)
                         if draft.hasUnpaidBreak {
-                            DatePicker("Break starts", selection: manualBinding(\.breakStart))
-                            DatePicker("Break ends", selection: manualBinding(\.breakEnd))
+                            DatePicker(
+                                "Break starts",
+                                selection: manualBinding("break.0.start", \.breakStart))
+                            DatePicker(
+                                "Break ends",
+                                selection: manualBinding("break.0.end", \.breakEnd))
                         }
-                        ForEach($draft.additionalBreaks) { $item in
-                            DatePicker("Additional break starts", selection: $item.start)
-                            DatePicker("Additional break ends", selection: $item.end)
+                        ForEach(draft.additionalBreaks) { item in
+                            DatePicker(
+                                "Additional break starts",
+                                selection: additionalBreakBinding(
+                                    id: item.id, endpoint: .start))
+                            DatePicker(
+                                "Additional break ends",
+                                selection: additionalBreakBinding(
+                                    id: item.id, endpoint: .end))
                             Button("Remove break", role: .destructive) {
+                                markSourceBreakReview(id: item.id, endpoint: .start)
+                                markSourceBreakReview(id: item.id, endpoint: .end)
                                 draft.additionalBreaks.removeAll { $0.id == item.id }
                             }
                         }
@@ -349,10 +361,62 @@ struct RepeatWorkView: View {
         }
     }
 
-    private func manualBinding(_ keyPath: WritableKeyPath<WorkDraft, Date>) -> Binding<Date> {
+    private enum BreakEndpoint {
+        case start, end
+    }
+
+    private var firstBreakToggle: Binding<Bool> {
+        Binding(
+            get: { draft.hasUnpaidBreak },
+            set: { enabled in
+                draft.hasUnpaidBreak = enabled
+                if !enabled {
+                    RepeatWorkDraft.markManualReview("break.0.start", draft: &draft)
+                    RepeatWorkDraft.markManualReview("break.0.end", draft: &draft)
+                }
+            })
+    }
+
+    private func manualBinding(
+        _ key: String,
+        _ keyPath: WritableKeyPath<WorkDraft, Date>
+    ) -> Binding<Date> {
         Binding(
             get: { draft[keyPath: keyPath] },
-            set: { draft[keyPath: keyPath] = $0 })
+            set: { value in
+                draft[keyPath: keyPath] = value
+                RepeatWorkDraft.markManualReview(key, draft: &draft)
+            })
+    }
+
+    private func additionalBreakBinding(id: UUID, endpoint: BreakEndpoint) -> Binding<Date> {
+        Binding(
+            get: {
+                guard let item = draft.additionalBreaks.first(where: { $0.id == id }) else {
+                    return draft.start
+                }
+                return endpoint == .start ? item.start : item.end
+            },
+            set: { value in
+                guard let index = draft.additionalBreaks.firstIndex(where: { $0.id == id }) else {
+                    return
+                }
+                switch endpoint {
+                case .start:
+                    draft.additionalBreaks[index].start = value
+                case .end:
+                    draft.additionalBreaks[index].end = value
+                }
+                markSourceBreakReview(id: id, endpoint: endpoint)
+            })
+    }
+
+    private func markSourceBreakReview(id: UUID, endpoint: BreakEndpoint) {
+        guard let source = draft.templateSource,
+            let index = source.unpaidBreaks.firstIndex(where: { $0.id == id })
+        else { return }
+        let suffix = endpoint == .start ? "start" : "end"
+        RepeatWorkDraft.markManualReview("break.\(index).\(suffix)", draft: &draft)
     }
 
     private func choiceBinding(_ key: String) -> Binding<RepeatedTimeChoice?> {
