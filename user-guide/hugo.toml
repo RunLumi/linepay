@@ -1,4 +1,4 @@
-baseURL = 'https://streamentry.github.io/linepay/'
+baseURL = 'https://linepaycheck-guide.pages.dev/'
 locale = 'en-US'
 title = 'LinePaycheck User Guide'
 enableRobotsTXT = true

@@ -48,20 +48,26 @@ Only `user-guide/public` is uploaded. A project path and a domain root are teste
 
 ## Cloudflare Pages
 
-Create a **Pages** project using Git integration and select this repository. Keep existing production sites and DNS unchanged until you select the intended help-site address.
+The production guide is a Direct Upload Cloudflare Pages project at
+`https://linepaycheck-guide.pages.dev/`. It has no custom domain, Pages Function,
+Worker, DNS record, secret, or repository connection.
 
 | Setting | Value |
 | --- | --- |
-| Production branch | `main` |
-| Root directory | `user-guide` |
-| Build command | `bash scripts/build.sh` |
-| Build output directory | `public` |
-| `HUGO_VERSION`, Production and Preview | `0.165.0` |
-| `GUIDE_BASE_URL`, Production | Your stable published help URL, e.g. `https://your-help-project.pages.dev/` |
+| Project | `linepaycheck-guide` |
+| Production URL | `https://linepaycheck-guide.pages.dev/` |
+| Source branch | `main` |
+| Build command | `GUIDE_BASE_URL=https://linepaycheck-guide.pages.dev/ bash user-guide/scripts/build.sh` |
+| Upload directory | `user-guide/public` |
 
-For a non-main production branch, also set `GUIDE_PRODUCTION_BRANCH`. Preview builds use `CF_PAGES_URL` and emit noindex/robots exclusions; production requires an explicit stable base rather than a per-deployment hash URL. The `_headers` file supplies same-origin-only content security policy, no-referrer, frame protection, and disables camera/microphone/geolocation for this help site. GitHub Pages does not interpret Cloudflare's `_headers` format.
+To publish a reviewed `main` commit, build the site with its production URL and upload
+the generated directory with Wrangler. Attach the commit SHA and message to the
+deployment. A Direct Upload project does not deploy from Git automatically; do not
+claim that future merges are public until their own upload succeeds.
 
-There is no Worker, Pages Function, Wrangler dependency, secret, API key, or upload handler. Limit build-watch paths to `user-guide/**` after the initial setup if desired. Cloudflare Git integration and its production/preview permissions are hosting-account actions, not performed merely by committing these files.
+Preview builds use `CF_PAGES_URL` and emit noindex/robots exclusions; production requires an explicit stable base rather than a per-deployment hash URL. The `_headers` file supplies same-origin-only content security policy, no-referrer, frame protection, and disables camera/microphone/geolocation for this help site.
+
+There is no Worker, Pages Function, secret, API key, custom domain, or upload handler. Wrangler is used only for authenticated Direct Upload. Do not add a CNAME or change DNS until the intended domain is separately approved.
 
 ## Content and navigation
 

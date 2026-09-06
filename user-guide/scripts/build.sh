@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 command -v hugo >/dev/null || { echo 'Install Hugo 0.165.0; see README.md.' >&2; exit 1; }
 hugo version | grep -Eq '^hugo v0\.165\.0([+ -]|$)' || { echo 'Expected Hugo 0.165.0.' >&2; exit 1; }
-BASE="${GUIDE_BASE_URL:-https://streamentry.github.io/linepay/}"
+BASE="${GUIDE_BASE_URL:-https://linepaycheck-guide.pages.dev/}"
 if [[ "${CF_PAGES:-}" == 1 ]]; then
   if [[ "${CF_PAGES_BRANCH:-}" != "${GUIDE_PRODUCTION_BRANCH:-main}" ]]; then
     BASE="${CF_PAGES_URL:?Cloudflare preview URL is required}"
