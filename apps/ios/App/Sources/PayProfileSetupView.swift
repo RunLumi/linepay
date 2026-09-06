@@ -84,7 +84,7 @@ struct PayProfileSetupView: View {
                         step == 3 ? "pay-profile.save" : "pay-profile.continue")
                 }
                 if step == 3, editing {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         Menu("Scope") {
                             Button("Future work periods only") {
                                 draft.editScope = .futurePeriods
