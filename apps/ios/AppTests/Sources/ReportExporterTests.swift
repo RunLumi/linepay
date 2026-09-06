@@ -27,6 +27,7 @@ struct ReportExporterTests {
         #expect(pdf.pageCount > 0)
         #expect(text.contains("Expected wage pay") && text.contains("Confirmed paystub gross"))
         #expect(text.contains(model.currentAuditStatus.title))
+        #expect(text.contains("Calculation engine: linepay.configured-pay/2"))
         #expect(text.contains("Rule snapshot") && text.contains("not a legal determination"))
         #expect(text.contains("Original paystub pages are excluded"))
     }
