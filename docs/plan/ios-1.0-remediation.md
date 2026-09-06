@@ -6,28 +6,28 @@ Branch: `fix/ios-1.0-readiness`; [PR #2](https://github.com/streamentry/linepay/
 
 ## Current evidence
 
-Verified native source: **`4c15b53d830fd115e96fa429db302c592092f087`**. Its full `agent-verify.sh ios` gate exited **0** on September 6, 2026. The `apps/ios` tree is `fe6e5ff886b9365421dfe99a763d88abb8b447f0`.
+Verified native source: **`a6e9dcefb28fb99e12c23f9437fc09a087d8f121`**. Its full `agent-verify.sh ios` gate exited **0** on September 6, 2026. The `apps/ios` tree is `0b061dbe080e5c26ecbcb002ed69e36da8308549`.
 
 | Executed gate | Result |
 |---|---|
 | Strict Swift formatting and privacy-manifest validation | Pass |
 | Pure domain | 82 tests passed |
 | Repository scripts | 29 tests passed |
-| App tests, including native StoreKitTest and view contracts | 167 tests passed |
+| App tests, including native StoreKitTest and view contracts | 169 tests passed |
 | XCTest UI | All 7 journeys passed |
 | Generic iOS Simulator Release, arm64/x86_64 | Build passed; launch configuration and dependency lock preserved |
 | Standard light / Reduce Motion enabled | 9/9 Maestro flows passed in 11m 1s on `95dd0e8` |
 | Compact dark / maximum text | Complete audit correction/relaunch passed on `95dd0e8`; complete rule correction passed on `4c15b53` |
 
-The native result bundle reports **174 passed, 0 failed, 0 skipped, 0 expected failures** (167 app tests plus 7 XCTest UI journeys). Toolchain: Xcode 26.6 (`17F113`), Swift 6.3.3, XcodeGen 2.46.0. Native runtime: iPhone 16 Pro / iOS 18.5 (`6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9`).
+The native result bundle reports **176 passed, 0 failed, 0 skipped, 0 expected failures** (169 app tests plus 7 XCTest UI journeys). Toolchain: Xcode 26.6 (`17F113`), Swift 6.3.3, XcodeGen 2.46.0. Native runtime: iPhone 16 Pro / iOS 18.5 (`6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9`).
 
 ```bash
-LINEPAY_RESULTS_DIR="$PWD/.build/readiness/4c15b53/native-final" \
+LINEPAY_RESULTS_DIR="$PWD/.build/merge-review/native-final" \
 IOS_SIMULATOR_DESTINATION='platform=iOS Simulator,id=6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9' \
 bash scripts/agent-verify.sh ios
 ```
 
-Native log, result bundle, coverage, summary and exported screenshots: `.build/readiness/4c15b53/verify-ios-final.log` and `.build/readiness/4c15b53/native-final/`.
+Native log, result bundle, coverage, summary and exported screenshots: `.build/merge-review/verify-ios-final.log` and `.build/merge-review/native-final/`.
 
 The standard suite ran on an isolated iPhone 16 Pro / iOS 18.5 (`1098F918-AF29-48AE-9DF9-8DEB861F0367`), light appearance and normal text. Reduce Motion was enabled through Settings and read back as `1` in `.build/readiness/1369414/reduce-motion-enabled.json`. Log: `.build/readiness/95dd0e8/standard-ui.log`.
 
@@ -38,7 +38,7 @@ JAVA_HOME="$(/usr/libexec/java_home -F -v 21)" \
   --test-output-dir .build/readiness/95dd0e8/standard-ui .maestro
 ```
 
-After that complete standard pass, **only rule-flow navigation changed**; application and native-test sources remained identical. The changed complete rule flow then passed in both standard and maximum-text appearances on `4c15b53`. Logs: `.build/readiness/4c15b53/rule-standard.log` and `rule-maximum.log`. The maximum-text audit's complete subflow is recorded as passed in `.build/readiness/95dd0e8/maximum-text.log`; the wrapper later failed at the rule picker before the fix. The compact device was iPhone SE / iOS 18.5 (`9872181E-9E62-4DD3-A0B9-7F925D83B9C5`), dark, `accessibility-extra-extra-extra-large`.
+Between that complete standard pass and `4c15b53`, **only rule-flow navigation changed**; application and native-test sources remained identical. The later pre-merge storage fixes below leave UI code unchanged and passed the full native gate, including all seven UI journeys. The changed complete rule flow then passed in both standard and maximum-text appearances on `4c15b53`. Logs: `.build/readiness/4c15b53/rule-standard.log` and `rule-maximum.log`. The maximum-text audit's complete subflow is recorded as passed in `.build/readiness/95dd0e8/maximum-text.log`; the wrapper later failed at the rule picker before the fix. The compact device was iPhone SE / iOS 18.5 (`9872181E-9E62-4DD3-A0B9-7F925D83B9C5`), dark, `accessibility-extra-extra-extra-large`.
 
 A readback of the final standard UI's synthetic state verified **gross difference 0, regular-pay difference +50, overtime difference -50, scope `confirmedLines`, verdict `needsReview`**. This rules out a generic unmapped-evidence warning masquerading as the intended component result.
 
@@ -48,9 +48,18 @@ Earlier failures remain separate evidence: a new simulator's keyboard tutorial i
 
 Representative synthetic [screenshots and the app-generated PDF](../qa/ios-1.0/README.md) are committed for review. Both PDF pages were rendered and inspected. Public support/privacy URLs returned HTTP 200 with normal network access.
 
+## Pre-merge review
+
+The user authorized review and merge after the implementation handoff. Review found and fixed two data-integrity gaps:
+
+- `528abf2`: saving could exceed the reader's 8 MB limit and make the next launch unable to load its own file. Save and load now share the same encoded-byte limit. Plain and JSON-escaped oversized drafts are rejected before replacing the existing file; regression tests verify byte preservation and successful reload.
+- `a6e9dce`: stored comparison differences and gross summaries were not fully cross-checked. Validation now checks expected-minus-paid with the saved rounding policy and verifies the gross comparison agrees with its summary. Synthetic inconsistent records are rejected without recalculating historical payroll results.
+
+Both regression groups and the full native gate passed on `a6e9dcefb28fb99e12c23f9437fc09a087d8f121`. No other blocking finding remained in the reviewed payroll, period lifecycle, import, restore, entitlement and validation paths. Hosted CI remains separate from these local results.
+
 ## Findings, implementation and regression evidence
 
-The tested native application SHA for every row is `4c15b53d830fd115e96fa429db302c592092f087`. The UI-only follow-up revisions and executed artifacts are identified above.
+The tested native application SHA for every row is `a6e9dcefb28fb99e12c23f9437fc09a087d8f121`. The UI-only follow-up revisions and executed artifacts are identified above.
 
 | Audit | Implemented behavior | Executed evidence and remaining limit |
 |---|---|---|
@@ -89,4 +98,4 @@ Keep separate until performed:
 - Physical VoiceOver, sunlight/night use, performance/memory and remaining screen/accessibility combinations.
 - Consenting lineworkers completing consecutive periods and explaining discrepancies without assistance.
 
-No merge into main, TestFlight distribution, App Review submission or release was performed by this repair task.
+Merge to main through PR #2 is authorized after review. TestFlight distribution, App Review submission and release remain separate and have not been performed.
