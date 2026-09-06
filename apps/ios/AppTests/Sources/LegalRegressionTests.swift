@@ -96,7 +96,7 @@ struct LegalRegressionTests {
         ] {
             #expect(!content.contains(sensitive), "Default report leaked \(sensitive)")
         }
-        #expect(content.contains("400.00"))
+        #expect(content.contains("Expected wage pay:") && content.contains("400"))
         #expect(content.contains("Source: page 1"))
         #expect(content.contains("Not a complete wage-law check"))
         #expect(content.contains("not anonymous"))

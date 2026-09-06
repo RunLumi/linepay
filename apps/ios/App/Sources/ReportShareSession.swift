@@ -91,6 +91,9 @@ struct ReportShareSession {
 
     nonisolated private static func readReport(_ url: URL) throws -> Data {
         guard url.isFileURL else { throw ReportShareError.unreadableFile }
+        guard (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) == nil else {
+            throw ReportShareError.unreadableFile
+        }
         let values = try url.resourceValues(forKeys: [
             .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey,
         ])
