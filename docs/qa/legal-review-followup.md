@@ -136,6 +136,10 @@ The prior exact source tree (`b6feb80c…`) compiled successfully with Xcode 26.
 The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
 guardrails. Against the current candidate, the retained Xcode 26.6 / Swift 6.3.3 receipts are:
 
+The executable tree used for these receipts is `05a1a5af489f695e876d8baa46b18f668bec053a`
+(tree `a5a3a557857dbc1a5cef694ba9e31982ba44be63`); the later receipt commits only update
+documentation.
+
 - `/Volumes/SSD/linepay-pr34-evidence/current-head-legal.xcresult`: 30 focused legal tests passed on iOS 18.5 / iPhone 16 Pro.
 - `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-share.xcresult`: the Save-to-Files activity journey passed on the same simulator.
 - `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-scope-final.xcresult`: all three rule-scope edits passed at XXXL text on iOS 18.5 / iPhone 16 Pro.
