@@ -119,21 +119,27 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source integration candidate is `b6feb80c9affab26136bcefc1f500db71012a5b4` (tree
-`e08c600eb6a8a5ea1dad3d12741eebb2c958e79c`). It differs from the previously tested candidate
-`c6b7504d8b746611fbcb8a73d93648fa8db4024f` only by the safe temporary-cleanup error wording;
-the later `373e0d7b8083c08607a2be44e1184d3c9b6645bb` tip is documentation-only. Its production source includes
-the Menu-based scope selector, grouped toolbar Scope/Save actions, archived-window rule protection,
+The production-source integration candidate is `bc3eb720c96b348dcc5bda07ee5b0950cc20076e` (tree
+`a5a3a557857dbc1a5cef694ba9e31982ba44be63`). It includes the prior safe-cleanup wording plus
+the single Picker-based scope control and explicit UI-journey isolation. The prior exact native
+candidate was `b6feb80c9affab26136bcefc1f500db71012a5b4`; its later `373e0d7…` tip was
+documentation-only. Its production source includes
+the Picker-based scope selector with a single grouped toolbar Save action, archived-window rule protection,
 locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
 
-The prior exact source tree (`c6b7504…`) compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
+The prior exact source tree (`b6feb80c…`) compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
 `build-for-testing` run using task-local Swift/Clang caches and `DEBUG_INFORMATION_FORMAT=dwarf`.
 The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
-guardrails. A prior focused native app receipt passed 30 legal tests, and the fresh-device scope
-and Share-to-Files journeys passed before the final test-isolation-only commit.
+guardrails. Against the current candidate, the retained Xcode 26.6 / Swift 6.3.3 receipts are:
 
-After the final push, `CoreSimulatorService` repeatedly exited before `xcodebuild` could execute
-tests, including `test-without-building` against the existing `.xctestrun`; the host also could not
-resolve the cached ViewInspector manifest when rebuilding. Consequently, no final-head Apple
-`xcresult` proves the full UI suite on this host. The final candidate remains unmerged and the UI
-acceptance gate must be rerun on a healthy simulator/host (or hosted runner after #37 is repaired).
+- `/Volumes/SSD/linepay-pr34-evidence/current-head-legal.xcresult`: 30 focused legal tests passed on iOS 18.5 / iPhone 16 Pro.
+- `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-share.xcresult`: the Save-to-Files activity journey passed on the same simulator.
+- `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-scope-final.xcresult`: all three rule-scope edits passed at XXXL text on iOS 18.5 / iPhone 16 Pro.
+
+The two UI journeys were run as separate bounded invocations; a combined invocation on this host
+also produced simulator-only process kills while the individual assertions passed. The hosted
+workflow remains the authoritative combined rerun once #37 is repaired.
+
+The exact current-head Apple unit and individual UI journeys now have retained xcresults. The
+combined hosted UI workflow remains unexecuted because GitHub stops before job steps under #37;
+rerun it on the repaired hosted runner and retain its combined artifact before merging.
