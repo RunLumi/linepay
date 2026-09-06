@@ -2,7 +2,7 @@
 
 [Product home](README.md) · [Business rules](business-rules.md) · [Payroll coverage](payroll/coverage-and-gaps.md) · [Remediation tracker #49](https://github.com/streamentry/linepay/issues/49)
 
-**Reviewed September 6, 2026. This is a pinned source/test audit, not a release certificate.**
+**Reviewed September 6, 2026. Canonical mapping of 45 BR rules, 18 PAY concepts and 34 EX vectors. This is not a release certificate.**
 
 ## Baselines and evidence
 
@@ -12,198 +12,211 @@
 | Application and tests | `4fe319dc13836eb4e061442f2f9aae53c4d3b00a` on main |
 | Related native remediation | PR #34, head `15cec8849864ba9dee0a4a5bba69e114b088370a`, draft/unmerged at review |
 
-The reviewed local application archive was verified against live Git tree hashes: App `e57e993d805267404e1aa29acb1b5878437f788b`, AppTests `49bf43c5c3f0cb64bb889e21eccdde35b021c380`, AppUITests `397354932576ef581cfd39b31da4f9d5b94e86cf`, domain Sources `0098636fa4702e54782c93eaa5152ab6c6bee467`, domain Tests `ceae6beb49f750aa90a1edcb541213c9688e472d`. Product file blobs were checked against the handbook branch. EX-13 was read from the final pinned document rather than copied from an older archive variant.
+The local application snapshot was matched to live Git tree hashes: App `e57e993d805267404e1aa29acb1b5878437f788b`, AppTests `49bf43c5c3f0cb64bb889e21eccdde35b021c380`, AppUITests `397354932576ef581cfd39b31da4f9d5b94e86cf`, domain Sources `0098636fa4702e54782c93eaa5152ab6c6bee467`, domain Tests `ceae6beb49f750aa90a1edcb541213c9688e472d`. The application trees are unchanged from `105b024`; later main changes in this comparison concern documentation/legal controls. The handbook branch's older runtime tree is not substituted for main.
 
-**Executed:** 82 existing domain tests passed on Swift 6.2.1/Linux. The isolated copied package manifest changed tools-version 6.3 to 6.2; production domain Swift files were byte-identical. Four extra observation probes reproduced current rounding, source-consistency, callout and weekly-scope behavior. Their passing assertions describe existing problematic behavior, not fixed regressions. A separate extracted Foundation probe reproduced repeat-template DST behavior.
+**Executed in this review:** 82 existing domain tests passed on Swift 6.2.1/Linux. Only the isolated copied manifest changed tools-version 6.3 to 6.2; production domain Swift files remained byte-identical. Four additional characterization tests reproduced rounding, source inconsistency, callout splitting and weekly scope. A separate extracted Foundation probe reproduced repeat-template DST behavior. One additional parser characterization executed the complete unchanged `PaystubTextParser.swift` with exact supporting model and formatter excerpts and reproduced the end-only-date problem. Characterization tests assert observed behavior, including defects; they are not passing fix regressions.
 
-**Not executed here:** Xcode 26.6, native AppModel/StoreKit/Vision/UI tests, physical-device interaction, or live App Store checks. Existing native test files and previous CI reports do not establish those outcomes for this review.
+**Not executed here:** Xcode, native AppModel/StoreKit/Vision/UI tests, device interaction, live storefront checks or professional legal/applicability review. A test file existing, a prior CI result, a passing portable test and a verified release are different evidence.
 
 ### Status legend
 
-- **P:** related existing domain regression executed portably; not proof of every requirement variant.
-- **S:** implementation and related tests inspected in source; not natively executed in this audit.
+- **P:** related existing domain regression executed portably; its assertions passed, not every adjacent requirement.
+- **S:** implementation and related tests inspected in source, not natively executed here.
 - **Partial:** a concrete gap or explicitly limited subset.
-- **Unsupported/reference:** deliberately outside current represented capability; not automatically a new 1.0 feature.
-- **External/unverified:** device, source/applicability or storefront evidence remains necessary.
+- **Unsupported/reference:** outside current represented capability, not automatically a new 1.0 feature.
+- **External/unverified:** device, source/applicability, owner or storefront evidence remains necessary.
 
-Do not combine these into a misleading completeness percentage. A file existing, a passing test and legally reviewed coverage are different facts.
+Do not collapse these into a completeness percentage. Code establishes implemented behavior; it does not establish what a particular worker is legally owed.
 
-## Issues and observed counterexamples
+## Issues and counterexamples
 
 | Issue | Type | Finding |
 |---|---|---|
-| [#38](https://github.com/streamentry/linepay/issues/38) | P1 behavior | Contradictory confirmed paycheck totals can produce a directional verdict |
-| [#39](https://github.com/streamentry/linepay/issues/39) | P1 calculation policy | Internal segmentation changes rounded wages without changing rate or work |
-| [#40](https://github.com/streamentry/linepay/issues/40) | P1 time entry | Repeat moves breaks across DST and silently normalizes nonexistent times |
-| [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | A physical callout has no identity separate from each work-entry row |
-| [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Workweek/regular-rate reference layer is not implemented |
-| [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | Unpriceable saved period A blocks closing A and logging period B |
+| [#38](https://github.com/streamentry/linepay/issues/38) | P1 behavior | Contradictory paid gross/components can produce an unsupported directional verdict |
+| [#39](https://github.com/streamentry/linepay/issues/39) | P1 calculation policy | Internal segmentation changes rounded wages without changing the rate or work |
+| [#40](https://github.com/streamentry/linepay/issues/40) | P1 time entry | Repeat moves breaks across DST and silently normalizes nonexistent local times |
+| [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | Physical callout identity is conflated with each work-entry row |
+| [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Workweek/regular-rate reference layer is missing |
+| [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | An unpriceable saved period A blocks closing A and recording B |
 | [#45](https://github.com/streamentry/linepay/issues/45) | P2 provenance | Calculation-engine identity is missing from saved calculation results |
-| [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | Same-day EX-09 does not fit the midnight-only rule timeline |
-| [#47](https://github.com/streamentry/linepay/issues/47) | P2 scope | Optional reminder acceptance needs explicit implementation or deferral |
+| [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | Same-day EX-09 is not representable by the midnight-only timeline |
+| [#47](https://github.com/streamentry/linepay/issues/47) | P2 scope | Optional reminders need explicit implementation or deferral |
+| [#48](https://github.com/streamentry/linepay/issues/48) | P2 parser | An end-only pay-period OCR row also supplies an unsupported start date |
 
-#42 and #44 were created concurrently and reused. #43 was closed as a duplicate of #42. The correct unequal-hours EX-13 value was added to #42 by comment. Keep one implementation ticket per finding.
+Use #42 as the canonical weekly-capability issue and #43 as its duplicate. Concurrent mapping work also produced #44 and #48; their findings are incorporated rather than refiled. Existing legal/acceptance ownership is retained below.
 
 | Probe | Synthetic input | Observed result | Meaning |
 |---|---|---|---|
-| R1 | $50/hour, 08:00–08:02, 1x everywhere | $1.67 as one segment; $1.66 as two one-minute entries, or with an irrelevant 08:01 schedule boundary | #39: define the approved rounding scope; no universal legal rounding rule inferred |
-| R2 | Expected $550; paid gross $500 but confirmed regular $400 plus OT $150 | `possibleShortfall`, $50 difference, no review reason | #38: the paid-source facts contradict each other |
-| R3 | One two-hour Tuesday callout, $50, 2x, four-hour minimum | One record $400; two adjacent records $800 | #41: distinguish event identity from rows; do not automatically merge genuinely separate calls |
-| R4 | Six eight-hour days, $50, only daily 1.5x after eight | Configured $2,400; handbook restricted weekly reference $2,600 | #42: omitted reference layer, not incorrect configured daily arithmetic |
-| R5 | New York March 7, 2026 00:00–08:00 with 04:00 break, repeated March 8 | Shift stays 00:00–08:00, break becomes 05:00; repeated 02:30 normalizes to 03:00 | #40: extracted Foundation path, not a native UI execution |
+| R1 | $50/hour, 08:00–08:02, 1x everywhere | $1.67 as one segment; $1.66 as two one-minute entries OR the same entry with an irrelevant 08:01 schedule boundary | #39: the approved rounding boundary must be explicit; no universal legal rounding policy is inferred |
+| R2 | Expected $550; confirmed paid gross $500, regular $400 and OT $150 | `possibleShortfall`, $50 difference, no review reason | #38: paid-source facts contradict each other |
+| R3 | One two-hour Tuesday callout, $50, 2x, four-hour minimum | One record $400; two adjacent records $800 | #41: one physical event is not necessarily two qualifying calls; do not merge genuinely separate calls automatically |
+| R4 | Six eight-hour days, $50, only daily 1.5x after eight configured | $2,400; restricted weekly reference $2,600 | #42: missing reference layer, not incorrect configured daily arithmetic |
+| R5 | New York March 7, 2026 00:00–08:00 with 04:00 break, repeated March 8 | Shift 00:00–08:00; break 05:00; repeated 02:30 normalizes to 03:00 | #40: extracted Foundation path, not a native UI run |
+| R6 | OCR `Pay period ending 09/05/2026` | Both periodStart and periodEnd suggested as `2026-09-05` | #48: complete production parser executed without Vision; the source provides no start |
 
-#44 is source-traced: the domain rejects an ambiguous spanning-callout guarantee; AppModel retains the work with no calculation; archive requires a calculation; starting B requires no active period. Its extended native close/relaunch/start-B test still needs to run.
+#44 is source-traced: the domain rejects an ambiguous spanning-callout guarantee; AppModel retains the genuine work with no calculation; archive requires a calculation; starting B requires no active period. Its extended native close/relaunch/start-B test still needs to execute. Refusing an invented audit is correct; blocking all subsequent work logging is a different behavior.
 
 ## Business-rule mapping: all 45 IDs
 
-Code links are pinned to the reviewed application commit. Test links identify related coverage and named methods, not complete execution evidence for every clause.
+Code links below are pinned. Test identifiers refer to files under [App tests][AT], [domain tests][DT] or [native UI tests][UT]; file presence is not an assertion that all clauses have been proven.
 
-| ID | Implementation | Related tests | Status and remaining boundary |
+| ID | Implementation | Related regression | Status and remaining boundary |
 |---|---|---|---|
-| BR-001 | [STATE], [STORE], project.yml | Brand/launch configuration tests | S: public and technical identities remain distinct; no new gap |
-| BR-002 | [AM], [LOCAL], [OCR], [STORE] | [StorageContractTests], [SubscriptionBehaviorTests] | S: core local; commerce and deliberate export have separate external requirements |
-| BR-003 | [STATE] PayProfile; [AM] candidateForProfile | [RuleScopeRegressionTests] | S: one-profile scope; no multi-employer statutory aggregation implied |
-| BR-004 | [LEDGER], [ASSESS], [REPORT] | [AuditScopeRegressionTests] | Partial: known legal coverage disclosure #14 and calculation-version gap #45 |
-| BR-005 | [PROFILE], [ASSESS] | [ScreenContractTests] | Partial: confirmation is not reviewed legal coverage; #14/#26 |
-| BR-006 | [PROFILE] unsupported notes; [ASSESS] reviewReasons | [PaycheckAssessmentTests] uncertainComponentsAndUnsupportedRulesCannotPassCleanly | Partial: explicit omissions handled, inherently missing layers need #14/PR #34 |
-| BR-010 | [PROFILE], [ROOT] | [ScreenContractTests]; onboarding Maestro | S plus scope gap: progressive confirmation exists; #14 disclosure |
-| BR-011 | [TL], [DM] snapshots/results | [AgreementTimelineTests], [TimelinePersistenceTests] | Partial: agreement versions exist; calculation-engine identity missing #45 |
-| BR-012 | [AM] candidateForProfile; [PROFILE] review | [RuleScopeRegressionTests] previewIsReadOnlyAndCorrectionIsExplicit | Partial: numerical guards exist; inaccurate dated consent #15, pending PR #34 |
-| BR-013 | [DM], [TL], [AM] period windows | [AgreementTimelineTests], [ReadinessBoundaryTests] | Partial: payroll timezone explicit; statutory week/non-midnight contract day not represented (#42/#14); repeat DST #40 |
-| BR-014 | [AM] correctCurrentPeriod | [ReadinessTests] periodCorrectionRejectsMovingWorkOrOverlap | S: containment, overlap and invalidation paths exist; old no-op-date defect not reopened |
-| BR-015 | [DM] AgreementSource.ruleKey; [PROFILE] | [AppFailurePathTests] profileDraftKeepsScheduleSourceAndEffectiveDates | S: per-rule references; external preset approval remains #26 |
-| BR-020 | [DM] WorkInterval; [PC] guarantee category | [PayCalculatorInvariantTests] actualCalloutBreakAndGuaranteedPayStaySeparate | Partial: worked/paid equivalents separated, physical event identity #41 |
-| BR-021 | [DM] guards; [AM] add/update/delete | [AppModelContractTests] workGuardsAndUndoAreSafe | S plus gap: row ID/overlap validation does not establish independent callout triggers (#41) |
-| BR-022 | [WORK] repeatDates and break offsets; [AM] lastWork | [ScreenContractTests] addEditAndRepeatFormsRetainTheirWorkFacts | Partial: rollover reuse exists; DST construction counterexample #40 |
-| BR-023 | [AM] draft save/discard; [STATE] | [ReadinessTests] workAndIntakeDraftsSurviveNewModel; [JOURNEY] | S: draft/context persistence represented; native interruption acceptance separate |
-| BR-024 | [AM] deleteWork/restoreDeletedWork | [ReadinessTests] staleUndoCannotMoveWorkToNextPeriod / undoRejectsAnInterveningEdit | S: period/revision-bound Undo present; old defect not reopened |
-| BR-025 | [AM] archiveCurrentPeriod and historical confirm | [IntegratedReadinessTests] sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules | Partial: normal delayed-paycheck path exists; unpriceable-A path #44 |
-| BR-026 | [STATE] AuditRevision; [AM] confirmPaystub | [ReadinessTests] closedAuditCorrectionsAppendRevisions | Partial: immutable facts/rules/results present; calculator identity #45 |
-| BR-027 | [LEDGER] close confirmation; [HISTORY] | [PeriodAndEvidenceTests] periodCadencesAndArchive | Partial: priceable unaudited periods can await pay; unpriceable closed state #44 |
-| BR-028 | [AM] calculation/error paths; [LEDGER] | [AuditScopeRegressionTests] missingAndStaleCalculationsAreNotSuccess | S plus lifecycle gap: reject false success without blocking subsequent work (#44) |
-| BR-030 | [IMPORT], [OCR], DocumentScannerView | [DocumentPipelineTests], [JOURNEY] | S: shared confirmation path; native scanner/device permission acceptance unverified here |
-| BR-031 | [PARSER], [OCR], [SOURCE] | [OCRParserTests] currentNeverSelectsYTD / repeatedLabelsDoNotGuess | S: provenance and abstention present, not universal layout coverage |
-| BR-032 | [OP], [IMPORT] | [PaystubImportOperationTests] cancelledReadCannotClaimOrFinishANewerImport | S: token-bound intake/cancellation present |
-| BR-033 | [DECIMAL], [PARSER], [AM] | [PaycheckAssessmentTests], [ParserAndFormatTests] | P/S: strict domain parsing passed portably; native document tests not rerun |
-| BR-034 | [AM] confirmPaystub; [ASSESS] facts | [IntegratedReadinessTests] partialWorkCannotProduceAFullPaycheckVerdictOrConsumeFreeAccess | Partial: completeness/date/currency guards present, contradictory paid totals #38 |
-| BR-035 | [ASSESS], [IMPORT] basis controls | [PaycheckAssessmentTests] premiumOnlyLayoutAndHours / perDiemExcludedFromWageGross | P/S: explicit mappings represented; source subtotal consistency #38 |
-| BR-036 | [ASSESS], AuditAssessment, [REPORT] | [PaycheckAssessmentTests] matchingGrossDoesNotHideOffsettingErrors | Partial: old offsetting case addressed; new contradiction #38 and legal scope #14 |
-| BR-037 | [RECEIPT], [SOURCE], [LEDGER], AuditDetailView | [JOURNEY] testAuditVerdictsAndEvidenceRoutes; [ScreenContractTests] | S: in-app trace present; private PDF preview #20/PR #34 |
-| BR-038 | [ASSESS], AuditStatusView, AboutLinePayView | [ParserAndFormatTests] statusIsTextualAndHasAnIcon | S plus review: neutral labels present; deadline/support/copy controls #29 |
-| BR-040 | [STORE], [PAYWALL] | [StoreKitLifecycleTests], [SubscriptionBehaviorTests] | S: existing IDs/localized catalog; live storefront #18 |
-| BR-041 | [AM] canAudit/confirmPaystub access | [IntegratedReadinessTests] paidAuditsPreserveUnusedFreeAuditAcrossRelaunchAndExpiry | S: independent Free allowance and already-authorized rechecks represented |
-| BR-042 | [FIRST], [ROOT], [PAYWALL] | [IntegratedReadinessTests] firstRealResultSurvivesInterruptionAndOnlyAppearsOnce | S: proof then optional offer exists; optional reminder scope #47 |
-| BR-043 | [STORE], [OPS] | [StoreKitLifecycleTests], [SubscriptionBehaviorTests] | S: verified lifecycle branches/tests present; native and live evidence #18/#37 |
-| BR-044 | [STORE] load/refreshEntitlements | [SubscriptionBehaviorTests] existingOwnershipSurvivesCatalogFailure | S: earlier catalog-gating problem addressed; not reopened |
-| BR-045 | [AM] access gate; [HISTORY], [SETTINGS] | [IntegratedReadinessTests], [SubscriptionBehaviorTests] | S: saved record/export access not treated as a new audit; live/copy verification #18 |
-| BR-046 | [AM] sampling state; [BACKUPMAP] | [BackupTests] preservesFreeAllowance; [IntegratedReadinessTests] | S: local backup cannot grant verified Pro; no account required |
-| BR-050 | [LOCAL], [EVIDENCE], [BACKUP], [SETTINGS] | [BackupValidationTests]; backup-consent Maestro | S plus external gap: provider/export behavior distinct; doc-branch copy drift #17/PR #12 |
-| BR-051 | [AM] confirmPaystub/removeEvidence | [PeriodAndEvidenceTests] manualCorrectionPreservesOriginalAndFailedReplacementRollsBack | S: manual correction retains original by default; old defect not reopened |
-| BR-052 | [AM] retryEvidenceDeletion; [EVIDENCE]; TemporaryExports | [ReadinessTests] failedEvidenceDeletionRemainsRetryable; [AppFailurePathTests] | Partial: cleanup queue exists; expanded temporary-sharing boundary #21/#20/PR #34 |
-| BR-053 | [LOCAL], [VALIDATE], [AM] commit | [StorageContractTests], [AppFailurePathTests] | S: atomic/failure fixtures present; native filesystem tests not rerun |
-| BR-054 | [BACKUP], [BACKUPMAP], BackupRestoreView | [BackupValidationTests], [BackupConcurrencyTests], [BackupTests] | S: validation/staging/rollback represented; actual provider evidence #21 |
-| BR-055 | [STATE], [BACKUPMAP], [VALIDATE] | [TimelinePersistenceTests]; [IntegratedReadinessTests] staticV1FixturePreservesHistoricalMeaningAndOriginal | Partial: historical values/versions preserved; calculation-engine identity #45 |
-| BR-056 | [REPORT], [RECEIPT] | [ReportExporterTests], [DocumentPipelineTests] | Partial: comparison engine shown, pay-calculation engine missing #45; private sharing #20 |
-| BR-057 | DesignTokens, [RECOVERY], [SETTINGS], [PAYWALL] | [ScreenContractTests], [JOURNEY]; adaptive-layout Maestro | S plus unverified: representative tests are not all-screen/device acceptance (#31/#37) |
+| BR-001 | [STATE], [STORE], [project][PROJECT] | LaunchConfigurationTests, identity/configuration contracts | S: public and technical identities remain distinct |
+| BR-002 | [AM], [LOCAL], [OCR], [STORE] | StorageContractTests, SubscriptionBehaviorTests | S: core local; deliberate exports and Apple commerce are separate external paths |
+| BR-003 | [STATE] PayProfile; [AM] candidateForProfile | RuleScopeRegressionTests | S: one-profile scope; no multi-employer statutory aggregation implied |
+| BR-004 | [LEDGER], [ASSESS], [REPORT] | AuditScopeRegressionTests | Partial: legal coverage disclosure #14 and calculation identity #45 |
+| BR-005 | [PROFILE], [ASSESS] | ScreenContractTests | Partial: confirmation is not externally reviewed coverage; #14/#26 |
+| BR-006 | [PROFILE] unsupported notes; [ASSESS] reviewReasons | PaycheckAssessmentTests.uncertainComponentsAndUnsupportedRulesCannotPassCleanly | P/S: explicit omitted-rule flag handled; known missing layers still need #14 |
+| BR-010 | [PROFILE], [ROOT] | ScreenContractTests; onboarding Maestro | S: progressive setup exists; #14 disclosure, not a missing-onboarding rewrite |
+| BR-011 | [TL], [DM] snapshots/results | AgreementTimelineTests, TimelinePersistenceTests | Partial: dated rule versions exist; calculation identity #45 |
+| BR-012 | [AM] candidateForProfile; [PROFILE] review | RuleScopeRegressionTests.previewIsReadOnlyAndCorrectionIsExplicit | Partial: numerical protection exists; inaccurate dated consent #15, pending PR #34 |
+| BR-013 | [DM], [TL], [AM] windows | AgreementTimelineTests, ReadinessBoundaryTests | Partial: payroll timezone explicit; statutory week/non-midnight contract day not represented; #42/#14 and repeat DST #40 |
+| BR-014 | [AM] correctCurrentPeriod | ReadinessTests.periodCorrectionRejectsMovingWorkOrOverlap | S: containment, overlap and invalidation paths exist; old no-op date defect not reopened |
+| BR-015 | [DM] AgreementSource.ruleKey; [PROFILE] | AppFailurePathTests.profileDraftKeepsScheduleSourceAndEffectiveDates | S: per-rule source references; actual preset/source approval #26 |
+| BR-020 | [DM] WorkInterval; [PC] guarantee category | PayCalculatorInvariantTests.actualCalloutBreakAndGuaranteedPayStaySeparate | P/Partial: worked/paid equivalents separate; physical event identity #41 |
+| BR-021 | [DM] validation; [AM] work operations | AppModelContractTests.workGuardsAndUndoAreSafe; domain overlap tests | Partial: row identity/overlap checks do not establish separate callout triggers #41 |
+| BR-022 | [WORK] repeatDates and break offsets; [AM] lastWork | ScreenContractTests.addEditAndRepeatFormsRetainTheirWorkFacts | Partial: rollover reuse exists; DST construction #40 |
+| BR-023 | [AM] save/discard drafts; [STATE] | ReadinessTests.workAndIntakeDraftsSurviveNewModel; PaydayJourneyTests | S: durable draft/context represented; device interruption acceptance separate |
+| BR-024 | [AM] deleteWork/restoreDeletedWork | ReadinessTests.staleUndoCannotMoveWorkToNextPeriod / undoRejectsAnInterveningEdit | S: period/revision-bound Undo present; old defect not reopened |
+| BR-025 | [AM] archive and historical confirmation | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules | Partial: normal delayed-paycheck path exists; unpriceable-A path #44 |
+| BR-026 | [STATE] AuditRevision; [AM] confirmPaystub | ReadinessTests.closedAuditCorrectionsAppendRevisions | Partial: immutable facts/rules/results present; calculation identity #45 |
+| BR-027 | [LEDGER] close confirmation; [HISTORY] | PeriodAndEvidenceTests.periodCadencesAndArchive | Partial: priceable unaudited periods can await pay; unresolved closed state #44 |
+| BR-028 | [AM] calculation/error paths; [LEDGER] | AuditScopeRegressionTests.missingAndStaleCalculationsAreNotSuccess | S plus gap: reject false success without blocking all subsequent work #44 |
+| BR-030 | [IMPORT], [OCR], DocumentScannerView | DocumentPipelineTests, PaydayJourneyTests | S: shared confirmation path; actual scanner/device permission behavior unverified here |
+| BR-031 | [PARSER], [OCR], [SOURCE] | OCRParserTests.currentNeverSelectsYTD / repeatedLabelsDoNotGuess | Partial: conservative amounts/provenance exist; end-only date counterexample #48 |
+| BR-032 | [OP], [IMPORT] | PaystubImportOperationTests.cancelledReadCannotClaimOrFinishANewerImport | S: token-bound intake/cancellation present |
+| BR-033 | [DECIMAL], [PARSER], [AM] | PaycheckAssessmentTests; ParserAndFormatTests | P/S: strict full-string Decimal parsing passes; unsupported date suggestion #48 |
+| BR-034 | [AM] confirmPaystub; [ASSESS] facts | IntegratedReadinessTests.partialWorkCannotProduceAFullPaycheckVerdictOrConsumeFreeAccess | Partial: completeness/date/currency guards exist; contradictory paid totals #38; date suggestion #48 does not bypass those guards |
+| BR-035 | [ASSESS], [IMPORT] basis controls | PaycheckAssessmentTests.premiumOnlyLayoutAndHours / perDiemExcludedFromWageGross | P/Partial: explicit mappings exist; paid-source consistency #38 |
+| BR-036 | [ASSESS], AuditAssessment, [REPORT] | PaycheckAssessmentTests.matchingGrossDoesNotHideOffsettingErrors | Partial: earlier offsetting case addressed; new contradiction #38 and legal scope #14 |
+| BR-037 | [RECEIPT], [SOURCE], [LEDGER], AuditDetailView | PaydayJourneyTests.testAuditVerdictsAndEvidenceRoutes; ScreenContractTests | S: in-app trace present; private PDF preview #20/PR #34 |
+| BR-038 | [ASSESS], AuditStatusView, AboutLinePayView | ParserAndFormatTests.statusIsTextualAndHasAnIcon | S plus review: neutral labels exist; deadline/support boundaries #29 |
+| BR-040 | [STORE], [PAYWALL] | StoreKitLifecycleTests, SubscriptionBehaviorTests | S: stable IDs/localized catalog; live storefront #18 |
+| BR-041 | [AM] audit-access/confirmPaystub | IntegratedReadinessTests.paidAuditsPreserveUnusedFreeAuditAcrossRelaunchAndExpiry | S: independent Free allowance and previously authorized rechecks represented |
+| BR-042 | [FIRST], [ROOT], [PAYWALL] | IntegratedReadinessTests.firstRealResultSurvivesInterruptionAndOnlyAppearsOnce | S: actual proof then optional offer; optional reminder scope #47 |
+| BR-043 | [STORE], [OPS] | StoreKitLifecycleTests, SubscriptionBehaviorTests | S: verified lifecycle branches/tests present; actual native/live evidence #18/#37 |
+| BR-044 | [STORE] load/refreshEntitlements | SubscriptionBehaviorTests.existingOwnershipSurvivesCatalogFailure | S: earlier metadata-gating defect addressed; not reopened |
+| BR-045 | [AM] access gate; [HISTORY], [SETTINGS] | IntegratedReadinessTests, SubscriptionBehaviorTests | S: saved record/export access not treated as a new audit; live/copy verification #18 |
+| BR-046 | [AM] sampling; [BACKUPMAP] | BackupTests.preservesFreeAllowance; IntegratedReadinessTests | S: local backup cannot grant verified Pro; no account required |
+| BR-050 | [LOCAL], [EVIDENCE], [BACKUP], [SETTINGS] | BackupValidationTests; backup-consent Maestro | S plus external: provider/export separate; preserve newer main copy during PR #12 integration #17 |
+| BR-051 | [AM] confirmPaystub/removeEvidence | PeriodAndEvidenceTests.manualCorrectionPreservesOriginalAndFailedReplacementRollsBack | S: manual corrections retain originals by default; old defect not reopened |
+| BR-052 | [AM] retryEvidenceDeletion; [EVIDENCE]; TemporaryExports | ReadinessTests.failedEvidenceDeletionRemainsRetryable; AppFailurePathTests | Partial: retryable cleanup exists; expanded temporary-sharing boundary #21/#20/PR #34 |
+| BR-053 | [LOCAL], [VALIDATE], [AM] commit | StorageContractTests, AppFailurePathTests | S: atomic/failure fixtures exist; native filesystem checks not rerun |
+| BR-054 | [BACKUP], [BACKUPMAP], BackupRestoreView | BackupValidationTests, BackupConcurrencyTests, BackupTests | S: validation/staging/rollback; actual provider receipt #21 |
+| BR-055 | [STATE], [BACKUPMAP], [VALIDATE] | TimelinePersistenceTests; IntegratedReadinessTests.staticV1FixturePreservesHistoricalMeaningAndOriginal | Partial: historical values/versions preserved; independent calculator identity #45 |
+| BR-056 | [REPORT], [RECEIPT] | ReportExporterTests, DocumentPipelineTests | Partial: comparison engine shown; calculator version #45 and private sharing #20 |
+| BR-057 | DesignTokens, [RECOVERY], [SETTINGS], [PAYWALL] | ScreenContractTests, PaydayJourneyTests; adaptive-layout Maestro | S/unverified: representative tests do not prove all-screen/device acceptance #31/#37 |
 
 ## Pay-rule mapping: all 18 concepts
 
-The catalog enumerates questions and boundaries, not 18 promised shipped features. Do not file a new release-blocking implementation task for every deliberately excluded payment type. Unsupported categories still require truthful scope/claim handling.
+The catalog describes required facts and coverage boundaries, not eighteen promised shipped features. Deliberately excluded payment types are not automatically new release blockers. They still require truthful scope/claim handling.
 
-| ID | Concept | Implementation / related coverage | Status and remaining boundary |
+| ID | Concept | Implementation / related coverage | Status and boundary |
 |---|---|---|---|
-| PAY-01 | Base/effective wages | [DM], [TL], [PC]; [AgreementTimelineTests] | P/S: date-level changes; intraday boundary #46; classification/preset review #26 |
-| PAY-02 | Daily overtime | [PC] overtimeSlices; [PayCalculatorTimeAndTierTests] | P: midnight-local day; non-midnight workday excluded (#14), rounding #39 |
-| PAY-03 | Weekly overtime | [DM], [PC] only daily accumulation | Missing reference layer #42; disclosure #14 |
-| PAY-04 | Outside schedule | [DM] RegularScheduleWindow; [PayCalculatorScheduleTests] | P: same-day windows; overnight schedule windows explicitly rejected |
-| PAY-05 | Weekend/date premiums | [PC]; [PayCalculatorScheduleTests] | P: explicit configured multipliers; no universal holiday/stacking inference |
-| PAY-06 | Callout minimum | [PC] calloutGuarantees; [CaliforniaOutsideLineFixtureTests] | Partial: isolated variant; event identity #41, unpriceable rollover #44 |
-| PAY-07 | Rest/fatigue | No rest state machine in [DM] | Unsupported by design; disclose #14 and review named clauses #26 |
+| PAY-01 | Base/effective wages | [DM], [TL], [PC]; AgreementTimelineTests | P/S: date-level changes; intraday #46; actual classification/preset review #26 |
+| PAY-02 | Daily overtime | [PC] overtimeSlices; PayCalculatorTimeAndTierTests | P: calendar-midnight workday only; rounding #39 and non-midnight scope #14 |
+| PAY-03 | Weekly overtime | [DM], [PC] day accumulation only | Missing reference layer #42; disclosure #14 |
+| PAY-04 | Outside schedule | [DM] RegularScheduleWindow; PayCalculatorScheduleTests | P: same-day windows; overnight schedule windows explicitly rejected |
+| PAY-05 | Weekend/date premiums | [PC]; PayCalculatorScheduleTests | P: explicit multipliers; no universal holiday/stacking inference |
+| PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests | Partial: isolated variant, event identity #41, unpriceable rollover #44 |
+| PAY-07 | Rest/fatigue | No rest state machine in [DM] | Unsupported by design; disclose #14, review named clauses #26 |
 | PAY-08 | Meal entitlement | [DM] actual unpaid breaks, not meal-payment events | Unsupported payment type; break subtraction is not meal-penalty coverage |
-| PAY-09 | Travel | [DM] WorkKind.other is not a travel rule | Unsupported classification/payment; preserve facts and disclose limits |
-| PAY-10 | Standby/on-call | No restriction/standby allowance model | Unsupported; do not classify every standby hour as worked |
-| PAY-11 | Reporting/show-up | Callout category is not reporting pay | Unsupported; do not fabricate work for a non-work entitlement |
-| PAY-12 | Per diem | [PC] perDiemComponents; [PayCalculatorTimeAndTierTests] | P: flat per-work-date variant only; full eligibility/tax/subsistence outside scope |
-| PAY-13 | Mileage/expenses | No distance/receipt/rate-unit model | Unsupported by design; not automatically a 1.0 omission |
-| PAY-14 | Shift/hazard/storm supplements | [DM] schedule/day/date multipliers | Partial: no assignment-triggered supplement or regular-rate inclusion layer |
-| PAY-15 | Bonus/retroactive adjustment | No remuneration/allocation model | Unsupported reference layer #42; audit revision support is not bonus allocation |
-| PAY-16 | Paid leave/non-work holiday | Actual WorkInterval is not paid non-work time | Unsupported; do not turn leave into fabricated work |
-| PAY-17 | Benefits/fringes | [DM] categories are workedHours/calloutGuarantee/perDiem | Unsupported; total package is not cash gross; #14/#26 |
-| PAY-18 | Deductions/net | [ASSESS] gross/earnings comparison only | Explicitly excluded; no new net-tax feature task; preserve #27/#29 claim limits |
+| PAY-09 | Travel | [DM] WorkKind.other is not a travel rule | Unsupported classification/payment; preserve genuine facts and disclose limits |
+| PAY-10 | Standby/on-call | No restriction/standby allowance model | Unsupported; do not classify every standby hour as actual work |
+| PAY-11 | Reporting/show-up | Callout category is not reporting pay | Unsupported; no fabricated work for non-work entitlements |
+| PAY-12 | Per diem | [PC] perDiemComponents; PayCalculatorTimeAndTierTests | P: flat per-work-date variant only; full subsistence eligibility/tax treatment excluded |
+| PAY-13 | Mileage/expenses | No distance/receipt/rate-unit model | Unsupported; not automatically a new 1.0 commitment |
+| PAY-14 | Shift/hazard/storm supplements | [DM] schedule/day/date multipliers | Partial: no assignment-triggered supplement or full regular-rate layer |
+| PAY-15 | Bonus/retroactive adjustment | No remuneration/allocation model | Reference layer #42; audit revisions are not bonus allocation |
+| PAY-16 | Paid leave/non-work holiday | WorkInterval represents actual work | Unsupported; do not transform leave into worked hours |
+| PAY-17 | Benefits/fringes | [DM] workedHours/calloutGuarantee/perDiem categories | Unsupported; total package is not cash gross; #14/#26 |
+| PAY-18 | Deductions/net | [ASSESS] earnings/gross only | Explicitly excluded; no net-tax feature required; #27/#29 claim limits |
 
-## Example mapping: all 34 vectors
+## Acceptance-vector mapping: all 34 examples
 
-An exact new probe is distinguished from a related existing regression. App tests listed here were inspected, not run natively. Statutory examples remain reference calculations under their stated applicability assumptions.
+Related tests can use different synthetic rates/dates for the same mechanism. That does not make the exact EX vector an executable fixture. Shared contracts are not yet a complete executable EX corpus. Statutory examples remain reference calculations under their stated applicability assumptions.
 
-| ID | Source / related regression | Evidence and scope |
+| ID | Code / related regression | Evidence and scope |
 |---|---|---|
-| EX-01 | [PayCalculatorScheduleTests] scheduledStraightTime | Related regression passed portably; handbook $50 variant not newly executed |
-| EX-02 | [PayCalculatorTimeAndTierTests] dailyOvertimeThreshold | Related daily-threshold regression passed portably |
-| EX-03 | [PayCalculatorTimeAndTierTests] secondOvertimeTier | Related second-tier regression passed portably |
-| EX-04 | [PayCalculatorBreakTests] | Related exact-break regression passed; legal compensability remains input/scope |
-| EX-05 | [PayCalculatorScheduleTests] premiumsDoNotPyramid | Related configured highest-applicable regression passed |
-| EX-06 | [PayCalculatorScheduleTests] calloutMinimum; R3 probe | Exact isolated $400 reproduced; split-event gap #41 |
-| EX-07 | [PayCalculatorTimeAndTierTests] perDiemOncePerDate | Related per-date deduplication regression passed |
-| EX-08 | [AgreementTimelineTests] ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; clarify unspecified intraday interpretation #46 |
-| EX-09 | [TL] date-only change | Same-day rate split not representable; preserve $600 reference and classify #46 |
-| EX-10 | [PC] daily-only accumulation; R4 probe | Observed configured $2,400; restricted $2,600 weekly reference missing #42 |
-| EX-11 | No statutory workweek model | Reference-only $4,250 for the stated 50h/30h weeks; #42 |
-| EX-12 | No bonus/allocation model | Reference-only $2,860 under specified bonus assumptions; #42 |
-| EX-13 | No regular-rate model | Final pinned doc: 30h@$40 +20h@$60 => $2,640; not older equal-hours $2,600. #42 correction comment |
-| EX-14 | No separate credit layer | Reference-only $2,800 contract cash/$0 extra under the specified lawful-credit assumptions; #42 |
-| EX-15 | [PaycheckAssessmentTests] perDiemExcludedFromWageGross | Related domain regression passed; wage/allowance separation present |
-| EX-16 | [PaycheckAssessmentTests] matchingGrossDoesNotHideOffsettingErrors | Related regression passed; different paid-source contradiction is #38 |
-| EX-17 | [ASSESS], [PaycheckAssessmentTests] | Full-rate mapping represented; related domain tests passed |
-| EX-18 | [PaycheckAssessmentTests] premiumOnlyLayoutAndHours | Related base-plus-premium regression passed |
-| EX-19 | [PaycheckAssessmentTests] uncertainComponentsAndUnsupportedRulesCannotPassCleanly | Flagged omissions handled; known omitted layers still #14 |
-| EX-20 | [IntegratedReadinessTests] partialWorkCannotProduceAFullPaycheckVerdictOrConsumeFreeAccess | App regression present, not rerun natively |
-| EX-21 | [PaycheckAssessmentTests] completeNumbers | Grouped numeric domain tests passed portably |
-| EX-22 | [PaycheckAssessmentTests] rejectsPrefixesAndAmbiguousFormatting; [AuditScopeRegressionTests] | Domain parser passed; native/currency application tests present only |
-| EX-23 | [OCRParserTests] currentNeverSelectsYTD; [DocumentPipelineTests] | Parser/Vision tests present; no native OCR execution here |
-| EX-24 | [PayCalculatorTimeAndTierTests] springDSTUsesElapsedTime | Domain elapsed-time regression passed; template construction #40 is separate |
-| EX-25 | [PayCalculatorTimeAndTierTests] fallDSTUsesElapsedTime | Domain regression passed; repeated local input still requires explicit resolution |
-| EX-26 | [IntegratedReadinessTests] sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules; [JOURNEY] | Normal path represented; unpriceable-A variant missing #44 |
-| EX-27 | [ReadinessTests] staleUndoCannotMoveWorkToNextPeriod | Native regression present; old issue not reopened |
-| EX-28 | [PeriodAndEvidenceTests] manualCorrectionPreservesOriginalAndFailedReplacementRollsBack | Source-retention regression present |
-| EX-29 | [ReadinessBoundaryTests], [TimelinePersistenceTests], [HISTORY], [REPORT] | Frozen context represented; native acceptance not rerun |
-| EX-30 | [ReadinessTests] workAndIntakeDraftsSurviveNewModel; [JOURNEY] | Recovery tests present; physical interruption acceptance separate |
-| EX-31 | [StorageContractTests], [AppFailurePathTests], [ReadinessTests] | Fault tests present; expanded temporary-sharing boundary #21/PR #34 |
-| EX-32 | [SubscriptionBehaviorTests] existingOwnershipSurvivesCatalogFailure | Source/regression present; live commerce #18 |
-| EX-33 | [IntegratedReadinessTests] paidAuditsPreserveUnusedFreeAuditAcrossRelaunchAndExpiry | Independent Free-audit regression present |
-| EX-34 | [BackupTests] preservesFreeAllowance; [OPS] verified store boundary | Backups preserve local sampling, not verified subscription authority |
+| EX-01 | [PC]; PayCalculatorScheduleTests.scheduledStraightTime | Related basic-wage mechanism passed portably; arbitrary rounding partitions #39 |
+| EX-02 | PayCalculatorTimeAndTierTests.dailyOvertimeThreshold | Related daily-threshold regression passed |
+| EX-03 | PayCalculatorTimeAndTierTests.secondOvertimeTier | Related second-tier regression passed |
+| EX-04 | PayCalculatorBreakTests | Exact-break mechanism passed; compensability remains an applicability/input question |
+| EX-05 | PayCalculatorScheduleTests.premiumsDoNotPyramid | Configured highest-applicable mechanism passed, not universal premium precedence |
+| EX-06 | PayCalculatorScheduleTests.calloutMinimum; R3 | Isolated $400 reproduced; one event split into rows #41 |
+| EX-07 | PayCalculatorTimeAndTierTests.perDiemOncePerDate | Related allowance-unit deduplication passed |
+| EX-08 | AgreementTimelineTests.ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; clarify unspecified intraday interpretation #46 |
+| EX-09 | [TL] LocalDate-only changes | Same-day $600 vector not representable; retain arithmetic, classify as unsupported/reference #46 |
+| EX-10 | [PC] day accumulation; R4 | Configured $2,400 observed; restricted $2,600 weekly reference missing #42 |
+| EX-11 | No independent workweek model | Reference-only $4,250 for specified 50h/30h weeks; #42 |
+| EX-12 | No includable-bonus/allocation model | Reference-only $2,860 with the specified bonus; #42 |
+| EX-13 | No statutory weighted regular-rate model | **Pinned final source: 30h@$40 + 20h@$60 = 50h, R $2,400, RR $48, extra $240, total $2,640.** Not the older 24h/24h $2,600 variant; #42 |
+| EX-14 | No separate approved-credit layer | Reference-only $2,800 contract cash/$0 additional federal cash under stated credit conditions; #42 |
+| EX-15 | PaycheckAssessmentTests.perDiemExcludedFromWageGross | Wage/allowance separation mechanism passed |
+| EX-16 | PaycheckAssessmentTests.matchingGrossDoesNotHideOffsettingErrors | Related offsetting-lines regression passed; different source contradiction #38 |
+| EX-17 | [ASSESS] fullRateBuckets | Full-rate mapping represented; related domain coverage passed |
+| EX-18 | PaycheckAssessmentTests.premiumOnlyLayoutAndHours | Base-plus-premium mapping passed |
+| EX-19 | PaycheckAssessmentTests.uncertainComponentsAndUnsupportedRulesCannotPassCleanly | Explicit unsupported flags tested; known inherently missing layers #14 |
+| EX-20 | IntegratedReadinessTests.partialWorkCannotProduceAFullPaycheckVerdictOrConsumeFreeAccess | Native regression exists; not rerun here |
+| EX-21 | PaycheckAssessmentTests.completeNumbers | Grouped whole-string domain parsing passed |
+| EX-22 | PaycheckAssessmentTests.rejectsPrefixesAndAmbiguousFormatting; AuditScopeRegressionTests | Domain parser passed; native/currency application checks inspected only |
+| EX-23 | OCRParserTests.currentNeverSelectsYTD; DocumentPipelineTests | Conservative current/YTD tests exist; no native OCR run; end-only date is separate #48 |
+| EX-24 | PayCalculatorTimeAndTierTests.springDSTUsesElapsedTime | Domain elapsed-time check passed; template construction #40 not covered by it |
+| EX-25 | PayCalculatorTimeAndTierTests.fallDSTUsesElapsedTime | Domain elapsed-time check passed; repeated local input still needs explicit resolution |
+| EX-26 | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules; PaydayJourneyTests | Normal path represented; unpriceable-A boundary #44 |
+| EX-27 | ReadinessTests.staleUndoCannotMoveWorkToNextPeriod | Period-bound regression exists; earlier defect not reopened |
+| EX-28 | PeriodAndEvidenceTests.manualCorrectionPreservesOriginalAndFailedReplacementRollsBack | Original-retention/revision regression exists |
+| EX-29 | ReadinessBoundaryTests, TimelinePersistenceTests; [HISTORY], [REPORT] | Frozen context represented; native acceptance not rerun |
+| EX-30 | ReadinessTests.workAndIntakeDraftsSurviveNewModel; PaydayJourneyTests | Durable recovery tests exist; actual device interruption separate |
+| EX-31 | StorageContractTests, AppFailurePathTests, ReadinessTests | Fault tests exist; sharing/provider boundaries #21/PR #34 |
+| EX-32 | SubscriptionBehaviorTests.existingOwnershipSurvivesCatalogFailure | Independent catalog/entitlement path exists; live commerce #18 |
+| EX-33 | IntegratedReadinessTests.paidAuditsPreserveUnusedFreeAuditAcrossRelaunchAndExpiry | Pro/Free independence regression exists |
+| EX-34 | BackupTests.preservesFreeAllowance; [OPS] verified-store boundary | Backups preserve local sampling, not verified subscription authority |
 
-## Workflow, pricing and evidence ownership
+EX-13 was re-read directly from its pinned source during consolidation; do not silently replace it using an older local archive. The synthetic arithmetic is not a claim about a particular worker's applicable rate or entitlement.
+
+## Workflow, pricing and scope ownership
 
 | Workflow | Actual route | Remaining acceptance |
 |---|---|---|
-| Setup and first personal result | [ROOT] -> [PROFILE] -> [FIRST] -> [WORK] -> [LEDGER] | Core route present; #14 scope disclosure; invented sample data cannot count as personal proof |
-| Repeated work | Today/lastWork -> [WORK] draft -> [AM] save | #40 DST and #41 physical callout identity |
-| Close work / late payday | [LEDGER] -> [AM] archive -> [HISTORY] -> historical [IMPORT] | Normal A/B separation present; #44 unresolved calculation |
-| Scan/photo/PDF/manual | [IMPORT] -> [OP] -> original saved -> [OCR]/[PARSER] -> confirmation -> [ASSESS] | Device scanner acceptance and #38 source consistency |
-| Explain/correct | AuditDetail -> [RECEIPT] -> [SOURCE] -> confirmed revision | Source retention present; report privacy/version gaps #20/#45 |
-| Annual trial after actual value | [FIRST] -> [PAYWALL] -> [STORE]/[OPS] | Eligibility-aware flow exists; actual storefront #18, optional reminder #47 |
-| Renewal/expiry/restore | [STORE] -> Settings/paywall -> retained local records | Live/store evidence #18/#37; no local timer grants Pro |
-| Backup/delete/recover | Settings -> [BACKUP]/[BACKUPMAP]/[LOCAL]/[EVIDENCE]/[RECOVERY] | Fault/restore test source present; actual provider #21, calculation identity #45 |
-| Measurement/experiments | App Store reports/direct observation per onboarding specification | Proposed events/targets are not implemented analytics or measured performance; no SDK added |
+| Setup and first personal proof | [ROOT] -> [PROFILE] -> [FIRST] -> [WORK] -> [LEDGER] | Present; #14 coverage disclosure; sample work cannot count as personal proof |
+| Repeated work | Today/lastWork -> [WORK] draft -> [AM] save | #40 DST and #41 callout-event identity |
+| Close work and delayed paycheck | [LEDGER] -> [AM] close -> [HISTORY] -> historical [IMPORT] | Normal A/B independence present; #44 unresolved calculation |
+| Scan/photo/PDF/manual | [IMPORT] -> [OP] -> original saved -> [OCR]/[PARSER] -> confirmation -> [ASSESS] | Actual device scanner acceptance; #38 paid-source consistency, #48 dates |
+| Explain and correct | AuditDetail -> [RECEIPT] -> [SOURCE] -> confirmed revision | Original retained; report/privacy/version gaps #20/#45 |
+| Annual introduction after value | [FIRST] -> [PAYWALL] -> [STORE]/[OPS] | Eligibility-aware flow present; actual storefront #18; optional reminders #47 |
+| Renewal, expiry and restore | [STORE] -> Settings/paywall -> retained records | Native/live receipts #18/#37; no local timer or backup grants Pro |
+| Backup, deletion and recovery | [SETTINGS] -> [BACKUP]/[BACKUPMAP]/[LOCAL]/[EVIDENCE]/[RECOVERY] | Fault/restore tests exist; actual providers #21; engine identity #45 |
+| Measurement and experiments | Aggregate App Store reports/direct observation per handbook | Proposed metrics are not measured outcomes or missing Swift features; no analytics SDK added |
 
-Pricing remains the $9.99 monthly / $79.99 yearly hypothesis with eligible seven-day annual introduction and an independent first Free audit. Historical no-trial guidance is superseded. PR #12 integration must preserve newer main legal guardrails/private-by-default wording rather than restoring old active-copy claims. The dated onboarding inspection at `03dedaa` is historical evidence, not today's capability inventory.
+Pricing remains the $9.99 monthly / $79.99 yearly hypothesis, eligible seven-day annual introduction and independent first Free audit. Earlier no-trial guidance is superseded. BR-045's continued access to owned records must not be contradicted by an imprecise Pro feature list.
 
-Existing issue ownership is retained: #14 scope, #15 consent, #20 private PDF preview (pending PR #34); #18 commerce; #19 renewal responsibility; #21 backup/provider/temporary boundaries; #26 named agreement approval; #27 marketing claims; #29 non-adjudicative support/copy; #31 accessibility/device evidence; #37 hosted native execution. Other #13–#33 release/legal acceptance is not closed by this map.
+Integrating PR #12 must retain newer main's legal guardrails and private-by-default wording rather than restoring obsolete absolute privacy/marketing claims. A dated onboarding or readiness report is evidence for its revision, not today's implementation inventory.
 
-## Completion standard
+Existing issue ownership: #14 supported-rule limits, #15 dated consent and #20 private report preview (pending PR #34); #18 live commerce; #19 renewal responsibility; #21 backup/provider/privacy boundaries; #26 named agreement approval; #27 claims/assets; #29 non-adjudicative explanations; #31 accessibility/device evidence; #37 hosted execution. Other #13–#33 legal/release criteria remain independently applicable. This audit does not close them.
 
-Fix or explicitly gate current correctness failures before expanding the catalog. #42 is a supported-scope decision, not authorization to build a nationwide legal engine. #46/#47 may be resolved through honest deferral/classification where their acceptance permits it. For every closed issue preserve the exact fix/tested revisions, commands/results, evidence, and native/device limits. Do not turn generated checklists into owner/counsel approval or earlier passing tests into proof for a later commit.
+## Maintenance and completion
 
-This task changed documentation/issue tracking only. No application fix, merge, release, or legal compliance certification is implied.
+Fix or explicitly gate current misleading results and fact construction before expanding the catalog. Resolve the work-logging dead end without inventing pay. Add version identity alongside changed algorithms. #42 is a bounded supported-scope decision, not authorization to build a nationwide legal engine. #46/#47 can be resolved by honest deferral where their acceptance permits it.
 
-## Pinned implementation and test links
+Every closure records the actual fix/tested commit, meaningful regression, commands/results and remaining native/device limits. Preserve historical findings; append new evidence rather than rewriting old failures as retroactive passes. A generated checklist is not owner/counsel approval. A pending PR is not a shipped fix.
 
+This task changed documentation and issue tracking only. No application fix, merge, release or compliance certification is implied. The overlapping earlier `code-traceability.md` is a navigation entry to this consolidated map rather than a second independently maintained specification.
+
+## Pinned code and test roots
+
+[AT]: https://github.com/streamentry/linepay/tree/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources
+[DT]: https://github.com/streamentry/linepay/tree/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests
+[UT]: https://github.com/streamentry/linepay/tree/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppUITests
+[PROJECT]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/project.yml
 [AM]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/AppModel.swift
 [STATE]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/AppState.swift
 [WORK]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/AddWorkView.swift
 [PROFILE]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/PayProfileSetupView.swift
 [LEDGER]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/PayLedgerView.swift
 [HISTORY]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/HistoryView.swift
+[SETTINGS]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/SettingsView.swift
 [IMPORT]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/PaystubImportView.swift
 [OP]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/PaystubImportOperation.swift
 [OCR]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/App/Sources/PaystubOCRService.swift
@@ -227,32 +240,3 @@ This task changed documentation/issue tracking only. No application fix, merge, 
 [TL]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/AgreementTimeline.swift
 [ASSESS]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/PaycheckAssessment.swift
 [DECIMAL]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/StrictDecimal.swift
-[AppModelContractTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/AppModelContractTests.swift
-[AppFailurePathTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/AppFailurePathTests.swift
-[AuditScopeRegressionTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/AuditScopeRegressionTests.swift
-[BackupConcurrencyTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/BackupConcurrencyTests.swift
-[BackupTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/BackupTests.swift
-[BackupValidationTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/BackupValidationTests.swift
-[DocumentPipelineTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/DocumentPipelineTests.swift
-[IntegratedReadinessTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/IntegratedReadinessTests.swift
-[OCRParserTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/OCRParserTests.swift
-[ParserAndFormatTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/ParserAndFormatTests.swift
-[PaystubImportOperationTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/PaystubImportOperationTests.swift
-[PeriodAndEvidenceTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/PeriodAndEvidenceTests.swift
-[ReadinessBoundaryTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/ReadinessBoundaryTests.swift
-[ReadinessTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/ReadinessTests.swift
-[ReportExporterTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/ReportExporterTests.swift
-[RuleScopeRegressionTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/RuleScopeRegressionTests.swift
-[ScreenContractTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/ScreenContractTests.swift
-[StorageContractTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/StorageContractTests.swift
-[StoreKitLifecycleTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/StoreKitLifecycleTests.swift
-[SubscriptionBehaviorTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/SubscriptionBehaviorTests.swift
-[TimelinePersistenceTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppTests/Sources/TimelinePersistenceTests.swift
-[AgreementTimelineTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/AgreementTimelineTests.swift
-[CaliforniaOutsideLineFixtureTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/CaliforniaOutsideLineFixtureTests.swift
-[PayCalculatorBreakTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/PayCalculatorBreakTests.swift
-[PayCalculatorInvariantTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/PayCalculatorInvariantTests.swift
-[PayCalculatorScheduleTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/PayCalculatorScheduleTests.swift
-[PayCalculatorTimeAndTierTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/PayCalculatorTimeAndTierTests.swift
-[PaycheckAssessmentTests]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/Packages/LinePayDomain/Tests/LinePayDomainTests/PaycheckAssessmentTests.swift
-[JOURNEY]: https://github.com/streamentry/linepay/blob/4fe319dc13836eb4e061442f2f9aae53c4d3b00a/apps/ios/AppUITests/PaydayJourneyTests.swift
