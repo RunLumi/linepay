@@ -75,10 +75,17 @@ final class LegalJourneyTests: XCTestCase {
                 let done = app.buttons["keyboard.done"].firstMatch
                 if done.exists { done.tap() } else { app.swipeDown() }
             }
-            for _ in 0..<3 { tap("pay-profile.continue") }
-            tap("pay-profile.change-scope")
+            for _ in 0..<4 {
+                let continueButton = app.buttons["pay-profile.continue"].firstMatch
+                guard continueButton.waitForExistence(timeout: 5) else { break }
+                continueButton.tap()
+            }
+            let scopeControl = app.buttons["pay-profile.change-scope"].firstMatch
+            XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
+            scrollTo(scopeControl)
+            scopeControl.tap()
             tap(scope)
-            let explanation = app.staticTexts.matching(
+            let explanation = app.descendants(matching: .any).matching(
                 NSPredicate(format: "label CONTAINS %@", fragment)
             ).firstMatch
             scrollTo(explanation)
