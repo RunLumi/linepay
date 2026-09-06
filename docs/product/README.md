@@ -11,13 +11,13 @@ LinePaycheck is a private work record and agreement-aware paycheck comparison to
 | Task | Start here | Then read |
 |---|---|---|
 | Understand the product | [How the app works](app-workflows.md) | [Business rules](business-rules.md) |
-| Map requirements to code, tests, and issues | [Code traceability](code-traceability.md) | [Coverage and gaps](payroll/coverage-and-gaps.md), current source/PR status |
+| Map requirements to code, tests, and issues | [Implementation map](implementation-map.md) | [Issue tracker #49](https://github.com/streamentry/linepay/issues/49), current source/PR status |
 | Change an expected-pay amount | [Payroll handbook](payroll/README.md) | [Calculation specification](payroll/calculation-spec.md), [coverage and gaps](payroll/coverage-and-gaps.md) |
 | Add a rule or agreement | [Rule catalog](payroll/rule-catalog.md) | [Sources and approval](payroll/sources.md), [worked examples](payroll/worked-examples.md) |
 | Change audit results or paystub entry | [Reconciliation](payroll/reconciliation.md) | [Business rules](business-rules.md), [app workflows](app-workflows.md) |
 | Change trial, paywall, or access | [Pricing](pricing.md) | [Onboarding](onboarding.md) |
 | Change history, backup, or deletion | [Business rules](business-rules.md) | [Local-first architecture](../architecture/local-first-no-account.md), [backup/restore](../architecture/icloud-drive-backup-restore.md) |
-| Determine whether a feature works today | [Code traceability](code-traceability.md) | [Remediation status](../plan/ios-1.0-remediation.md), source and tests at the candidate commit |
+| Determine whether a feature works today | [Implementation map](implementation-map.md) | [Remediation status](../plan/ios-1.0-remediation.md), source and tests at the candidate commit |
 
 ## Authority and evidence
 
