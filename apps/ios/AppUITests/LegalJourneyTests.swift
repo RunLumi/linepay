@@ -74,11 +74,10 @@ final class LegalJourneyTests: XCTestCase {
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
             for _ in 0..<3 { tap("pay-profile.continue") }
-            revealEarlierContent()
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
-            XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scrollTo(scopeControl)
+            XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             tap(scope)
             let explanation = app.descendants(matching: .any).matching(
