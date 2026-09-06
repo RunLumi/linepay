@@ -47,6 +47,7 @@ def anchors(text: str) -> set[str]:
 
 
 def check(root: Path) -> tuple[int, list[str]]:
+    root = root.resolve()
     checked = 0
     errors: list[str] = []
     excluded = {".git", ".build", ".test-results", "node_modules", "DerivedData"}
@@ -56,6 +57,9 @@ def check(root: Path) -> tuple[int, list[str]]:
         body = without_fences(source.read_text(encoding="utf-8"))
         for match in list(LINK.finditer(body)) + list(REFERENCE.finditer(body)):
             url = match.group(1).strip("<>")
+            if url.startswith("{{"):
+                # Hugo shortcodes are resolved by Hugo, not as repository paths.
+                continue
             parts = urlsplit(url)
             if parts.scheme or parts.netloc or url.startswith("//"):
                 continue

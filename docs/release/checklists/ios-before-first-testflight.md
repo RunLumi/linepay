@@ -93,3 +93,12 @@ If subscriptions exist:
 - [ ] A worker can understand *why* a discrepancy was flagged and which input/rule caused it.
 
 If any unchecked item can cause data loss, incorrect money, privacy leakage, or an irreversible App Store identity decision, fix it before distributing the build.
+
+## Source-bound legal release control
+
+Follow [legal remediation and evidence](../../legal/README.md). Run
+`python3 scripts/legal_guardrails.py release --stage submission --evidence /private/release/evidence.json`
+before submission, and use `--stage distribution` before release. Readbacks and approvals must describe
+the actual binary, offers, screenshots, privacy/support pages and source. A template or green CI is not
+owner/counsel sign-off. Keep this remediation release on manual control. No old uploaded binary is
+updated by merging source fixes. `asc-api.py --allow-write` alone cannot submit or publish.

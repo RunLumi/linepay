@@ -1,0 +1,16 @@
+{
+  "status": "mechanical inventory, not ownership approval",
+  "files": {
+    "apps/ios/App/Info.plist": "cf3e8f0ba1aa2adb575c7af0537b299c66cd9707c69374a130a32a397f62144b",
+    "apps/ios/App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png": "61110be652b87f654c831b0ffd316aacc2692aec165e4bf572ee6881200c27eb",
+    "apps/ios/App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json": "9cf2928dad89427abd581b6852db081352417f400afb65e60c479228cdc4f4da",
+    "apps/ios/App/Resources/Assets.xcassets/Contents.json": "0fd49ba3c3585c709678e0046a821c3c60685ec7063720d30d3a3448be3a208b",
+    "apps/ios/App/Resources/Assets.xcassets/LinePaycheckLogo.imageset/Contents.json": "3150826f0ed62748d052f037f65fa26af38dd19949c4a01dc7891e1a4d7716eb",
+    "apps/ios/App/Resources/Assets.xcassets/LinePaycheckLogo.imageset/LinePaycheckLogo.png": "61110be652b87f654c831b0ffd316aacc2692aec165e4bf572ee6881200c27eb",
+    "apps/ios/App/Resources/Localizable.xcstrings": "e75edd30561f8571c95a10a977ef9439248ea2629bb7cfb5002f99b33f5de255",
+    "apps/ios/App/Resources/PrivacyInfo.xcprivacy": "528ab3fca910d2ac2f3ef256d5ea4c2327303a7a4a5efb9236987f3018e311f3",
+    "apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved": "0f8b5904e88e6d3ddc03068d6dae893ae25d13d43210eb5f3f658a7fc0aa9cf1",
+    "apps/ios/Packages/LinePayDomain/Package.swift": "ae426d7f1b9fd425dc3ff83efffeffcfee0a723f181a8569c57d6676c2ff99d5",
+    "apps/ios/project.yml": "cd4d78b503763697c2584f4c6dde71097de469ff7a480e8abc914eb4231cd6af"
+  }
+}

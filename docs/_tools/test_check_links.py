@@ -33,6 +33,13 @@ class DocumentationLinksTests(unittest.TestCase):
                 "```text\n[example](not-a-file.md)\n```\n", encoding="utf-8")
             self.assertEqual(check(root), (0, []))
 
+    def test_hugo_relref_shortcode_is_not_a_local_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "README.md").write_text(
+                '[Guide]({{< relref "/getting-started" >}})\n', encoding="utf-8")
+            self.assertEqual(check(root), (0, []))
+
     def test_named_anchor_and_escaping(self):
         self.assertIn("explicit", anchors('<a id="explicit"></a>\n# Notes'))
         with tempfile.TemporaryDirectory() as directory:

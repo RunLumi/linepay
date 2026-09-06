@@ -7,14 +7,18 @@ tags: [ios, regression, settings]
 - tapOn: Settings
 - waitForAnimationToEnd
 - scrollUntilVisible:
-    element: Privacy and local data
+    element:
+      id: settings.privacy-data
+    centerElement: true
 - waitForAnimationToEnd
-- tapOn: Privacy and local data
+- tapOn:
+    id: settings.privacy-data
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.delete-all
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: settings.delete-all
@@ -32,14 +36,21 @@ tags: [ios, regression, settings]
 - waitForAnimationToEnd
 - runFlow:
     when:
-      visible: Privacy and local data
+      visible:
+        id: settings.privacy-data
     commands:
-      - tapOn: Privacy and local data
+      - scrollUntilVisible:
+          element:
+            id: settings.privacy-data
+          centerElement: true
+      - tapOn:
+          id: settings.privacy-data
       - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.delete-all
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: settings.delete-all

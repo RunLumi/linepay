@@ -1,0 +1,7 @@
+[
+  {"title":"Start here","pages":["getting-started","pay-profile","pay-periods"]},
+  {"title":"Record your work","pages":["recording-work","pay-rules","changing-rules","expected-pay"]},
+  {"title":"Check a paycheck","pages":["importing-paychecks","confirming-fields","paystub-layouts","audit-results","evidence-and-reports","history"]},
+  {"title":"Keep control","pages":["backup-and-restore","privacy-and-deletion","pro-and-billing"]},
+  {"title":"Get help","pages":["troubleshooting","supported-rules","glossary","support"]}
+]

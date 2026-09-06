@@ -1,0 +1,22 @@
+name: Legal engineering controls
+on:
+  push:
+    branches: [main]
+    paths: ["apps/ios/**", "docs/**", "scripts/**", ".github/workflows/legal-guardrails.yml"]
+  pull_request:
+    paths: ["apps/ios/**", "docs/**", "scripts/**", ".github/workflows/legal-guardrails.yml"]
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Test evidence and API boundaries without accounts
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*legal*.py' -v
+      - name: Check current copy and reviewed resource inputs
+        run: python3 scripts/legal_guardrails.py check
+# Private owner/counsel evidence is deliberately not collected by ordinary pull-request CI.

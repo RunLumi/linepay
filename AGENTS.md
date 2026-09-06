@@ -54,6 +54,7 @@ Do not load every document for every task.
 | Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/testing/maestro.md` |
 | TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/release/checklists/ios-before-first-testflight.md` |
 | Agent harness itself | `docs/engineering/agentic-development.md` |
+| Legal-risk, sharing, claims or release approval | `docs/legal/README.md`; `python3 scripts/legal_guardrails.py check` |
 
 Nearest `AGENTS.md` instructions apply in addition to this root contract.
 
@@ -119,6 +120,14 @@ When available, prefer **XcodeBuildMCP** for interactive agent work because it c
 Use **Maestro** as the checked-in, tool-agnostic E2E regression layer. Accessibility identifiers are stable automation API; visible copy is not.
 
 MCP tools are optional developer ergonomics. CI and repository correctness must remain reproducible with checked-in scripts and standard command-line tools.
+
+### Local simulator reuse and host safety
+
+- Reuse a compatible existing Simulator; record its UDID for the whole batch.
+- Run one UI/test job per device; check for concurrent Xcode/Maestro use before install, reset, or launch.
+- Do not create/clone devices per test, branch, worktree, candidate, or retry. Fresh state means resetting synthetic app data.
+- Check disk/memory pressure and use existing SSD-backed caches; create a device or install a runtime only with explicit approval.
+- Shut down this task's idle devices when needed; never erase/delete devices, runtimes, or unrelated data.
 
 ## Verification by risk
 
@@ -225,3 +234,5 @@ Anti-goals until real evidence requires them:
 - remote feature-flag or analytics platforms.
 
 LinePaycheck should remain a small, trustworthy precision tool for expensive hours.
+
+Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
