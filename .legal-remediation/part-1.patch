@@ -1,0 +1,289 @@
+diff --git a/.github/ISSUE_TEMPLATE/legal-sensitive-report.md b/.github/ISSUE_TEMPLATE/legal-sensitive-report.md
+new file mode 100644
+index 0000000..8022507
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/legal-sensitive-report.md
+@@ -0,0 +1,22 @@
++---
++name: Sensitive pay or privacy problem
++about: Report a reproduction without attaching worker records
++title: "[Safety] "
++labels: ''
++assignees: ''
++---
++
++**Do not attach a paystub or complete backup. Do not post government identifiers, bank details,
++employer credentials, coworkers' data or confidential operational information. Use synthetic examples.**
++
++App version/build:
++Screen and action:
++Expected behavior (synthetic values):
++Observed behavior (synthetic values):
++Steps to reproduce:
++Did saved records remain available? (yes/no/unknown)
++
++Keep your original records safe until the problem is understood. Support cannot retrieve records
++that remain on your device. This issue is not legal representation or a filing/grievance submission.
++The support owner must arrange any strictly necessary sensitive exchange through an approved
++minimal-data process before requesting it. Do not paste private counsel advice here.
+diff --git a/apps/ios/App/Sources/AboutLinePayView.swift b/apps/ios/App/Sources/AboutLinePayView.swift
+index b90cb0d..86cf1e0 100644
+--- a/apps/ios/App/Sources/AboutLinePayView.swift
++++ b/apps/ios/App/Sources/AboutLinePayView.swift
+@@ -14,6 +14,10 @@ struct AboutLinePayView: View {
+                     "Estimates expected pay from confirmed work and rules, then compares the paycheck facts you review. It is not payroll, legal advice, or an authority on your agreement."
+                 )
+             }
++            Section {
++                ComparisonScopeView()
++                Text(ComparisonScopeDisclosure.safeUse).font(.footnote)
++            }
+             Section {
+                 NavigationLink("Privacy policy") { LegalTextView(kind: .privacy) }
+                 NavigationLink("Terms of use") { LegalTextView(kind: .terms) }
+@@ -62,13 +66,13 @@ struct LegalTextView: View {
+     private var content: String {
+         switch kind {
+         case .privacy:
+-            "LinePaycheck processes your work records, pay rules, original paystubs, OCR suggestions and confirmed audit facts on your device. It does not create a LinePaycheck account or transmit these records to a LinePaycheck server. No advertising or behavioral analytics SDK is included.\n\nPurchases are processed by Apple. The app reads verified App Store entitlement information to unlock future audits; subscription entitlements are not part of data backups.\n\nSharing and backups are your choice. Saving to iCloud Drive or another Files provider transfers the selected file to that provider. Complete backups contain sensitive pay information and are not password-encrypted by LinePaycheck. Use a private destination. iOS device backups follow your Apple and device settings.\n\nYou can remove originals while keeping confirmed figures, export records, or delete local data. Local deletion does not delete copies you previously exported and does not cancel an App Store subscription.\n\nSource websites open only when you choose their links. Those sites have their own privacy practices. Do not send an unredacted paystub to support unless you deliberately choose to share it."
++            "LinePaycheck processes your work records, pay rules, original paystubs, OCR suggestions and confirmed audit facts on your device. It does not create a LinePaycheck account or transmit these records to a LinePaycheck server. No advertising or behavioral analytics SDK is included.\n\nPurchases are processed by Apple. The app reads verified App Store entitlement information to unlock future audits; subscription entitlements are not part of data backups.\n\nSharing and backups are your choice. Saving to iCloud Drive or another Files provider transfers the selected file to that provider. Complete backups contain sensitive pay information and are not password-encrypted by LinePaycheck. Use a private destination. iOS device backups follow your Apple and device settings.\n\nYou can remove originals while keeping confirmed figures, export records, or delete local data. Local deletion does not delete copies you previously exported and does not cancel an App Store subscription.\n\nSource websites open only when you choose their links. Those sites have their own privacy practices. Do not attach a paystub or complete backup to an initial support request. Start with a synthetic example. Any necessary sensitive submission needs a separately agreed handling process; voluntary sharing alone does not establish that process."
+         case .terms:
+             "The app uses Apple's Standard Licensed Application End User License Agreement.\n\nLinePaycheck's estimates depend on the work, agreement rules, paystub layout and values you confirm. Missing or unsupported rules and ambiguous statements can limit an audit. Review the evidence and discuss discrepancies with payroll or an appropriate adviser. A comparison is not a legal determination that money is owed.\n\nThe first comparable audit is free. Pro covers future paychecks; existing work, confirmed audits and worker-owned data remain accessible without an active subscription. Billing periods and localized prices are shown from the App Store. Subscriptions renew until cancelled through Apple subscription settings. Deleting the app or its local data does not cancel a subscription."
+         case .acknowledgements:
+             "Built with Swift, SwiftUI and Apple platform frameworks. The payroll domain is maintained as a separate local Swift package. No third-party tracking or advertising framework is included.\n\nXcodeGen and testing tools are development dependencies, not runtime services. Apple and framework names belong to their respective owners. LinePaycheck is not affiliated with, endorsed by or an authority for a union, employer or payroll provider."
+         case .support:
+-            "Keep your saved data until a problem is understood. From Settings, create a complete backup when the app can read your records. If data cannot be opened, export the recovery file before choosing a destructive reset or replacement restore.\n\nFor an incorrect amount, note the app version, pay-period timezone, rule version, work facts and exact comparison. Use synthetic or redacted examples when contacting support. Never include Social Security numbers, bank details or employer credentials.\n\nOpen the support website below for the publisher's current contact and recovery guidance."
++            "Keep your saved data until a problem is understood. From Settings, create a complete backup when the app can read your records. If data cannot be opened, export the recovery file before choosing a destructive reset or replacement restore.\n\nFor an incorrect amount, note the app version, pay-period timezone, rule version, work facts and exact comparison. Use synthetic or redacted examples when contacting support. Never include Social Security numbers, bank details or employer credentials.\n\nDo not attach a paystub or complete backup to an initial request. Avoid coworkers' identifiers and operational information. The publisher cannot retrieve records that you have not sent from your device.\n\nUsing the app does not extend any filing or grievance deadline. Support explains inputs and calculations, not legal entitlement or employer liability. Use the app away from active electrical work and driving.\n\nOpen the support website below for the publisher's current contact and recovery guidance."
+         }
+     }
+ }
+diff --git a/apps/ios/App/Sources/AuditDetailView.swift b/apps/ios/App/Sources/AuditDetailView.swift
+index 2118a9e..39a9fd5 100644
+--- a/apps/ios/App/Sources/AuditDetailView.swift
++++ b/apps/ios/App/Sources/AuditDetailView.swift
+@@ -37,7 +37,7 @@ struct AuditDetailView: View {
+     let model: AppModel
+     let context: PayPeriodContext
+     var onCorrect: (() -> Void)? = nil
+-    @State private var reportURL: URL?
++    @State private var showingReport = false
+     @State private var showingRemove = false
+     @State private var errorMessage: String?
+     var body: some View {
+@@ -88,6 +88,7 @@ struct AuditDetailView: View {
+                         ).accessibilityIdentifier("audit.correct")
+                     }
+                 }
++                Section { ComparisonScopeView() }
+                 if let assessment = paid.assessment, presentation.isCurrent,
+                     context.reconciliation != nil
+                 {
+@@ -134,22 +135,12 @@ struct AuditDetailView: View {
+                     }
+                 }
+                 Section("Worker-owned report") {
+-                    if let reportURL { ShareLink("Share report", item: reportURL) }
+-                    Button("Prepare audit report") {
+-                        do {
+-                            reportURL = try ReconciliationReportExporter().export(
+-                                window: context.window,
+-                                timeZoneIdentifier: context.timeZoneIdentifier,
+-                                agreement: context.agreement,
+-                                calculation: calculation, paystub: paid,
+-                                reconciliation: context.reconciliation,
+-                                findings: model.auditFindings(
+-                                    calculation: calculation, paystub: paid))
+-                        } catch { errorMessage = error.localizedDescription }
+-                    }.accessibilityIdentifier("audit.export")
++                    Button("Prepare audit report") { showingReport = true }
++                        .accessibilityIdentifier("audit.export")
+                     Text(
+-                        "This report excludes original paystub pages. Existing records and exports remain available without Pro."
+-                    ).font(.footnote)
++                        "Review a minimized PDF before sharing. It still contains sensitive pay data. Existing records and exports remain available without Pro."
++                    )
++                    .font(.footnote)
+                 }
+             }
+             if let errorMessage {
+@@ -157,6 +148,7 @@ struct AuditDetailView: View {
+             }
+         }
+         .navigationTitle("Paycheck audit").navigationBarTitleDisplayMode(.inline)
++        .sheet(isPresented: $showingReport) { ReportSharingView(context: context) }
+         .confirmationDialog(
+             "Delete this original from the device?", isPresented: $showingRemove,
+             titleVisibility: .visible
+diff --git a/apps/ios/App/Sources/ComparisonScopeDisclosure.swift b/apps/ios/App/Sources/ComparisonScopeDisclosure.swift
+new file mode 100644
+index 0000000..7107417
+--- /dev/null
++++ b/apps/ios/App/Sources/ComparisonScopeDisclosure.swift
+@@ -0,0 +1,102 @@
++import Foundation
++import SwiftUI
++
++/// One source for scope wording across rule consent, verdicts and exported reports.
++/// These disclosures describe supported behavior; they do not waive a worker's rights.
++enum ComparisonScopeDisclosure {
++    static var title: String { String(localized: "Not a complete wage-law check") }
++    static var summary: String {
++        String(
++            localized:
++                "A match covers only the supported rules and confirmed values compared here. It does not certify every statutory or contractual entitlement."
++        )
++    }
++    static var supported: String {
++        String(
++            localized:
++                "Supported when configured: base rate, daily overtime tiers, schedule and date premiums, callout minimums, and flat per diem."
++        )
++    }
++    static var unsupported: String {
++        String(
++            localized:
++                "Not automatically checked: statutory weekly overtime, regular-rate adjustments, exemptions, every state's rules, or all travel, rest, meal and storm provisions. Configured daily tiers do not replace weekly statutory analysis."
++        )
++    }
++    static var combination: String {
++        String(
++            localized:
++                "Overlapping premiums use the highest applicable multiplier, not added multipliers. Callout top-ups use the highest worked multiplier. Confirm this matches your agreement; it is not a universal interpretation."
++        )
++    }
++    static var deadlines: String {
++        String(
++            localized:
++                "Using LinePaycheck does not extend a filing or grievance deadline. Ask an appropriate adviser or official agency about unresolved legal questions."
++        )
++    }
++    static var safeUse: String {
++        String(
++            localized:
++                "Use LinePaycheck away from active electrical work and driving. It is not safety equipment or certified for electrical-glove use."
++        )
++    }
++}
++
++struct ComparisonScopeView: View {
++    var showDetails = false
++    var body: some View {
++        VStack(alignment: .leading, spacing: 12) {
++            Text(ComparisonScopeDisclosure.title).font(.headline)
++            Text(ComparisonScopeDisclosure.summary).font(.callout)
++            if showDetails {
++                details
++            } else {
++                DisclosureGroup("Supported rules and limitations") { details }
++            }
++        }
++        .accessibilityIdentifier("legal.comparison-scope")
++    }
++    private var details: some View {
++        VStack(alignment: .leading, spacing: 12) {
++            Text(ComparisonScopeDisclosure.supported)
++            Text(ComparisonScopeDisclosure.unsupported)
++            Text(ComparisonScopeDisclosure.combination)
++        }.font(.footnote).foregroundStyle(LinePayColor.textSecondary)
++    }
++}
++
++/// Presentation only. AppModel remains responsible for effective-date validation and pay math.
++enum RuleChangeConsent {
++    static func explanation(
++        scope: RuleEditScope, effectiveDate: Date, timeZoneIdentifier: String, workCount: Int
++    ) -> String {
++        switch scope {
++        case .futurePeriods:
++            return String(
++                localized:
++                    "Logged work keeps its current rules. The new snapshot is used when the next work period starts."
++            )
++        case .datedChange:
++            guard let zone = TimeZone(identifier: timeZoneIdentifier) else {
++                return String(
++                    localized:
++                        "The payroll timezone needs review before this dated change can be confirmed."
++                )
++            }
++            let formatter = DateFormatter()
++            formatter.dateStyle = .long
++            formatter.timeZone = zone
++            let date = formatter.string(from: effectiveDate)
++            return String(
++                localized:
++                    "New rules start \(date) at midnight (\(timeZoneIdentifier)). Previously recorded work keeps its original rules. The start must be after the last recorded work date. A callout guarantee crossing this date needs review; LinePaycheck will not guess."
++            )
++        case .currentPeriod:
++            return String(
++                localized:
++                    "All \(workCount) saved work entries in the current open period will be recalculated using these corrected rules. Review the before and after amounts before confirming. Earlier audit revisions remain available."
++            )
++        }
++    }
++}
+diff --git a/apps/ios/App/Sources/PayProfileSetupView.swift b/apps/ios/App/Sources/PayProfileSetupView.swift
+index d426873..0583d72 100644
+--- a/apps/ios/App/Sources/PayProfileSetupView.swift
++++ b/apps/ios/App/Sources/PayProfileSetupView.swift
+@@ -92,7 +92,7 @@ struct PayProfileSetupView: View {
+         } message: {
+             if let preview = changePreview {
+                 Text(
+-                    "\(selectedScope.title). Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
++                    "\(selectedScope.title). \(changeExplanation) Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
+                 )
+             }
+         }
+@@ -328,8 +328,7 @@ struct PayProfileSetupView: View {
+                             "New rules start",
+                             selection: Binding(
+                                 get: {
+-                                    draft.changeEffectiveDate ?? model.activePeriod?.window.endDate
+-                                        ?? draft.periodStartDate
++                                    ruleChangeDate
+                                 },
+                                 set: { draft.changeEffectiveDate = $0 }), displayedComponents: .date
+                         )
+@@ -346,16 +345,16 @@ struct PayProfileSetupView: View {
+                         LabeledContent(
+                             "Reviewed rate", value: LinePayFormat.money(agreement.hourlyRate))
+                     }
+-                    Text(
+-                        draft.editScope == .futurePeriods
+-                            ? "Logged work keeps its current rules. The new snapshot is used when the next work period starts."
+-                            : "All work in the current open period will be recalculated. Earlier audit revisions remain available. This does not implement a mid-period rate change."
+-                    )
+-                    .foregroundStyle(LinePayColor.review)
++                    Text(changeExplanation)
++                        .accessibilityIdentifier("pay-profile.scope-explanation")
++                        .foregroundStyle(LinePayColor.review)
+                     Text("Closed work periods and their calculation snapshots are not changed.")
+                         .font(.footnote)
+                 }
+             }
++            Section {
++                ComparisonScopeView(showDetails: true)
++            }
+             Section("Confirmation") {
+                 Text(
+                     "These are the rules you entered, not rules inferred from your union or employer. Review the summary before using them."
+@@ -383,6 +382,18 @@ struct PayProfileSetupView: View {
+             errorMessage = nil
+         } catch { errorMessage = error.localizedDescription }
+     }
++    private var ruleChangeDate: Date {
++        draft.changeEffectiveDate
++            ?? (draft.useEffectiveStart
++                ? draft.effectiveStartDate
++                : (model.activePeriod?.window.endDate ?? draft.periodStartDate))
++    }
++    private var changeExplanation: String {
++        RuleChangeConsent.explanation(
++            scope: draft.editScope, effectiveDate: ruleChangeDate,
++            timeZoneIdentifier: model.currentTimeZoneIdentifier, workCount: model.workEntries.count)
++    }
++
+     private var selectedScope: RuleChangeScope {
+         switch draft.editScope {
+         case .futurePeriods: .futurePeriods
