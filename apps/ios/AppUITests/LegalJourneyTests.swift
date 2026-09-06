@@ -30,7 +30,27 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["report.preview-warning"].exists)
         capture("legal-exact-pdf-preview")
         tap("audit.share-report")
+        // A screenshot alone also succeeds when ShareLink never opens. Require the actual
+        // system activity, then its non-sending Files destination to exercise PDF transfer.
+        let saveToFiles = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        XCTAssertTrue(
+            saveToFiles.waitForExistence(timeout: 15),
+            "The system PDF activity sheet did not open; preview alone is not a handoff.")
+        scrollTo(saveToFiles)
+        XCTAssertTrue(saveToFiles.isHittable)
         capture("legal-system-share-sheet")
+        saveToFiles.tap()
+        let save = app.buttons["Save"].firstMatch
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(
+            save.waitForExistence(timeout: 15),
+            "The PDF did not reach the system Files export destination.")
+        XCTAssertTrue(cancel.exists)
+        capture("legal-files-export-ready")
+        // Never select a recipient or persist a synthetic report into a connected provider.
+        cancel.tap()
+        XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
     }
 
     func testEachRuleScopeKeepsItsPromisedEffectAtLargestText() {
