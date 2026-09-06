@@ -89,3 +89,30 @@ logs and xcresult results; a requested rerun is not a completed test.
 acceptance criteria. Other findings needing actual storefront, device, ownership,
 privacy-operation, or professional-review evidence remain open. No App Store
 mutation, authenticated approval, or blanket legal clearance is created here.
+
+## Local Mac continuation — September 6, 2026
+
+Integration commit `b94114fcf0868ad382ab5681a458d462cd4d04b3` (tree
+`0277978eff19fab33db5e8b080ae784cda5b87cc`) includes current `main`, the PR changes, and
+native-discovered corrections. Environment: macOS 26.6.2, Xcode 26.6 (`17F113`), Swift 6.3.3,
+XcodeGen 2.46.0.
+
+- The first native run found that `Transferable.exported(as:)` is iOS 18.2+. The two tests now
+  carry that availability boundary without raising the app's iOS 18.0 deployment target.
+- A focused iOS 26.5 app run passed 30 tests in five suites: `LegalRegressionTests`,
+  `LegalConsentAndReportTests`, `ReportShareSessionTests`, `NoOpenPeriodRuleTests`, and
+  `ReportTransferTests`. The retained result is `/private/tmp/linepay-legal-unit-green.xcresult`.
+- The actual share journey passed on an iPhone 16 Pro / iOS 18.5 simulator. It reached the system
+  activity, entered Save to Files, observed Save, then dismissed the native sheet without writing.
+  The retained result is `/private/tmp/linepay-share-ui-final.xcresult`.
+- The three-scope largest-text journey still fails because the promised explanation is not
+  discoverable after scrolling in the accessibility hierarchy. It is not skipped or weakened.
+  Therefore the full native/UI acceptance gate is **not passed**, and PR #34 must remain draft and
+  unmerged.
+- Native execution also exposed and fixed locale-specific decimal assertions and a real symlink
+  substitution gap: replacing the previewed file with a same-content symlink now revokes sharing.
+
+GitHub jobs at prior head `15cec8849864ba9dee0a4a5bba69e114b088370a` never started. The
+check-run annotations for jobs `101443879286` and `101443879071` state that recent account payments
+failed or the Actions spending limit must be increased. The GitHub account owner must repair that
+external condition and rerun the exact final head; repository workflow changes cannot resolve it.
