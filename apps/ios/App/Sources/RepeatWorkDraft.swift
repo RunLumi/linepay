@@ -13,6 +13,8 @@ enum RepeatWorkReviewError: LocalizedError {
 }
 
 enum RepeatWorkDraft {
+    private static let manualPrefix = "manual:"
+
     static func make(
         source: WorkEntry,
         periodID: UUID,
@@ -78,6 +80,8 @@ enum RepeatWorkDraft {
     ) throws -> WorkTemplateProposal {
         let zone = try timeZone(timeZoneIdentifier)
         draft.templateDay = clampedDay(day, zone: zone, window: window)
+        // A new date changes the wall-time question. Previous fold choices and manual review
+        // decisions do not carry forward to a different local date.
         draft.repeatedTimeChoices = [:]
         return try refresh(
             &draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
@@ -102,6 +106,15 @@ enum RepeatWorkDraft {
             &draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
     }
 
+    /// Records that the worker deliberately changed or removed the copied fact identified by
+    /// `key`. Manual markers share the persisted decision dictionary with fold choices but use a
+    /// namespace that `WorkTemplate` never interprets as a wall-time choice.
+    static func markManualReview(_ key: String, draft: inout WorkDraft) {
+        var choices = draft.repeatedTimeChoices ?? [:]
+        choices[manualMarker(key)] = .first
+        draft.repeatedTimeChoices = choices
+    }
+
     static func canConfirmManualReview(
         _ draft: WorkDraft,
         timeZoneIdentifier: String,
@@ -110,7 +123,6 @@ enum RepeatWorkDraft {
         guard draft.templateUnresolved == true,
             let source = draft.templateSource,
             let day = draft.templateDay,
-            let zone = TimeZone(identifier: timeZoneIdentifier),
             let proposal = try? WorkTemplate.propose(
                 source,
                 on: day,
@@ -123,29 +135,16 @@ enum RepeatWorkDraft {
         }
         guard draft.end > draft.start else { return false }
 
+        let decisions = draft.repeatedTimeChoices ?? [:]
         let nonexistent = proposal.points.filter { $0.candidates.isEmpty }
         if !nonexistent.isEmpty {
-            return nonexistent.allSatisfy { point in
-                guard let current = currentDate(for: point.key, draft: draft, source: source) else {
-                    // Removing an originally copied break is an explicit manual fact change.
-                    return point.key.hasPrefix("break.")
-                }
-                let automatic = date(
-                    for: point.key,
-                    proposal: proposal,
-                    source: source,
-                    targetDay: day,
-                    targetZone: zone)
-                return current != automatic
-            }
+            return nonexistent.allSatisfy { decisions[manualMarker($0.key)] != nil }
         }
 
         // The pure proposal is resolved, so the app-level unresolved state is containment-related.
-        // Require an actual manual time/break change before accepting a different in-period record.
+        // Require a deliberate manual fact edit before accepting a different in-period record.
         guard proposal.isResolved else { return false }
-        return proposal.points.contains { point in
-            currentDate(for: point.key, draft: draft, source: source) != point.chosen
-        }
+        return decisions.keys.contains { $0.hasPrefix(manualPrefix) }
     }
 
     static func confirmManualReview(
@@ -216,33 +215,6 @@ enum RepeatWorkDraft {
         return proposal
     }
 
-    private static func currentDate(
-        for key: String,
-        draft: WorkDraft,
-        source: WorkInterval
-    ) -> Date? {
-        switch key {
-        case "start":
-            return draft.start
-        case "end":
-            return draft.end
-        default:
-            let pieces = key.split(separator: ".")
-            guard pieces.count == 3, pieces[0] == "break", let index = Int(pieces[1]),
-                source.unpaidBreaks.indices.contains(index)
-            else { return nil }
-            if index == 0 {
-                guard draft.hasUnpaidBreak else { return nil }
-                return pieces[2] == "start" ? draft.breakStart : draft.breakEnd
-            }
-            let sourceBreak = source.unpaidBreaks[index]
-            guard let current = draft.additionalBreaks.first(where: { $0.id == sourceBreak.id }) else {
-                return nil
-            }
-            return pieces[2] == "start" ? current.start : current.end
-        }
-    }
-
     private static func date(
         for key: String,
         proposal: WorkTemplateProposal,
@@ -311,6 +283,10 @@ enum RepeatWorkDraft {
             matchingPolicy: .nextTime,
             repeatedTimePolicy: .first,
             direction: .forward) ?? expectedDay
+    }
+
+    private static func manualMarker(_ key: String) -> String {
+        manualPrefix + key
     }
 
     private static func clampedDay(
