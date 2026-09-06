@@ -57,13 +57,16 @@ struct PaystubImportView: View {
                         }
                         if DocumentScannerView.isSupported {
                             Button("Scan paystub", systemImage: "doc.viewfinder") { scan() }
+                                .accessibilityIdentifier("paystub.scan")
                         }
                         PhotosPicker(selection: $selectedPhoto, matching: .images) {
                             Label("Choose photo", systemImage: "photo")
                         }
+                        .accessibilityIdentifier("paystub.choose-photo")
                         Button("Choose PDF or image", systemImage: "folder") {
                             showingFileImporter = true
                         }
+                        .accessibilityIdentifier("paystub.choose-file")
                         Button("Enter manually", systemImage: "keyboard") { manual() }
                             .accessibilityIdentifier("paystub.manual")
                     }.disabled(isProcessing)

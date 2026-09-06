@@ -83,6 +83,47 @@ struct AuditScopeRegressionTests {
         #expect(evaluate(model).hours.first?.differs == true)
     }
 
+    @Test(arguments: ["400", "400.00", "399.99", "400.01"])
+    func confirmedCentDifferencesSurviveArchiveAndReload(_ regularPay: String) throws {
+        let store = UnitStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        var stub = UnitFixture.paystub(model)
+        stub.regularPay = regularPay
+        stub.overtimePay = "0"
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
+        try model.confirmPaystub(stub)
+        let expected: AuditDisplayStatus =
+            ["400", "400.00"].contains(regularPay) ? .matches : .needsReview
+        #expect(model.reconciliation?.direction == .matches)
+        #expect(model.currentAuditStatus == expected)
+        try model.archiveCurrentPeriod()
+        let reloaded = AppModel(store: store)
+        let archived = try #require(reloaded.history.first)
+        #expect(reloaded.auditStatus(for: archived) == expected)
+    }
+
+    @Test func fractionalCentComponentCannotReplaceConfirmedAudit() throws {
+        let store = UnitStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        var stub = UnitFixture.paystub(model)
+        try model.confirmPaystub(stub)
+        let before = store.state
+        let saves = store.saveCount
+        stub.regularPay = "400.001"
+        stub.reviewedFields.insert(.regularPay)
+        stub.lineLayout = .fullRateBuckets
+        #expect(throws: AppModelError.invalidField("regularPay")) {
+            try model.confirmPaystub(stub)
+        }
+        #expect(store.state == before && store.saveCount == saves)
+        #expect(model.currentAuditStatus == .grossMatches)
+    }
+
     @Test func missingAndStaleCalculationsAreNotSuccess() throws {
         #expect(
             AuditAssessment.evaluate(calculation: nil, paystub: nil, reconciliation: nil).status
