@@ -1,0 +1,19 @@
+name: Documentation
+on:
+  push:
+    branches: [main]
+    paths: ['**/*.md', 'docs/_tools/**', '.github/workflows/docs.yml']
+  pull_request:
+    paths: ['**/*.md', 'docs/_tools/**', '.github/workflows/docs.yml']
+permissions:
+  contents: read
+jobs:
+  links:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s docs/_tools -p 'test_*.py'
+      - run: python3 docs/_tools/check_links.py

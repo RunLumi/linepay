@@ -1,0 +1,55 @@
+name: Organize product documentation once
+on:
+  push:
+    branches: [docs/product-payroll-handbook]
+    paths: [.github/workflows/organize-docs.yml]
+permissions:
+  contents: write
+jobs:
+  organize:
+    if: github.repository == 'streamentry/linepay' && github.ref == 'refs/heads/docs/product-payroll-handbook'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Apply documentation moves and routes
+        run: |
+          python3 docs/_tools/reorganize_2026_09.py
+          rm docs/_tools/reorganize_2026_09.py .github/workflows/organize-docs.yml
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+          paths = subprocess.check_output(['git', 'ls-files', '-m', '-o', '--exclude-standard'], text=True).splitlines()
+          allowed = ['scripts/check-agent-harness.sh', '.github/workflows/agent-harness.yml', '.github/workflows/organize-docs.yml']
+          for p in paths:
+              assert p.endswith('.md') or p.startswith('docs/') or p in allowed, 'Unexpected non-documentation change: ' + p
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'docs: organize canonical guides, preserve historical evidence, and route agents'
+          git push origin HEAD:refs/heads/docs/product-payroll-handbook
+      - name: Check links and documentation tooling
+        run: |
+          mkdir -p "$RUNNER_TEMP/docs-results"
+          set -o pipefail
+          python3 -m unittest discover -s docs/_tools -p 'test_*.py' 2>&1 | tee "$RUNNER_TEMP/docs-results/tool-tests.log"
+          python3 docs/_tools/check_links.py 2>&1 | tee "$RUNNER_TEMP/docs-results/links.log"
+      - name: Validate agent routing
+        run: |
+          set -o pipefail
+          bash scripts/check-agent-harness.sh 2>&1 | tee "$RUNNER_TEMP/docs-results/harness.log"
+      - name: Capture exact committed documentation context
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/docs-results"
+          git rev-parse HEAD > "$RUNNER_TEMP/docs-results/commit.txt"
+          git archive --format=zip --output="$RUNNER_TEMP/docs-results/source.zip" HEAD
+      - name: Preserve source and verification
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: product-docs-verification
+          path: ${{ runner.temp }}/docs-results
+          retention-days: 7
+          if-no-files-found: error
