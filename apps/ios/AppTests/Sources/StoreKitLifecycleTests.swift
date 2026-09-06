@@ -10,18 +10,37 @@ private final class StoreKitResourceAnchor: NSObject {}
 @Suite("Real local StoreKit lifecycle", .serialized)
 @MainActor
 struct StoreKitLifecycleTests {
-    func session() throws -> SKTestSession {
+    func session() async throws -> SKTestSession {
         let url = try #require(
             Bundle(for: StoreKitResourceAnchor.self).url(
                 forResource: "LinePay", withExtension: "storekit"))
         let session = try SKTestSession(contentsOf: url)
-        session.resetToDefaultState()
-        session.clearTransactions()
-        session.disableDialogs = true
+        try await resetSession(session)
         return session
     }
+
+    private func resetSession(_ session: SKTestSession) async throws {
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.clearTransactions()
+        try await AppStore.sync()
+        // Require StoreKit's receipt to reflect deletion before another test or UI launch.
+        for _ in 0..<50 {
+            if session.allTransactions().isEmpty,
+                await SubscriptionOperations.live.entitlementIDs().isEmpty
+            {
+                return
+            }
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        try #require(
+            session.allTransactions().isEmpty, "StoreKit test transactions were not cleared")
+        try #require(
+            await SubscriptionOperations.live.entitlementIDs().isEmpty,
+            "StoreKit test entitlements were not cleared")
+    }
     @Test func purchaseRenewalCancellationExpirationAndMetadataFailure() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         let store = SubscriptionStore(commerceEnabled: true)
         await store.load()
@@ -45,9 +64,10 @@ struct StoreKitLifecycleTests {
         #expect(store.isPro)
         try session.expireSubscription(productIdentifier: monthly.id)
         await expectAccess(false, store: store)
+        try await resetSession(session)
     }
     @Test func refundedPurchaseDoesNotGrantPro() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         let transaction = try await session.buyProduct(
             identifier: SubscriptionStore.yearlyProductID)
@@ -56,9 +76,10 @@ struct StoreKitLifecycleTests {
         let identifier = try #require(UInt(exactly: transaction.id))
         try session.refundTransaction(identifier: identifier)
         await expectAccess(false, store: store)
+        try await resetSession(session)
     }
     @Test func billingGraceKeepsAccessThenExpires() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         session.billingGracePeriodIsEnabled = true
         session.shouldEnterBillingRetryOnRenewal = true
@@ -80,10 +101,11 @@ struct StoreKitLifecycleTests {
         // A grace-period transaction has already expired. Forcing expiry is invalid in StoreKitTest.
         // Let accelerated time end grace and prove access is removed without a new purchase.
         await expectAccess(false, store: store, attempts: 300)
+        try await resetSession(session)
     }
 
     @Test func annualTrialUsesRealOfferAndBecomesPaidWithoutAnotherFreeAudit() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         let store = SubscriptionStore(commerceEnabled: true)
         await store.start()
@@ -100,10 +122,11 @@ struct StoreKitLifecycleTests {
         #expect(store.isPro)
         await store.load()
         #expect(store.annualTrialDuration == nil)
+        try await resetSession(session)
     }
 
     @Test func nativeCancellationDoesNotGrantAccessOrShowFailure() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         let store = SubscriptionStore(commerceEnabled: true)
         await store.start()
@@ -111,10 +134,11 @@ struct StoreKitLifecycleTests {
         try await session.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
         #expect(!(await store.purchase(monthly)))
         #expect(!store.isPro && store.errorMessage == nil)
+        try await resetSession(session)
     }
 
     @Test func pendingPurchaseRequiresNativeApproval() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         session.askToBuyEnabled = true
         let store = SubscriptionStore(commerceEnabled: true)
@@ -125,10 +149,11 @@ struct StoreKitLifecycleTests {
         let pending = try #require(session.allTransactions().first)
         try session.approveAskToBuyTransaction(identifier: pending.identifier)
         await expectAccess(true, store: store)
+        try await resetSession(session)
     }
 
     @Test func interruptedPurchaseRecoversOnlyAfterStoreResolvesIssue() async throws {
-        let session = try session()
+        let session = try await session()
         defer { session.clearTransactions() }
         session.interruptedPurchasesEnabled = true
         let store = SubscriptionStore(commerceEnabled: true)
@@ -140,6 +165,7 @@ struct StoreKitLifecycleTests {
         session.interruptedPurchasesEnabled = false
         try session.resolveIssueForTransaction(identifier: interrupted.identifier)
         await expectAccess(true, store: store)
+        try await resetSession(session)
     }
 
     private func expectTrial(_ expected: Bool, store: SubscriptionStore) async {
