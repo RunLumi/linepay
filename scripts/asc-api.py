@@ -16,6 +16,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+# A local, standard-library-only guard. This does not grant authority to make an Apple write.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import legal_guardrails
+
 API_ORIGIN = "https://api.appstoreconnect.apple.com"
 
 
@@ -34,6 +38,7 @@ def validate_request(method, path, body, allow_write):
         or any(part in {".", ".."} for part in decoded.split("/"))
         or any(ord(char) < 33 for char in path)
         or "\\" in decoded
+        or "%" in parsed.path
     ):
         raise ValueError("Use a relative /v1/ or /v2/ API path, without traversal or fragments.")
     if method not in {"GET", "POST", "PATCH"}:
@@ -43,8 +48,13 @@ def validate_request(method, path, body, allow_write):
     if method != "GET":
         if not allow_write:
             raise ValueError("Writes require --allow-write and prior authorization for the exact action.")
-        if body is None or not isinstance(json.loads(body), dict):
+        if body is None or not isinstance(legal_guardrails.strict_json(body), dict):
             raise ValueError("Writes require a JSON object in --body.")
+        payload = legal_guardrails.strict_json(body)
+        data = payload.get("data")
+        attributes = data.get("attributes") if isinstance(data, dict) else None
+        if isinstance(attributes, dict) and "releaseType" in attributes and attributes["releaseType"] != "MANUAL":
+            raise ValueError("This remediation release requires manual release control; automatic release is blocked.")
 
 
 def encode(value):
@@ -86,10 +96,21 @@ def main(argv=None):
     parser.add_argument("--method", default="GET", choices=["GET", "POST", "PATCH"])
     parser.add_argument("--body", type=Path, help="Reviewed JSON payload file, kept outside git")
     parser.add_argument("--allow-write", action="store_true", help="Enable this explicit write; not a grant of authority")
+    parser.add_argument("--release-evidence", type=Path,
+                        help="Private source/build-bound approvals for this exact request; never commit them")
     args = parser.parse_args(argv)
     try:
         body = args.body.read_bytes() if args.body else None
         validate_request(args.method, args.path, body, args.allow_write)
+        stage = legal_guardrails.request_stage(args.method, args.path, body)
+        if stage is not None:
+            if args.release_evidence is None:
+                raise ValueError("This write requires --release-evidence; --allow-write alone cannot submit or publish.")
+            evidence = legal_guardrails.validate_release_file(
+                args.release_evidence, Path(__file__).resolve().parents[1], stage)
+            if not legal_guardrails.request_matches(
+                evidence.get("authorized_request"), args.method, args.path, body):
+                raise ValueError("Owner approval does not match this exact method, path and payload.")
         names = ("ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_PRIVATE_KEY_PATH")
         missing = [name for name in names if not os.environ.get(name)]
         if missing:
