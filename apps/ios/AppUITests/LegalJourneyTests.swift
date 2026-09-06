@@ -71,16 +71,11 @@ final class LegalJourneyTests: XCTestCase {
             scrollTo(rate)
             rate.tap()
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
-            if app.keyboards.count > 0 {
-                let done = app.buttons["keyboard.done"].firstMatch
-                if done.exists { done.tap() } else { app.swipeDown() }
-            }
-            for _ in 0..<4 {
-                let continueButton = app.buttons["pay-profile.continue"].firstMatch
-                guard continueButton.waitForExistence(timeout: 5) else { break }
-                continueButton.tap()
-            }
-            let scopeControl = app.buttons["pay-profile.change-scope"].firstMatch
+            dismissKeyboard()
+            for _ in 0..<3 { tap("pay-profile.continue") }
+            revealEarlierContent()
+            let scopeControl = app.descendants(matching: .any)
+                .matching(identifier: "pay-profile.change-scope").firstMatch
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scrollTo(scopeControl)
             scopeControl.tap()
@@ -127,15 +122,25 @@ final class LegalJourneyTests: XCTestCase {
         button.tap()
     }
     private func scrollTo(_ element: XCUIElement) {
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
         for _ in 0..<16 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            frontmostWindow.swipeUp()
         }
+    }
+    private func revealEarlierContent() {
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<8 { frontmostWindow.swipeDown() }
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+    private func dismissKeyboard() {
+        let done = app.buttons["keyboard.done"].firstMatch
+        if done.exists { done.tap() }
+        if app.keyboards.count > 0 { app.swipeDown() }
     }
 }

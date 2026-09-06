@@ -73,6 +73,32 @@ struct PayProfileSetupView: View {
                         Button("Cancel") { dismiss() }
                     }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(
+                        step == 3
+                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
+                    ) {
+                        advance()
+                    }
+                    .accessibilityIdentifier(
+                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
+                }
+                if step == 3, editing {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Menu("Scope") {
+                            Button("Future work periods only") {
+                                draft.editScope = .futurePeriods
+                            }.accessibilityIdentifier("pay-profile.scope.future")
+                            Button("New rules from a date") {
+                                draft.editScope = .datedChange
+                            }.accessibilityIdentifier("pay-profile.scope.dated")
+                            Button("Recalculate this entire current period") {
+                                draft.editScope = .currentPeriod
+                            }.accessibilityIdentifier("pay-profile.scope.current")
+                        }
+                        .accessibilityIdentifier("pay-profile.change-scope")
+                    }
+                }
             }
         }
         .environment(\.timeZone, zone)
@@ -312,17 +338,21 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Picker("Scope", selection: $draft.editScope) {
-                        Text("Future work periods only").tag(RuleEditScope.futurePeriods)
-                            .accessibilityIdentifier("pay-profile.scope.future")
-                        Text("New rules from a date").tag(RuleEditScope.datedChange)
-                            .accessibilityIdentifier("pay-profile.scope.dated")
-                        Text("Recalculate this entire current period").tag(
-                            RuleEditScope.currentPeriod
-                        )
-                        .accessibilityIdentifier("pay-profile.scope.current")
-                    }.pickerStyle(.navigationLink).accessibilityIdentifier(
-                        "pay-profile.change-scope")
+                    Menu {
+                        Button("Future work periods only") {
+                            draft.editScope = .futurePeriods
+                        }.accessibilityIdentifier("pay-profile.scope.future")
+                        Button("New rules from a date") {
+                            draft.editScope = .datedChange
+                        }.accessibilityIdentifier("pay-profile.scope.dated")
+                        Button("Recalculate this entire current period") {
+                            draft.editScope = .currentPeriod
+                        }.accessibilityIdentifier("pay-profile.scope.current")
+                    } label: {
+                        LabeledContent("Scope", value: editScopeTitle)
+                    }
+                    .accessibilityLabel("Scope: \(editScopeTitle)")
+                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
@@ -398,6 +428,14 @@ struct PayProfileSetupView: View {
         case .futurePeriods: .futurePeriods
         case .datedChange: .prospective
         case .currentPeriod: .correctCurrentPeriod
+        }
+    }
+
+    private var editScopeTitle: String {
+        switch draft.editScope {
+        case .futurePeriods: "Future work periods only"
+        case .datedChange: "New rules from a date"
+        case .currentPeriod: "Recalculate this entire current period"
         }
     }
 
