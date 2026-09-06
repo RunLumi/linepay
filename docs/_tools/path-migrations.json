@@ -1,0 +1,22 @@
+{
+  "docs/pricing.md": "docs/product/pricing.md",
+  "docs/onboarding.md": "docs/product/onboarding.md",
+  "docs/best-practices.md": "docs/engineering/ios-best-practices.md",
+  "docs/agentic.md": "docs/engineering/agentic-development.md",
+  "docs/testing.md": "docs/testing/README.md",
+  "docs/maestro.md": "docs/testing/maestro.md",
+  "docs/linepay-1.0-readiness-audit.md": "docs/testing/audits/linepay-1.0-readiness-audit.md",
+  "docs/checklists/ios-1.0-manual-qa.md": "docs/testing/checklists/ios-1.0-manual-qa.md",
+  "docs/checklists/ios-before-first-testflight.md": "docs/release/checklists/ios-before-first-testflight.md",
+  "docs/appstore.md": "docs/release/app-store.md",
+  "docs/release-and-testflight-api.md": "docs/release/api-and-testflight.md",
+  "docs/release-build-2-2026-09-05.md": "docs/release/evidence/release-build-2-2026-09-05.md",
+  "docs/marketing.md": "docs/growth/marketing.md",
+  "docs/qa/ios-1.0/synthetic-audit.pdf": "docs/testing/evidence/ios-1.0/synthetic-audit.pdf",
+  "docs/qa/ios-1.0/audit-choice-dark-large.png": "docs/testing/evidence/ios-1.0/audit-choice-dark-large.png",
+  "docs/qa/ios-1.0/ledger-light.png": "docs/testing/evidence/ios-1.0/ledger-light.png",
+  "docs/qa/ios-1.0/audit-needs-review.png": "docs/testing/evidence/ios-1.0/audit-needs-review.png",
+  "docs/qa/ios-1.0/README.md": "docs/testing/evidence/ios-1.0/README.md",
+  "docs/qa/ios-1.0/audit-dark-large.png": "docs/testing/evidence/ios-1.0/audit-dark-large.png",
+  "docs/legal.md": "docs/legal/risk-and-compliance.md"
+}

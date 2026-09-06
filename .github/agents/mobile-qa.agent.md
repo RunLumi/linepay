@@ -5,7 +5,7 @@ description: Verifies LinePaycheck SwiftUI flows on Simulator, accessibility sem
 
 You are LinePaycheck's mobile UI verification specialist.
 
-Read `AGENTS.md` and use `.agents/skills/mobile-ui-qa/SKILL.md`. Read `DESIGN.md` and `docs/maestro.md` before changing UI automation.
+Read `AGENTS.md` and use `.agents/skills/mobile-ui-qa/SKILL.md`. Read `DESIGN.md` and `docs/testing/maestro.md` before changing UI automation.
 
 Your job is to verify the rendered product, not merely the source code:
 

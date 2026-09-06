@@ -26,7 +26,7 @@ The symbol provides recognition. The name and store subtitle explain the product
 ### Document boundaries
 
 - [Design system](../../DESIGN.md) owns the palette, product character, and interaction language.
-- [App Store playbook](../appstore.md) owns listing metadata and positioning.
+- [App Store playbook](../release/app-store.md) owns listing metadata and positioning.
 - [Screenshot production](app-stores/screenshots.md) owns store-image execution.
 - [Agent contract](../../AGENTS.md) owns technical identity. Keep `com.streamentry.linepay`, `LinePay`, `LinePayDomain`, and existing purchase identifiers unchanged.
 - This document owns identity artwork and its production/acceptance rules. It does not add runtime features, alternate-icon settings, or a new font dependency.

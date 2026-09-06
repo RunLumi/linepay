@@ -120,7 +120,7 @@ RevenueCat reported an average trial-to-paid rate around 37–38% in 2024, while
 
 I nevertheless recommend a **7-day annual trial initially**, because LinePaycheck should demonstrate value much faster than a habit-building app and the business is intentionally optimizing for early payback. This is an assumption to test, not a claim that seven days is universally optimal.
 
-**September 5 reconciliation:** [onboarding.md](onboarding.md) now owns the first-work proof → annual trial offer → seven-day activation sequence, eligibility states, and exact funnel denominators. [pricing.md](pricing.md) confirms Annual trial / Monthly immediate paid; [the setup record](research/onboarding-trial-2026-09-05.md) records actual App Store state. Funnel targets below are model inputs, not results. Do not attribute aggregated ratios to linked install cohorts when Apple reporting cannot establish that linkage.
+**September 5 reconciliation:** [onboarding.md](../product/onboarding.md) now owns the first-work proof → annual trial offer → seven-day activation sequence, eligibility states, and exact funnel denominators. [pricing.md](../product/pricing.md) confirms Annual trial / Monthly immediate paid; [the setup record](onboarding-trial-2026-09-05.md) records actual App Store state. Funnel targets below are model inputs, not results. Do not attribute aggregated ratios to linked install cohorts when Apple reporting cannot establish that linkage.
 
 Base modeled funnel:
 
@@ -251,7 +251,7 @@ subscription screen
 
 **App name:** `LinePaycheck`
 
-**Suggested subtitle:**  
+**Suggested subtitle:**
 `Hours, Overtime & Pay`
 
 The first five screenshot messages should be outcome-first:
@@ -365,15 +365,15 @@ The ad should look like a field instrument happened to become a beautiful iPhone
 
 **The Pay Gap — 8–10 seconds**
 
-`0.0–1.5s`  
+`0.0–1.5s`
 Porcelain background. Graphite typography:
 
-> **EXPECTED $4,812**  
+> **EXPECTED $4,812**
 > **PAID $4,525**
 
 A thin copper **Line Gap** appears between them.
 
-`1.5–4.0s`  
+`1.5–4.0s`
 Real LinePaycheck ledger slides in:
 
 ```text
@@ -382,14 +382,14 @@ Overtime       12.0h
 Double time     4.0h
 ```
 
-`4.0–7.0s`  
+`4.0–7.0s`
 The calculated difference appears:
 
 > **Possible shortfall: $287**
 
 `7.0–10.0s`
 
-> **Know what your work should pay.**  
+> **Know what your work should pay.**
 > LinePaycheck
 
 **Mockup instruction:** build this from actual product screenshots in Figma; do not generate an imaginary UI. Use a real fixture from the calculation test suite so the numbers reconcile exactly.
@@ -413,7 +413,7 @@ Sun   Premium
 
 No lightning animations. No storm-stock footage.
 
-`6–9s`  
+`6–9s`
 Ledger resolves into expected gross.
 
 `9–12s`
@@ -430,10 +430,10 @@ Only run this after local paystub scanning/reconciliation ships.
 
 > **CHECK THE STUB. NOT YOUR MEMORY.**
 
-`2–6s`  
+`2–6s`
 Actual LinePaycheck import interaction.
 
-`6–9s`  
+`6–9s`
 A field with uncertain OCR gets labeled:
 
 > Needs confirmation

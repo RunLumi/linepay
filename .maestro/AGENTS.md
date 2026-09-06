@@ -1,6 +1,6 @@
 # Maestro agent instructions
 
-The repository-root `AGENTS.md` remains authoritative. Before changing flows, read `docs/maestro.md` and `.agents/skills/mobile-ui-qa/SKILL.md`.
+The repository-root `AGENTS.md` remains authoritative. Before changing flows, read `docs/testing/maestro.md` and `.agents/skills/mobile-ui-qa/SKILL.md`.
 
 - Test critical black-box user journeys, not payroll arithmetic.
 - Prefer semantic accessibility identifiers over visible copy or coordinates.

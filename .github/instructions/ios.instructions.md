@@ -4,7 +4,7 @@ applyTo: "apps/ios/**/*.swift,apps/ios/**/*.yml,apps/ios/**/*.xcconfig"
 
 # iOS-specific instructions
 
-Before editing iOS code, read `apps/ios/AGENTS.md` and `docs/best-practices.md`. For user-facing changes also read `DESIGN.md`.
+Before editing iOS code, read `apps/ios/AGENTS.md` and `docs/engineering/ios-best-practices.md`. For user-facing changes also read `DESIGN.md`.
 
 - Use SwiftUI + Observation and preserve Swift 6 strict-concurrency correctness.
 - Keep mutable app/UI state on the appropriate actor, normally `@MainActor`.

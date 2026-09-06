@@ -43,14 +43,17 @@ Do not load every document for every task.
 
 | Work | Read / use |
 |---|---|
-| Any iOS engineering | `apps/ios/AGENTS.md`, `docs/best-practices.md` |
+| Product behavior / business rules | [Product handbook](docs/product/README.md), [business rules](docs/product/business-rules.md) |
+| Payroll applicability / legal scope | [Legal baseline](docs/product/payroll/us-legal-baseline.md), [coverage](docs/product/payroll/coverage-and-gaps.md), [sources](docs/product/payroll/sources.md) |
+| Documentation changes | [Documentation map](docs/README.md), [docs agent contract](docs/AGENTS.md) |
+| Any iOS engineering | `apps/ios/AGENTS.md`, `docs/engineering/ios-best-practices.md` |
 | User-facing iOS UI | also `DESIGN.md` |
 | Current iOS product scope | `docs/plan/ios-1.0.md` |
 | Pay rules / calculations / reconciliation | `.agents/skills/payroll-domain/SKILL.md` |
 | New iOS feature | `.agents/skills/ios-feature/SKILL.md` |
-| Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/maestro.md` |
-| TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/checklists/ios-before-first-testflight.md` |
-| Agent harness itself | `docs/agentic.md` |
+| Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/testing/maestro.md` |
+| TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/release/checklists/ios-before-first-testflight.md` |
+| Agent harness itself | `docs/engineering/agentic-development.md` |
 | Legal-risk, sharing, claims or release approval | `docs/legal/README.md`; `python3 scripts/legal_guardrails.py check` |
 
 Nearest `AGENTS.md` instructions apply in addition to this root contract.
@@ -69,6 +72,12 @@ These outrank implementation convenience.
 8. **Explain discrepancies.** Results must trace to work facts, applied rules, calculation steps, and source/reference metadata.
 9. **Estimate, do not adjudicate.** Use language such as expected, estimated, or possible discrepancy unless a fact is directly confirmed.
 10. **Native clients first.** iOS and Android may share contracts, fixtures, and behavior specs before they share runtime implementation.
+
+## Payroll coverage and product craft
+
+Use the product handbook before changing a pay number or verdict. A configured-rules estimate is not automatically a complete US legal-pay audit. Federal weekly overtime, regular-rate treatment, jurisdiction and agreement applicability are independent obligations; unconfigured is not waived. Preserve explicit unsupported coverage and never fabricate professional or union verification.
+
+Make LinePaycheck exceptionally clear, fast, reliable, and recoverable. Apply Pareto efficiency to complexity, not to correctness, privacy, evidence, migration safety, or accessibility. Spend disproportionate craft on the few interactions that earn worker trust.
 
 ## Architecture boundary
 
@@ -114,13 +123,11 @@ MCP tools are optional developer ergonomics. CI and repository correctness must 
 
 ### Local simulator reuse and host safety
 
-- Reuse an existing compatible Simulator from `xcrun simctl list devices available`; record its exact UDID and use it for the whole test batch.
-- Do not create or clone devices per test, branch, worktree, candidate, or retry. Fresh state means resetting only authorized synthetic app data at the intended test boundary, not allocating another device.
-- Check for another Xcode/Maestro run using the device before installing, resetting, or launching. Never share one UDID concurrently or interrupt another agent's run; wait for a compatible device to become free.
-- Run one local simulator UI/test job at a time by default. Reuse the booted device between tests instead of booting additional devices.
-- Check free disk space and memory pressure before heavy work. Pause on resource pressure rather than retrying or allocating more; prefer existing SSD-backed build/output locations and avoid duplicate caches/artifacts.
-- Create a device or install a runtime only when a required configuration cannot use the existing pool, and obtain explicit user approval first.
-- After a batch, shut down only this task's idle devices when needed to release RAM; keep them for reuse. Never delete/erase devices, runtimes, or unrelated data without separate authorization.
+- Reuse a compatible existing Simulator; record its UDID for the whole batch.
+- Run one UI/test job per device; check for concurrent Xcode/Maestro use before install, reset, or launch.
+- Do not create/clone devices per test, branch, worktree, candidate, or retry. Fresh state means resetting synthetic app data.
+- Check disk/memory pressure and use existing SSD-backed caches; create a device or install a runtime only with explicit approval.
+- Shut down this task's idle devices when needed; never erase/delete devices, runtimes, or unrelated data.
 
 ## Verification by risk
 

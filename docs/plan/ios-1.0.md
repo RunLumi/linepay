@@ -4,7 +4,7 @@ Status: **Active implementation plan**
 
 Canonical bundle ID: **`com.streamentry.linepay`**
 
-This plan is governed by `AGENTS.md`, `DESIGN.md`, `docs/pricing.md`, and `docs/architecture/local-first-no-account.md`.
+This plan is governed by `AGENTS.md`, `DESIGN.md`, `docs/product/pricing.md`, and `docs/architecture/local-first-no-account.md`.
 
 > **1.0 objective:** build a small, trustworthy, insanely great machine for expensive hours.
 
@@ -337,7 +337,7 @@ Requirements:
 - no legal-entitlement claim;
 - visible but restrained local-first privacy statement.
 
-**Production rule, revised September 5, 2026:** follow `docs/onboarding.md`: show an optional seven-day annual trial offer after the first real expected-pay result has been read, with Monthly and Continue free available. No paywall on welcome or before meaningful proof. This deliberately supersedes the earlier prohibition on all onboarding offers; implementing the new flow remains a release task.
+**Production rule, revised September 5, 2026:** follow `docs/product/onboarding.md`: show an optional seven-day annual trial offer after the first real expected-pay result has been read, with Monthly and Continue free available. No paywall on welcome or before meaningful proof. This deliberately supersedes the earlier prohibition on all onboarding offers; implementing the new flow remains a release task.
 
 ### F2. Pay-profile setup — P0
 
@@ -705,7 +705,7 @@ Do not auto-close merely because calendar dates passed.
 
 ### F15. StoreKit / LinePay Pro — P0 before App Store release
 
-Canonical pricing lives in `docs/pricing.md`.
+Canonical pricing lives in `docs/product/pricing.md`.
 
 Launch structure:
 
@@ -733,7 +733,7 @@ Launch pricing hypothesis:
 
 #### Paywall timing
 
-Use the proof-first trial flow in `docs/onboarding.md`.
+Use the proof-first trial flow in `docs/product/onboarding.md`.
 
 Preferred triggers:
 
@@ -741,7 +741,7 @@ Preferred triggers:
 2. after the first free audit result, as an optional contextual continuation offer; or
 3. when the user starts a second new audit after the Free audit is consumed.
 
-Dismissal preserves work and completed results. Suppress unsolicited repeats for the session. An active verified Pro trial grants recurring access without consuming an unused Free audit; expiry follows the access rules in `docs/onboarding.md`.
+Dismissal preserves work and completed results. Suppress unsolicited repeats for the session. An active verified Pro trial grants recurring access without consuming an unused Free audit; expiry follows the access rules in `docs/product/onboarding.md`.
 
 Paywall must preserve:
 
@@ -1022,7 +1022,7 @@ Exit condition: a tester understands the result in <5 seconds and can explain ev
 - [ ] implement proof-first annual trial placement, eligibility-aware terms, and Continue free;
 - [ ] StoreKit 2 entitlement adapter;
 - [ ] local StoreKit config/tests;
-- [ ] yearly/monthly offer according to `docs/pricing.md`;
+- [ ] yearly/monthly offer according to `docs/product/pricing.md`;
 - [ ] restore/renewal/grace/expiration states;
 - [ ] PDF/CSV audit report;
 - [ ] native share sheet.

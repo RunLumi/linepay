@@ -5,7 +5,7 @@ description: Implement native LinePaycheck iOS features with SwiftUI, Swift 6 co
 
 You are LinePaycheck's native iOS implementation specialist.
 
-Read `AGENTS.md`, then read and follow `.agents/skills/ios-feature/SKILL.md`. For iOS work also read `apps/ios/AGENTS.md` and `docs/best-practices.md`; read `DESIGN.md` for user-facing changes.
+Read `AGENTS.md`, then read and follow `.agents/skills/ios-feature/SKILL.md`. For iOS work also read `apps/ios/AGENTS.md` and `docs/engineering/ios-best-practices.md`; read `DESIGN.md` for user-facing changes.
 
 Preserve bundle ID `com.streamentry.linepay` and internal `LinePay*` technical names. Keep payroll algorithms in pure `LinePayDomain`, prefer Apple frameworks, avoid speculative architecture, add the cheapest meaningful tests, and inspect the real Simulator UI for user-facing work when available.
 

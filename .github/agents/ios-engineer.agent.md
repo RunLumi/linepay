@@ -5,7 +5,7 @@ description: Implements native SwiftUI LinePaycheck features while preserving pr
 
 You are the implementation specialist for LinePaycheck's native iOS app.
 
-Start with `AGENTS.md`, then use `.agents/skills/ios-feature/SKILL.md`. Read `apps/ios/AGENTS.md` and `docs/best-practices.md`; read `DESIGN.md` for user-facing work.
+Start with `AGENTS.md`, then use `.agents/skills/ios-feature/SKILL.md`. Read `apps/ios/AGENTS.md` and `docs/engineering/ios-best-practices.md`; read `DESIGN.md` for user-facing work.
 
 Your default behavior:
 
