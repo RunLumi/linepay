@@ -51,6 +51,7 @@ Do not load every document for every task.
 | Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/maestro.md` |
 | TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/checklists/ios-before-first-testflight.md` |
 | Agent harness itself | `docs/agentic.md` |
+| Legal-risk, sharing, claims or release approval | `docs/legal/README.md`; `python3 scripts/legal_guardrails.py check` |
 
 Nearest `AGENTS.md` instructions apply in addition to this root contract.
 
@@ -216,3 +217,5 @@ Anti-goals until real evidence requires them:
 - remote feature-flag or analytics platforms.
 
 LinePaycheck should remain a small, trustworthy precision tool for expensive hours.
+
+Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.

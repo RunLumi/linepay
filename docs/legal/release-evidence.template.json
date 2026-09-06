@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "record_kind": "template-not-approved",
+  "stage": "submission",
+  "source_sha": "",
+  "reviewed_at": "",
+  "release_owner": "",
+  "app": {"bundle_id": "com.streamentry.linepay", "version": "", "build": "", "apple_build_id": "", "source_sha": ""},
+  "binary": {"path": "", "sha256": ""},
+  "storefront": {
+    "checked_at": "", "release_mode": "MANUAL", "territories": ["USA"], "apple_build_id": "",
+    "readback": {"path": "", "sha256": ""},
+    "subscriptions": [
+      {"product_id": "linepay.pro.monthly", "status": "UNVERIFIED"},
+      {"product_id": "linepay.pro.yearly", "status": "UNVERIFIED"}
+    ]
+  },
+  "publisher": {"legal_entity": "", "contact": "", "privacy_url": "https://linepaycheck.com/privacy", "support_url": "https://linepaycheck.com/support"},
+  "pages": [
+    {"url": "https://linepaycheck.com/privacy", "checked_at": "", "reviewer": "", "snapshot": {"path": "", "sha256": ""}},
+    {"url": "https://linepaycheck.com/support", "checked_at": "", "reviewer": "", "snapshot": {"path": "", "sha256": ""}}
+  ],
+  "screenshots": [{"kind": "unverified", "source_sha": "", "apple_build_id": "", "path": "", "sha256": ""}],
+  "findings": {
+    "LEGAL-01": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-02": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-03": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-04": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-05": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-06": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-07": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-08": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-09": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-10": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-11": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-12": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-13": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-14": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-15": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-16": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-17": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-18": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-19": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-20": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]},
+    "LEGAL-21": {"status": "pending", "reviewer": "", "reviewed_at": "", "source_sha": "", "rationale": "", "evidence": [{"path": "", "sha256": ""}]}
+  },
+  "authorized_request": {"method": "", "path": "", "body_sha256": ""}
+}
