@@ -36,7 +36,7 @@ Do not collapse these into a completeness percentage. Code establishes implement
 | [#39](https://github.com/streamentry/linepay/issues/39) | P1 calculation policy | Internal segmentation changes rounded wages without changing the rate or work |
 | [#40](https://github.com/streamentry/linepay/issues/40) | P1 time entry | Repeat moves breaks across DST and silently normalizes nonexistent local times |
 | [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | Physical callout identity is conflated with each work-entry row |
-| [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Workweek/regular-rate reference layer is missing |
+| [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Bounded weekly layer implemented and native review flow present; source/applicability review and broader statutory/CBA admission remain open |
 | [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | An unpriceable saved period A blocks closing A and recording B |
 | [#45](https://github.com/streamentry/linepay/issues/45) | P2 provenance | Calculation-engine identity is missing from saved calculation results |
 | [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | EX-08 is represented only across date boundaries; same-day EX-09 remains reference-only because the timeline is midnight-effective |
@@ -50,7 +50,7 @@ Use #42 as the canonical weekly-capability issue and #43 as its duplicate. Concu
 | R1 | $50/hour, 08:00–08:02, 1x everywhere | $1.67 as one segment; $1.66 as two one-minute entries OR the same entry with an irrelevant 08:01 schedule boundary | #39: the approved rounding boundary must be explicit; no universal legal rounding policy is inferred |
 | R2 | Expected $550; confirmed paid gross $500, regular $400 and OT $150 | `possibleShortfall`, $50 difference, no review reason | #38: paid-source facts contradict each other |
 | R3 | One two-hour Tuesday callout, $50, 2x, four-hour minimum | One record $400; two adjacent records $800 | #41: one physical event is not necessarily two qualifying calls; do not merge genuinely separate calls automatically |
-| R4 | Six eight-hour days, $50, only daily 1.5x after eight configured | $2,400; restricted weekly reference $2,600 | #42: missing reference layer, not incorrect configured daily arithmetic |
+| R4 | Six eight-hour days, $50, only daily 1.5x after eight configured | Configured daily $2,400; bounded weekly layer $2,600 under explicit assumptions | #42: source/applicability admission remains separate |
 | R5 | New York March 7, 2026 00:00–08:00 with 04:00 break, repeated March 8 | Shift 00:00–08:00; break 05:00; repeated 02:30 normalizes to 03:00 | #40: extracted Foundation path, not a native UI run |
 | R6 | OCR `Pay period ending 09/05/2026` | Both periodStart and periodEnd suggested as `2026-09-05` | #48: complete production parser executed without Vision; the source provides no start |
 
@@ -116,7 +116,7 @@ The catalog describes required facts and coverage boundaries, not eighteen promi
 |---|---|---|---|
 | PAY-01 | Base/effective wages | [DM], [TL], [PC]; AgreementTimelineTests | P/S: date-level changes; intraday #46; actual classification/preset review #26 |
 | PAY-02 | Daily overtime | [PC] overtimeSlices; PayCalculatorTimeAndTierTests | P: calendar-midnight workday only; rounding #39 and non-midnight scope #14 |
-| PAY-03 | Weekly overtime | [DM], [PC] day accumulation only | Missing reference layer #42; disclosure #14 |
+| PAY-03 | Weekly overtime | `WeeklyRegularRateCalculator`; `WeeklyRegularRateTests`; native review flow | Restricted complete-week profile only; #42 source/applicability admission remains open |
 | PAY-04 | Outside schedule | [DM] RegularScheduleWindow; PayCalculatorScheduleTests | P: same-day windows; overnight schedule windows explicitly rejected |
 | PAY-05 | Weekend/date premiums | [PC]; PayCalculatorScheduleTests | P: explicit multipliers; no universal holiday/stacking inference |
 | PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests | Partial: isolated variant, event identity #41, unpriceable rollover #44 |
@@ -128,7 +128,7 @@ The catalog describes required facts and coverage boundaries, not eighteen promi
 | PAY-12 | Per diem | [PC] perDiemComponents; PayCalculatorTimeAndTierTests | P: flat per-work-date variant only; full subsistence eligibility/tax treatment excluded |
 | PAY-13 | Mileage/expenses | No distance/receipt/rate-unit model | Unsupported; not automatically a new 1.0 commitment |
 | PAY-14 | Shift/hazard/storm supplements | [DM] schedule/day/date multipliers | Partial: no assignment-triggered supplement or full regular-rate layer |
-| PAY-15 | Bonus/retroactive adjustment | No remuneration/allocation model | Reference layer #42; audit revisions are not bonus allocation |
+| PAY-15 | Bonus/retroactive adjustment | `WeeklyRemunerationFact`, explicit bonus/credit classification, deterministic allocation | Multi-week retroactive adjustment and alternative-method coverage remain outside #42 scope |
 | PAY-16 | Paid leave/non-work holiday | WorkInterval represents actual work | Unsupported; do not transform leave into worked hours |
 | PAY-17 | Benefits/fringes | [DM] workedHours/calloutGuarantee/perDiem categories | Unsupported; total package is not cash gross; #14/#26 |
 | PAY-18 | Deductions/net | [ASSESS] earnings/gross only | Explicitly excluded; no net-tax feature required; #27/#29 claim limits |
@@ -148,11 +148,11 @@ Related tests can use different synthetic rates/dates for the same mechanism. Th
 | EX-07 | PayCalculatorTimeAndTierTests.perDiemOncePerDate | Related allowance-unit deduplication passed |
 | EX-08 | AgreementTimelineTests.ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; intraday interpretation remains out of scope #46 |
 | EX-09 | [TL] LocalDate-only changes | Same-day $600 vector retained as unsupported/reference until an intraday timeline is deliberately implemented #46 |
-| EX-10 | [PC] day accumulation; R4 | Configured $2,400 observed; restricted $2,600 weekly reference missing #42 |
-| EX-11 | No independent workweek model | Reference-only $4,250 for specified 50h/30h weeks; #42 |
-| EX-12 | No includable-bonus/allocation model | Reference-only $2,860 with the specified bonus; #42 |
-| EX-13 | No statutory weighted regular-rate model | **Pinned final source: 30h@$40 + 20h@$60 = 50h, R $2,400, RR $48, extra $240, total $2,640.** Not the older 24h/24h $2,600 variant; #42 |
-| EX-14 | No separate approved-credit layer | Reference-only $2,800 contract cash/$0 additional federal cash under stated credit conditions; #42 |
+| EX-10 | WeeklyRegularRateTests.ordinaryFortyEightHourWeek | Bounded engine returns $2,600 under explicit applicability and complete-week assumptions; source admission remains #42 |
+| EX-11 | WeeklyRegularRateTests.separateWeeksRemainSeparate | Bounded engine preserves 50h + 30h as separate weeks: $2,750 + $1,500; #42 |
+| EX-12 | WeeklyRegularRateTests.allocatedBonusChangesRegularRate | Includable bonus produces $2,860 under explicit classification; #42 |
+| EX-13 | WeeklyRegularRateTests.weightedMultipleRates | **Pinned final source: 30h@$40 + 20h@$60 = 50h, R $2,400, RR $48, extra $240, total $2,640.** #42 |
+| EX-14 | WeeklyRegularRateTests.eligiblePremiumCreditIsNotWholeOvertimeLine | Eligible extra-premium credit reduces remaining premium without crediting the whole overtime line; #42 |
 | EX-15 | PaycheckAssessmentTests.perDiemExcludedFromWageGross | Wage/allowance separation mechanism passed |
 | EX-16 | PaycheckAssessmentTests.matchingGrossDoesNotHideOffsettingErrors | Related offsetting-lines regression passed; different source contradiction #38 |
 | EX-17 | [ASSESS] fullRateBuckets | Full-rate mapping represented; related domain coverage passed |
