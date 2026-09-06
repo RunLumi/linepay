@@ -112,6 +112,16 @@ Use **Maestro** as the checked-in, tool-agnostic E2E regression layer. Accessibi
 
 MCP tools are optional developer ergonomics. CI and repository correctness must remain reproducible with checked-in scripts and standard command-line tools.
 
+### Local simulator reuse and host safety
+
+- Reuse an existing compatible Simulator from `xcrun simctl list devices available`; record its exact UDID and use it for the whole test batch.
+- Do not create or clone devices per test, branch, worktree, candidate, or retry. Fresh state means resetting only authorized synthetic app data at the intended test boundary, not allocating another device.
+- Check for another Xcode/Maestro run using the device before installing, resetting, or launching. Never share one UDID concurrently or interrupt another agent's run; wait for a compatible device to become free.
+- Run one local simulator UI/test job at a time by default. Reuse the booted device between tests instead of booting additional devices.
+- Check free disk space and memory pressure before heavy work. Pause on resource pressure rather than retrying or allocating more; prefer existing SSD-backed build/output locations and avoid duplicate caches/artifacts.
+- Create a device or install a runtime only when a required configuration cannot use the existing pool, and obtain explicit user approval first.
+- After a batch, shut down only this task's idle devices when needed to release RAM; keep them for reuse. Never delete/erase devices, runtimes, or unrelated data without separate authorization.
+
 ## Verification by risk
 
 Use the narrowest verification that actually proves the change. Do not repeatedly run expensive suites after they already passed unless later edits invalidate the result.
