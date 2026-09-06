@@ -116,3 +116,21 @@ GitHub jobs at prior head `15cec8849864ba9dee0a4a5bba69e114b088370a` never start
 check-run annotations for jobs `101443879286` and `101443879071` state that recent account payments
 failed or the Actions spending limit must be increased. The GitHub account owner must repair that
 external condition and rerun the exact final head; repository workflow changes cannot resolve it.
+
+## Final candidate refresh — September 6, 2026
+
+The pushed final head is `dcb4997d158356ec0b1051bc4ebee2200bd94151`. Its production source includes
+the Menu-based scope selector, grouped toolbar Scope/Save actions, archived-window rule protection,
+locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
+
+The exact tree compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
+`build-for-testing` run using task-local Swift/Clang caches and `DEBUG_INFORMATION_FORMAT=dwarf`.
+The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
+guardrails. A prior focused native app receipt passed 30 legal tests, and the fresh-device scope
+and Share-to-Files journeys passed before the final test-isolation-only commit.
+
+After the final push, `CoreSimulatorService` repeatedly exited before `xcodebuild` could execute
+tests, including `test-without-building` against the existing `.xctestrun`; the host also could not
+resolve the cached ViewInspector manifest when rebuilding. Consequently, no final-head Apple
+`xcresult` proves the full UI suite on this host. The final candidate remains unmerged and the UI
+acceptance gate must be rerun on a healthy simulator/host (or hosted runner after #37 is repaired).
