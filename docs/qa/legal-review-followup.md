@@ -121,33 +121,23 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source follow-up candidate is `13052ab5425a629c958193a5328173b99710579f` (tree
-`a8769fc3f73f19facce34244f95d0e470397df12`). The final follow-up tip is
-`9063fe3c773f13f155b808e504cdefad867b99dd` (tree
-`e30e82b823bf72a227995d627722b353792b2752`), adding UI-test isolation and receipt documentation.
-It includes the prior safe-cleanup wording plus the single Picker-based scope control. The prior
-exact native candidate was `b6feb80c9affab26136bcefc1f500db71012a5b4`; its later `373e0d7…` tip was
-documentation-only. Its production source includes
-the Picker-based scope selector with a single grouped toolbar Save action, archived-window rule protection,
-locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
+The current production/test candidate is commit `28ee8ee` (tree
+`738fb3a8153cfe691aa46c8a2f4a79137f09af7f`), based on merged `main`
+`19264cf0728a01bd3ee6cacda291ebeff692622b`. It adds stable accessibility identifiers to every
+scope option and makes the XXXL scope journey assert each step before selecting the option. The
+bounded final press retry is only for a simulator event that can be dropped at the largest text
+size; the assertion still requires the editor to reach the review screen.
 
-The prior exact source tree (`b6feb80c…`) compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
-`build-for-testing` run using task-local Swift/Clang caches and `DEBUG_INFORMATION_FORMAT=dwarf`.
-The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
-guardrails. Against the current candidate, the retained Xcode 26.6 / Swift 6.3.3 receipts are:
+The exact current-source receipts were run with Xcode 26.6 (`17F113`), Swift 6.3.3, on the existing
+iPhone 16 Pro / iOS 18.5 simulator (`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`):
 
-The executable tree used for these receipts is `05a1a5af489f695e876d8baa46b18f668bec053a`
-(tree `a5a3a557857dbc1a5cef694ba9e31982ba44be63`); the later receipt commits only update
-documentation.
+- `/Volumes/SSD/linepay-pr34-evidence/followup-legal-28ee8ee.xcresult`: 30 focused legal tests in five suites passed at commit `28ee8ee` / tree `738fb3a…`.
+- `/Volumes/SSD/linepay-pr34-evidence/followup-share-28ee8ee.xcresult`: the Save-to-Files activity journey passed at commit `28ee8ee` / tree `738fb3a…`.
+- `/Volumes/SSD/linepay-pr34-evidence/followup-scope-28ee8ee.xcresult`: all three rule-scope edits passed at XXXL text at production/test tree `738fb3a…`.
 
-- `/Volumes/SSD/linepay-pr34-evidence/current-head-legal.xcresult`: 30 focused legal tests passed on iOS 18.5 / iPhone 16 Pro.
-- `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-share.xcresult`: the Save-to-Files activity journey passed on the same simulator.
-- `/Volumes/SSD/linepay-pr34-evidence/current-head-ui-scope-final.xcresult`: all three rule-scope edits passed at XXXL text on iOS 18.5 / iPhone 16 Pro.
-
-The two UI journeys were run as separate bounded invocations; a combined invocation on this host
-also produced simulator-only process kills while the individual assertions passed. The hosted
-workflow remains the authoritative combined rerun once #37 is repaired.
-
-The exact current-head Apple unit and individual UI journeys now have retained xcresults. The
-combined hosted UI workflow remains unexecuted because GitHub stops before job steps under #37;
-rerun it on the repaired hosted runner and retain its combined artifact before merging.
+The earlier `current-head-*` receipts remain historical evidence for their recorded executable
+tree, not proof of this final candidate. The three current receipts were separate bounded
+invocations; the combined hosted workflow remains the authoritative rerun once Issue #37’s
+external GitHub billing/spending-limit condition is repaired. That hosted condition cannot be
+resolved by repository changes, so PR #57 must not be merged until its required checks execute and
+pass on the exact final head.
