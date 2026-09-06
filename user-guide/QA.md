@@ -4,7 +4,7 @@ Reviewed September 6, 2026. This file is an internal handoff and is not under Hu
 
 ## Current disposition
 
-**Validated locally at the final review candidate. Not deployed yet.**
+**Validated locally. Cloudflare Pages project created; deployment pending final production build and live readback.**
 
 PR: https://github.com/streamentry/linepay/pull/36
 
@@ -31,10 +31,16 @@ The inspected User guide workflow run 34011449452 failed before runner assignmen
 
 The inspected PR workflow still failed before runner assignment, so hosted CI remains unverified. The local gates above were run from the review candidate using checksum-verified Hugo 0.165.0 and the pinned Playwright dependency. The generated-site screenshots/results are retained in `.qa/` for this review worktree and are not committed.
 
-Live hosting, public URL, custom-domain behavior, and provider response headers remain unverified until Pages is enabled and the first deployment completes.
+The Cloudflare Pages project is `linepaycheck-guide`; it will use the default
+`https://linepaycheck-guide.pages.dev/` URL. No custom domain, DNS, repository
+visibility, Worker, Pages Function, secret, or Git integration was configured.
+
+Live hosting and provider response headers remain unverified until the first production upload completes.
 
 ## Before publishing
 
-After merge, enable GitHub Pages with the repository Actions variable `USER_GUIDE_PAGES_ENABLED=true`, run the `User guide` workflow, inspect the deployed URL, and record its deployment URL and response status here or in the PR.
+Build against `https://linepaycheck-guide.pages.dev/`, upload the generated output to
+the `linepaycheck-guide` Pages project, inspect the deployed URL and headers, then
+record the production deployment ID and response status here or in the PR.
 
-Only after validation, merge the documentation change and deliberately configure the selected hosting destination using README.md. GitHub Pages deployment remains disabled unless `USER_GUIDE_PAGES_ENABLED=true`. Cloudflare requires its Pages project connection and stable production `GUIDE_BASE_URL`. Do not assume either host was provisioned by this code change.
+GitHub Pages remains disabled because the current private-repository plan does not support it. Cloudflare Direct Upload is the selected host; future content changes still require a successful build and upload before they are public.
