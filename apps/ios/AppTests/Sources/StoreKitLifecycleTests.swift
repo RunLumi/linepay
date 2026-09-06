@@ -83,24 +83,62 @@ struct StoreKitLifecycleTests {
         defer { session.clearTransactions() }
         session.billingGracePeriodIsEnabled = true
         session.shouldEnterBillingRetryOnRenewal = true
-        session.timeRate = .oneRenewalEveryTenSeconds
-        _ = try await session.buyProduct(identifier: SubscriptionStore.monthlyProductID)
+        // Keep the grace window observable on a busy CI simulator.
+        session.timeRate = .oneRenewalEveryThirtySeconds
         let store = SubscriptionStore(commerceEnabled: true)
-        await store.load()
+        await store.start()
+        let subscription = try #require(
+            store.product(id: SubscriptionStore.monthlyProductID)?.subscription)
+        _ = try await session.buyProduct(identifier: SubscriptionStore.monthlyProductID)
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: .seconds(120))
         var sawGrace = false
-        for _ in 0..<150 {
+        var sawGraceEnd = false
+        var observedStates: Set<String> = []
+        while clock.now < deadline {
             await store.refreshEntitlements()
-            if store.notice?.contains("grace") == true {
-                #expect(store.isPro)
+            let statuses = try await subscription.status.filter { status in
+                guard case .verified(let transaction) = status.transaction,
+                    case .verified = status.renewalInfo,
+                    transaction.productID == SubscriptionStore.monthlyProductID
+                else { return false }
+                return true
+            }
+            for status in statuses {
+                observedStates.insert(String(describing: status.state))
+            }
+            let receiptIDs = await SubscriptionOperations.live.entitlementIDs()
+            let graceEnds = statuses.compactMap { status -> Date? in
+                guard case .verified(let renewal) = status.renewalInfo else { return nil }
+                return renewal.gracePeriodExpirationDate
+            }
+            let observedAt = Date()
+            // StoreKitTest can retain the grace enum after its signed expiration has passed.
+            // Use the SDK's verified dates and receipt, not the app's notice, as the oracle.
+            if statuses.contains(where: { $0.state == .inGracePeriod }),
+                graceEnds.contains(where: { $0 > observedAt })
+            {
+                try #require(
+                    store.isPro,
+                    "Native grace; receipt IDs: \(receiptIDs.sorted()); grace ends: \(graceEnds.map(\.timeIntervalSince1970)); observed: \(observedAt.timeIntervalSince1970)"
+                )
+                try #require(receiptIDs.contains(SubscriptionStore.monthlyProductID))
+                try #require(store.notice?.contains("grace") == true)
                 sawGrace = true
+            } else if sawGrace, receiptIDs.isEmpty,
+                (!graceEnds.isEmpty && graceEnds.allSatisfy { $0 <= observedAt })
+                    || statuses.contains(where: {
+                        $0.state == .expired || $0.state == .inBillingRetryPeriod
+                    })
+            {
+                await expectAccess(false, store: store)
+                sawGraceEnd = true
                 break
             }
             try await Task.sleep(for: .milliseconds(200))
         }
-        #expect(sawGrace, "StoreKit test environment should enter grace after failed renewal")
-        // A grace-period transaction has already expired. Forcing expiry is invalid in StoreKitTest.
-        // Let accelerated time end grace and prove access is removed without a new purchase.
-        await expectAccess(false, store: store, attempts: 300)
+        #expect(sawGrace, "Native StoreKit states observed: \(observedStates.sorted())")
+        #expect(sawGraceEnd, "Native StoreKit must leave grace before access is removed")
         try await resetSession(session)
     }
 
