@@ -1,0 +1,22 @@
+{{ define "main" }}
+<header class="article-header">
+  <p class="eyebrow">{{ .Params.group | default "User guide" }}</p>
+  <h1>{{ .Title }}</h1>
+  <p class="lead">{{ .Description }}</p>
+</header>
+<div class="article-layout">
+  <article class="prose">{{ .Content }}
+    <div class="article-end"><p>Still unsure? Keep your original records and <a href="{{ with .Site.GetPage "/support" }}{{ .RelPermalink }}{{ end }}">get help</a> before changing facts to make a total match.</p></div>
+  </article>
+  {{ if gt (len .Fragments.Headings) 0 }}<aside class="toc"><details open><summary>On this page</summary>{{ .TableOfContents }}</details></aside>{{ end }}
+</div>
+{{ $pages := where .Site.RegularPages "Params.inmenu" "ne" false }}
+{{ $ordered := $pages.ByWeight }}
+{{ $current := . }}
+<nav class="page-navigation" aria-label="Guide sequence">
+  {{ range $index, $page := $ordered }}{{ if eq $page.RelPermalink $current.RelPermalink }}
+    {{ if gt $index 0 }}{{ with index $ordered (sub $index 1) }}<a href="{{ .RelPermalink }}"><span>Previous</span>{{ .LinkTitle }}</a>{{ end }}{{ end }}
+    {{ if lt (add $index 1) (len $ordered) }}{{ with index $ordered (add $index 1) }}<a href="{{ .RelPermalink }}"><span>Next</span>{{ .LinkTitle }} <span aria-hidden="true">→</span></a>{{ end }}{{ end }}
+  {{ end }}{{ end }}
+</nav>
+{{ end }}
