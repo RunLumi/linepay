@@ -1,6 +1,17 @@
 import Foundation
 import LinePayDomain
 
+enum RepeatWorkReviewError: LocalizedError {
+    case incompleteManualReview
+
+    var errorDescription: String? {
+        switch self {
+        case .incompleteManualReview:
+            "Review every unresolved copied clock time before confirming manual times."
+        }
+    }
+}
+
 enum RepeatWorkDraft {
     static func make(
         source: WorkEntry,
@@ -91,7 +102,60 @@ enum RepeatWorkDraft {
             &draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
     }
 
-    static func confirmManualReview(_ draft: inout WorkDraft) {
+    static func canConfirmManualReview(
+        _ draft: WorkDraft,
+        timeZoneIdentifier: String,
+        window: PayPeriodWindow?
+    ) -> Bool {
+        guard draft.templateUnresolved == true,
+            let source = draft.templateSource,
+            let day = draft.templateDay,
+            let zone = TimeZone(identifier: timeZoneIdentifier),
+            let proposal = try? WorkTemplate.propose(
+                source,
+                on: day,
+                timeZoneIdentifier: timeZoneIdentifier,
+                choices: draft.repeatedTimeChoices ?? [:])
+        else { return false }
+
+        if let window, !window.contains(start: draft.start, end: draft.end) {
+            return false
+        }
+        guard draft.end > draft.start else { return false }
+
+        let nonexistent = proposal.points.filter { $0.candidates.isEmpty }
+        if !nonexistent.isEmpty {
+            return nonexistent.allSatisfy { point in
+                guard let current = currentDate(for: point.key, draft: draft, source: source) else {
+                    // Removing an originally copied break is an explicit manual fact change.
+                    return point.key.hasPrefix("break.")
+                }
+                let automatic = date(
+                    for: point.key,
+                    proposal: proposal,
+                    source: source,
+                    targetDay: day,
+                    targetZone: zone)
+                return current != automatic
+            }
+        }
+
+        // The pure proposal is resolved, so the app-level unresolved state is containment-related.
+        // Require an actual manual time/break change before accepting a different in-period record.
+        guard proposal.isResolved else { return false }
+        return proposal.points.contains { point in
+            currentDate(for: point.key, draft: draft, source: source) != point.chosen
+        }
+    }
+
+    static func confirmManualReview(
+        _ draft: inout WorkDraft,
+        timeZoneIdentifier: String,
+        window: PayPeriodWindow?
+    ) throws {
+        guard canConfirmManualReview(
+            draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
+        else { throw RepeatWorkReviewError.incompleteManualReview }
         draft.templateSource = nil
         draft.templateDay = nil
         draft.repeatedTimeChoices = nil
@@ -144,13 +208,39 @@ enum RepeatWorkDraft {
         }
 
         draft.templateUnresolved = !proposal.isResolved
-        if proposal.isResolved, let window {
-            guard window.contains(start: draft.start, end: draft.end) else {
-                draft.templateUnresolved = true
-                return proposal
-            }
+        if proposal.isResolved, let window,
+            !window.contains(start: draft.start, end: draft.end)
+        {
+            draft.templateUnresolved = true
         }
         return proposal
+    }
+
+    private static func currentDate(
+        for key: String,
+        draft: WorkDraft,
+        source: WorkInterval
+    ) -> Date? {
+        switch key {
+        case "start":
+            return draft.start
+        case "end":
+            return draft.end
+        default:
+            let pieces = key.split(separator: ".")
+            guard pieces.count == 3, pieces[0] == "break", let index = Int(pieces[1]),
+                source.unpaidBreaks.indices.contains(index)
+            else { return nil }
+            if index == 0 {
+                guard draft.hasUnpaidBreak else { return nil }
+                return pieces[2] == "start" ? draft.breakStart : draft.breakEnd
+            }
+            let sourceBreak = source.unpaidBreaks[index]
+            guard let current = draft.additionalBreaks.first(where: { $0.id == sourceBreak.id }) else {
+                return nil
+            }
+            return pieces[2] == "start" ? current.start : current.end
+        }
     }
 
     private static func date(
