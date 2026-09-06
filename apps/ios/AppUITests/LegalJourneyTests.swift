@@ -109,6 +109,7 @@ final class LegalJourneyTests: XCTestCase {
         }
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
+        app.terminate()
         app.launch()
     }
     private func tab(_ name: String) {
