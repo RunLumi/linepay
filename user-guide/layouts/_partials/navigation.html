@@ -1,0 +1,17 @@
+{{ $current := . }}
+<nav aria-label="User guide">
+  <a class="nav-home{{ if .IsHome }} current{{ end }}" href="{{ .Site.Home.RelPermalink }}"{{ if .IsHome }} aria-current="page"{{ end }}>Guide overview</a>
+  {{ range .Site.Data.navigation }}
+    <section class="nav-group" aria-label="{{ .title }}">
+      <h2>{{ .title }}</h2>
+      <ul>
+        {{ range .pages }}
+          {{ $slug := . }}
+          {{ with $current.Site.GetPage (printf "/%s" $slug) }}
+            <li><a href="{{ .RelPermalink }}"{{ if eq .RelPermalink $current.RelPermalink }} class="current" aria-current="page"{{ end }}>{{ .LinkTitle }}</a></li>
+          {{ else }}{{ errorf "Guide navigation references missing page %q" $slug }}{{ end }}
+        {{ end }}
+      </ul>
+    </section>
+  {{ end }}
+</nav>

@@ -1,0 +1,36 @@
+{{ define "main" }}
+<div class="home-intro">
+  <div>
+    <p class="eyebrow">The LinePaycheck field guide</p>
+    <h1>Know your pay.<br>Check the details.</h1>
+    <p class="lead">Record the work you did. Understand the rules you entered. Compare your paycheck with evidence you can explain.</p>
+    <div class="hero-actions">
+      {{ with .Site.GetPage "/getting-started" }}<a class="button" href="{{ .RelPermalink }}">Get started <span aria-hidden="true">→</span></a>{{ end }}
+      {{ with .Site.GetPage "/importing-paychecks" }}<a class="text-action" href="{{ .RelPermalink }}">Check a paycheck</a>{{ end }}
+    </div>
+    <p class="quiet">For iPhone · No LinePaycheck account required</p>
+  </div>
+  <section class="sample-ledger" aria-label="Illustrative pay calculation">
+    <div class="ledger-top"><span>Worked. Recorded. Explained.</span><span aria-hidden="true">01 / 03</span></div>
+    <p class="quiet">Example expected wages</p>
+    <p class="ledger-total">$3,016.00</p>
+    <dl>
+      <div><dt>Regular<span>40 h × $58.00</span></dt><dd>$2,320.00</dd></div>
+      <div><dt>Double time<span>6 h × $58.00 × 2</span></dt><dd>$696.00</dd></div>
+    </dl>
+    <p class="ledger-caption">Synthetic example, not your pay. Only confirmed rules belong in your calculation.</p>
+    {{ with .Site.GetPage "/expected-pay" }}<a class="text-action" href="{{ .RelPermalink }}">Read the ledger <span aria-hidden="true">→</span></a>{{ end }}
+  </section>
+</div>
+<div class="home-copy prose">{{ .Content }}</div>
+<section class="task-directory" aria-labelledby="task-heading">
+  <h2 id="task-heading">What do you need to do?</h2>
+  {{ range .Site.Data.navigation }}
+    <div class="directory-group"><h3>{{ .title }}</h3><ul>
+      {{ range .pages }}{{ with site.GetPage (printf "/%s" .) }}
+        <li><a href="{{ .RelPermalink }}"><span>{{ .Title }}</span><span aria-hidden="true">↗</span></a><p>{{ .Description }}</p></li>
+      {{ end }}{{ end }}
+    </ul></div>
+  {{ end }}
+</section>
+{{ end }}

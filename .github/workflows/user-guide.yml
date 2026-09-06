@@ -1,0 +1,72 @@
+name: User guide
+
+on:
+  pull_request:
+    paths: ['user-guide/**', '.github/workflows/user-guide.yml']
+  push:
+    branches: [main]
+    paths: ['user-guide/**', '.github/workflows/user-guide.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: user-guide-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned Hugo
+        run: |
+          bash user-guide/scripts/install-hugo.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Build and validate root and project-path sites
+        run: bash user-guide/scripts/check.sh
+      - name: Install isolated browser-test tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/guide-qa-venv"
+          "$RUNNER_TEMP/guide-qa-venv/bin/pip" install -r user-guide/requirements-test.txt
+          "$RUNNER_TEMP/guide-qa-venv/bin/python" -m playwright install --with-deps chromium
+      - name: Exercise rendered guides
+        run: "$RUNNER_TEMP/guide-qa-venv/bin/python" user-guide/scripts/browser-smoke.py
+      - name: Retain website QA evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: user-guide-qa-${{ github.sha }}
+          path: user-guide/.qa/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Build GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
+        env:
+          GUIDE_BASE_URL: ${{ vars.USER_GUIDE_BASE_URL || 'https://streamentry.github.io/linepay/' }}
+        run: bash user-guide/scripts/build.sh
+      - name: Upload GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: user-guide/public
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy user guide
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

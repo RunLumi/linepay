@@ -1,0 +1,23 @@
+baseURL = 'https://streamentry.github.io/linepay/'
+languageCode = 'en-US'
+title = 'LinePaycheck User Guide'
+enableRobotsTXT = true
+disableKinds = ['taxonomy', 'term', 'RSS']
+summaryLength = 28
+
+[params]
+  description = 'Learn to record work, configure pay rules, check a paycheck, and keep your LinePaycheck records safe.'
+  reviewed = 'September 6, 2026'
+  noindex = false
+
+[outputs]
+  home = ['html', 'json']
+  page = ['html']
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = false
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+    ordered = false
