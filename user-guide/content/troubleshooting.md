@@ -4,7 +4,7 @@ linkTitle: Troubleshooting
 weight: 170
 group: Get help
 description: Recover from input, calculation, import, backup, and purchase problems while preserving evidence.
-keywords: [error, cannot save, wrong total, missing data, offline, disabled, stuck]
+keywords: [error, cannot save, wrong total, missing data, offline, disabled, stuck, daylight saving, repeat shift]
 ---
 ## Protect the existing data first
 
@@ -18,9 +18,14 @@ Never change real work facts just to make a comparison green. An error or incomp
 | --- | --- |
 | The rate or a number is rejected | Follow the field’s decimal-point instructions. Remove currency words or ambiguous separators. Hours and money have different precision limits. |
 | Save work is unavailable | Verify End is after Start, the dates are inside the open period, and no existing entry overlaps. Use **View conflicting entry**. |
+| **Save same shift** is unavailable after Repeat | Look for **Clock-time review** or an outside-period message. Resolve every repeated-time choice, edit a nonexistent local time, or choose another **New date** before saving. |
+| A repeated local time occurs twice | Under **Occurrence**, compare the displayed UTC offsets and choose **First occurrence** or **Second occurrence** based on the instant you actually worked. Do not choose whichever produces the preferred pay result. |
+| A copied local time does not exist | Choose **Edit details**, enter the actual date/time and breaks you worked, then choose **Confirm reviewed manual times**. LinePaycheck does not silently move a nonexistent clock time forward. |
 | An overnight shift has the wrong duration | Set the correct next-day End date. Review payroll timezone, unpaid breaks, and any daylight-saving transition. |
-| A different work draft opens | A saved unfinished entry takes precedence. Finish it, keep it, or explicitly discard it before beginning another. |
+| A different work draft opens | A saved unfinished entry takes precedence. **Resume repeated shift** means a Repeat draft is pending; finish it, keep it, or explicitly discard it before beginning another. |
 | Work or a draft was not saved | Keep the form open, note the error, check storage, and retry. Do not assume a preview or typed value is a committed record. |
+
+A repeated shift copies payroll-local wall-clock facts, not elapsed-hour offsets. Around a daylight-saving transition, therefore, the elapsed duration can legitimately change even when the displayed start, end, and break clock times stay the same. Review the actual facts rather than modifying them solely to preserve the previous shift’s duration.
 
 ## Expected pay or an audit looks wrong
 
