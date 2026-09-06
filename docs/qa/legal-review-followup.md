@@ -119,13 +119,14 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source candidate is `c6b7504d8b746611fbcb8a73d93648fa8db4024f` (tree
-`edecc1eeb6d69c70481c5f2e0c1c092f63e385ad`). A later documentation-only tip may advance the
-branch without changing this source candidate. Its production source includes
+The production-source integration candidate is `b6feb80c9affab26136bcefc1f500db71012a5b4` (tree
+`e08c600eb6a8a5ea1dad3d12741eebb2c958e79c`). It differs from the previously tested candidate
+`c6b7504d8b746611fbcb8a73d93648fa8db4024f` only by the safe temporary-cleanup error wording;
+the later `373e0d7b8083c08607a2be44e1184d3c9b6645bb` tip is documentation-only. Its production source includes
 the Menu-based scope selector, grouped toolbar Scope/Save actions, archived-window rule protection,
 locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
 
-The exact tree compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
+The prior exact source tree (`c6b7504…`) compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
 `build-for-testing` run using task-local Swift/Clang caches and `DEBUG_INFORMATION_FORMAT=dwarf`.
 The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
 guardrails. A prior focused native app receipt passed 30 legal tests, and the fresh-device scope
