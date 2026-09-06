@@ -99,8 +99,8 @@ struct PresentationValueTests {
     }
 
     @Test(arguments: [
-        AuditDisplayStatus.notAudited, .matches, .possibleShortfall, .possibleOverpayment,
-        .needsReview,
+        AuditDisplayStatus.notAudited, .matches, .grossMatches, .possibleShortfall,
+        .possibleOverpayment, .needsReview, .notComparable,
     ])
     func statusIsTextualAndHasAnIcon(_ status: AuditDisplayStatus) {
         #expect(!status.title.isEmpty && !status.systemImage.isEmpty)

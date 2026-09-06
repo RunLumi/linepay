@@ -76,6 +76,7 @@ struct SettingsView: View {
                 }
                 Section("Your data") {
                     NavigationLink("Privacy and local data") { PrivacyDataView(model: model) }
+                        .accessibilityIdentifier("settings.privacy-data")
                     BackupRestoreEntryPoint(title: "Backup and restore")
                     NavigationLink("Export data") { ExportDataView(model: model) }
                     if model.pendingDeletionCount > 0 {

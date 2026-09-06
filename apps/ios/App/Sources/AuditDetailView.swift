@@ -120,6 +120,7 @@ struct AuditDetailView: View {
                         NavigationLink("View original paystub") {
                             SourceEvidenceView(url: url, region: nil)
                         }
+                        .accessibilityIdentifier("audit.view-original")
                         Text(evidence.originalFilename).font(.footnote)
                         Button("Remove this original", role: .destructive) { showingRemove = true }
                     } else {
@@ -134,7 +135,10 @@ struct AuditDetailView: View {
                     }
                 }
                 Section("Worker-owned report") {
-                    if let reportURL { ShareLink("Share report", item: reportURL) }
+                    if let reportURL {
+                        ShareLink("Share report", item: reportURL)
+                            .accessibilityIdentifier("audit.share-report")
+                    }
                     Button("Prepare audit report") {
                         do {
                             reportURL = try ReconciliationReportExporter().export(
