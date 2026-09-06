@@ -30,14 +30,16 @@ struct ReadinessBoundaryTests {
             let closed = try #require(model.history.first)
             #expect(closed.window == old.window)
             #expect(closed.timeZoneIdentifier == zones[0])
-            #expect(closed.calculation.total.amount == 400)
+            let closedCalculation = try #require(closed.calculation)
+            #expect(closedCalculation.total.amount == 400)
             try model.startNewPayPeriod(startDate: old.window.endDate.addingTimeInterval(86_400))
             #expect(model.currentTimeZoneIdentifier == zones[1])
             let next = try #require(model.activePeriod)
             #expect(next.window.startEpochSeconds >= old.window.endEpochSeconds)
             let reloaded = AppModel(store: VersionedLocalStateStore(baseDirectory: directory))
             #expect(reloaded.persistenceIssue == nil)
-            #expect(reloaded.history.first?.calculation.total.amount == 400)
+            let reloadedCalculation = try #require(reloaded.history.first?.calculation)
+            #expect(reloadedCalculation.total.amount == 400)
         }
     }
 

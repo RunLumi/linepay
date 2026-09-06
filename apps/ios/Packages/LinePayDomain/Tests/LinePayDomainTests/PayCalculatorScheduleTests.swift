@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import LinePayDomain
@@ -136,7 +137,8 @@ func calloutMinimum() throws {
     let callout = try work(
         (2026, 9, 7, 20, 0),
         (2026, 9, 7, 22, 0),
-        kind: .callout
+        kind: .callout,
+        calloutEventID: UUID()
     )
 
     let result = try PayCalculator().calculate(
@@ -162,7 +164,8 @@ func calloutAboveMinimum() throws {
     let callout = try work(
         (2026, 9, 7, 18, 0),
         (2026, 9, 7, 23, 0),
-        kind: .callout
+        kind: .callout,
+        calloutEventID: UUID()
     )
 
     let result = try PayCalculator().calculate(

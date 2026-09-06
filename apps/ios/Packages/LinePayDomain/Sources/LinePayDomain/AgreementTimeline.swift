@@ -36,7 +36,8 @@ public struct AgreementTimeline: Sendable {
         for change in changes {
             guard change.agreement.id == baseline.id,
                 change.agreement.hourlyRate.currencyCode == baseline.hourlyRate.currencyCode,
-                change.agreement.rounding == baseline.rounding
+                change.agreement.rounding.scale == baseline.rounding.scale,
+                change.agreement.rounding.mode == baseline.rounding.mode
             else { throw AgreementTimelineError.incompatibleAgreement }
             var calendar = Calendar(identifier: .gregorian)
             calendar.timeZone = TimeZone(secondsFromGMT: 0)!

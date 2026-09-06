@@ -39,8 +39,8 @@ Do not collapse these into a completeness percentage. Code establishes implement
 | [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Workweek/regular-rate reference layer is missing |
 | [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | An unpriceable saved period A blocks closing A and recording B |
 | [#45](https://github.com/streamentry/linepay/issues/45) | P2 provenance | Calculation-engine identity is missing from saved calculation results |
-| [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | Same-day EX-09 is not representable by the midnight-only timeline |
-| [#47](https://github.com/streamentry/linepay/issues/47) | P2 scope | Optional reminders need explicit implementation or deferral |
+| [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | EX-08 is represented only across date boundaries; same-day EX-09 remains reference-only because the timeline is midnight-effective |
+| [#47](https://github.com/streamentry/linepay/issues/47) | P2 scope | Optional work-log and renewal reminders are deliberately deferred from iOS 1.0; no notification permission or scheduler is shipped |
 | [#48](https://github.com/streamentry/linepay/issues/48) | P2 parser | An end-only pay-period OCR row also supplies an unsupported start date |
 
 Use #42 as the canonical weekly-capability issue and #43 as its duplicate. Concurrent mapping work also produced #44 and #48; their findings are incorporated rather than refiled. Existing legal/acceptance ownership is retained below.
@@ -146,8 +146,8 @@ Related tests can use different synthetic rates/dates for the same mechanism. Th
 | EX-05 | PayCalculatorScheduleTests.premiumsDoNotPyramid | Configured highest-applicable mechanism passed, not universal premium precedence |
 | EX-06 | PayCalculatorScheduleTests.calloutMinimum; R3 | Isolated $400 reproduced; one event split into rows #41 |
 | EX-07 | PayCalculatorTimeAndTierTests.perDiemOncePerDate | Related allowance-unit deduplication passed |
-| EX-08 | AgreementTimelineTests.ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; clarify unspecified intraday interpretation #46 |
-| EX-09 | [TL] LocalDate-only changes | Same-day $600 vector not representable; retain arithmetic, classify as unsupported/reference #46 |
+| EX-08 | AgreementTimelineTests.ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; intraday interpretation remains out of scope #46 |
+| EX-09 | [TL] LocalDate-only changes | Same-day $600 vector retained as unsupported/reference until an intraday timeline is deliberately implemented #46 |
 | EX-10 | [PC] day accumulation; R4 | Configured $2,400 observed; restricted $2,600 weekly reference missing #42 |
 | EX-11 | No independent workweek model | Reference-only $4,250 for specified 50h/30h weeks; #42 |
 | EX-12 | No includable-bonus/allocation model | Reference-only $2,860 with the specified bonus; #42 |

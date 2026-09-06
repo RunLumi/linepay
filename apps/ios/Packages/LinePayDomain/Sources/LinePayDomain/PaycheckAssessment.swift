@@ -54,6 +54,7 @@ public struct PaycheckComparison: Codable, Hashable, Sendable, Identifiable {
 public struct PaycheckFacts: Hashable, Sendable {
     public let grossPay: Money
     public var hasCompleteWork: Bool
+    public var hasCompleteEarningsLines: Bool
     public var amounts: [PaystubField: Money]
     public var hours: [PaystubField: Decimal]
     public var grossBasis: PaystubGrossBasis
@@ -69,10 +70,12 @@ public struct PaycheckFacts: Hashable, Sendable {
         lineLayout: PaystubLineLayout = .unconfirmed,
         hoursBasis: PaystubHoursBasis = .unconfirmed,
         guaranteeLayout: PaystubGuaranteeLayout = .unconfirmed,
-        hasUnreviewedFields: Bool = false, hasUnsupportedRules: Bool = false
+        hasUnreviewedFields: Bool = false, hasUnsupportedRules: Bool = false,
+        hasCompleteEarningsLines: Bool = false
     ) {
         self.grossPay = grossPay
         self.hasCompleteWork = hasCompleteWork
+        self.hasCompleteEarningsLines = hasCompleteEarningsLines
         self.amounts = amounts
         self.hours = hours
         self.grossBasis = grossBasis
@@ -153,6 +156,13 @@ public struct PaycheckAssessor: Sendable {
                         ? wageComponents : calculation.components, rounding: agreement.rounding
                 ))
         }
+        if (calculation.agreementSnapshots ?? [agreement]).contains(where: {
+            $0.rounding.scope == .legacySegments
+        }) {
+            reasons.append(
+                "This estimate uses legacy segment rounding. Confirm a supported rounding policy before treating a new audit as a clean match. Saved earlier audits are unchanged."
+            )
+        }
         if facts.hasUnsupportedRules {
             reasons.append(
                 "An agreement rule is not represented. The expected amount may be incomplete.")
@@ -210,16 +220,16 @@ public struct PaycheckAssessor: Sendable {
                         || ($0.multiplier ?? 1) == multiplier
                 }
                 if let paid = facts.amounts[field] {
-                    let expected = selected.reduce(Decimal.zero) { value, component in
-                        if facts.lineLayout == .fullRateBuckets {
-                            return value + component.amount.amount
-                        }
-                        let base =
-                            (component.baseRate ?? component.appliedAgreement?.hourlyRate
-                            ?? agreement.hourlyRate).multiplied(by: component.hours ?? 0)
-                            .rounded(using: agreement.rounding).amount
-                        return value
-                            + (field == .regularPay ? base : component.amount.amount - base)
+                    let expected: Decimal
+                    if facts.lineLayout == .fullRateBuckets {
+                        expected = selected.reduce(0) { $0 + $1.amount.amount }
+                    } else {
+                        let base = normalizedBase(
+                            selected, calculation: calculation, agreement: agreement)
+                        expected =
+                            field == .regularPay
+                            ? base
+                            : selected.reduce(0) { $0 + $1.amount.amount } - base
                     }
                     comparisons.append(
                         comparison(
@@ -266,6 +276,39 @@ public struct PaycheckAssessor: Sendable {
                 }
             }
         }
+        // Validate paid evidence against itself before drawing a directional conclusion.
+        // Optional absent lines are unknown, not zero. Only an explicitly exhaustive set
+        // requires equality; a known nonnegative subtotal exceeding gross is inconsistent.
+        if facts.grossBasis != .unconfirmed && facts.lineLayout != .unconfirmed {
+            var fields: [PaystubField] = [.regularPay, .overtimePay, .doubleTimePay]
+            if facts.guaranteeLayout == .separateLine { fields.append(.calloutPay) }
+            if facts.grossBasis == .wagesAndPerDiem { fields.append(.perDiemPay) }
+            let entered = fields.compactMap { field in facts.amounts[field].map { (field, $0) } }
+            let subtotal = entered.reduce(Decimal.zero) { $0 + $1.1.amount }
+            if !entered.isEmpty
+                && (subtotal > facts.grossPay.amount
+                    || (facts.hasCompleteEarningsLines && subtotal != facts.grossPay.amount))
+            {
+                reasons.append(
+                    "Confirmed earnings lines conflict with gross pay. Review grossPay and "
+                        + entered.map { $0.0.rawValue }.joined(separator: ", ")
+                        + ". Missing adjustments or overlapping lines must be resolved before concluding pay is short or overpaid."
+                )
+            }
+            if facts.hasCompleteEarningsLines && entered.isEmpty {
+                reasons.append(
+                    "No earnings lines were confirmed for the claimed complete breakdown.")
+            }
+        } else if facts.hasCompleteEarningsLines {
+            reasons.append(
+                "Confirm the earnings-line layout and gross basis before declaring the breakdown complete."
+            )
+        }
+        if facts.hasCompleteEarningsLines && !guarantees.isEmpty
+            && facts.guaranteeLayout == .unconfirmed
+        {
+            reasons.append("The complete breakdown needs the callout guarantee's line mapping.")
+        }
         let scope: ComparisonScope =
             comparisons.contains { $0.field != .grossPay }
             ? .confirmedLines : .grossOnly
@@ -293,11 +336,42 @@ public struct PaycheckAssessor: Sendable {
             verdict = .matches
         }
         return PaycheckAssessment(
-            engineVersion: 2, verdict: verdict, scope: scope,
+            engineVersion: 3, verdict: verdict, scope: scope,
             expectedGross: expectedGross, paidGross: facts.grossPay,
             difference: grossDifference.map { Money(amount: $0, currencyCode: currency) },
             comparisons: comparisons, reviewReasons: reasons, scopeNotes: notes
         )
+    }
+
+    /// For a premium-only statement, split each rounded gross bucket into base and extra.
+    /// Summing those bases and extras reconstructs the same gross, including cent allocation.
+    private func normalizedBase(
+        _ selected: [PayComponent], calculation: CalculationResult, agreement: AgreementSnapshot
+    ) -> Decimal {
+        var groups: [PayComponentRounding.Key: Decimal] = [:]
+        var result = Decimal.zero
+        for part in selected {
+            let snapshot =
+                (calculation.agreementSnapshots ?? [agreement]).first {
+                    AgreementReference($0) == part.appliedAgreement
+                } ?? agreement
+            let amount = (part.baseRate ?? part.appliedAgreement?.hourlyRate ?? snapshot.hourlyRate)
+                .multiplied(by: part.hours ?? 0)
+            if calculation.provenance == nil || snapshot.rounding.scope == .legacySegments {
+                result += amount.rounded(using: snapshot.rounding).amount
+            } else {
+                let key = PayComponentRounding.Key(
+                    category: part.category,
+                    multiplier: part.multiplier, rule: snapshot.rounding,
+                    currency: amount.currencyCode)
+                groups[key, default: 0] += amount.amount
+            }
+        }
+        for (key, amount) in groups {
+            result +=
+                Money(amount: amount, currencyCode: key.currency).rounded(using: key.rule).amount
+        }
+        return result
     }
 
     private func sum(_ components: [PayComponent], currency: String) -> Money {

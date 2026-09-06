@@ -44,7 +44,8 @@ func work(
     _ end: (Int, Int, Int, Int, Int),
     kind: WorkKind = .regular,
     timeZoneIdentifier: String = "America/Los_Angeles",
-    id: UUID = UUID()
+    id: UUID = UUID(),
+    calloutEventID: UUID? = nil
 ) throws -> WorkInterval {
     try WorkInterval(
         id: id,
@@ -65,7 +66,8 @@ func work(
             timeZoneIdentifier: timeZoneIdentifier
         ),
         timeZoneIdentifier: timeZoneIdentifier,
-        kind: kind
+        kind: kind,
+        calloutEventID: calloutEventID
     )
 }
 
