@@ -4,7 +4,7 @@ This is the implementation companion to the dated [legal review](../legal.md), n
 
 The shipping architecture remains local-first, no LinePaycheck account/backend, manual user-directed Files/iCloud backup, and native Apple commerce. Bundle ID remains `com.streamentry.linepay`. The present release-control policy is US-only and manual release; neither policy is a statement that all US wage laws are implemented.
 
-**Status (September 6, 2026):** PR #34 is being integrated with `main`; the production-source candidate is recorded in the exact-candidate receipt. Hosted jobs did not start because GitHub reported failed account payments or an insufficient Actions spending limit (#37). Local Xcode 26.6 native verification is recorded in the exact-candidate receipt. No external legal approval has been obtained by this work.
+**Status (September 6, 2026):** PR #34 was merged into `main` as `19264cf0728a01bd3ee6cacda291ebeff692622b` from head `d2f1a1d63c2f8e1d17c93bddd0f2d927f0f5b14b`. The post-merge Picker/accessibility follow-up is tracked on the current branch and its receipt records the exact candidate. Hosted jobs did not start because GitHub reported failed account payments or an insufficient Actions spending limit (#37). Local Xcode 26.6 native verification is recorded in the receipt. No external legal approval has been obtained by this work.
 
 ## 1. Work register
 
@@ -43,14 +43,14 @@ This is the durable issue-to-evidence register. `Pending` means the original iss
 | Issue | Remaining acceptance | Responsible role | Regression / fix evidence | Native / UI evidence | Merge state | External blocker |
 |---|---|---|---|---|---|---|
 | #13 | Exact binary/storefront/release authorization | Release owner | PR #35 release guards | Local tooling only | PR #35 merged | Apple readback and owner authorization |
-| #14 | Native disclosure and comprehension | Product + qualified reviewer | `LegalRegressionTests`; PR #34 | Exact-candidate receipt | Pending PR #34 | Worker and expert review |
-| #15 | Three scopes, dates, cancellation, large text | iOS owner | `LegalConsentAndReportTests`, `NoOpenPeriodRuleTests`; PR #34 | Exact-candidate receipt | Pending PR #34 | Rendered/user acceptance |
+| #14 | Native disclosure and comprehension | Product + qualified reviewer | `LegalRegressionTests`; PR #34 | Exact-candidate receipt | PR #34 merged | Worker and expert review |
+| #15 | Three scopes, dates, cancellation, large text | iOS owner | `LegalConsentAndReportTests`, `NoOpenPeriodRuleTests`; PR #34 | Exact-candidate receipt | PR #34 merged; follow-up pending | Rendered/user acceptance |
 | #16 | Live pages, entity and monitored contact | Publisher | Release snapshot guards | Not applicable | Controls merged | Publisher facts and live support test |
 | #17 | Audit all public copy | Publisher | Copy scanner | Not applicable | Controls merged | Actual store/ads/support inventory |
 | #18 | Live purchase lifecycle and saved-record access | Commerce owner | StoreKit lifecycle tests | Simulator is not storefront proof | Controls merged | App Store products and sandbox transactions |
 | #19 | Applicable consumer obligations | Publisher + counsel | Responsibility matrix | Not applicable | Controls merged | Attributable legal review |
-| #20 | PDF, preview, native share and receiver handoff | iOS owner | `LegalRegressionTests`, `ReportShareSessionTests`, `ReportTransferTests`; PR #34 | Exact-candidate receipt | Pending PR #34 | Receiver/provider acceptance |
-| #21 | Two-device/provider/protection behavior | Security owner | Temporary-export and share-session tests; PR #34 | Simulator evidence only | Pending PR #34 | Physical devices and iCloud/provider failures |
+| #20 | PDF, preview, native share and receiver handoff | iOS owner | `LegalRegressionTests`, `ReportShareSessionTests`, `ReportTransferTests`; PR #34 | Exact-candidate receipt | PR #34 merged | Receiver/provider acceptance |
+| #21 | Two-device/provider/protection behavior | Security owner | Temporary-export and share-session tests; PR #34 | Simulator evidence only | PR #34 merged | Physical devices and iCloud/provider failures |
 | #22 | Binary privacy report and real data flows | Privacy owner | Inventory/hash guards | Local manifest validation only | Controls merged | Actual vendor/web/support review and signoff |
 | #23 | Adopted incident/support operations | Support owner | Support procedure checks | Not applicable | Controls merged | Monitored channel, access and retention settings |
 | #24 | Trademark clearance and residual-risk decision | Founder + qualified counsel | Brand evidence gate | Not applicable | Controls merged | Search, recommendation and founder decision |
@@ -58,9 +58,9 @@ This is the durable issue-to-evidence register. `Pending` means the original iss
 | #26 | Rights/scope for each shipped pack | Content owner | Pack gate | Not applicable | Controls merged | Per-pack evidence or reviewed non-applicability |
 | #27 | Exact release screenshots and public claims | Marketing + release owner | Screenshot/claims gate | No selected release captures | Controls merged | Store-selected captures and permissions |
 | #28 | Publisher/consumer terms approval | Publisher + counsel | Terms evidence gate | Not applicable | Controls merged | Attributable approval |
-| #29 | Native wording plus adopted support/marketing practice | Product + support owner | Legal report/UI regressions; PR #34 | Exact-candidate receipt | Pending PR #34 | Operational adoption |
-| #30 | Rendered audience/safe-use alignment | Product owner | Legal UI regressions; PR #34 | Exact-candidate receipt | Pending PR #34 | Store rating and marketing alignment |
-| #31 | Focus, VoiceOver, text sizes and device evidence | Accessibility QA | `LegalJourneyTests`; PR #34 | Simulator evidence only | Pending PR #34 | Physical VoiceOver/device acceptance |
+| #29 | Native wording plus adopted support/marketing practice | Product + support owner | Legal report/UI regressions; PR #34 | Exact-candidate receipt | PR #34 merged | Operational adoption |
+| #30 | Rendered audience/safe-use alignment | Product owner | Legal UI regressions; PR #34 | Exact-candidate receipt | PR #34 merged | Store rating and marketing alignment |
+| #31 | Focus, VoiceOver, text sizes and device evidence | Accessibility QA | `LegalJourneyTests`; PR #34 | Simulator evidence only | PR #34 merged; follow-up pending | Physical VoiceOver/device acceptance |
 | #32 | Exact declarations and credential custody | Release owner | Authenticated-write guards | Not applicable | Controls merged | Binary-specific declarations and owner review |
 | #33 | Approved market/processing baseline | Founder + qualified advisers | Scope-change guards | Not applicable | Controls merged | Entity, location, tax/privacy/commercial decisions |
 | #37 | Hosted jobs execute and retain artifacts | GitHub account owner | Current jobs have `steps: []` | Local evidence cannot satisfy branch checks | Open | Repair account payment/spending limit, then rerun |

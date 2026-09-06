@@ -80,9 +80,11 @@ do not replace these assertions with screenshots or expected-failure wrappers.
 ## Merge and closure gates
 
 [Issue #37](https://github.com/streamentry/linepay/issues/37) tracks hosted jobs
-that stopped before any execution steps. Keep the PR draft until the exact current
-head passes the full native build/tests and relevant UI journeys. Review retained
-logs and xcresult results; a requested rerun is not a completed test.
+that stopped before any execution steps. PR #34 was merged by the repository owner as
+`19264cf0728a01bd3ee6cacda291ebeff692622b` before the later Picker/accessibility and
+receipt commits landed. Those post-merge commits remain a follow-up candidate and must
+still satisfy the hosted checks and retained exact-head receipts; a requested rerun is
+not a completed test.
 
 [LEGAL-03 / #15](https://github.com/streamentry/linepay/issues/15) and
 [LEGAL-08 / #20](https://github.com/streamentry/linepay/issues/20) retain their native
@@ -119,7 +121,7 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source integration candidate is `bc3eb720c96b348dcc5bda07ee5b0950cc20076e` (tree
+The production-source follow-up candidate is `bc3eb720c96b348dcc5bda07ee5b0950cc20076e` (tree
 `a5a3a557857dbc1a5cef694ba9e31982ba44be63`). It includes the prior safe-cleanup wording plus
 the single Picker-based scope control and explicit UI-journey isolation. The prior exact native
 candidate was `b6feb80c9affab26136bcefc1f500db71012a5b4`; its later `373e0d7…` tip was
