@@ -57,15 +57,18 @@ final class LegalJourneyTests: XCTestCase {
     }
 
     func testEachRuleScopeKeepsItsPromisedEffectAtLargestText() {
-        for (scope, fragment, expected) in [
-            ("Future work periods only", "Logged work keeps its current rules", "$550.00"),
+        for (scope, scopeID, fragment, expected) in [
             (
-                "New rules from a date", "Previously recorded work keeps its original rules",
-                "$550.00"
+                "Future work periods only", "pay-profile.scope.future",
+                "Logged work keeps its current rules", "$550.00"
             ),
             (
-                "Recalculate this entire current period", "Saved work entries to recalculate: 1",
-                "$660.00"
+                "New rules from a date", "pay-profile.scope.dated",
+                "Previously recorded work keeps its original rules", "$550.00"
+            ),
+            (
+                "Recalculate this entire current period", "pay-profile.scope.current",
+                "Saved work entries to recalculate: 1", "$660.00"
             ),
         ] {
             XCUIDevice.shared.appearance = .dark
@@ -77,13 +80,27 @@ final class LegalJourneyTests: XCTestCase {
             rate.tap()
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
-            for _ in 0..<3 { tap("pay-profile.continue") }
+            for expectedStep in 1...2 {
+                tap("pay-profile.continue")
+                let next = app.buttons["pay-profile.continue"].firstMatch
+                scrollTo(next)
+                XCTAssertEqual(
+                    next.value as? String, "step-\(expectedStep)",
+                    "The editor did not advance to step \(expectedStep + 1) of 4.")
+            }
+            let finalContinue = app.buttons["pay-profile.continue"].firstMatch
+            scrollTo(finalContinue)
+            XCTAssertTrue(finalContinue.isHittable)
+            finalContinue.press(forDuration: 0.1)
+            XCTAssertTrue(
+                finalContinue.waitForNonExistence(timeout: 10),
+                "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
             scrollTo(scopeControl)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
-            tap(scope)
+            tap(scopeID)
             let explanation = app.descendants(matching: .any).matching(
                 NSPredicate(format: "label CONTAINS %@", fragment)
             ).firstMatch

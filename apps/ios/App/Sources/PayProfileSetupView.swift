@@ -57,7 +57,11 @@ struct PayProfileSetupView: View {
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .accessibilityIdentifier(
-                            step == 3 ? "pay-profile.save" : "pay-profile.continue")
+                            step == 3
+                                ? "pay-profile.save"
+                                : "pay-profile.continue"
+                        )
+                        .accessibilityValue("step-\(step)")
                     }
                 }
             }
@@ -322,10 +326,15 @@ struct PayProfileSetupView: View {
             if editing {
                 Section("Apply this change") {
                     Picker("Scope", selection: $draft.editScope) {
-                        Text("Future work periods only").tag(RuleEditScope.futurePeriods)
-                        Text("New rules from a date").tag(RuleEditScope.datedChange)
-                        Text("Recalculate this entire current period").tag(
-                            RuleEditScope.currentPeriod)
+                        Text("Future work periods only")
+                            .accessibilityIdentifier("pay-profile.scope.future")
+                            .tag(RuleEditScope.futurePeriods)
+                        Text("New rules from a date")
+                            .accessibilityIdentifier("pay-profile.scope.dated")
+                            .tag(RuleEditScope.datedChange)
+                        Text("Recalculate this entire current period")
+                            .accessibilityIdentifier("pay-profile.scope.current")
+                            .tag(RuleEditScope.currentPeriod)
                     }
                     .pickerStyle(.menu)
                     .accessibilityIdentifier("pay-profile.change-scope")
