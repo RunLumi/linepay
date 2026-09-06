@@ -106,8 +106,8 @@ enum RepeatWorkDraft {
             &draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
     }
 
-    /// Records that the worker deliberately changed or removed the copied fact identified by
-    /// `key`. Manual markers share the persisted decision dictionary with fold choices but use a
+    /// Records that the worker deliberately changed, added, or removed the copied fact identified
+    /// by `key`. Manual markers share the persisted decision dictionary with fold choices but use a
     /// namespace that `WorkTemplate` never interprets as a wall-time choice.
     static func markManualReview(_ key: String, draft: inout WorkDraft) {
         var choices = draft.repeatedTimeChoices ?? [:]
@@ -171,39 +171,92 @@ enum RepeatWorkDraft {
             throw DomainValidationError.invalidWorkInterval
         }
         let zone = try timeZone(timeZoneIdentifier)
+        let decisions = draft.repeatedTimeChoices ?? [:]
+        let preservesManualFacts = decisions.keys.contains { $0.hasPrefix(manualPrefix) }
         let proposal = try WorkTemplate.propose(
             source,
             on: day,
             timeZoneIdentifier: timeZoneIdentifier,
-            choices: draft.repeatedTimeChoices ?? [:])
+            choices: decisions)
 
-        draft.start = date(
-            for: "start", proposal: proposal, source: source, targetDay: day, targetZone: zone)
-        draft.end = date(
-            for: "end", proposal: proposal, source: source, targetDay: day, targetZone: zone)
+        let previousStart = draft.start
+        let previousEnd = draft.end
+        let previousFirstBreakEnabled = draft.hasUnpaidBreak
+        let previousBreakStart = draft.breakStart
+        let previousBreakEnd = draft.breakEnd
+        let previousAdditional = draft.additionalBreaks
 
-        if let first = source.unpaidBreaks.first {
-            draft.hasUnpaidBreak = true
-            draft.breakStart = date(
-                for: "break.0.start", proposal: proposal, source: source,
-                targetDay: day, targetZone: zone)
-            draft.breakEnd = date(
-                for: "break.0.end", proposal: proposal, source: source,
-                targetDay: day, targetZone: zone)
-            draft.additionalBreaks = source.unpaidBreaks.dropFirst().enumerated().map { offset, pause in
-                let index = offset + 1
-                return BreakDraft(
-                    id: pause.id,
-                    start: date(
-                        for: "break.\(index).start", proposal: proposal, source: source,
-                        targetDay: day, targetZone: zone),
-                    end: date(
-                        for: "break.\(index).end", proposal: proposal, source: source,
-                        targetDay: day, targetZone: zone))
+        draft.start = isManuallyReviewed("start", decisions: decisions)
+            ? previousStart
+            : date(
+                for: "start", proposal: proposal, source: source, targetDay: day,
+                targetZone: zone)
+        draft.end = isManuallyReviewed("end", decisions: decisions)
+            ? previousEnd
+            : date(
+                for: "end", proposal: proposal, source: source, targetDay: day,
+                targetZone: zone)
+
+        if source.unpaidBreaks.first != nil {
+            let firstStartReviewed = isManuallyReviewed("break.0.start", decisions: decisions)
+            let firstEndReviewed = isManuallyReviewed("break.0.end", decisions: decisions)
+            let firstRemoved =
+                !previousFirstBreakEnabled && firstStartReviewed && firstEndReviewed
+            draft.hasUnpaidBreak = !firstRemoved
+            if !firstRemoved {
+                draft.breakStart = firstStartReviewed
+                    ? previousBreakStart
+                    : date(
+                        for: "break.0.start", proposal: proposal, source: source,
+                        targetDay: day, targetZone: zone)
+                draft.breakEnd = firstEndReviewed
+                    ? previousBreakEnd
+                    : date(
+                        for: "break.0.end", proposal: proposal, source: source,
+                        targetDay: day, targetZone: zone)
             }
+
+            var rebuilt: [BreakDraft] = []
+            for (offset, pause) in source.unpaidBreaks.dropFirst().enumerated() {
+                let index = offset + 1
+                let startKey = "break.\(index).start"
+                let endKey = "break.\(index).end"
+                let startReviewed = isManuallyReviewed(startKey, decisions: decisions)
+                let endReviewed = isManuallyReviewed(endKey, decisions: decisions)
+                let previous = previousAdditional.first { $0.id == pause.id }
+                if previous == nil && startReviewed && endReviewed {
+                    // The worker explicitly removed this copied break.
+                    continue
+                }
+                rebuilt.append(
+                    BreakDraft(
+                        id: pause.id,
+                        start: startReviewed
+                            ? (previous?.start
+                                ?? date(
+                                    for: startKey, proposal: proposal, source: source,
+                                    targetDay: day, targetZone: zone))
+                            : date(
+                                for: startKey, proposal: proposal, source: source,
+                                targetDay: day, targetZone: zone),
+                        end: endReviewed
+                            ? (previous?.end
+                                ?? date(
+                                    for: endKey, proposal: proposal, source: source,
+                                    targetDay: day, targetZone: zone))
+                            : date(
+                                for: endKey, proposal: proposal, source: source,
+                                targetDay: day, targetZone: zone)))
+            }
+
+            if preservesManualFacts {
+                let sourceIDs = Set(source.unpaidBreaks.map(\.id))
+                rebuilt.append(contentsOf: previousAdditional.filter { !sourceIDs.contains($0.id) })
+            }
+            draft.additionalBreaks = rebuilt
         } else {
             draft.hasUnpaidBreak = false
-            draft.additionalBreaks = []
+            draft.additionalBreaks = preservesManualFacts ? previousAdditional : []
         }
 
         draft.templateUnresolved = !proposal.isResolved
@@ -283,6 +336,13 @@ enum RepeatWorkDraft {
             matchingPolicy: .nextTime,
             repeatedTimePolicy: .first,
             direction: .forward) ?? expectedDay
+    }
+
+    private static func isManuallyReviewed(
+        _ key: String,
+        decisions: [String: RepeatedTimeChoice]
+    ) -> Bool {
+        decisions[manualMarker(key)] != nil
     }
 
     private static func manualMarker(_ key: String) -> String {
