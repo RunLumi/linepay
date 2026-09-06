@@ -4,7 +4,7 @@ Reviewed September 6, 2026. This file is an internal handoff and is not under Hu
 
 ## Current disposition
 
-**Validated locally. Cloudflare Pages project created; deployment pending final production build and live readback.**
+**Published to Cloudflare Pages from reviewed `main`; hosted GitHub Actions remains unavailable.**
 
 PR: https://github.com/streamentry/linepay/pull/36
 
@@ -22,6 +22,10 @@ The guide has 20 authored task pages plus home/search, custom Hugo layouts and d
 - Ran `bash scripts/check.sh` with Hugo 0.165.0: both `/` and `/linepay/` builds passed, producing 23 validated HTML pages and all 20 search entries; link, fragment, asset, metadata, leakage and search-index checks passed.
 - Ran the CSS fixture suite: all six print/increased-contrast states passed across system-dark, explicit dark and light appearance.
 - Ran the generated-site Chromium smoke suite: 15 page/configuration checks passed, including desktop/mobile layouts, dark appearance, local search, mobile disclosure navigation, no-JavaScript reading, keyboard skip navigation, and print layout.
+- Built the exact merged source `ce7d0dce02c8312f94beed7ec61e0d11dcdc45e5` with Hugo 0.165.0 using the production base URL, then ran the generated-site validator against `https://linepaycheck-guide.pages.dev/`.
+- Created Cloudflare Pages project `linepaycheck-guide` and deployed production deployment `6dd92bb0-abc7-4f88-be25-b20a5629016d` from branch `main`, source `ce7d0dc`.
+- Read back `https://linepaycheck-guide.pages.dev/`, `/backup-and-restore/`, `/search/`, `/robots.txt`, and an unknown route. The first four returned HTTP 200; the unknown route returned the authored HTTP 404. The live index has 20 entries, including Backup and restore.
+- Verified live `Content-Security-Policy`, `Permissions-Policy`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY` headers on the public root.
 
 CSS fixture tests exercise real Chromium with authored CSS and small synthetic HTML fixtures. They do **not** constitute a Hugo build, a full-page visual review, successful local search on generated pages, or site E2E validation.
 
@@ -31,16 +35,17 @@ The inspected User guide workflow run 34011449452 failed before runner assignmen
 
 The inspected PR workflow still failed before runner assignment, so hosted CI remains unverified. The local gates above were run from the review candidate using checksum-verified Hugo 0.165.0 and the pinned Playwright dependency. The generated-site screenshots/results are retained in `.qa/` for this review worktree and are not committed.
 
-The Cloudflare Pages project is `linepaycheck-guide`; it will use the default
-`https://linepaycheck-guide.pages.dev/` URL. No custom domain, DNS, repository
+The Cloudflare Pages project is `linepaycheck-guide` at
+`https://linepaycheck-guide.pages.dev/`. No custom domain, DNS, repository
 visibility, Worker, Pages Function, secret, or Git integration was configured.
 
-Live hosting and provider response headers remain unverified until the first production upload completes.
+The default Pages URL is live. Custom-domain behavior, physical accessibility testing, and a successful hosted GitHub Actions run remain separate evidence gaps.
 
 ## Before publishing
 
-Build against `https://linepaycheck-guide.pages.dev/`, upload the generated output to
-the `linepaycheck-guide` Pages project, inspect the deployed URL and headers, then
-record the production deployment ID and response status here or in the PR.
+For a future release, build against `https://linepaycheck-guide.pages.dev/`, upload
+the generated output to the `linepaycheck-guide` Pages project with the reviewed
+`main` commit SHA and message, inspect the deployed URL and headers, then append the
+new production deployment ID and response status here or in the PR.
 
 GitHub Pages remains disabled because the current private-repository plan does not support it. Cloudflare Direct Upload is the selected host; future content changes still require a successful build and upload before they are public.
