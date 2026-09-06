@@ -121,10 +121,12 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source follow-up candidate is `bc3eb720c96b348dcc5bda07ee5b0950cc20076e` (tree
-`a5a3a557857dbc1a5cef694ba9e31982ba44be63`). It includes the prior safe-cleanup wording plus
-the single Picker-based scope control and explicit UI-journey isolation. The prior exact native
-candidate was `b6feb80c9affab26136bcefc1f500db71012a5b4`; its later `373e0d7…` tip was
+The production-source follow-up candidate is `13052ab5425a629c958193a5328173b99710579f` (tree
+`a8769fc3f73f19facce34244f95d0e470397df12`). The final follow-up tip is
+`9063fe3c773f13f155b808e504cdefad867b99dd` (tree
+`e30e82b823bf72a227995d627722b353792b2752`), adding UI-test isolation and receipt documentation.
+It includes the prior safe-cleanup wording plus the single Picker-based scope control. The prior
+exact native candidate was `b6feb80c9affab26136bcefc1f500db71012a5b4`; its later `373e0d7…` tip was
 documentation-only. Its production source includes
 the Picker-based scope selector with a single grouped toolbar Save action, archived-window rule protection,
 locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
