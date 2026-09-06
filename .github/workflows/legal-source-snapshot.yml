@@ -1,0 +1,26 @@
+name: Legal review source snapshot
+on:
+  push:
+    branches: [fix/legal-risk-guardrails]
+    paths: [.github/workflows/legal-source-snapshot.yml]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Export tracked source only
+        run: |
+          mkdir -p "$RUNNER_TEMP/legal-review"
+          git archive --format=zip HEAD > "$RUNNER_TEMP/legal-review/source.zip"
+          git rev-parse HEAD > "$RUNNER_TEMP/legal-review/source-commit.txt"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: legal-review-source
+          path: ${{ runner.temp }}/legal-review/
+          retention-days: 1
+          if-no-files-found: error
