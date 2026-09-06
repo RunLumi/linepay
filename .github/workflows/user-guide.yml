@@ -35,7 +35,8 @@ jobs:
           "$RUNNER_TEMP/guide-qa-venv/bin/pip" install -r user-guide/requirements-test.txt
           "$RUNNER_TEMP/guide-qa-venv/bin/python" -m playwright install --with-deps chromium
       - name: Exercise rendered guides
-        run: "$RUNNER_TEMP/guide-qa-venv/bin/python" user-guide/scripts/browser-smoke.py
+        run: |
+          "$RUNNER_TEMP/guide-qa-venv/bin/python" user-guide/scripts/browser-smoke.py
       - name: Retain website QA evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
