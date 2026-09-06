@@ -255,6 +255,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
     public let dailyOvertimeTiers: [DailyOvertimeTier]
     public let calloutMinimum: CalloutMinimumRule?
     public let flatPerDiem: FlatPerDiemRule?
+    public let weeklyOvertime: WeeklyOvertimeRule?
     public let rounding: MoneyRoundingRule
     public let sources: [AgreementSource]
     public let unsupportedRuleNotes: String?
@@ -274,6 +275,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         dailyOvertimeTiers: [DailyOvertimeTier] = [],
         calloutMinimum: CalloutMinimumRule? = nil,
         flatPerDiem: FlatPerDiemRule? = nil,
+        weeklyOvertime: WeeklyOvertimeRule? = nil,
         rounding: MoneyRoundingRule = MoneyRoundingRule(),
         sources: [AgreementSource] = [],
         unsupportedRuleNotes: String? = nil,
@@ -304,6 +306,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         self.dailyOvertimeTiers = sortedTiers
         self.calloutMinimum = calloutMinimum
         self.flatPerDiem = flatPerDiem
+        self.weeklyOvertime = weeklyOvertime
         self.rounding = rounding
         self.sources = sources
         self.unsupportedRuleNotes = unsupportedRuleNotes
@@ -367,6 +370,7 @@ public struct CalculationResult: Codable, Hashable, Sendable {
     public let total: Money
     public let agreementSnapshots: [AgreementSnapshot]?
     public let provenance: CalculationProvenance?
+    public let weeklyRegularRate: WeeklyRegularRateResult?
 
     public init(
         agreementID: String,
@@ -374,7 +378,8 @@ public struct CalculationResult: Codable, Hashable, Sendable {
         components: [PayComponent],
         total: Money,
         agreementSnapshots: [AgreementSnapshot]? = nil,
-        provenance: CalculationProvenance? = nil
+        provenance: CalculationProvenance? = nil,
+        weeklyRegularRate: WeeklyRegularRateResult? = nil
     ) {
         self.agreementID = agreementID
         self.agreementVersion = agreementVersion
@@ -382,6 +387,7 @@ public struct CalculationResult: Codable, Hashable, Sendable {
         self.total = total
         self.agreementSnapshots = agreementSnapshots
         self.provenance = provenance
+        self.weeklyRegularRate = weeklyRegularRate
     }
 }
 

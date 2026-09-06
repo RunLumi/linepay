@@ -59,6 +59,10 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var usePerDiem = false
     var perDiemAmount = ""
 
+    var useWeeklyOvertime = false
+    var weeklyWorkweekStart: Weekday = .monday
+    var weeklyApplicabilityConfirmed = false
+
     var useEffectiveStart = false
     var effectiveStartDate = Date()
     var useEffectiveEnd = false
@@ -146,6 +150,12 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
         if let perDiem = agreement.flatPerDiem {
             usePerDiem = true
             perDiemAmount = LinePayFormat.decimal(perDiem.amountPerWorkDate.amount)
+        }
+
+        if let weekly = agreement.weeklyOvertime {
+            useWeeklyOvertime = true
+            weeklyWorkweekStart = weekly.workweekStart
+            weeklyApplicabilityConfirmed = weekly.applicability == .coveredNonexemptHourly
         }
 
         if let start = agreement.effectiveStart {

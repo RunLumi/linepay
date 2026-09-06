@@ -45,6 +45,11 @@ struct ReconciliationReportExporter {
                     "Calculation engine: unknown / legacy; the original calculation semantics were not recorded."
                 )
             }
+            if let weekly = calculation.weeklyRegularRate {
+                writer.caption(
+                    "Weekly regular-rate layer: \(LinePayFormat.money(weekly.remainingAdditionalPremium)) additional premium after eligible credits; workweek \(LinePayFormat.localDate(weekly.weekStart))."
+                )
+            }
             if let paystub {
                 writer.row("Confirmed paystub gross", LinePayFormat.money(paystub.grossPay))
                 writer.row("Gross basis", paystub.confirmation?.grossBasis.title ?? "Not recorded")

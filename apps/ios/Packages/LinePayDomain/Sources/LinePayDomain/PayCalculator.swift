@@ -23,7 +23,8 @@ public struct PayCalculator: Sendable {
         work: [WorkInterval],
         agreement: AgreementSnapshot,
         changes: [AgreementChange] = [],
-        policy: PayCalculationPolicy
+        policy: PayCalculationPolicy,
+        weekly: WeeklyRegularRateInput? = nil
     ) throws -> CalculationResult {
         try validate(work: work)
         let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
@@ -119,7 +120,8 @@ public struct PayCalculator: Sendable {
             provenance: CalculationProvenance(
                 engine: "linepay.configured-pay/2",
                 rounding: "explicit-snapshot-rounding/1",
-                callout: "confirmed-event-isolated-minimum/1")
+                callout: "confirmed-event-isolated-minimum/1"),
+            weeklyRegularRate: try weekly.map { try WeeklyRegularRateCalculator().calculate($0) }
         )
     }
 

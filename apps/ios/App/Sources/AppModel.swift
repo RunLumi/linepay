@@ -1068,6 +1068,63 @@ final class AppModel {
         }
     }
 
+    func calculateWeeklyRegularRate(
+        weekStart: Date, completeWorkweek: Bool
+    ) throws -> WeeklyRegularRateResult {
+        guard let profile, let rule = profile.agreement.weeklyOvertime else {
+            throw WeeklyRegularRateError.applicabilityUnknown
+        }
+        let zone = profile.timeZoneIdentifier
+        guard let timeZone = TimeZone(identifier: zone) else {
+            throw WeeklyRegularRateError.applicabilityUnknown
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let start = calendar.startOfDay(for: weekStart)
+        guard let end = calendar.date(byAdding: .day, value: 7, to: start) else {
+            throw WeeklyRegularRateError.incompleteWorkweek
+        }
+        let weekStartLocal = localDate(from: start, timeZoneIdentifier: zone)
+        let periods =
+            state.history.map {
+                ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+            }
+            + [
+                state.activePeriod.map {
+                    ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+                }
+            ].compactMap { $0 }
+        var facts: [WeeklyWorkFact] = []
+        for (periodID, _, agreement, changes, entries) in periods {
+            let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
+            for entry in entries {
+                let intervalStart = Date(
+                    timeIntervalSince1970: TimeInterval(entry.interval.startEpochSeconds))
+                let intervalEnd = Date(
+                    timeIntervalSince1970: TimeInterval(entry.interval.endEpochSeconds))
+                guard intervalStart >= start, intervalEnd <= end else { continue }
+                let date = localDate(from: intervalStart, timeZoneIdentifier: zone)
+                let applied = timeline.agreement(on: date)
+                facts.append(
+                    try WeeklyWorkFact(
+                        id: entry.id, payPeriodID: periodID,
+                        hours: entry.interval.durationHours,
+                        straightRate: applied.hourlyRate))
+            }
+        }
+        let remuneration = try WeeklyRemunerationFact(
+            amount: Money(
+                amount: facts.reduce(Decimal.zero) { $0 + $1.straightTimeAmount.amount },
+                currencyCode: profile.agreement.hourlyRate.currencyCode),
+            kind: .straightTime)
+        let input = try WeeklyRegularRateInput(
+            weekStart: weekStartLocal, workweekStart: rule.workweekStart,
+            completeWorkweek: completeWorkweek,
+            applicability: rule.applicability, thresholdHours: rule.thresholdHours,
+            work: facts, remuneration: [remuneration])
+        return try WeeklyRegularRateCalculator().calculate(input)
+    }
+
     private func calculate(period: ActivePayPeriod) -> CalculationResult? {
         try? PayCalculator().calculate(
             work: period.workEntries.map(\.interval),
@@ -1261,6 +1318,18 @@ final class AppModel {
                 nil
             }
 
+        let weeklyOvertime: WeeklyOvertimeRule?
+        if draft.useWeeklyOvertime {
+            guard draft.weeklyApplicabilityConfirmed else {
+                throw AppModelError.invalidField("Weekly overtime applicability")
+            }
+            weeklyOvertime = try WeeklyOvertimeRule(
+                workweekStart: draft.weeklyWorkweekStart,
+                applicability: .coveredNonexemptHourly)
+        } else {
+            weeklyOvertime = nil
+        }
+
         let effectiveStart =
             draft.useEffectiveStart
             ? localDate(
@@ -1318,6 +1387,7 @@ final class AppModel {
             dailyOvertimeTiers: overtimeTiers,
             calloutMinimum: calloutMinimum,
             flatPerDiem: perDiem,
+            weeklyOvertime: weeklyOvertime,
             sources: sources,
             unsupportedRuleNotes: draft.unsupportedRuleNotes.trimmingCharacters(
                 in: .whitespacesAndNewlines),
