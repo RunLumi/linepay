@@ -209,10 +209,50 @@ final class AppModel {
                 }
             }
             candidate.activePeriod = active
-        } else {
-            // No open work period exists. Archived snapshots are never rewritten.
-            baseline = agreement
-            changes = []
+        } else if let existing {
+            guard scope != .correctCurrentPeriod else {
+                throw AppModelError.missingActivePayPeriod
+            }
+            let isDatedChange =
+                scope == .prospective
+                && (draft.editScope == .datedChange || draft.changeEffectiveDate != nil
+                    || draft.useEffectiveStart)
+            if isDatedChange {
+                // A gap between manual periods must not erase a promised effective date.
+                // Keep the old baseline and other dates; new periods select from this timeline.
+                guard draft.timeZoneIdentifier == existing.timeZoneIdentifier else {
+                    throw AppModelError.invalidField(
+                        "Keep the current payroll timezone while scheduling a rule change")
+                }
+                let date = localDate(
+                    from: draft.changeEffectiveDate
+                        ?? (draft.useEffectiveStart
+                            ? draft.effectiveStartDate : draft.periodStartDate),
+                    timeZoneIdentifier: existing.timeZoneIdentifier)
+                let lastWorkDate = state.history.flatMap(\.workEntries).map {
+                    localDate(
+                        from: Date(
+                            timeIntervalSince1970: TimeInterval($0.interval.endEpochSeconds - 1)),
+                        timeZoneIdentifier: existing.timeZoneIdentifier)
+                }.max()
+                let lastArchivedDate = state.history.map {
+                    localDate(
+                        from: $0.window.displayEndDate,
+                        timeZoneIdentifier: existing.timeZoneIdentifier)
+                }.max()
+                let lastImmutableDate = [lastWorkDate, lastArchivedDate].compactMap { $0 }.max()
+                guard lastImmutableDate.map({ date > $0 }) ?? true else {
+                    throw AppModelError.prospectiveChangeTouchesRecordedWork
+                }
+                changes.removeAll { $0.effectiveDate == date }
+                changes.append(AgreementChange(effectiveDate: date, agreement: agreement))
+                changes = try AgreementTimeline(baseline: baseline, changes: changes).changes
+            } else {
+                // An undated replacement still applies when the next manual period starts.
+                // Archived periods retain their own immutable snapshots.
+                baseline = agreement
+                changes = []
+            }
         }
 
         let profile = PayProfile(

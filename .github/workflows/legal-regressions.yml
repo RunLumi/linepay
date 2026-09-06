@@ -1,0 +1,65 @@
+name: Legal regressions
+on:
+  pull_request:
+    paths:
+      - 'apps/ios/**'
+      - 'scripts/**'
+      - 'docs/legal/**'
+      - '.github/workflows/legal-regressions.yml'
+permissions:
+  contents: read
+concurrency:
+  group: legal-regressions-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  targeted-native:
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Select pinned tools
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Run legal behavior and interaction regressions
+        run: |
+          set -euo pipefail
+          mkdir -p .test-results
+          swift format lint --strict --recursive --configuration .swift-format apps/ios
+          LOCK='apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+          cp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
+          (cd apps/ios && xcodegen generate)
+          cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
+          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in json.load(sys.stdin)["devices"].values() for d in ds if d.get("isAvailable") and "iPhone" in d["name"]))')
+          xcodebuild -project apps/ios/LinePay.xcodeproj -scheme LinePay \
+            -configuration Debug -destination "platform=iOS Simulator,id=$UDID" \
+            -onlyUsePackageVersionsFromResolvedFile -derivedDataPath "$RUNNER_TEMP/legal-derived" \
+            -resultBundlePath .test-results/LegalTests.xcresult \
+            -parallel-testing-enabled NO -test-timeouts-enabled YES \
+            -maximum-test-execution-time-allowance 240 \
+            -only-testing:LinePayAppTests/LegalRegressionTests \
+            -only-testing:LinePayAppTests/LegalConsentAndReportTests \
+            -only-testing:LinePayAppTests/ReportShareSessionTests \
+            -only-testing:LinePayAppTests/NoOpenPeriodRuleTests \
+            -only-testing:LinePayAppTests/ReportTransferTests \
+            -only-testing:LinePayUITests/LegalJourneyTests \
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee .test-results/legal-verification.log
+          cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
+      - name: Extract test receipts
+        if: always()
+        run: |
+          if [[ -d .test-results/LegalTests.xcresult ]]; then
+            xcrun xcresulttool get test-results summary --path .test-results/LegalTests.xcresult > .test-results/legal-summary.json
+            xcrun xcresulttool get test-results tests --path .test-results/LegalTests.xcresult > .test-results/legal-tests.json
+            xcrun xcresulttool export attachments --path .test-results/LegalTests.xcresult --output-path .test-results/screenshots
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: legal-regressions-${{ github.sha }}
+          path: .test-results/
+          include-hidden-files: true
+          retention-days: 7

@@ -28,7 +28,7 @@ struct DocumentPipelineTests {
         #expect(result.notice?.contains("first 8") == true)
         #expect(PDFDocument(data: original)?.pageCount == 9)
     }
-    @Test func reportUsesComparableWagesAndPaginatesLongEvidence() throws {
+    @Test func optedInReportUsesComparableWagesAndPaginatesLongEvidence() throws {
         let model = try ReadinessTests().configured()
         var profile = PayProfileDraft(
             profile: try #require(model.profile), activePeriod: model.activePeriod)
@@ -48,7 +48,8 @@ struct DocumentPipelineTests {
         let url = try ReconciliationReportExporter().export(
             window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
             agreement: context.agreement, calculation: calculation, paystub: context.paystub,
-            reconciliation: context.reconciliation, findings: [])
+            reconciliation: context.reconciliation, findings: [],
+            privacy: ReportPrivacyOptions(includeSourceDetails: true))
         defer { try? FileManager.default.removeItem(at: url) }
         let report = try #require(PDFDocument(url: url))
         let text = try #require(report.string)
