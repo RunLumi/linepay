@@ -54,11 +54,54 @@ struct RepeatWorkDraftTests {
         #expect(draft.templateUnresolved == true)
         #expect(start.candidates.isEmpty)
         #expect(start.chosen == nil)
+        #expect(
+            !RepeatWorkDraft.canConfirmManualReview(
+                draft, timeZoneIdentifier: zoneID, window: nil))
 
-        RepeatWorkDraft.confirmManualReview(&draft)
+        draft.start = instant(2026, 3, 8, 3, 30)
+        #expect(
+            RepeatWorkDraft.canConfirmManualReview(
+                draft, timeZoneIdentifier: zoneID, window: nil))
+        try RepeatWorkDraft.confirmManualReview(
+            &draft, timeZoneIdentifier: zoneID, window: nil)
         #expect(draft.templateUnresolved == false)
         #expect(draft.templateSource == nil)
         #expect(draft.repeatedTimeChoices == nil)
+    }
+
+    @Test func everyNonexistentCopiedFactMustBeReviewedBeforeManualConfirmation() throws {
+        let source = try entry(
+            start: instant(2026, 3, 7, 1, 0),
+            end: instant(2026, 3, 7, 4, 0),
+            breaks: [
+                (instant(2026, 3, 7, 2, 15), instant(2026, 3, 7, 2, 45))
+            ])
+        var draft = try RepeatWorkDraft.make(
+            source: source,
+            periodID: UUID(),
+            day: instant(2026, 3, 8, 0, 0),
+            timeZoneIdentifier: zoneID,
+            window: nil)
+        let proposal = try #require(
+            RepeatWorkDraft.proposal(for: draft, timeZoneIdentifier: zoneID))
+        #expect(proposal.points.filter { $0.candidates.isEmpty }.count == 2)
+
+        draft.breakStart = instant(2026, 3, 8, 3, 15)
+        #expect(
+            !RepeatWorkDraft.canConfirmManualReview(
+                draft, timeZoneIdentifier: zoneID, window: nil))
+        #expect(throws: RepeatWorkReviewError.self) {
+            try RepeatWorkDraft.confirmManualReview(
+                &draft, timeZoneIdentifier: zoneID, window: nil)
+        }
+
+        draft.breakEnd = instant(2026, 3, 8, 3, 45)
+        #expect(
+            RepeatWorkDraft.canConfirmManualReview(
+                draft, timeZoneIdentifier: zoneID, window: nil))
+        try RepeatWorkDraft.confirmManualReview(
+            &draft, timeZoneIdentifier: zoneID, window: nil)
+        #expect(draft.templateUnresolved == false)
     }
 
     @Test func fallFoldRequiresAnOccurrenceAndKeepsChoicesDistinct() throws {
@@ -122,6 +165,9 @@ struct RepeatWorkDraftTests {
         #expect(proposal.isResolved)
         #expect(draft.templateUnresolved == true)
         #expect(!window.contains(start: draft.start, end: draft.end))
+        #expect(
+            !RepeatWorkDraft.canConfirmManualReview(
+                draft, timeZoneIdentifier: zoneID, window: window))
     }
 
     @Test func interruptedRepeatDraftRoundTripsItsReviewState() throws {
@@ -142,6 +188,34 @@ struct RepeatWorkDraftTests {
         #expect(restored.templateUnresolved == true)
         #expect(restored.templateSource == draft.templateSource)
         #expect(proposal.points.first { $0.key == "start" }?.candidates.count == 2)
+    }
+
+    @Test func explicitPayrollZoneDoesNotDependOnHowTheSelectedDayWasConstructed() throws {
+        let source = try entry(
+            start: instant(2026, 3, 7, 7, 0),
+            end: instant(2026, 3, 7, 15, 0),
+            breaks: [(instant(2026, 3, 7, 12, 0), instant(2026, 3, 7, 12, 30))])
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(secondsFromGMT: 0)!
+        let sameNewYorkMidnight = try #require(
+            utc.date(
+                from: DateComponents(
+                    timeZone: utc.timeZone,
+                    year: 2026,
+                    month: 3,
+                    day: 8,
+                    hour: 5)))
+        let draft = try RepeatWorkDraft.make(
+            source: source,
+            periodID: UUID(),
+            day: sameNewYorkMidnight,
+            timeZoneIdentifier: zoneID,
+            window: nil)
+
+        #expect(clock(draft.start) == (7, 0))
+        #expect(clock(draft.end) == (15, 0))
+        #expect(clock(draft.breakStart) == (12, 0))
+        #expect(clock(draft.breakEnd) == (12, 30))
     }
 
     @Test func nativeRepeatScreenExplainsGapAndDisablesSave() throws {
