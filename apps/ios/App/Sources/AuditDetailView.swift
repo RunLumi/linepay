@@ -37,7 +37,7 @@ struct AuditDetailView: View {
     let model: AppModel
     let context: PayPeriodContext
     var onCorrect: (() -> Void)? = nil
-    @State private var reportURL: URL?
+    @State private var showingReport = false
     @State private var showingRemove = false
     @State private var errorMessage: String?
     var body: some View {
@@ -88,6 +88,7 @@ struct AuditDetailView: View {
                         ).accessibilityIdentifier("audit.correct")
                     }
                 }
+                Section { ComparisonScopeView() }
                 if let assessment = paid.assessment, presentation.isCurrent,
                     context.reconciliation != nil
                 {
@@ -134,21 +135,10 @@ struct AuditDetailView: View {
                     }
                 }
                 Section("Worker-owned report") {
-                    if let reportURL { ShareLink("Share report", item: reportURL) }
-                    Button("Prepare audit report") {
-                        do {
-                            reportURL = try ReconciliationReportExporter().export(
-                                window: context.window,
-                                timeZoneIdentifier: context.timeZoneIdentifier,
-                                agreement: context.agreement,
-                                calculation: calculation, paystub: paid,
-                                reconciliation: context.reconciliation,
-                                findings: model.auditFindings(
-                                    calculation: calculation, paystub: paid))
-                        } catch { errorMessage = error.localizedDescription }
-                    }.accessibilityIdentifier("audit.export")
+                    Button("Prepare audit report") { showingReport = true }
+                        .accessibilityIdentifier("audit.export")
                     Text(
-                        "This report excludes original paystub pages. Existing records and exports remain available without Pro."
+                        "Review a minimized PDF before sharing. It still contains sensitive pay data. Existing records and exports remain available without Pro."
                     ).font(.footnote)
                 }
             }
@@ -157,6 +147,7 @@ struct AuditDetailView: View {
             }
         }
         .navigationTitle("Paycheck audit").navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingReport) { ReportSharingView(context: context) }
         .confirmationDialog(
             "Delete this original from the device?", isPresented: $showingRemove,
             titleVisibility: .visible

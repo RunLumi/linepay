@@ -112,14 +112,15 @@ What it must **not** provide is unlimited recurring reconciliation.
 ### Pro includes
 
 - unlimited paycheck audits;
-- on-device paystub OCR;
+- on-device paystub OCR for recurring future audits (also sampled in the first free audit);
 - expected-versus-paid reconciliation;
 - possible discrepancy detection;
-- pay-period history;
-- discrepancy history;
-- export/shareable audit reports;
-- advanced or verified agreement packs when available;
-- future premium features that materially improve audit accuracy or convenience.
+- ongoing audit creation for later pay periods;
+- future premium features only when actually shipped and accurately described.
+
+Existing work, pay-period history, confirmed audits and exports remain accessible without Pro.
+Named verified agreement packs are not a launch entitlement; do not advertise them until their rights,
+coverage and implementation have been reviewed and shipped.
 
 The clean mental model is:
 
@@ -194,7 +195,7 @@ Then $79.99/year, automatically renewing.
 Cancel at least 24 hours before trial end to avoid renewal.
 Continue free
 
-Your pay data stays on this device.
+Private by default. Calculations and paystub processing happen on your device. You choose whether to export or back up your records.
 Restore Purchases · Manage Subscription · Terms · Privacy
 ```
 

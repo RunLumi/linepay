@@ -92,7 +92,7 @@ struct PayProfileSetupView: View {
         } message: {
             if let preview = changePreview {
                 Text(
-                    "\(selectedScope.title). Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
+                    "\(selectedScope.title). \(changeExplanation) Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
                 )
             }
         }
@@ -328,8 +328,7 @@ struct PayProfileSetupView: View {
                             "New rules start",
                             selection: Binding(
                                 get: {
-                                    draft.changeEffectiveDate ?? model.activePeriod?.window.endDate
-                                        ?? draft.periodStartDate
+                                    ruleChangeDate
                                 },
                                 set: { draft.changeEffectiveDate = $0 }), displayedComponents: .date
                         )
@@ -346,16 +345,14 @@ struct PayProfileSetupView: View {
                         LabeledContent(
                             "Reviewed rate", value: LinePayFormat.money(agreement.hourlyRate))
                     }
-                    Text(
-                        draft.editScope == .futurePeriods
-                            ? "Logged work keeps its current rules. The new snapshot is used when the next work period starts."
-                            : "All work in the current open period will be recalculated. Earlier audit revisions remain available. This does not implement a mid-period rate change."
-                    )
-                    .foregroundStyle(LinePayColor.review)
+                    Text(changeExplanation)
+                        .accessibilityIdentifier("pay-profile.scope-explanation")
+                        .foregroundStyle(LinePayColor.review)
                     Text("Closed work periods and their calculation snapshots are not changed.")
                         .font(.footnote)
                 }
             }
+            Section { ComparisonScopeView(showDetails: true) }
             Section("Confirmation") {
                 Text(
                     "These are the rules you entered, not rules inferred from your union or employer. Review the summary before using them."
@@ -383,6 +380,19 @@ struct PayProfileSetupView: View {
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
+    private var ruleChangeDate: Date {
+        draft.changeEffectiveDate
+            ?? (draft.useEffectiveStart
+                ? draft.effectiveStartDate
+                : model.activePeriod?.window.endDate ?? draft.periodStartDate)
+    }
+    private var changeExplanation: String {
+        RuleChangeConsent.explanation(
+            scope: draft.editScope, effectiveDate: ruleChangeDate,
+            timeZoneIdentifier: model.currentTimeZoneIdentifier,
+            workCount: model.activePeriod?.workEntries.count ?? 0)
+    }
+
     private var selectedScope: RuleChangeScope {
         switch draft.editScope {
         case .futurePeriods: .futurePeriods

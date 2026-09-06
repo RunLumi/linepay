@@ -43,7 +43,7 @@ export ASC_TEAM_ID='7MBXZKYSY4'
 
 Do not put `.p8` files, tokens, review-contact payloads, or tester lists in git. Do not use `set -x`, print a JWT, or paste credentials into a task. Treat returned JSON as potentially sensitive: contacts, tester information, and signed upload URLs can appear in responses.
 
-[`scripts/asc-api.py`](../scripts/asc-api.py) signs a five-minute ES256 JWT per request, fixes the destination to Apple's API origin, blocks redirects, and defaults to GET. It supports one POST/PATCH only with `--allow-write` and a reviewed JSON body. It does not retry mutations, delete resources, grant permissions, upload binary parts, or bypass missing approvals. Authentication follows [Apple's JWT specification](https://developer.apple.com/documentation/appstoreconnectapi/generating-tokens-for-api-requests).
+[`scripts/asc-api.py`](../scripts/asc-api.py) signs a five-minute ES256 JWT per request, fixes the destination to Apple's API origin, blocks redirects, and defaults to GET. It supports one POST/PATCH only with `--allow-write`, a reviewed JSON body, and the source-bound `--release-evidence` required by [the legal release control](legal/README.md). The exact manual-release safety hold documented there is the only write exception; GET remains available. It does not retry mutations, delete resources, grant permissions, upload binary parts, or bypass missing approvals. Authentication follows [Apple's JWT specification](https://developer.apple.com/documentation/appstoreconnectapi/generating-tokens-for-api-requests).
 
 ```bash
 python3 scripts/asc-api.py "/v1/apps/$ASC_APP_ID"
@@ -51,13 +51,47 @@ python3 scripts/asc-api.py "/v1/apps/$ASC_APP_ID/appStoreVersions"
 python3 scripts/asc-api.py "/v1/apps/$ASC_APP_ID/betaGroups"
 ```
 
-For writes, save a reviewed JSON body under an ignored `.build/` run directory, then pass it explicitly. Always GET the target before and after the mutation. Follow pagination links only after checking the same `https://api.appstoreconnect.apple.com` origin; pass their path/query to the client. A first page is not an inventory.
+For writes, keep the reviewed JSON body and private approvals outside the repository, then pass both explicitly. Always GET the target before and after the mutation. Follow pagination links only after checking the same `https://api.appstoreconnect.apple.com` origin; pass their path/query to the client. A first page is not an inventory.
 
 For scripted sequences use `set -euo pipefail`; never let a JSON-filter pipeline hide the client's nonzero exit status. Do not run all write examples as one unattended batch.
 
+### Evidence preparation before any non-exempt write
+
+Use a clean, committed source candidate. The release guard intentionally rejects a dirty checkout,
+so do not use the old dirty-build exception for submission or distribution. Read-only discovery and
+a separately authorized exact `releaseType: MANUAL` safety hold remain available without pretending
+that an old submitted build is ready. This remediation release must remain manually controlled;
+any different release policy needs a deliberate owner-approved policy revision, not a bypass.
+
+Keep the actual IPA, signed/private reviews, readbacks, page snapshots and release screenshots in
+an access-controlled directory **outside the repository**. Start from
+[`legal/release-evidence.template.json`](legal/release-evidence.template.json); it intentionally fails.
+Fill it only from real evidence. A generated reviewer name or template does not establish approval.
+See [the field and freshness contract](legal/README.md#2-development-checks-versus-release-approval).
+
+```bash
+export LINEPAY_RELEASE_EVIDENCE='/private/linepay-release/evidence.json'
+python3 scripts/legal_guardrails.py release --stage submission --evidence "$LINEPAY_RELEASE_EVIDENCE"
+# Before an actual public release request, separately require distribution-stage evidence:
+python3 scripts/legal_guardrails.py release --stage distribution --evidence "$LINEPAY_RELEASE_EVIDENCE"
+```
+
+For **each** requested mutation, the owner must review its actual method, relative path and exact
+payload bytes. Its approval record includes `authorized_request` with `method`, `path` and
+`body_sha256`. For example, calculate (not approve) the intended payload fingerprint with
+`shasum -a 256 "$LINEPAY_RELEASE_DIR/submit-review.json"`, then record the hash with the reviewed
+PATCH path. A different payload, path or HTTP method needs a corresponding new authorization.
+Do not automatically populate approval fields just because a script produced a hash.
+
+The commands below assume `LINEPAY_RELEASE_EVIDENCE` identifies the reviewed record for that exact
+request. They are individual operations, not an unattended batch. The client rejects unreviewed
+writes before reading the key or contacting Apple. It neither publishes nor authorizes anything
+when validating evidence; an owner must still authorize the external action. If the gate rejects
+a required operation, resolve the missing evidence or reviewed policy—not the guard.
+
 ## 3. Prepare one immutable candidate
 
-1. Run `bash scripts/agent-context.sh`; inspect status, diff, worktrees, and recent commits. Prefer a clean intended source revision. If a dirty tree is explicitly included, record its complete release-relevant diff and hashes; do not label it as the clean HEAD build.
+1. Run `bash scripts/agent-context.sh`; inspect status, diff, worktrees, and recent commits. Use a clean intended source revision; commit and review every release-relevant change before obtaining source-bound approval. A dirty tree cannot pass this release gate.
 2. Discover existing builds and upload reservations before choosing an unused build number:
 
    ```bash
@@ -72,8 +106,9 @@ For scripted sequences use `set -euo pipefail`; never let a JSON-filter pipeline
 Use a fresh per-run output directory; never overwrite a prior archive:
 
 ```bash
-mkdir -p .build
-LINEPAY_RELEASE_DIR="$(mktemp -d "$PWD/.build/release.XXXXXX")"
+umask 077
+mkdir -p "$HOME/LinePaycheck-releases"
+LINEPAY_RELEASE_DIR="$(mktemp -d "$HOME/LinePaycheck-releases/release.XXXXXX")"
 export LINEPAY_RELEASE_DIR
 (cd apps/ios && xcodegen generate)
 xcodebuild -quiet -project apps/ios/LinePay.xcodeproj -scheme LinePay \
@@ -164,7 +199,8 @@ Internal distribution: save this body as `group-build.json`, replacing `BUILD_ID
 
 ```bash
 python3 scripts/asc-api.py "/v1/betaGroups/$ASC_BETA_GROUP_ID/relationships/builds" \
-  --method POST --body "$LINEPAY_RELEASE_DIR/group-build.json" --allow-write
+  --method POST --body "$LINEPAY_RELEASE_DIR/group-build.json" --allow-write \
+  --release-evidence "$LINEPAY_RELEASE_EVIDENCE"
 python3 scripts/asc-api.py "/v1/betaGroups/$ASC_BETA_GROUP_ID/builds"
 python3 scripts/asc-api.py "/v1/builds/$ASC_BUILD_ID/buildBetaDetail"
 ```
@@ -229,7 +265,8 @@ Final submission is a separate PATCH to `/v1/reviewSubmissions/{id}`:
 
 ```bash
 python3 scripts/asc-api.py "/v1/reviewSubmissions/$ASC_REVIEW_SUBMISSION_ID" \
-  --method PATCH --body "$LINEPAY_RELEASE_DIR/submit-review.json" --allow-write
+  --method PATCH --body "$LINEPAY_RELEASE_DIR/submit-review.json" --allow-write \
+  --release-evidence "$LINEPAY_RELEASE_EVIDENCE"
 python3 scripts/asc-api.py "/v1/reviewSubmissions/$ASC_REVIEW_SUBMISSION_ID"
 python3 scripts/asc-api.py "/v1/reviewSubmissions/$ASC_REVIEW_SUBMISSION_ID/items"
 ```
@@ -238,7 +275,7 @@ Retain the returned state, errors and IDs. A successful creation of a review con
 
 ## 8. Public release and recovery
 
-If the intended version uses `AFTER_APPROVAL`, public release follows Apple's approval workflow; do not silently change to manual or vice versa. With manual release, require `PENDING_DEVELOPER_RELEASE` and explicit release authority before `POST /v1/appStoreVersionReleaseRequests`:
+A dated older submission may use `AFTER_APPROVAL`; obtain owner authorization to hold or replace it rather than letting it silently release. The current remediation policy requires `MANUAL`. With manual release, require `PENDING_DEVELOPER_RELEASE` and explicit release authority before `POST /v1/appStoreVersionReleaseRequests`:
 
 ```json
 {"data":{"type":"appStoreVersionReleaseRequests","relationships":{"appStoreVersion":{"data":{"type":"appStoreVersions","id":"VERSION_ID"}}}}}
