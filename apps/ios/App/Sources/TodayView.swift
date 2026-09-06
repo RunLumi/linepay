@@ -6,6 +6,7 @@ struct TodayView: View {
     var onOpenHistory: () -> Void = {}
     var onOpenPay: () -> Void = {}
     @State private var showingAdd = false
+    @State private var showingRepeatDraft = false
     @State private var showingStart = false
     @State private var editing: WorkEntry?
     @State private var repeating: WorkEntry?
@@ -44,11 +45,24 @@ struct TodayView: View {
                     }
                     Section {
                         if let last = model.lastWorkEntry {
-                            Button("Repeat last shift") { repeating = last }.frame(minHeight: 48)
+                            Button("Repeat last shift") { repeating = last }
+                                .frame(minHeight: 48)
+                                .disabled(model.workDraft != nil)
                                 .accessibilityIdentifier("today.repeat-shift")
+                            if model.workDraft != nil {
+                                Text(
+                                    "Finish or discard the saved work draft before repeating another shift."
+                                )
+                                .font(.footnote)
+                                .foregroundStyle(LinePayColor.textSecondary)
+                            }
                         }
-                        Button(model.workDraft != nil ? "Resume work draft" : "Add work") {
-                            showingAdd = true
+                        Button(workButtonTitle) {
+                            if model.workDraft?.templateSource != nil {
+                                showingRepeatDraft = true
+                            } else {
+                                showingAdd = true
+                            }
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
                             "today.add-work")
@@ -128,14 +142,20 @@ struct TodayView: View {
             }
         }
         .sheet(isPresented: $showingAdd) { AddWorkView(model: model) }
+        .sheet(isPresented: $showingRepeatDraft) { RepeatWorkView(model: model) }
         .sheet(isPresented: $showingStart) { StartPayPeriodView(model: model) }
         .sheet(item: $editing) {
             AddWorkView(model: model, existingEntry: $0, onDeleted: { undo = $0 })
         }
-        .sheet(item: $repeating) { AddWorkView(model: model, template: $0) }
+        .sheet(item: $repeating) { RepeatWorkView(model: model, source: $0) }
         .onChange(of: model.activePeriod?.id) { _, _ in undo = nil }
         .onChange(of: model.currentWorkRevision) { _, revision in
             if let undo, undo.expectedRevision != revision { self.undo = nil }
         }
+    }
+
+    private var workButtonTitle: String {
+        if model.workDraft?.templateSource != nil { return "Resume repeated shift" }
+        return model.workDraft != nil ? "Resume work draft" : "Add work"
     }
 }
