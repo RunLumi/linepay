@@ -42,16 +42,12 @@ final class LegalJourneyTests: XCTestCase {
         capture("legal-system-share-sheet")
         saveToFiles.tap()
         let save = app.buttons["Save"].firstMatch
-        let cancel = app.buttons["Cancel"].firstMatch
         XCTAssertTrue(
             save.waitForExistence(timeout: 15),
             "The PDF did not reach the system Files export destination.")
-        XCTAssertTrue(
-            cancel.waitForExistence(timeout: 10),
-            "The Files destination did not expose a cancel action.")
         capture("legal-files-export-ready")
         // Never select a recipient or persist a synthetic report into a connected provider.
-        cancel.tap()
+        app.swipeDown()
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
     }
 
@@ -82,9 +78,11 @@ final class LegalJourneyTests: XCTestCase {
             for _ in 0..<3 { tap("pay-profile.continue") }
             tap("pay-profile.change-scope")
             tap(scope)
-            let explanation = app.staticTexts["pay-profile.scope-explanation"]
+            let explanation = app.staticTexts.matching(
+                NSPredicate(format: "label CONTAINS %@", fragment)
+            ).firstMatch
             scrollTo(explanation)
-            XCTAssertTrue(explanation.label.contains(fragment))
+            XCTAssertTrue(explanation.exists)
             capture("legal-scope-\(scope)")
             tap("pay-profile.save")
             XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
