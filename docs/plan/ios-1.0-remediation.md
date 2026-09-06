@@ -6,7 +6,7 @@ Branch: `fix/ios-1.0-readiness`; [PR #2](https://github.com/streamentry/linepay/
 
 ## Current evidence
 
-Application source **`bf823340c76da64c917d05cc8bf42d8143ceef2b`** passed the native and Release portions of `agent-verify.sh ui`:
+Verified native source: **`4c15b53d830fd115e96fa429db302c592092f087`**. Its full `agent-verify.sh ios` gate exited **0** on September 6, 2026. The `apps/ios` tree is `fe6e5ff886b9365421dfe99a763d88abb8b447f0`.
 
 | Executed gate | Result |
 |---|---|
@@ -14,44 +14,60 @@ Application source **`bf823340c76da64c917d05cc8bf42d8143ceef2b`** passed the nat
 | Pure domain | 82 tests passed |
 | Repository scripts | 29 tests passed |
 | App tests, including native StoreKitTest and view contracts | 167 tests passed |
-| XCTest UI | All 6 journeys passed |
+| XCTest UI | All 7 journeys passed |
 | Generic iOS Simulator Release, arm64/x86_64 | Build passed; launch configuration and dependency lock preserved |
+| Standard light / Reduce Motion enabled | 9/9 Maestro flows passed in 11m 1s on `95dd0e8` |
+| Compact dark / maximum text | Complete audit correction/relaunch passed on `95dd0e8`; complete rule correction passed on `4c15b53` |
 
-Toolchain: Xcode 26.6 (`17F113`), Swift 6.3.3, XcodeGen 2.46.0. Native runtime: iPhone 16 Pro / iOS 18.5 (`6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9`). Exact command and logs: `.build/readiness/bf82334/verify-ui.log`; result bundle and exported screenshots: `.build/readiness/bf82334/native/`.
+The native result bundle reports **174 passed, 0 failed, 0 skipped, 0 expected failures** (167 app tests plus 7 XCTest UI journeys). Toolchain: Xcode 26.6 (`17F113`), Swift 6.3.3, XcodeGen 2.46.0. Native runtime: iPhone 16 Pro / iOS 18.5 (`6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9`).
 
 ```bash
-LINEPAY_RESULTS_DIR="$PWD/.build/readiness/bf82334/native" \
+LINEPAY_RESULTS_DIR="$PWD/.build/readiness/4c15b53/native-final" \
 IOS_SIMULATOR_DESTINATION='platform=iOS Simulator,id=6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9' \
-MAESTRO_IOS_DEVICE='LinePay Readiness QA 20260906' \
-bash scripts/agent-verify.sh ui
+bash scripts/agent-verify.sh ios
 ```
 
-The combined command remains **non-green** because the additional compact Maestro suite initially failed. The native/Release successes above are not inferred from that command's final exit. On the isolated iPhone SE / iOS 18.5 (`9872181E-9E62-4DD3-A0B9-7F925D83B9C5`), updated flows passed setup, backup consent, delete/cancel/reset/relaunch, landscape/large monetary values, and dismissible Pro options. All nine compact flows passed across focused reruns after correcting navigation/scroll targets, giving the scope picker a native selection page, and fixing a dismissed editor that recreated its saved work draft. A consolidated final run on the final candidate is pending; no monetary assertion was waived.
+Native log, result bundle, coverage, summary and exported screenshots: `.build/readiness/4c15b53/verify-ios-final.log` and `.build/readiness/4c15b53/native-final/`.
 
-The production-store compact journey found and reproduced work-draft resurrection after save, which the original fixture-based journeys did not expose. Editors now suppress draft writes during completion, and work forms do not persist untouched defaults on presentation.
+The standard suite ran on an isolated iPhone 16 Pro / iOS 18.5 (`1098F918-AF29-48AE-9DF9-8DEB861F0367`), light appearance and normal text. Reduce Motion was enabled through Settings and read back as `1` in `.build/readiness/1369414/reduce-motion-enabled.json`. Log: `.build/readiness/95dd0e8/standard-ui.log`.
 
-Local Maestro 2.6.1 was found during investigation; the remaining flows use the repository-pinned **2.7.0**, verified against SHA-256 `a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5`, with installed Java 21 LTS. An independent XCTest correction-route regression passed on both the iPhone 16 Pro and the exact compact simulator. Logs: `.build/readiness/bf82334/native-correction*.log`.
+```bash
+JAVA_HOME="$(/usr/libexec/java_home -F -v 21)" \
+/private/tmp/linepay-maestro-2.7/cli/maestro/bin/maestro \
+  --udid 1098F918-AF29-48AE-9DF9-8DEB861F0367 test \
+  --test-output-dir .build/readiness/95dd0e8/standard-ui .maestro
+```
+
+After that complete standard pass, **only rule-flow navigation changed**; application and native-test sources remained identical. The changed complete rule flow then passed in both standard and maximum-text appearances on `4c15b53`. Logs: `.build/readiness/4c15b53/rule-standard.log` and `rule-maximum.log`. The maximum-text audit's complete subflow is recorded as passed in `.build/readiness/95dd0e8/maximum-text.log`; the wrapper later failed at the rule picker before the fix. The compact device was iPhone SE / iOS 18.5 (`9872181E-9E62-4DD3-A0B9-7F925D83B9C5`), dark, `accessibility-extra-extra-extra-large`.
+
+A readback of the final standard UI's synthetic state verified **gross difference 0, regular-pay difference +50, overtime difference -50, scope `confirmedLines`, verdict `needsReview`**. This rules out a generic unmapped-evidence warning masquerading as the intended component result.
+
+Maestro was the CI-pinned **2.7.0**, verified against SHA-256 `a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5`, with Java 21 LTS. The existing installation was preserved. Shipped bytecode confirms integer division in percentage normalization, so final helpers use 100% visibility. Short native choice pages are selected directly; centering drags could leave the intended sheet. No verdict or amount assertion was removed. The optional XcodeBuildMCP tool was unavailable; standard Xcode/XCTest, simctl and Maestro performed the checks.
+
+Earlier failures remain separate evidence: a new simulator's keyboard tutorial interrupted input; tap-position errors were repaired; one accelerated StoreKit grace observation failed during concurrent UI activity; and a later linker stopped with `errno=28` before tests. The final isolated native run passed, including grace and expiration. Only task-created QA simulators, disposable build output and the downloaded installer archive were removed to recover disk space; logs/results/screenshots were preserved. Recreate equivalent QA simulators with fresh IDs to repeat the UI commands above.
+
+Representative synthetic [screenshots and the app-generated PDF](../qa/ios-1.0/README.md) are committed for review. Both PDF pages were rendered and inspected. Public support/privacy URLs returned HTTP 200 with normal network access.
 
 ## Findings, implementation and regression evidence
 
-The tested application SHA for these rows is `bf823340c76da64c917d05cc8bf42d8143ceef2b`. UI test/flow-only follow-ups are separately identified in Git and the PR.
+The tested native application SHA for every row is `4c15b53d830fd115e96fa429db302c592092f087`. The UI-only follow-up revisions and executed artifacts are identified above.
 
 | Audit | Implemented behavior | Executed evidence and remaining limit |
 |---|---|---|
 | A01 | Native compilation, launch sizing, strict concurrency and Release boundary repaired | Full native and Release passes above; GitHub jobs did not start because of account billing |
 | A02–A03 | Confirm full work period, gross basis, earnings/hour/callout layouts; separate wages/per diem; qualify missing or offsetting evidence | `PaycheckAssessmentTests`, `AuditScopeRegressionTests`, `DocumentPipelineTests`; simulator verdict matrix. `$400 + $150` vs `$350 + $200` cannot become a clean component match |
 | A04 | Close A, record B, then audit A; append corrections to frozen evidence; consistent paid access | Native two-period UI journey; `sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules` proves A at $50, B at $60, Thursday A audit, unchanged B |
-| A05 | Preserve main's dated timeline and component rule versions; explicit whole-period correction and read-only preview | `AgreementTimelineTests`, `RuleScopeRegressionTests`, `TimelinePersistenceTests`; compact correction flow remains in final QA |
+| A05 | Preserve main's dated timeline and component rule versions; explicit whole-period correction and read-only preview | `AgreementTimelineTests`, `RuleScopeRegressionTests`, `TimelinePersistenceTests`; compact correction flow passed with preview/money assertions |
 | A06 | Whole-string decimal-point/grouping policy; no prefix parsing; conservative current/YTD and negative-adjustment handling | `StrictDecimalTests`, parser regressions and real Vision on synthetic documents. Decimal-comma input is rejected with an explicit policy; punctuation keyboard permits the declared format |
 | A07 | Persist setup/new/edit-work/paycheck-field drafts and staged originals; single-owner import operations; page/region provenance | Native new/edit-work and interrupted paycheck-field/source journeys passed. Field editors save directly while their parent is inactive. OCR reads at most 8 pages and discloses the limit |
 | A08 | Frozen payroll/work timezone; explicit non-overlapping boundary after timezone change | DST/overnight/domain and app regressions; old-period export uses recorded timezone. A new zone may require choosing a later non-overlapping start |
-| A09 | Undo carries period and revision; intervening work/rule changes invalidate it; repeat can use closed-period work | Stale-Undo and scheduled-rule regressions; compact work/Undo flow still in final QA |
+| A09 | Undo carries period and revision; intervening work/rule changes invalidate it; repeat can use closed-period work | Stale-Undo and scheduled-rule regressions; standard work/Undo flow passed |
 | A10 | Corrections retain sources and audit revisions; deletion is explicit, scoped and retryable | Original-retention, deletion/save fault injection, interrupted-file discovery and relaunch tests; external exported copies are preserved |
 | A11 | Entitlements independent of catalog; actual eligible annual trial; Pro preserves unused Free audit; signed access may settle briefly after purchase | Native Xcode StoreKit tests cover purchase, cancel, pending approval, interrupted recovery, renewal, trial-to-paid, expiry, refund, grace, restore and catalog failure. This is not sandbox/TestFlight proof |
 | A12 | Schema 3 distinguishes the combined writer; migrate both schema-2 variants and v1 without recomputing history; validate/restore with rollback | Static v1 fixture, both v2 migration variants, malformed-state recovery, full original-byte backups, failed state/evidence writes and cleanup tests |
-| A13 | Progressive setup and final rule confirmation; supported tier/weekday editors; missing-rule disclosure; grouped ledger and component-specific receipts | View contracts, native setup and evidence journeys; remaining compact actions noted above |
+| A13 | Progressive setup and final rule confirmation; supported tier/weekday editors; missing-rule disclosure; grouped ledger and component-specific receipts | View contracts, native setup and evidence journeys; the complete standard suite and compact payroll journeys |
 | A14 | Unavailable calculations remain unavailable; preserve ambiguous spanning-callout work without inventing pay; block audit/archive | Domain/app failure tests, view contracts and rendered uncertainty states |
-| A15 | Preserve main's assets and data controls; local About/legal/recovery plus published links; adaptive values and semantic colors | Native light/dark/largest-text captures; resolved semantic contrast tests; public privacy/support URLs returned HTTP 200. Physical VoiceOver/field usability remains open |
+| A15 | Preserve main's assets and data controls; local About/legal/recovery plus published links; adaptive values and semantic colors | Native light/dark/largest-text captures, completed compact payroll journeys and standard flows with Reduce Motion; resolved semantic contrast tests; public privacy/support URLs returned HTTP 200. Physical VoiceOver/field usability remains open |
 
 A shared native view satisfies multiple mockup states. The original 46-state matrix is preserved; these tests and screenshots are **not** a claim that every state was manually operated with every accessibility setting.
 
