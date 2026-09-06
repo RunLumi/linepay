@@ -14,7 +14,6 @@ struct RepeatWorkView: View {
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
     @State private var isClosing = false
-    @State private var manualTimeEdited = false
 
     init(model: AppModel, source: WorkEntry? = nil) {
         self.model = model
@@ -79,6 +78,13 @@ struct RepeatWorkView: View {
 
     private var withinCurrentPeriod: Bool {
         model.activePeriod?.window.contains(start: draft.start, end: draft.end) == true
+    }
+
+    private var canConfirmManualTimes: Bool {
+        RepeatWorkDraft.canConfirmManualReview(
+            draft,
+            timeZoneIdentifier: model.currentTimeZoneIdentifier,
+            window: model.activePeriod?.window)
     }
 
     private var worked: Decimal {
@@ -158,12 +164,10 @@ struct RepeatWorkView: View {
                             DatePicker("Additional break starts", selection: $item.start)
                             DatePicker("Additional break ends", selection: $item.end)
                             Button("Remove break", role: .destructive) {
-                                manualTimeEdited = true
                                 draft.additionalBreaks.removeAll { $0.id == item.id }
                             }
                         }
                         Button("Add another break") {
-                            manualTimeEdited = true
                             draft.additionalBreaks.append(
                                 BreakDraft(
                                     start: draft.start.addingTimeInterval(6 * 3_600),
@@ -242,9 +246,6 @@ struct RepeatWorkView: View {
             do { try model.saveWorkDraft(value) } catch {
                 errorMessage = "Draft could not be saved. Your earlier records are unchanged."
             }
-        }
-        .onChange(of: draft.additionalBreaks) { _, _ in
-            if !quick { manualTimeEdited = true }
         }
         .sheet(item: $viewingConflict) { item in
             NavigationStack {
@@ -326,15 +327,21 @@ struct RepeatWorkView: View {
 
                 if !quick && (hasNonexistentTime || proposal?.isResolved == true) {
                     Button("Confirm reviewed manual times") {
-                        RepeatWorkDraft.confirmManualReview(&draft)
-                        errorMessage = nil
+                        do {
+                            try RepeatWorkDraft.confirmManualReview(
+                                &draft,
+                                timeZoneIdentifier: model.currentTimeZoneIdentifier,
+                                window: model.activePeriod?.window)
+                            errorMessage = nil
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
                     }
                     .frame(minHeight: 48)
-                    .disabled(
-                        !manualTimeEdited || draft.end <= draft.start || !withinCurrentPeriod)
+                    .disabled(!canConfirmManualTimes)
                     .accessibilityIdentifier("repeat.confirm-manual-times")
                     Text(
-                        "This confirmation means the dates and clock times now shown are the actual facts you reviewed, not an automatic DST correction."
+                        "This confirmation means every unresolved copied clock time now shown is an actual fact you reviewed, not an automatic DST correction."
                     )
                     .font(.footnote)
                 }
@@ -345,10 +352,7 @@ struct RepeatWorkView: View {
     private func manualBinding(_ keyPath: WritableKeyPath<WorkDraft, Date>) -> Binding<Date> {
         Binding(
             get: { draft[keyPath: keyPath] },
-            set: {
-                draft[keyPath: keyPath] = $0
-                manualTimeEdited = true
-            })
+            set: { draft[keyPath: keyPath] = $0 })
     }
 
     private func choiceBinding(_ key: String) -> Binding<RepeatedTimeChoice?> {
@@ -362,7 +366,6 @@ struct RepeatWorkView: View {
                         draft: &draft,
                         timeZoneIdentifier: model.currentTimeZoneIdentifier,
                         window: model.activePeriod?.window)
-                    manualTimeEdited = false
                     errorMessage = nil
                 } catch {
                     errorMessage = error.localizedDescription
@@ -377,7 +380,6 @@ struct RepeatWorkView: View {
                 to: date,
                 timeZoneIdentifier: model.currentTimeZoneIdentifier,
                 window: model.activePeriod?.window)
-            manualTimeEdited = false
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
