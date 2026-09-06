@@ -46,7 +46,9 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(
             save.waitForExistence(timeout: 15),
             "The PDF did not reach the system Files export destination.")
-        XCTAssertTrue(cancel.exists)
+        XCTAssertTrue(
+            cancel.waitForExistence(timeout: 10),
+            "The Files destination did not expose a cancel action.")
         capture("legal-files-export-ready")
         // Never select a recipient or persist a synthetic report into a connected provider.
         cancel.tap()
