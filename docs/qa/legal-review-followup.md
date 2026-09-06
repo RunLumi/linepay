@@ -119,7 +119,9 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The pushed final head is `1c9e40a85ff7a0fb111ed6e5108c6997653ac45a`. Its production source includes
+The production-source candidate is `c6b7504d8b746611fbcb8a73d93648fa8db4024f` (tree
+`edecc1eeb6d69c70481c5f2e0c1c092f63e385ad`). A later documentation-only tip may advance the
+branch without changing this source candidate. Its production source includes
 the Menu-based scope selector, grouped toolbar Scope/Save actions, archived-window rule protection,
 locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
 
