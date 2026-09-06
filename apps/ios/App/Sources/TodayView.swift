@@ -12,6 +12,7 @@ struct TodayView: View {
     @State private var repeating: WorkEntry?
     @State private var undo: DeletedWorkUndo?
     @State private var errorMessage: String?
+
     var body: some View {
         NavigationStack {
             List {
@@ -51,7 +52,7 @@ struct TodayView: View {
                                 .accessibilityIdentifier("today.repeat-shift")
                             if model.workDraft != nil {
                                 Text(
-                                    "Finish or discard the saved work draft before repeating another shift."
+                                    "Finish or discard the saved work draft before repeating, editing, or deleting another shift."
                                 )
                                 .font(.footnote)
                                 .foregroundStyle(LinePayColor.textSecondary)
@@ -90,14 +91,19 @@ struct TodayView: View {
                                 }.foregroundStyle(LinePayColor.textPrimary).padding(.vertical, 6)
                             }
                             .accessibilityIdentifier("today.edit-work")
+                            .disabled(model.workDraft != nil)
                             .swipeActions {
-                                Button("Delete", role: .destructive) {
-                                    undo = model.deleteWork(id: entry.id)
+                                if model.workDraft == nil {
+                                    Button("Delete", role: .destructive) {
+                                        undo = model.deleteWork(id: entry.id)
+                                    }
                                 }
                             }
                             .contextMenu {
-                                Button("Delete work", role: .destructive) {
-                                    undo = model.deleteWork(id: entry.id)
+                                if model.workDraft == nil {
+                                    Button("Delete work", role: .destructive) {
+                                        undo = model.deleteWork(id: entry.id)
+                                    }
                                 }
                             }
                         }
@@ -109,6 +115,7 @@ struct TodayView: View {
                             LinePayPrimaryButtonStyle())
                     }
                 }
+
                 let pending = model.history.filter { $0.paystub == nil }.count
                 if pending > 0 {
                     Section {
@@ -117,11 +124,14 @@ struct TodayView: View {
                         }.frame(minHeight: 44)
                     }
                 }
+
                 if let error = errorMessage ?? model.lastPersistenceError {
                     Section { Text(error).foregroundStyle(LinePayColor.review) }
                 }
             }
-            .listStyle(.plain).scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(LinePayColor.canvas)
             .navigationTitle("Today")
             .safeAreaInset(edge: .bottom) {
                 if let undo {
@@ -136,8 +146,12 @@ struct TodayView: View {
                                 errorMessage = error.localizedDescription
                                 self.undo = nil
                             }
-                        }.frame(minHeight: 48).accessibilityIdentifier("today.undo-delete")
-                    }.padding(.horizontal, 24).background(LinePayColor.surfacePrimary)
+                        }
+                        .frame(minHeight: 48)
+                        .accessibilityIdentifier("today.undo-delete")
+                    }
+                    .padding(.horizontal, 24)
+                    .background(LinePayColor.surfacePrimary)
                 }
             }
         }
