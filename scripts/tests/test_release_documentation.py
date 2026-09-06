@@ -24,7 +24,7 @@ class ReleaseDocumentationTests(unittest.TestCase):
         self.assertEqual(unguarded_commands(guarded), [])
 
     def test_canonical_release_examples_require_private_evidence(self):
-        text = (ROOT / "docs/release-and-testflight-api.md").read_text()
+        text = (ROOT / "docs/release/api-and-testflight.md").read_text()
         self.assertEqual(unguarded_commands(text), [])
         for required in ("authorized_request", "body_sha256", "--stage submission",
                          "--stage distribution", "outside the repository"):

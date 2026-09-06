@@ -102,3 +102,7 @@ bash scripts/agent-verify.sh ios
 ```
 
 Before handoff, inspect the changed test cases and calculation diff. State the exact semantic rule that changed.
+
+## Product rule references
+
+Read the [payroll contract](../../../docs/product/payroll/README.md), [coverage limits](../../../docs/product/payroll/coverage-and-gaps.md), and [source approval](../../../docs/product/payroll/sources.md) before changing wage or audit behavior. A configured daily premium is not a complete federal weekly-overtime implementation. Link relevant business-rule/example IDs in regressions; preserve scoped conclusions.

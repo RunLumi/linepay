@@ -84,7 +84,7 @@ struct ReportShareSession {
                 pendingCleanup.remove(url)
             } catch {
                 errorMessage =
-                    "A temporary report could not be removed. It is no longer available to share here. Retry or use Delete all local data to retry app-owned cleanup."
+                    "A temporary report could not be removed. It is no longer available to share here. Retry temporary cleanup after freeing device storage."
             }
         }
     }

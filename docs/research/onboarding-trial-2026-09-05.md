@@ -4,7 +4,7 @@
 
 Requested work: review the onboarding strategy, research subscription conversion, apply the conclusions to the docs, and configure a seven-day introductory trial through Chrome.
 
-The revised specification is [onboarding.md](../onboarding.md). It aligns pricing, the 1.0 plan, App Store strategy, marketing measurement, screenshot guidance, and both release checklists. The annual-only trial and U.S. launch scope follow the existing marketing plan; Monthly remains the immediate paid alternative.
+The revised specification is [onboarding.md](../product/onboarding.md). It aligns pricing, the 1.0 plan, App Store strategy, marketing measurement, screenshot guidance, and both release checklists. The annual-only trial and U.S. launch scope follow the existing marketing plan; Monthly remains the immediate paid alternative.
 
 No SwiftUI onboarding implementation, production analytics, advertising spend, App Review submission, or new build upload is part of this documentation/configuration delivery.
 

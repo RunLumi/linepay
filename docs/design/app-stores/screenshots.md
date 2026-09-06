@@ -26,12 +26,12 @@
 ### Read alongside
 
 - [Design system](../../../DESIGN.md): visual hierarchy, colors, evidence, accessibility, and privacy language.
-- [App Store playbook](../../appstore.md): canonical metadata and screenshot sequence.
+- [App Store playbook](../../release/app-store.md): canonical metadata and screenshot sequence.
 - [Logo and app icon](../logo.md): identity artwork and lettering.
-- [Pricing](../../pricing.md): actual Free/Pro boundary; never invent one for artwork.
-- [Onboarding](../../onboarding.md): proof-first seven-day annual trial offer and separate first-audit-free access.
+- [Pricing](../../product/pricing.md): actual Free/Pro boundary; never invent one for artwork.
+- [Onboarding](../../product/onboarding.md): proof-first seven-day annual trial offer and separate first-audit-free access.
 - [iOS release plan](../../plan/ios-1.0.md): shipping capability, not marketing aspiration.
-- [Mobile QA](../../maestro.md): the existing capture/verification context.
+- [Mobile QA](../../testing/maestro.md): the existing capture/verification context.
 
 This document makes the existing store sequence executable. It does not silently add features, reorder the commercial strategy, change the bundle ID, or replace the design system.
 
@@ -118,7 +118,7 @@ Keep the sample document synthetic from the start. Do not use a real paystub and
 
 ## 5. The release-gated storyboard
 
-Preserve the order from `docs/appstore.md`. The eight slots are an editorial plan, not eight mandatory uploads. Frames 3, 4, 6, and 8 require the corresponding implemented behavior. Never pad the set just to fill the maximum.
+Preserve the order from `docs/release/app-store.md`. The eight slots are an editorial plan, not eight mandatory uploads. Frames 3, 4, 6, and 8 require the corresponding implemented behavior. Never pad the set just to fill the maximum.
 
 | Slot | Headline | Product proof | Gate |
 |---|---|---|---|
@@ -412,7 +412,7 @@ For each later locale:
 - Have a fluent reviewer check trade vocabulary and the distinction between expected, paid, and possible difference.
 - Keep right-to-left language behavior native; the identity mark does not become a different logo.
 
-Use `lineman`, `paycheck`, `overtime`, and `callout` where they naturally explain a real benefit. Metadata strategy remains in `docs/appstore.md`.
+Use `lineman`, `paycheck`, `overtime`, and `callout` where they naturally explain a real benefit. Metadata strategy remains in `docs/release/app-store.md`.
 
 Do not promise ranking improvements from screenshot filenames, repeated keywords embedded in images, or unverified search-volume estimates. These assets primarily explain the product and earn a download; keyword selection and conversion are related but different jobs.
 

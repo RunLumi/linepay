@@ -59,7 +59,7 @@ for file in \
     apps/android/AGENTS.md \
     shared/contracts/AGENTS.md \
     .maestro/AGENTS.md \
-    docs/agentic.md \
+    docs/engineering/agentic-development.md \
     .mcp.json \
     .codex/config.toml \
     .gemini/settings.json \
@@ -173,6 +173,6 @@ echo "==> Verification commands are discoverable"
 require_text AGENTS.md "bash scripts/agent-verify.sh quick"
 require_text AGENTS.md "bash scripts/agent-verify.sh ios"
 require_text AGENTS.md "bash scripts/agent-verify.sh ui"
-require_text docs/agentic.md "bash scripts/agent-doctor.sh"
+require_text docs/engineering/agentic-development.md "bash scripts/agent-doctor.sh"
 
 echo "Agent harness checks passed."

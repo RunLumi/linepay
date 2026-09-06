@@ -1,6 +1,6 @@
 # iOS 1.0 readiness remediation
 
-Companion to the [original audit](../linepay-1.0-readiness-audit.md), which remains byte-for-byte intact at its pinned `fb913f3ed65a47006fb88a20005b11e6cf189505` revision. This record distinguishes implementation, native tests, simulator interactions and external release acceptance.
+Companion to the [original audit](../testing/audits/linepay-1.0-readiness-audit.md), which remains byte-for-byte intact at its pinned `fb913f3ed65a47006fb88a20005b11e6cf189505` revision. This record distinguishes implementation, native tests, simulator interactions and external release acceptance.
 
 Branch: `fix/ios-1.0-readiness`; [PR #2](https://github.com/streamentry/linepay/pull/2). Integrated main: `2bf0d3d45123df2eb64c13156b2bd7475ac1820e`. Public brand: LinePaycheck; bundle: `com.streamentry.linepay`.
 
@@ -46,7 +46,7 @@ Maestro was the CI-pinned **2.7.0**, verified against SHA-256 `a4ccab6b604617e7a
 
 Earlier failures remain separate evidence: a new simulator's keyboard tutorial interrupted input; tap-position errors were repaired; one accelerated StoreKit grace observation failed during concurrent UI activity; and a later linker stopped with `errno=28` before tests. The final isolated native run passed, including grace and expiration. Only task-created QA simulators, disposable build output and the downloaded installer archive were removed to recover disk space; logs/results/screenshots were preserved. Recreate equivalent QA simulators with fresh IDs to repeat the UI commands above.
 
-Representative synthetic [screenshots and the app-generated PDF](../qa/ios-1.0/README.md) are committed for review. Both PDF pages were rendered and inspected. Public support/privacy URLs returned HTTP 200 with normal network access.
+Representative synthetic [screenshots and the app-generated PDF](../testing/evidence/ios-1.0/README.md) are committed for review. Both PDF pages were rendered and inspected. Public support/privacy URLs returned HTTP 200 with normal network access.
 
 ## Pre-merge review
 

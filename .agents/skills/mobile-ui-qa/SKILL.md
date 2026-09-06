@@ -13,7 +13,7 @@ Read:
 
 - `DESIGN.md`
 - `apps/ios/AGENTS.md`
-- `docs/maestro.md` when authoring/regressing a critical journey
+- `docs/testing/maestro.md` when authoring/regressing a critical journey
 
 Know the intended screen/state before judging pixels.
 

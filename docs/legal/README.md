@@ -4,7 +4,7 @@ This is the implementation companion to the dated [legal review](../legal.md), n
 
 The shipping architecture remains local-first, no LinePaycheck account/backend, manual user-directed Files/iCloud backup, and native Apple commerce. Bundle ID remains `com.streamentry.linepay`. The present release-control policy is US-only and manual release; neither policy is a statement that all US wage laws are implemented.
 
-**Status (September 6, 2026):** PR #34 is being integrated with `main`; its prior head was `15cec8849864ba9dee0a4a5bba69e114b088370a`. Hosted jobs did not start because GitHub reported failed account payments or an insufficient Actions spending limit (#37). Local Xcode 26.6 native verification is recorded in the exact-candidate receipt. No external legal approval has been obtained by this work.
+**Status (September 6, 2026):** PR #34 is being integrated with `main`; the production-source candidate is recorded in the exact-candidate receipt. Hosted jobs did not start because GitHub reported failed account payments or an insufficient Actions spending limit (#37). Local Xcode 26.6 native verification is recorded in the exact-candidate receipt. No external legal approval has been obtained by this work.
 
 ## 1. Work register
 

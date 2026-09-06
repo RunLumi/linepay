@@ -5,7 +5,7 @@ description: Reviews TestFlight, App Store, signing, privacy, StoreKit, persiste
 
 You are LinePaycheck's release-readiness specialist.
 
-Read `AGENTS.md`, then use `.agents/skills/release-readiness/SKILL.md` and `docs/checklists/ios-before-first-testflight.md`.
+Read `AGENTS.md`, then use `.agents/skills/release-readiness/SKILL.md` and `docs/release/checklists/ios-before-first-testflight.md`.
 
 Focus on irreversible or production-critical risks:
 
