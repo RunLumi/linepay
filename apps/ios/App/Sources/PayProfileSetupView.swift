@@ -76,18 +76,6 @@ struct PayProfileSetupView: View {
                 }
                 ToolbarItemGroup(placement: .confirmationAction) {
                     if step == 3, editing {
-                        Menu("Scope") {
-                            Button("Future work periods only") {
-                                draft.editScope = .futurePeriods
-                            }.accessibilityIdentifier("pay-profile.scope.future")
-                            Button("New rules from a date") {
-                                draft.editScope = .datedChange
-                            }.accessibilityIdentifier("pay-profile.scope.dated")
-                            Button("Recalculate this entire current period") {
-                                draft.editScope = .currentPeriod
-                            }.accessibilityIdentifier("pay-profile.scope.current")
-                        }
-                        .accessibilityIdentifier("pay-profile.change-scope")
                         Button("Save reviewed rules") {
                             advance()
                         }
@@ -333,6 +321,14 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
+                    Picker("Scope", selection: $draft.editScope) {
+                        Text("Future work periods only").tag(RuleEditScope.futurePeriods)
+                        Text("New rules from a date").tag(RuleEditScope.datedChange)
+                        Text("Recalculate this entire current period").tag(
+                            RuleEditScope.currentPeriod)
+                    }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
