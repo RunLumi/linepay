@@ -34,8 +34,9 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/guide-qa-venv"
           "$RUNNER_TEMP/guide-qa-venv/bin/pip" install -r user-guide/requirements-test.txt
           "$RUNNER_TEMP/guide-qa-venv/bin/python" -m playwright install --with-deps chromium
-      - name: Exercise rendered guides
+      - name: Exercise styles and rendered guides
         run: |
+          "$RUNNER_TEMP/guide-qa-venv/bin/python" user-guide/scripts/test-css.py
           "$RUNNER_TEMP/guide-qa-venv/bin/python" user-guide/scripts/browser-smoke.py
       - name: Retain website QA evidence
         if: always()
