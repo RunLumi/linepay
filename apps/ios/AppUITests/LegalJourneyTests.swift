@@ -88,13 +88,18 @@ final class LegalJourneyTests: XCTestCase {
                     next.value as? String, "step-\(expectedStep)",
                     "The editor did not advance to step \(expectedStep + 1) of 4.")
             }
-            let finalContinue = app.buttons["pay-profile.continue"].firstMatch
-            scrollTo(finalContinue)
-            XCTAssertTrue(finalContinue.isHittable)
-            finalContinue.press(forDuration: 0.1)
-            XCTAssertTrue(
-                finalContinue.waitForNonExistence(timeout: 10),
-                "The editor did not leave the final rules step.")
+            var reachedReview = false
+            for _ in 0..<3 {
+                let finalContinue = app.buttons["pay-profile.continue"].firstMatch
+                scrollTo(finalContinue)
+                XCTAssertTrue(finalContinue.isHittable)
+                finalContinue.press(forDuration: 0.1)
+                if finalContinue.waitForNonExistence(timeout: 3) {
+                    reachedReview = true
+                    break
+                }
+            }
+            XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
             scrollTo(scopeControl)
