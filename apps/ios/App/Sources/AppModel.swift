@@ -1096,6 +1096,9 @@ final class AppModel {
             ].compactMap { $0 }
         var facts: [WeeklyWorkFact] = []
         for (periodID, _, agreement, changes, entries) in periods {
+            guard agreement.weeklyOvertime == profile.agreement.weeklyOvertime else {
+                throw WeeklyRegularRateError.applicabilityUnknown
+            }
             let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
             for entry in entries {
                 let intervalStart = Date(
