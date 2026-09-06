@@ -100,6 +100,8 @@ Researched September 6, 2026:
 
 The initial Direct Upload deployment was `6dd92bb0-abc7-4f88-be25-b20a5629016d`
 from `ce7d0dc`. After Git integration was enabled, the current production
-deployment is `d95a8204-d339-4b62-90ec-d6dfd29c57e1` from `445234e` on
-September 6, 2026. Record each later deployment separately before adding a new
-Help URL to the app.
+deployment is `c401e09f-f340-4064-9cd0-318f4a6e0048` from `75e01e7` on
+September 6, 2026. The first successful Git-connected retry was
+`d95a8204-d339-4b62-90ec-d6dfd29c57e1` from `445234e`; the merge of this
+documentation update then deployed automatically. Record each later deployment
+separately before adding a new Help URL to the app.
