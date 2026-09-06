@@ -74,6 +74,30 @@ struct StorageContractTests {
         #expect(store.recoveryFileURL == nil)
     }
 
+    @Test(arguments: [false, true])
+    func oversizedSavePreservesReloadableState(escapedText: Bool) throws {
+        let root = UnitFixture.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = VersionedLocalStateStore(baseDirectory: root)
+        var existing = AppPersistentState()
+        existing.hasUsedFreeAudit = true
+        try store.save(existing)
+        let file = try #require(store.recoveryFileURL)
+        let originalBytes = try Data(contentsOf: file)
+
+        var candidate = existing
+        var draft = PayProfileDraft()
+        draft.unsupportedRuleNotes = String(
+            repeating: escapedText ? "\n" : "x",
+            count: (escapedText ? 4 : 8) * 1024 * 1024)
+        candidate.setupDraft = draft
+        #expect(try JSONEncoder().encode(candidate).count > 8 * 1024 * 1024)
+
+        #expect(throws: LocalStateStoreError.invalidState) { try store.save(candidate) }
+        #expect(try Data(contentsOf: file) == originalBytes)
+        #expect(try VersionedLocalStateStore(baseDirectory: root).load() == existing)
+    }
+
     @Test func invalidDirectoryFailsWithoutPretendingToSave() throws {
         let root = UnitFixture.temporaryDirectory()
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

@@ -33,6 +33,7 @@ final class MemoryStateStore: AppStateStoring {
 
 @MainActor
 final class VersionedLocalStateStore: AppStateStoring {
+    private static let maximumStateBytes = 8 * 1024 * 1024
     private let fileManager: FileManager
     private let directoryURL: URL
     private let stateURL: URL
@@ -63,7 +64,7 @@ final class VersionedLocalStateStore: AppStateStoring {
         }
 
         let size = try stateURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-        guard size <= 8 * 1024 * 1024 else { throw LocalStateStoreError.invalidState }
+        guard size <= Self.maximumStateBytes else { throw LocalStateStoreError.invalidState }
         let data = try Data(contentsOf: stateURL)
         let state = try JSONDecoder().decode(AppPersistentState.self, from: data)
         guard state.schemaVersion == AppPersistentState.currentSchemaVersion else {
@@ -83,6 +84,7 @@ final class VersionedLocalStateStore: AppStateStoring {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let data = try encoder.encode(state)
+        guard data.count <= Self.maximumStateBytes else { throw LocalStateStoreError.invalidState }
         #if os(iOS)
             try data.write(
                 to: stateURL,
