@@ -29,7 +29,7 @@ For EX-10–EX-14 assume one covered, nonexempt employee, one employer, complete
 | EX-10 | Six 8h days = 48h; $50 base; no other remuneration/premiums | 48 × 50 + 8 × 25 = **$2,600** | Daily-only engine would show $2,400 and miss weekly OT |
 | EX-11 | Biweekly check: week A 50h, week B 30h; $50 | A $2,750 + B $1,500 = **$4,250** | Averaging 80h across two weeks incorrectly gives $4,000 |
 | EX-12 | 48h at $50 plus $240 includable nondiscretionary bonus allocated to this week; no prior premiums | R $2,640; RR $55; extra 8 × $27.50 = $220; **$2,860 cash** | Base-rate-only premium would miss bonus effect |
-| EX-13 | Same complete week: 24h at $40 and 24h at $60; weighted method applicable | R $2,400; RR $50; extra $200; **$2,600** | Latest/highest or unweighted rate chosen blindly |
+| EX-13 | Same complete week: 30h at $40 and 20h at $60; weighted method applicable | R $2,400; RR $48; extra 10 × $24 = $240; **$2,640** | Unequal hours expose an incorrect unweighted average |
 | EX-14 | 48h at $50; contract already pays 40h at 1× and 8h at 2×; assume $400 extra premium meets lawful credit conditions | Contract cash **$2,800**; regular-rate floor extra $200; eligible credit $400; additional federal cash **$0** | Double-paying statutory premium or crediting unrelated payments |
 
 EX-14 is not a rule that every amount labeled overtime is creditable. If the supposed credit were an unrelated reimbursement or non-work guarantee, the assumption would fail and the answer would require re-analysis. State and contractual obligations remain independently relevant.

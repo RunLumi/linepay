@@ -13,9 +13,9 @@ Read:
 
 - `AGENTS.md`
 - `apps/ios/AGENTS.md`
-- `docs/best-practices.md`
-- `docs/checklists/ios-before-first-testflight.md`
-- `docs/appstore.md` when store metadata/positioning is in scope
+- `docs/engineering/ios-best-practices.md`
+- `docs/release/checklists/ios-before-first-testflight.md`
+- `docs/release/app-store.md` when store metadata/positioning is in scope
 
 Public brand is **LinePaycheck**. Preserve bundle ID **`com.streamentry.linepay`** and existing technical target/scheme names unless the user explicitly requests a migration.
 

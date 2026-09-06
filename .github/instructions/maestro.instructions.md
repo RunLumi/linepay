@@ -4,7 +4,7 @@ applyTo: ".maestro/**/*.yaml,scripts/test-ios-maestro.sh"
 
 # Maestro instructions
 
-Read `docs/maestro.md` before editing E2E flows.
+Read `docs/testing/maestro.md` before editing E2E flows.
 
 - Maestro is for critical black-box journeys, not payroll arithmetic.
 - Prefer stable SwiftUI `.accessibilityIdentifier(...)` values over visible copy.

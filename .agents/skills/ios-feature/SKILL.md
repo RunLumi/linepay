@@ -13,7 +13,7 @@ Read:
 
 - `AGENTS.md`
 - `apps/ios/AGENTS.md`
-- `docs/best-practices.md`
+- `docs/engineering/ios-best-practices.md`
 - `docs/plan/ios-1.0.md` when scope/sequence matters
 - `DESIGN.md` when the change is user-facing
 

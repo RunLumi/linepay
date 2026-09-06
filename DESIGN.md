@@ -36,10 +36,10 @@ A recognizable LinePaycheck screen has **one important answer, aligned money, vi
 
 - `AGENTS.md` owns engineering invariants and technical identity. Keep `com.streamentry.linepay`, `LinePay`, `LinePayDomain`, and existing StoreKit identifiers unchanged for this visual revision.
 - `docs/plan/ios-1.0.md` owns release scope. A design example does not add a feature to 1.0.
-- `docs/onboarding.md` owns onboarding sequence and paywall triggers.
-- `docs/pricing.md` owns pricing and entitlements. Do not copy prices into visual tokens.
+- `docs/product/onboarding.md` owns onboarding sequence and paywall triggers.
+- `docs/product/pricing.md` owns pricing and entitlements. Do not copy prices into visual tokens.
 - `docs/architecture/local-first-no-account.md` owns data-flow architecture.
-- `docs/appstore.md` owns store metadata and screenshot ordering.
+- `docs/release/app-store.md` owns store metadata and screenshot ordering.
 - This file owns presentation and interaction quality. Resolve contradictions explicitly; do not let every document declare authority over everything.
 
 ---
@@ -450,7 +450,7 @@ A setup preview can demonstrate entered rules with clearly labeled sample work. 
 
 ## 17. Onboarding and soft paywall
 
-Follow `docs/onboarding.md`: value/trust, confirmed pay basics, one real work interval and its expected-pay result, then an optional seven-day annual trial offer. Keep the full renewal price and Continue free clear. Do not create another tour to showcase the design system.
+Follow `docs/product/onboarding.md`: value/trust, confirmed pay basics, one real work interval and its expected-pay result, then an optional seven-day annual trial offer. Keep the full renewal price and Continue free clear. Do not create another tour to showcase the design system.
 
 The welcome screen uses one clear headline, a short outcome explanation, one primary action, and the Line Gap mark. Avoid both a blank dashboard and a long marketing poster.
 
@@ -657,7 +657,7 @@ Cross-platform consistency means a worker understands the same paycheck on eithe
 
 ## 27. Store screenshots and public presentation
 
-`docs/appstore.md` owns the sequence. This file owns how each frame looks:
+`docs/release/app-store.md` owns the sequence. This file owns how each frame looks:
 
 - Show the actual shipping UI with a large, readable crop.
 - One short outcome headline per frame.

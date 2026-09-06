@@ -43,14 +43,17 @@ Do not load every document for every task.
 
 | Work | Read / use |
 |---|---|
-| Any iOS engineering | `apps/ios/AGENTS.md`, `docs/best-practices.md` |
+| Product behavior / business rules | [Product handbook](docs/product/README.md), [business rules](docs/product/business-rules.md) |
+| Payroll applicability / legal scope | [Legal baseline](docs/product/payroll/us-legal-baseline.md), [coverage](docs/product/payroll/coverage-and-gaps.md), [sources](docs/product/payroll/sources.md) |
+| Documentation changes | [Documentation map](docs/README.md), [docs agent contract](docs/AGENTS.md) |
+| Any iOS engineering | `apps/ios/AGENTS.md`, `docs/engineering/ios-best-practices.md` |
 | User-facing iOS UI | also `DESIGN.md` |
 | Current iOS product scope | `docs/plan/ios-1.0.md` |
 | Pay rules / calculations / reconciliation | `.agents/skills/payroll-domain/SKILL.md` |
 | New iOS feature | `.agents/skills/ios-feature/SKILL.md` |
-| Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/maestro.md` |
-| TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/checklists/ios-before-first-testflight.md` |
-| Agent harness itself | `docs/agentic.md` |
+| Simulator / visual / Maestro QA | `.agents/skills/mobile-ui-qa/SKILL.md`, `docs/testing/maestro.md` |
+| TestFlight / release work | `.agents/skills/release-readiness/SKILL.md`, `docs/release/checklists/ios-before-first-testflight.md` |
+| Agent harness itself | `docs/engineering/agentic-development.md` |
 
 Nearest `AGENTS.md` instructions apply in addition to this root contract.
 
@@ -68,6 +71,12 @@ These outrank implementation convenience.
 8. **Explain discrepancies.** Results must trace to work facts, applied rules, calculation steps, and source/reference metadata.
 9. **Estimate, do not adjudicate.** Use language such as expected, estimated, or possible discrepancy unless a fact is directly confirmed.
 10. **Native clients first.** iOS and Android may share contracts, fixtures, and behavior specs before they share runtime implementation.
+
+## Payroll coverage and product craft
+
+Use the product handbook before changing a pay number or verdict. A configured-rules estimate is not automatically a complete US legal-pay audit. Federal weekly overtime, regular-rate treatment, jurisdiction and agreement applicability are independent obligations; unconfigured is not waived. Preserve explicit unsupported coverage and never fabricate professional or union verification.
+
+Make LinePaycheck exceptionally clear, fast, reliable, and recoverable. Apply Pareto efficiency to complexity, not to correctness, privacy, evidence, migration safety, or accessibility. Spend disproportionate craft on the few interactions that earn worker trust.
 
 ## Architecture boundary
 

@@ -2,7 +2,7 @@
 
 Public product name is **LinePaycheck**. Technical identifiers intentionally remain `LinePay`: bundle ID `com.streamentry.linepay`, Xcode scheme/target `LinePay`, Swift package `LinePayDomain`, repository `streamentry/linepay`. Do not rename those unless explicitly requested.
 
-Read `AGENTS.md` before implementation. It is the canonical repository-wide agent contract. For iOS work also read `apps/ios/AGENTS.md` and `docs/best-practices.md`; for user-facing UI also read `DESIGN.md`.
+Read `AGENTS.md` before implementation. It is the canonical repository-wide agent contract. For iOS work also read `apps/ios/AGENTS.md` and `docs/engineering/ios-best-practices.md`; for user-facing UI also read `DESIGN.md`.
 
 ## Core constraints
 

@@ -62,7 +62,7 @@ nearest AGENTS.md             domain / Maestro / shared-contract boundaries
 
 Optional mobile-agent tools are **XcodeBuildMCP** for interactive build/run/screenshot/accessibility/debug loops and **Maestro** for durable black-box E2E flows. Checked-in scripts and tests remain source of truth, so MCP availability is not required for CI correctness.
 
-See `docs/agentic.md` for the harness architecture and `AGENTS.md` for the operating contract.
+See `docs/engineering/agentic-development.md` for the harness architecture and `AGENTS.md` for the operating contract.
 
 ## Local iOS development
 
@@ -85,11 +85,11 @@ Build, install, and run the local Maestro smoke suite:
 bash scripts/test-ios-maestro.sh
 ```
 
-See `docs/maestro.md` for prerequisites, Simulator commands, selector conventions, flow authoring, and debugging.
+See `docs/testing/maestro.md` for prerequisites, Simulator commands, selector conventions, flow authoring, and debugging.
 
 ## Release and TestFlight
 
-Use the [API release workflow](docs/release-and-testflight-api.md) for authenticated build upload, processing verification, TestFlight distribution, App Review submission, and public-release readback. The workflow separates required approvals from API permissions and keeps release evidence distinct from build success.
+Use the [API release workflow](docs/release/api-and-testflight.md) for authenticated build upload, processing verification, TestFlight distribution, App Review submission, and public-release readback. The workflow separates required approvals from API permissions and keeps release evidence distinct from build success.
 
 ## Current sequencing
 
@@ -99,3 +99,7 @@ Use the [API release workflow](docs/release-and-testflight-api.md) for authentic
 4. Build Android when user demand justifies the second native client.
 
 See `AGENTS.md` before making changes.
+
+## Product and documentation
+
+[Documentation map](docs/README.md) · [Business rules](docs/product/business-rules.md) · [Payroll handbook](docs/product/payroll/README.md)

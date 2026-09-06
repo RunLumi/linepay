@@ -4,7 +4,7 @@ Status: accepted for the iOS 1.0 readiness repair.
 
 ## Context
 
-The [readiness audit](../linepay-1.0-readiness-audit.md) found that a gross-only verdict, one active period, and replace-in-place paystub correction did not support a trustworthy repeated payday workflow. This decision refines ADR 0004 without replacing its local document store or introducing accounts, servers, payroll integrations, or an autonomous agreement interpreter.
+The [readiness audit](../testing/audits/linepay-1.0-readiness-audit.md) found that a gross-only verdict, one active period, and replace-in-place paystub correction did not support a trustworthy repeated payday workflow. This decision refines ADR 0004 without replacing its local document store or introducing accounts, servers, payroll integrations, or an autonomous agreement interpreter.
 
 ## Decisions
 

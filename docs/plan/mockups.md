@@ -7,7 +7,7 @@ Governing documents:
 - `AGENTS.md`
 - `DESIGN.md`
 - `docs/plan/ios-1.0.md`
-- `docs/pricing.md`
+- `docs/product/pricing.md`
 
 These are structure and interaction mockups, not pixel specifications. Native iOS controls, sheets, pickers, typography, spacing, accessibility behavior, and materials should remain native unless `DESIGN.md` says otherwise.
 
