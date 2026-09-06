@@ -51,7 +51,7 @@ struct ReportShareSession {
                 "The report could not be prepared. Your original records are unchanged. Check device storage and retry."
             if !pendingCleanup.isEmpty {
                 errorMessage =
-                    "The report could not be prepared, and a temporary copy could not be removed. Your original records are unchanged. Retry temporary cleanup or use Delete all local data to retry app-owned cleanup."
+                    "The report could not be prepared, and a temporary copy could not be removed. Your original records are unchanged. Retry temporary cleanup after freeing device storage."
             }
         }
     }

@@ -48,16 +48,17 @@ struct PayProfileSetupView: View {
                             .foregroundStyle(LinePayColor.review)
                     }
                 }
-                Section {
-                    Button(
-                        step == 3
-                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
-                    ) {
-                        advance()
+                if step < 3 || !editing {
+                    Section {
+                        Button(
+                            step == 3 ? "Use these rules" : "Continue"
+                        ) {
+                            advance()
+                        }
+                        .buttonStyle(LinePayPrimaryButtonStyle())
+                        .accessibilityIdentifier(
+                            step == 3 ? "pay-profile.save" : "pay-profile.continue")
                     }
-                    .buttonStyle(LinePayPrimaryButtonStyle())
-                    .accessibilityIdentifier(
-                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
                 }
             }
             .linePayKeyboardDismiss()
@@ -87,15 +88,11 @@ struct PayProfileSetupView: View {
                             }.accessibilityIdentifier("pay-profile.scope.current")
                         }
                         .accessibilityIdentifier("pay-profile.change-scope")
+                        Button("Save reviewed rules") {
+                            advance()
+                        }
+                        .accessibilityIdentifier("pay-profile.save")
                     }
-                    Button(
-                        step == 3
-                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
-                    ) {
-                        advance()
-                    }
-                    .accessibilityIdentifier(
-                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
                 }
             }
         }
@@ -336,21 +333,6 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Menu {
-                        Button("Future work periods only") {
-                            draft.editScope = .futurePeriods
-                        }.accessibilityIdentifier("pay-profile.scope.future")
-                        Button("New rules from a date") {
-                            draft.editScope = .datedChange
-                        }.accessibilityIdentifier("pay-profile.scope.dated")
-                        Button("Recalculate this entire current period") {
-                            draft.editScope = .currentPeriod
-                        }.accessibilityIdentifier("pay-profile.scope.current")
-                    } label: {
-                        LabeledContent("Scope", value: editScopeTitle)
-                    }
-                    .accessibilityLabel("Scope: \(editScopeTitle)")
-                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
@@ -426,14 +408,6 @@ struct PayProfileSetupView: View {
         case .futurePeriods: .futurePeriods
         case .datedChange: .prospective
         case .currentPeriod: .correctCurrentPeriod
-        }
-    }
-
-    private var editScopeTitle: String {
-        switch draft.editScope {
-        case .futurePeriods: "Future work periods only"
-        case .datedChange: "New rules from a date"
-        case .currentPeriod: "Recalculate this entire current period"
         }
     }
 
