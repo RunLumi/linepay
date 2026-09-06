@@ -7,7 +7,9 @@ final class LegalJourneyTests: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        app = XCUIApplication()
         app.terminate()
+        XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -50,6 +52,8 @@ final class LegalJourneyTests: XCTestCase {
         // Never select a recipient or persist a synthetic report into a connected provider.
         app.swipeDown()
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
+        app.terminate()
+        XCUIDevice.shared.press(.home)
     }
 
     func testEachRuleScopeKeepsItsPromisedEffectAtLargestText() {
