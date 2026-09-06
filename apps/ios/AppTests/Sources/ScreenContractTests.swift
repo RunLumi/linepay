@@ -112,7 +112,9 @@ struct ScreenContractTests {
         #expect(try text(edit).contains("Unpaid break"))
         let values = try edit.inspect().findAll(ViewType.TextField.self).map { try $0.input() }
         #expect(values.contains(entry.note))
-        #expect(try text(AddWorkView(model: model, template: entry)).contains("recorded breaks"))
+        let repeatView = RepeatWorkView(model: model, source: entry)
+        #expect(try text(repeatView).contains("recorded breaks"))
+        #expect(try text(repeatView).contains("New date"))
         #expect(try text(AddWorkView(model: model)).contains("Unpaid break"))
         #expect(model.workEntries.count == 3)
     }
@@ -261,6 +263,7 @@ struct ScreenContractTests {
             }
         }
     }
+
     private func luminance(_ color: UIColor) throws -> Double {
         var r: CGFloat = 0
         var g: CGFloat = 0
@@ -272,7 +275,10 @@ struct ScreenContractTests {
         }
         return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
     }
-    private func totalMoney(_ value: Decimal) -> Money { Money(amount: value, currencyCode: "USD") }
+
+    private func totalMoney(_ value: Decimal) -> Money {
+        Money(amount: value, currencyCode: "USD")
+    }
 
     private func populatedModel() throws -> AppModel {
         let model = AppModel()
