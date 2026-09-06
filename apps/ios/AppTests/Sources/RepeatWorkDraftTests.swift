@@ -59,6 +59,7 @@ struct RepeatWorkDraftTests {
                 draft, timeZoneIdentifier: zoneID, window: nil))
 
         draft.start = instant(2026, 3, 8, 3, 30)
+        RepeatWorkDraft.markManualReview("start", draft: &draft)
         #expect(
             RepeatWorkDraft.canConfirmManualReview(
                 draft, timeZoneIdentifier: zoneID, window: nil))
@@ -86,7 +87,10 @@ struct RepeatWorkDraftTests {
             RepeatWorkDraft.proposal(for: draft, timeZoneIdentifier: zoneID))
         #expect(proposal.points.filter { $0.candidates.isEmpty }.count == 2)
 
+        // Choosing the same normalized-looking 03:15 value still counts only because the user
+        // action is explicitly recorded, never because it happens to differ from a placeholder.
         draft.breakStart = instant(2026, 3, 8, 3, 15)
+        RepeatWorkDraft.markManualReview("break.0.start", draft: &draft)
         #expect(
             !RepeatWorkDraft.canConfirmManualReview(
                 draft, timeZoneIdentifier: zoneID, window: nil))
@@ -95,12 +99,41 @@ struct RepeatWorkDraftTests {
                 &draft, timeZoneIdentifier: zoneID, window: nil)
         }
 
+        let restored = try JSONDecoder().decode(
+            WorkDraft.self, from: JSONEncoder().encode(draft))
+        #expect(
+            !RepeatWorkDraft.canConfirmManualReview(
+                restored, timeZoneIdentifier: zoneID, window: nil))
+        draft = restored
         draft.breakEnd = instant(2026, 3, 8, 3, 45)
+        RepeatWorkDraft.markManualReview("break.0.end", draft: &draft)
         #expect(
             RepeatWorkDraft.canConfirmManualReview(
                 draft, timeZoneIdentifier: zoneID, window: nil))
         try RepeatWorkDraft.confirmManualReview(
             &draft, timeZoneIdentifier: zoneID, window: nil)
+        #expect(draft.templateUnresolved == false)
+    }
+
+    @Test func changingTheRepeatDateClearsEarlierReviewDecisions() throws {
+        let source = try entry(
+            start: instant(2026, 3, 7, 2, 30),
+            end: instant(2026, 3, 7, 8, 0))
+        var draft = try RepeatWorkDraft.make(
+            source: source,
+            periodID: UUID(),
+            day: instant(2026, 3, 8, 0, 0),
+            timeZoneIdentifier: zoneID,
+            window: nil)
+        RepeatWorkDraft.markManualReview("start", draft: &draft)
+        #expect(draft.repeatedTimeChoices?.keys.contains("manual:start") == true)
+
+        _ = try RepeatWorkDraft.move(
+            &draft,
+            to: instant(2026, 3, 9, 0, 0),
+            timeZoneIdentifier: zoneID,
+            window: nil)
+        #expect(draft.repeatedTimeChoices?.isEmpty == true)
         #expect(draft.templateUnresolved == false)
     }
 
