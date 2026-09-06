@@ -43,6 +43,8 @@ jobs:
             -only-testing:LinePayAppTests/LegalRegressionTests \
             -only-testing:LinePayAppTests/LegalConsentAndReportTests \
             -only-testing:LinePayAppTests/ReportShareSessionTests \
+            -only-testing:LinePayAppTests/NoOpenPeriodRuleTests \
+            -only-testing:LinePayAppTests/ReportTransferTests \
             -only-testing:LinePayUITests/LegalJourneyTests \
             CODE_SIGNING_ALLOWED=NO test 2>&1 | tee .test-results/legal-verification.log
           cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
