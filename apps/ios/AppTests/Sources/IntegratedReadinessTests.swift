@@ -73,7 +73,7 @@ struct IntegratedReadinessTests {
             #expect(loaded.evidenceURL(for: original) != nil)
         }
         try loaded.completeFirstResult()
-        #expect(try store.load()?.schemaVersion == 3)
+        #expect(try store.load()?.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(loaded.history == expected.history)
         #expect(
             loaded.workDraft == expected.workDraft && loaded.paystubDraft == expected.paystubDraft)
@@ -143,8 +143,10 @@ struct IntegratedReadinessTests {
         #expect(
             model.history.first?.paystub?.confirmedEpochSeconds
                 == Int64(thursday.timeIntervalSince1970))
-        #expect(model.history.first?.calculation.total.amount == 400)
-        #expect(model.history.first?.agreement.hourlyRate.amount == 50)
+        let history = try #require(model.history.first)
+        let calculation = try #require(history.calculation)
+        #expect(calculation.total.amount == 400)
+        #expect(history.agreement.hourlyRate.amount == 50)
         #expect(model.activePeriod?.id == b.id && model.workEntries == bWork)
         #expect(model.calculation?.total.amount == 480)
     }
@@ -229,8 +231,8 @@ struct IntegratedReadinessTests {
         let model = AppModel(store: store, evidenceStore: LocalEvidenceStore(baseDirectory: root))
         #expect(model.persistenceIssue == nil && model.onboardingProgress == nil)
         let history = try #require(model.history.first)
-        #expect(
-            history.calculation.total.amount == 400 && history.agreement.hourlyRate.amount == 50)
+        let calculation = try #require(history.calculation)
+        #expect(calculation.total.amount == 400 && history.agreement.hourlyRate.amount == 50)
         #expect(model.profile?.agreement.hourlyRate.amount == 60)
         #expect(
             model.status(for: try #require(model.periodContext(id: history.id))) == .needsReview)

@@ -79,6 +79,7 @@ public struct WorkInterval: Codable, Hashable, Identifiable, Sendable {
     public let timeZoneIdentifier: String
     public let kind: WorkKind
     public let unpaidBreaks: [WorkBreak]
+    public let calloutEventID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -86,7 +87,8 @@ public struct WorkInterval: Codable, Hashable, Identifiable, Sendable {
         endEpochSeconds: Int64,
         timeZoneIdentifier: String,
         kind: WorkKind = .regular,
-        unpaidBreaks: [WorkBreak] = []
+        unpaidBreaks: [WorkBreak] = [],
+        calloutEventID: UUID? = nil
     ) throws {
         guard endEpochSeconds > startEpochSeconds else {
             throw DomainValidationError.invalidWorkInterval
@@ -126,6 +128,7 @@ public struct WorkInterval: Codable, Hashable, Identifiable, Sendable {
         self.timeZoneIdentifier = timeZoneIdentifier
         self.kind = kind
         self.unpaidBreaks = sortedBreaks
+        self.calloutEventID = kind == .callout ? calloutEventID : nil
     }
 
     public var elapsedHours: Decimal {
@@ -252,6 +255,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
     public let dailyOvertimeTiers: [DailyOvertimeTier]
     public let calloutMinimum: CalloutMinimumRule?
     public let flatPerDiem: FlatPerDiemRule?
+    public let weeklyOvertime: WeeklyOvertimeRule?
     public let rounding: MoneyRoundingRule
     public let sources: [AgreementSource]
     public let unsupportedRuleNotes: String?
@@ -271,6 +275,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         dailyOvertimeTiers: [DailyOvertimeTier] = [],
         calloutMinimum: CalloutMinimumRule? = nil,
         flatPerDiem: FlatPerDiemRule? = nil,
+        weeklyOvertime: WeeklyOvertimeRule? = nil,
         rounding: MoneyRoundingRule = MoneyRoundingRule(),
         sources: [AgreementSource] = [],
         unsupportedRuleNotes: String? = nil,
@@ -301,6 +306,7 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         self.dailyOvertimeTiers = sortedTiers
         self.calloutMinimum = calloutMinimum
         self.flatPerDiem = flatPerDiem
+        self.weeklyOvertime = weeklyOvertime
         self.rounding = rounding
         self.sources = sources
         self.unsupportedRuleNotes = unsupportedRuleNotes
@@ -326,6 +332,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
     public let ruleKeys: [PayRuleKey]?
     public let baseRate: Money?
     public let appliedAgreement: AgreementReference?
+    public let unroundedAmount: Money?
 
     public init(
         id: UUID = UUID(),
@@ -338,7 +345,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         explanation: String,
         ruleKeys: [PayRuleKey]? = nil,
         baseRate: Money? = nil,
-        appliedAgreement: AgreementReference? = nil
+        appliedAgreement: AgreementReference? = nil,
+        unroundedAmount: Money? = nil
     ) {
         self.id = id
         self.category = category
@@ -351,6 +359,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         self.ruleKeys = ruleKeys
         self.baseRate = baseRate
         self.appliedAgreement = appliedAgreement
+        self.unroundedAmount = unroundedAmount
     }
 }
 
@@ -360,19 +369,25 @@ public struct CalculationResult: Codable, Hashable, Sendable {
     public let components: [PayComponent]
     public let total: Money
     public let agreementSnapshots: [AgreementSnapshot]?
+    public let provenance: CalculationProvenance?
+    public let weeklyRegularRate: WeeklyRegularRateResult?
 
     public init(
         agreementID: String,
         agreementVersion: String,
         components: [PayComponent],
         total: Money,
-        agreementSnapshots: [AgreementSnapshot]? = nil
+        agreementSnapshots: [AgreementSnapshot]? = nil,
+        provenance: CalculationProvenance? = nil,
+        weeklyRegularRate: WeeklyRegularRateResult? = nil
     ) {
         self.agreementID = agreementID
         self.agreementVersion = agreementVersion
         self.components = components
         self.total = total
         self.agreementSnapshots = agreementSnapshots
+        self.provenance = provenance
+        self.weeklyRegularRate = weeklyRegularRate
     }
 }
 

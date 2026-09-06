@@ -231,9 +231,11 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let window: PayPeriodWindow
     let agreement: AgreementSnapshot
     let agreementChanges: [AgreementChange]?
+    let calculationIssue: String?
+    let workCorrections: [ClosedWorkRevision]?
     let timeZoneIdentifier: String?
     let workEntries: [WorkEntry]
-    let calculation: CalculationResult
+    let calculation: CalculationResult?
     let paystub: ConfirmedPaystub?
     let reconciliation: ReconciliationResult?
     let archivedEpochSeconds: Int64
@@ -246,13 +248,15 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         agreement: AgreementSnapshot,
         timeZoneIdentifier: String? = nil,
         workEntries: [WorkEntry],
-        calculation: CalculationResult,
+        calculation: CalculationResult?,
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
         archivedEpochSeconds: Int64 = Int64(Date().timeIntervalSince1970.rounded()),
         auditRevisions: [AuditRevision]? = nil,
         hasConsumedAuditAccess: Bool? = nil,
-        agreementChanges: [AgreementChange]? = nil
+        agreementChanges: [AgreementChange]? = nil,
+        calculationIssue: String? = nil,
+        workCorrections: [ClosedWorkRevision]? = nil
     ) {
         self.id = id
         self.window = window
@@ -266,11 +270,20 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
         self.auditRevisions = auditRevisions
         self.hasConsumedAuditAccess = hasConsumedAuditAccess
         self.agreementChanges = agreementChanges
+        self.calculationIssue = calculationIssue
+        self.workCorrections = workCorrections
     }
 }
 
+/// Earlier facts survive an explicit correction to a closed, unresolved period.
+struct ClosedWorkRevision: Codable, Hashable, Sendable {
+    let workEntries: [WorkEntry]
+    let reason: String
+    let correctedEpochSeconds: Int64
+}
+
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 3
+    static let currentSchemaVersion = 4
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -305,7 +318,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1/v2 -> v3 migration. Historical calculations and sources are not recalculated.
+        // Additive v1/v2/v3 -> v4 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)
         activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)
@@ -352,6 +365,7 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     let revisions: [AuditRevision]
     let isClosed: Bool
     var agreementChanges: [AgreementChange]?
+    var calculationIssue: String? = nil
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {

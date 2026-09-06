@@ -147,7 +147,8 @@ struct AppModelTests {
 
         let archived = try #require(model.history.first)
         #expect(archived.agreement.hourlyRate.amount == Decimal(50))
-        #expect(archived.calculation.total.amount == Decimal(400))
+        let calculation = try #require(archived.calculation)
+        #expect(calculation.total.amount == Decimal(400))
         #expect(model.profile?.agreement.hourlyRate.amount == Decimal(75))
     }
 

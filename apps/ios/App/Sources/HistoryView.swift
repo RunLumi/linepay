@@ -25,21 +25,28 @@ struct HistoryView: View {
                                     $0.window.startEpochSeconds > $1.window.startEpochSeconds
                                 }
                             ) { period in
+                                let historyPeriodAccessibilityID =
+                                    "history.period." + period.id.uuidString
+                                let periodLabel = LinePayFormat.payPeriod(
+                                    period.window,
+                                    timeZoneIdentifier: model.timeZoneIdentifier(for: period))
                                 NavigationLink {
                                     HistoricalPeriodView(
                                         model: model, subscriptionStore: subscriptionStore,
                                         periodID: period.id)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
-                                        Text(
-                                            LinePayFormat.payPeriod(
-                                                period.window,
-                                                timeZoneIdentifier: model.timeZoneIdentifier(
-                                                    for: period))
-                                        ).font(.headline)
-                                        Text(
-                                            "Expected wages \(LinePayFormat.money(period.calculation.expectedWages))"
-                                        ).monospacedDigit()
+                                        Text(periodLabel).font(.headline)
+                                        if let calculation = period.calculation {
+                                            Text(
+                                                "Expected wages \(LinePayFormat.money(calculation.expectedWages))"
+                                            ).monospacedDigit()
+                                        } else {
+                                            Label(
+                                                "Calculation needs review",
+                                                systemImage: "exclamationmark.triangle"
+                                            ).foregroundStyle(LinePayColor.review)
+                                        }
                                         if let paid = period.paystub {
                                             Text("Paid gross \(LinePayFormat.money(paid.grossPay))")
                                                 .monospacedDigit()
@@ -55,7 +62,7 @@ struct HistoryView: View {
                                         }
                                     }.padding(.vertical, 8).accessibilityElement(children: .combine)
                                 }
-                                .accessibilityIdentifier("history.period.\(period.id.uuidString)")
+                                .accessibilityIdentifier(historyPeriodAccessibilityID)
                             }
                         }
                     }

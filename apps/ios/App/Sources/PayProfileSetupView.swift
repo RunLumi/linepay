@@ -210,6 +210,19 @@ struct PayProfileSetupView: View {
             Toggle("Flat per diem", isOn: $draft.usePerDiem)
             if draft.usePerDiem { number("USD per worked date", $draft.perDiemAmount) }
         }
+        DisclosureGroup("Weekly overtime (restricted)", isExpanded: $draft.useWeeklyOvertime) {
+            Picker("Workweek starts", selection: $draft.weeklyWorkweekStart) {
+                ForEach(Weekday.allCases, id: \.self) { day in
+                    Text(weekdayName(day)).tag(day)
+                }
+            }
+            Toggle(
+                "Covered, nonexempt hourly work confirmed",
+                isOn: $draft.weeklyApplicabilityConfirmed)
+            Text(
+                "This restricted layer requires a complete single-employer workweek. It does not establish state, public-agency, or CBA coverage, and unknown weeks remain needs review."
+            ).font(.footnote)
+        }
         Section("Additional rules") {
             DisclosureGroup("Other weekdays") {
                 ForEach($draft.additionalWeekdayPremiums) { $premium in
@@ -515,6 +528,16 @@ struct AgreementSummaryView: View {
         }
         if let rule = agreement.flatPerDiem {
             LabeledContent("Per worked date", value: LinePayFormat.money(rule.amountPerWorkDate))
+        }
+        if let rule = agreement.weeklyOvertime {
+            LabeledContent(
+                "Weekly overtime",
+                value:
+                    "After \(LinePayFormat.hours(rule.thresholdHours)) h; starts \(Calendar(identifier: .gregorian).weekdaySymbols[rule.workweekStart.rawValue - 1])"
+            )
+            Text(
+                "Restricted covered/nonexempt hourly profile; not a complete statutory or CBA determination."
+            ).font(.footnote)
         }
         ForEach(Array(agreement.regularSchedule.enumerated()), id: \.offset) { _, window in
             LabeledContent(

@@ -8,3 +8,4 @@
 - [0004-versioned-local-document-store](0004-versioned-local-document-store.md)
 - [0005-effective-dated-rules-and-audit-scope](0005-effective-dated-rules-and-audit-scope.md)
 - [0006-evidence-aware-payday-records](0006-evidence-aware-payday-records.md)
+- [0008-bounded-weekly-regular-rate](0008-bounded-weekly-regular-rate.md)

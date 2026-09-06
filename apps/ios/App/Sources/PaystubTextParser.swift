@@ -30,10 +30,17 @@ enum PaystubTextParser {
                     in: source.text,
                     pattern: #"\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4})\b"#)
                 let selected: String?
-                if dates.count == 1 {
+                let starts = periodLabel(in: lower, start: true)
+                let ends = periodLabel(in: lower, start: false)
+                if dates.count == 1 && (field == .periodStart ? starts != nil : ends != nil) {
                     selected = normalizedDate(dates[0])
-                } else if dates.count == 2, lower.contains("pay period") {
-                    selected = normalizedDate(field == .periodStart ? dates[0] : dates[1])
+                } else if dates.count == 2, lower.contains("pay period"),
+                    (starts == nil && ends == nil) || (starts != nil && ends != nil)
+                {
+                    let reversed =
+                        starts != nil && ends != nil && ends!.lowerBound < starts!.lowerBound
+                    let first = (field == .periodStart) != reversed
+                    selected = normalizedDate(first ? dates[0] : dates[1])
                 } else {
                     selected = nil
                 }
@@ -72,7 +79,6 @@ enum PaystubTextParser {
         _ text: String, field: PaystubField,
         source: RecognizedPaystubLine
     ) -> OCRFieldSuggestion {
-        // Do not convert negative adjustments to positive earnings.
         if text.range(
             of: #"(?:[-−(]\s*\$?\s*\d)|(?:\d\s*[-−)])"#,
             options: .regularExpression) != nil
@@ -110,11 +116,11 @@ enum PaystubTextParser {
         let lower = text.lowercased().replacingOccurrences(of: "-", with: " ")
         switch field {
         case .periodStart:
-            return lower.contains("pay period") || lower.contains("period starts")
-                || lower.contains("period beginning")
+            return periodLabel(in: lower, start: true) != nil
+                || (lower.contains("pay period") && periodLabel(in: lower, start: false) == nil)
         case .periodEnd:
-            return lower.contains("pay period") || lower.contains("period ends")
-                || lower.contains("period ending")
+            return periodLabel(in: lower, start: false) != nil
+                || (lower.contains("pay period") && periodLabel(in: lower, start: true) == nil)
         case .grossPay:
             return lower.range(of: #"\bgross\b"#, options: .regularExpression) != nil
                 && lower.range(of: #"\bnet\b"#, options: .regularExpression) == nil
@@ -135,6 +141,14 @@ enum PaystubTextParser {
         case .calloutPay: return lower.contains("callout") && !lower.contains("hours")
         case .perDiemPay: return lower.contains("per diem")
         }
+    }
+
+    private static func periodLabel(in text: String, start: Bool) -> Range<String.Index>? {
+        let word =
+            start ? "(?:start(?:s|ing)?|begin(?:s|ning)?|from)" : "(?:end(?:s|ing)?|through|to)"
+        return text.range(
+            of: "\\b(?:pay\\s+)?period\\s+" + word + "\\b",
+            options: [.regularExpression, .caseInsensitive])
     }
 
     private static func matches(in text: String, pattern: String) -> [String] {

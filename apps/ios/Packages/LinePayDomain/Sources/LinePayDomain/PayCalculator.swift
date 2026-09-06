@@ -23,7 +23,8 @@ public struct PayCalculator: Sendable {
         work: [WorkInterval],
         agreement: AgreementSnapshot,
         changes: [AgreementChange] = [],
-        policy: PayCalculationPolicy
+        policy: PayCalculationPolicy,
+        weekly: WeeklyRegularRateInput? = nil
     ) throws -> CalculationResult {
         try validate(work: work)
         let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
@@ -63,7 +64,6 @@ public struct PayCalculator: Sendable {
                 let amount = agreement.hourlyRate
                     .multiplied(by: slice.hours)
                     .multiplied(by: baseMultiplier)
-                    .rounded(using: agreement.rounding)
 
                 components.append(
                     PayComponent(
@@ -100,6 +100,8 @@ public struct PayCalculator: Sendable {
         )
         components += try perDiemComponents(segments: rawSegments)
 
+        components = try PayComponentRounding.apply(
+            components, snapshots: [agreement] + timeline.changes.map(\.agreement))
         let zero = Money.zero(currencyCode: agreement.hourlyRate.currencyCode)
         let total = try components.reduce(zero) {
             try $0.adding($1.amount)
@@ -114,7 +116,12 @@ public struct PayCalculator: Sendable {
             agreementVersion: agreement.version,
             components: components,
             total: total.rounded(using: agreement.rounding),
-            agreementSnapshots: snapshots.isEmpty ? [agreement] : snapshots
+            agreementSnapshots: snapshots.isEmpty ? [agreement] : snapshots,
+            provenance: CalculationProvenance(
+                engine: "linepay.configured-pay/2",
+                rounding: "explicit-snapshot-rounding/1",
+                callout: "confirmed-event-isolated-minimum/1"),
+            weeklyRegularRate: try weekly.map { try WeeklyRegularRateCalculator().calculate($0) }
         )
     }
 
@@ -317,58 +324,86 @@ public struct PayCalculator: Sendable {
         timeline: AgreementTimeline
     ) throws -> [PayComponent] {
         var result: [PayComponent] = []
-        for interval in work where interval.kind == .callout {
-            let startDate = try localDate(
+        let calls = work.filter { $0.kind == .callout }.sorted {
+            $0.startEpochSeconds < $1.startEpochSeconds
+        }
+        for interval in calls where interval.calloutEventID == nil {
+            let date = try localDate(
                 epochSeconds: interval.startEpochSeconds,
                 timeZoneIdentifier: interval.timeZoneIdentifier)
-            let endDate = try localDate(
+            let end = try localDate(
                 epochSeconds: interval.endEpochSeconds - 1,
                 timeZoneIdentifier: interval.timeZoneIdentifier)
+            if timeline.agreement(on: date).calloutMinimum != nil
+                || timeline.changes.contains(where: {
+                    $0.effectiveDate > date && $0.effectiveDate <= end
+                        && $0.agreement.calloutMinimum != nil
+                })
+            {
+                throw CalloutReviewError.eventIdentityRequired(interval.id)
+            }
+        }
+        let groups = Dictionary(grouping: calls.filter { $0.calloutEventID != nil }) {
+            $0.calloutEventID!
+        }
+        for group in groups.values.sorted(by: {
+            $0[0].startEpochSeconds < $1[0].startEpochSeconds
+        }) {
+            guard let first = group.first, let last = group.last else { continue }
+            let startDate = try localDate(
+                epochSeconds: first.startEpochSeconds,
+                timeZoneIdentifier: first.timeZoneIdentifier)
+            let endDate = try localDate(
+                epochSeconds: last.endEpochSeconds - 1,
+                timeZoneIdentifier: first.timeZoneIdentifier)
             let agreement = timeline.agreement(on: startDate)
+            guard group.allSatisfy({ $0.timeZoneIdentifier == first.timeZoneIdentifier }),
+                zip(group, group.dropFirst()).allSatisfy({
+                    $0.endEpochSeconds == $1.startEpochSeconds
+                })
+            else {
+                throw CalloutReviewError.unsupportedInteraction(first.calloutEventID ?? first.id)
+            }
+            let workedHours = group.reduce(Decimal.zero) { $0 + $1.durationHours }
             let crossed = timeline.changes.filter {
                 $0.effectiveDate > startDate && $0.effectiveDate <= endDate
             }
-            let possibleMinimums = ([agreement] + crossed.map(\.agreement))
-                .compactMap { $0.calloutMinimum?.minimumHours }
-            if !crossed.isEmpty,
-                possibleMinimums.contains(where: { $0 > interval.durationHours })
-            {
-                // A spanning guarantee is agreement-specific. Preserve facts; never guess its rate.
-                throw AgreementTimelineError.calloutGuaranteeNeedsReview(interval.id)
+            let minima = ([agreement] + crossed.map(\.agreement)).compactMap {
+                $0.calloutMinimum?.minimumHours
+            }
+            if !crossed.isEmpty && minima.contains(where: { $0 > workedHours }) {
+                throw AgreementTimelineError.calloutGuaranteeNeedsReview(first.id)
             }
             guard let rule = agreement.calloutMinimum else { continue }
-            let missingHours = rule.minimumHours - interval.durationHours
-            guard missingHours > 0 else {
-                continue
+            let missingHours = rule.minimumHours - workedHours
+            guard missingHours > 0 else { continue }
+            let ids = Set(group.map(\.id))
+            let paid = existingComponents.filter {
+                $0.category == .workedHours && $0.workIntervalID.map(ids.contains) == true
             }
-
-            let intervalComponents = existingComponents.filter {
-                $0.workIntervalID == interval.id && $0.category == .workedHours
+            let multipliers = Set(paid.compactMap(\.multiplier))
+            // The admitted minimum is isolated and constant-rate. Never guess an overlap price.
+            guard multipliers.count == 1, let multiplier = multipliers.first,
+                paid.allSatisfy({ $0.baseRate == agreement.hourlyRate }),
+                !work.contains(where: {
+                    !ids.contains($0.id) && $0.kind == .regular
+                        && $0.startEpochSeconds >= last.endEpochSeconds
+                        && Decimal($0.startEpochSeconds) < Decimal(first.startEpochSeconds) + rule
+                            .minimumHours * 3600
+                })
+            else {
+                throw CalloutReviewError.unsupportedInteraction(first.calloutEventID ?? first.id)
             }
-            let multipliers = intervalComponents.compactMap(\.multiplier)
-            let applicableMultiplier = multipliers.max() ?? 1
-            let amount = agreement.hourlyRate
-                .multiplied(by: missingHours)
-                .multiplied(by: applicableMultiplier)
-                .rounded(using: agreement.rounding)
-            let date = try localDate(
-                epochSeconds: interval.startEpochSeconds,
-                timeZoneIdentifier: interval.timeZoneIdentifier
-            )
-
+            let amount = agreement.hourlyRate.multiplied(by: missingHours).multiplied(
+                by: multiplier)
             result.append(
                 PayComponent(
-                    category: .calloutGuarantee,
-                    workIntervalID: interval.id,
-                    localDate: date,
-                    hours: missingHours,
-                    multiplier: applicableMultiplier,
-                    amount: amount,
-                    explanation: "callout minimum guarantee at the highest worked multiplier",
+                    category: .calloutGuarantee, workIntervalID: first.id, localDate: startDate,
+                    hours: missingHours, multiplier: multiplier, amount: amount,
+                    explanation:
+                        "one isolated minimum for the confirmed callout event; actual work is unchanged",
                     ruleKeys: [.callout], baseRate: agreement.hourlyRate,
-                    appliedAgreement: AgreementReference(agreement)
-                )
-            )
+                    appliedAgreement: AgreementReference(agreement)))
         }
         return result
     }
@@ -393,7 +428,7 @@ public struct PayCalculator: Sendable {
             return PayComponent(
                 category: .perDiem, workIntervalID: nil, localDate: day.date,
                 hours: nil, multiplier: nil,
-                amount: rule.amountPerWorkDate.rounded(using: agreement.rounding),
+                amount: rule.amountPerWorkDate,
                 explanation: "flat per diem for worked local date",
                 ruleKeys: [.perDiem], baseRate: nil,
                 appliedAgreement: AgreementReference(agreement)
@@ -578,5 +613,6 @@ public enum PayCalculationError: Error, Equatable, Sendable {
     case duplicateWorkIntervalID
     case overlappingWorkIntervals
     case calendarComputationFailed
+    case invalidRoundingInput
     case workOutsideAgreementEffectiveDates(LocalDate)
 }

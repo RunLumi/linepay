@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import LinePayDomain
@@ -99,7 +100,8 @@ func californiaCalloutMinimum() throws {
     let callout = try work(
         (2026, 9, 8, 20, 0),
         (2026, 9, 8, 22, 0),
-        kind: .callout
+        kind: .callout,
+        calloutEventID: UUID()
     )
 
     let result = try PayCalculator().calculate(

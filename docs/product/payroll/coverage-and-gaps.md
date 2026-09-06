@@ -16,6 +16,7 @@
 | Isolated callout minimum | `CalloutMinimumRule` and guarantee components exist | Complete regular-shift overlap, repeated-call, interrupted-rest, or mixed-rate treatment |
 | Flat allowance per work date | `FlatPerDiemRule.amountPerWorkDate` exists | Every subsistence eligibility exception, tax treatment, or statutory regular-rate classification |
 | Gross/line/hours comparison | `PaycheckAssessor` has explicit bases, scoped comparisons, and review/not-comparable states | A legal completeness check for unmodeled obligations |
+| Restricted weekly regular-rate layer | Complete-week input model, weighted rates, includable remuneration, eligible extra-premium credits, deterministic pay-period allocation, and native review flow exist | Applicability remains restricted; no state/local, public-agency, CBA, or universal federal certification |
 | Input validation and evidence review | Strict-decimal, OCR and confirmation code are present in the repository | Correct extraction of every employer's layout; OCR suggestions still need confirmation |
 | History, local persistence, backup/restore, Pro | Dedicated application adapters and tests exist | Device/sandbox release sign-off on a particular candidate |
 
@@ -25,15 +26,15 @@ Primary inspected types are linked in [I01](sources.md#i01). Additional file nam
 
 | Gap | Required action before claiming coverage | Safe scope in the meantime |
 |---|---|---|
-| GAP-01 Ordinary federal weekly overtime and complete workweek context | Represent recurring workweek, qualifying hours, regular-rate compensation, premium-credit treatment; add reviewed examples and regressions | Configured-rules estimate only, with statutory weekly coverage explicitly unchecked |
-| GAP-02 Regular-rate bonuses, differentials, multiple-rate alternatives, retroactive adjustments | Approved inclusion/exclusion/allocation policy, cross-week inputs and adjustment revisions | Do not certify the overtime amount from base rate alone |
+| GAP-01 Ordinary federal weekly overtime and complete workweek context | Restricted `WeeklyRegularRateCalculator` represents complete-week context, qualifying hours, weighted rates, explicit applicability, and pay-period allocation; EX-10–EX-14 regressions pass | Source/applicability admission, broader jurisdiction/CBA review, and any release claim remain explicitly gated by #42 |
+| GAP-02 Regular-rate bonuses, differentials, multiple-rate alternatives, retroactive adjustments | Includable bonuses, multiple straight-time rates, explicit extra-premium credits, and deterministic allocation are represented in the restricted layer | Retroactive multi-week adjustments, alternative statutory methods, and universal legal coverage remain unsupported |
 | GAP-03 State/local and public-agency applicability | Jurisdiction/employment matrix, actual rules and exceptions, applicable wage order, documented review | No nationwide “US compliant,” no automatic California/municipal preset |
 | GAP-04 Full CBA interactions | Validate assent/amendments and every claimed clause variant, especially callout overlap, rest and meals | Isolated configured clauses, not a fully verified agreement pack |
 | GAP-05 Prevailing-wage/fringe projects | Incorporated wage determination and classification/fringe/apprentice engine | Project compliance outside checked scope |
 | GAP-06 Travel, standby, show-up, non-work paid time and compensability | Explicit facts and applicable rule representation | Preserve facts and disclose unsupported classification/payment |
 | GAP-07 Taxes, net deductions, legal penalties, recovery claims | Separate reviewed product scope and legal/tax sources | Gross evidence comparison only; no legal debt or net-tax certification |
 
-**GAP-01 is a launch-positioning and product-safety issue, not just a future enhancement.** A daily-overtime calculator can miss an ordinary 48-hour week spread over six eight-hour days. A worker confirming all visible switches does not prove the omitted weekly check unnecessary. Any current UI that implies complete pay correctness without exposing this gap needs a follow-up implementation issue.
+**GAP-01 remains a launch-positioning and product-safety boundary.** The restricted layer can calculate an explicitly confirmed complete workweek, but it is not a nationwide legal engine. A worker confirming the weekly profile does not prove every state, CBA, public-agency, or alternative-method obligation applies or is represented. #42 remains open until the admitted scope receives the required source/applicability review.
 
 No new payroll feature is silently implemented by this documentation change. It specifies the correctness boundary for agents and product claims. A reviewed narrow profile may establish that configured payments satisfy particular obligations, but that requires explicit evidence, not the assumption that generous union premiums always exceed the statutory floor.
 

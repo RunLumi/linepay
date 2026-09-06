@@ -36,6 +36,20 @@ struct ReconciliationReportExporter {
             writer.section("Summary and comparison scope")
             writer.row("Expected wage pay", LinePayFormat.money(calculation.expectedWages))
             writer.row("Expected per diem", LinePayFormat.money(calculation.expectedAllowances))
+            if let provenance = calculation.provenance {
+                writer.caption(
+                    "Calculation engine: \(provenance.engine); rounding policy: \(provenance.rounding); callout policy: \(provenance.callout)"
+                )
+            } else {
+                writer.caption(
+                    "Calculation engine: unknown / legacy; the original calculation semantics were not recorded."
+                )
+            }
+            if let weekly = calculation.weeklyRegularRate {
+                writer.caption(
+                    "Weekly regular-rate layer: \(LinePayFormat.money(weekly.remainingAdditionalPremium)) additional premium after eligible credits; workweek \(LinePayFormat.localDate(weekly.weekStart))."
+                )
+            }
             if let paystub {
                 writer.row("Confirmed paystub gross", LinePayFormat.money(paystub.grossPay))
                 writer.row("Gross basis", paystub.confirmation?.grossBasis.title ?? "Not recorded")

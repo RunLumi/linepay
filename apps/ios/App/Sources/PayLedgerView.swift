@@ -34,6 +34,13 @@ struct PayLedgerView: View {
                         NavigationLink("Review rule snapshot") {
                             RuleSourcesView(agreement: context.agreement)
                         }
+                        if context.agreement.weeklyOvertime != nil {
+                            NavigationLink("Review weekly overtime") {
+                                WeeklyOvertimeReviewView(
+                                    model: model, weekStart: context.window.startDate)
+                            }
+                            .accessibilityIdentifier("pay.review-weekly-overtime")
+                        }
                     }
                     if context.workEntries.isEmpty {
                         Section {

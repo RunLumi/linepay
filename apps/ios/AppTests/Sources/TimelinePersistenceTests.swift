@@ -83,8 +83,9 @@ struct TimelinePersistenceTests {
         #expect(
             after.calculation == before.calculation
                 && after.agreementChanges == before.agreementChanges)
-        #expect(after.calculation.total.amount == 880)
-        #expect(after.calculation.components.map(\.appliedAgreement?.version) == ["1", "2"])
+        let calculation = try #require(after.calculation)
+        #expect(calculation.total.amount == 880)
+        #expect(calculation.components.map(\.appliedAgreement?.version) == ["1", "2"])
         let evidence = try #require(after.paystub?.evidence)
         let original = try #require(restored.model.evidenceURL(for: evidence))
         #expect(try Data(contentsOf: original) == Data("SYNTHETIC ORIGINAL".utf8))
