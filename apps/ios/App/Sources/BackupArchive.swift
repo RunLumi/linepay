@@ -157,19 +157,26 @@ struct BackupArchive: Sendable {
         }
         for period in state.history {
             try validateTimeline(baseline: period.agreement, changes: period.agreementChanges ?? [])
-            let snapshots = period.calculation.agreementSnapshots ?? [period.agreement]
-            for snapshot in snapshots { try validate(agreement: snapshot) }
-            for component in period.calculation.components {
-                if let reference = component.appliedAgreement {
-                    guard snapshots.contains(where: { AgreementReference($0) == reference }) else {
-                        throw BackupError.invalidArchive
+            if let calculation = period.calculation {
+                let snapshots = calculation.agreementSnapshots ?? [period.agreement]
+                for snapshot in snapshots { try validate(agreement: snapshot) }
+                for component in calculation.components {
+                    if let reference = component.appliedAgreement {
+                        guard snapshots.contains(where: { AgreementReference($0) == reference })
+                        else {
+                            throw BackupError.invalidArchive
+                        }
                     }
                 }
+                guard calculation.agreementID == period.agreement.id,
+                    calculation.agreementVersion == period.agreement.version,
+                    !calculation.total.amount.isNaN
+                else { throw BackupError.invalidArchive }
+            } else {
+                guard let issue = period.calculationIssue, !issue.isEmpty,
+                    period.reconciliation == nil
+                else { throw BackupError.invalidArchive }
             }
-            guard period.calculation.agreementID == period.agreement.id,
-                period.calculation.agreementVersion == period.agreement.version,
-                !period.calculation.total.amount.isNaN
-            else { throw BackupError.invalidArchive }
             try validate(
                 window: period.window, entries: period.workEntries, zone: period.timeZoneIdentifier)
         }

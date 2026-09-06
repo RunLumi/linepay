@@ -74,7 +74,8 @@ struct PayCalculatorInvariantTests {
         let pause = try WorkBreak(startEpochSeconds: 3_600, endEpochSeconds: 5_400)
         let shift = try WorkInterval(
             startEpochSeconds: 0, endEpochSeconds: 7_200,
-            timeZoneIdentifier: "UTC", kind: .callout, unpaidBreaks: [pause])
+            timeZoneIdentifier: "UTC", kind: .callout, unpaidBreaks: [pause],
+            calloutEventID: UUID())
         let rules = try agreement(
             hourlyRate: "40", calloutMinimum: CalloutMinimumRule(minimumHours: 4))
         let result = try PayCalculator().calculate(

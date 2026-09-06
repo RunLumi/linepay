@@ -60,7 +60,10 @@ struct AdditionalBoundaryTests {
             work: [shift], agreement: rules, policy: .highestApplicable)
         #expect(result.components.count == 2)
         #expect(result.components.allSatisfy { $0.multiplier == 1 })
-        // Each one-minute component rounds independently: 10 / 60 -> 0.17, twice.
-        #expect(result.total.amount == decimal("0.34"))
+        // The category allocator owns the aggregation boundary: 10 / 60 twice is $0.33.
+        #expect(result.total.amount == decimal("0.33"))
+        #expect(
+            result.components.reduce(Decimal.zero) { $0 + $1.amount.amount }
+                == result.total.amount)
     }
 }

@@ -72,6 +72,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var changeEffectiveDate: Date?
     var editScope: RuleEditScope = .futurePeriods
     var setupStep = 0
+    var roundingRule: MoneyRoundingRule?
     var sourceTitle = ""
     var sourceURL = ""
     var sourceSection = ""
@@ -80,6 +81,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
 
     init(profile: PayProfile, activePeriod: ActivePayPeriod? = nil) {
         let agreement = profile.agreement
+        roundingRule = agreement.rounding
         unsupportedRuleNotes = agreement.unsupportedRuleNotes ?? ""
         additionalOvertimeTiers = agreement.dailyOvertimeTiers.dropFirst().map {
             OvertimeTierDraft(
@@ -201,6 +203,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
 struct PaystubConfirmationDraft: Codable, Hashable, Sendable {
     var targetPeriodID: UUID?
     var workComplete: Bool?
+    var earningsLinesComplete: Bool?
     var grossBasis: PaystubGrossBasis = .unconfirmed
     var lineLayout: PaystubLineLayout = .unconfirmed
     var hoursBasis: PaystubHoursBasis = .unconfirmed
@@ -274,6 +277,11 @@ struct WorkDraft: Codable, Hashable, Sendable {
     var breakStart: Date
     var breakEnd: Date
     var copiedFrom: Date?
+    var calloutEventID: UUID?
+    var templateSource: WorkInterval?
+    var templateDay: Date?
+    var repeatedTimeChoices: [String: RepeatedTimeChoice]?
+    var templateUnresolved: Bool?
     var additionalBreaks: [BreakDraft] = []
 }
 
@@ -309,6 +317,7 @@ struct PaystubConfirmation: Codable, Hashable, Sendable {
     let suggestions: [PaystubField: OCRFieldSuggestion]
     let hasAdditionalUnmappedPay: Bool
     let workComplete: Bool?
+    var earningsLinesComplete: Bool? = nil
 }
 
 extension PaystubConfirmationDraft {

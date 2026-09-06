@@ -155,10 +155,10 @@ The week is an opportunity to build evidence, not seven push messages. All promp
 | Moment | User need | Product response and action |
 |---|---|---|
 | Immediately after verified start | “What did I start?” | Confirm annual plan, actual expiry/renewal date and price. Return to saved work. CTA **Log my next work** or **Check my paycheck**, based on available facts. |
-| Day 0 | Make setup useful | Ensure one real work record has a reviewed ledger. Offer one optional reminder for the user's chosen work-log time. |
+| Day 0 | Make setup useful | Ensure one real work record has a reviewed ledger. Reminders are deferred in iOS 1.0; the worker returns through the app when ready. |
 | Days 1–2 | Repeat without re-entering everything | **Add today's work**; offer reviewable reuse of the previous shift. Never automatically mark hours as worked. |
 | Days 2–4 | Experience recurring audit value | If matching paycheck/work facts exist: scan/import, confirm uncertain OCR, show comparison and source evidence. Otherwise help complete the current work period. |
-| Before renewal, preferably 48 hours ahead | Decide with confidence | Show a factual recap of records/checks, renewal amount/date, and **Manage Subscription**. Offer an opt-in local reminder only if implemented and successfully scheduled. |
+| Before renewal, preferably 48 hours ahead | Decide with confidence | Show a factual recap of records/checks, renewal amount/date, and **Manage Subscription**. Renewal reminders are deferred in iOS 1.0. |
 | At expiry or first paid transaction | Understand access | Reconcile verified StoreKit state. Show actual paid/expired status. Keep all existing records and results accessible. |
 | Following pay cycles | Reason to remain subscribed | Make repeated logging, checks, source review, and reports easier. Show usefulness, including matching paychecks, without guilt or monetary recovery claims. |
 
@@ -249,6 +249,10 @@ Predefine enrollment, minimum effect, readout date, confidence method, and stop 
 
 ## 10. Implementation gap and acceptance matrix
 
+### iOS 1.0 scope decision
+
+Optional work-log and renewal reminders are deliberately deferred from iOS 1.0. The product keeps the existing first-work proof, StoreKit status, and Manage Subscription paths; it does not request notification permission or imply that a reminder is scheduled. A later release may admit a local-only reminder only with explicit permission, verified scheduling/cancellation state, timezone handling, and lock-screen-safe copy.
+
 Inspection at source commit `03dedaa` found:
 
 - `OnboardingFlowView` has welcome/setup and completes immediately after saving.
@@ -269,7 +273,7 @@ A saved App Store offer alone does not close these gaps. Build the flow without 
 | Trial start / paid renewal / expiry / revoke / restore | Verified state transitions and no local timer-based Pro |
 | Active Pro skip; restored purchase skip | No duplicate trial invitation |
 | Trial/free-audit interaction | Focused tests for unused, used, active-trial, expired-trial, and same-period recheck cases |
-| Renewal reminder | Opt-in, verified date, scheduled confirmation, denied-permission path, cancelled-renewal handling |
+| Renewal reminder | Deferred from iOS 1.0; retain as a later requirement with verified date, permission, scheduling, cancellation, and cancelled-renewal handling |
 | Accessibility | Small/large iPhone, large text, dark mode, VoiceOver reading of price and selected plan, reachable Free/terms |
 | Retention | End-to-end repeat-work and second-paycheck journey; history remains accessible after cancellation |
 | Release | Full native gate, relevant Maestro flows, StoreKit sandbox/TestFlight evidence; no readiness claim from docs or configuration alone |

@@ -75,8 +75,8 @@ struct RuleScopeRegressionTests {
         #expect(model.calculation?.total.amount == 400)
         try model.archiveCurrentPeriod()
         let history = try #require(model.history.first)
-        #expect(
-            history.calculation.total.amount == 400 && history.agreement.hourlyRate.amount == 50)
+        let calculation = try #require(history.calculation)
+        #expect(calculation.total.amount == 400 && history.agreement.hourlyRate.amount == 50)
         let next = try #require(model.activePeriod)
         try model.addWork(
             start: next.window.startDate,

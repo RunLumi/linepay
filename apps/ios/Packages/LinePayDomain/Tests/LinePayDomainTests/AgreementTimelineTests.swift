@@ -73,7 +73,9 @@ struct AgreementTimelineTests {
 
     @Test(arguments: [true, false])
     func spanningCalloutNeverGuessesAGuaranteeRate(_ needsGuarantee: Bool) throws {
-        let shift = try work((2026, 8, 3, 23, 0), (2026, 8, 4, 1, 0), kind: .callout)
+        let shift = try work(
+            (2026, 8, 3, 23, 0), (2026, 8, 4, 1, 0), kind: .callout,
+            calloutEventID: UUID())
         let minimum: Decimal = needsGuarantee ? 4 : 2
         let initial = try rules("1", rate: 50, minimum: minimum)
         let changes = [
@@ -96,7 +98,9 @@ struct AgreementTimelineTests {
     }
 
     @Test func withinDateCalloutKeepsItsOwnVersionAndGuarantee() throws {
-        let shift = try work((2026, 8, 4, 8, 0), (2026, 8, 4, 9, 0), kind: .callout)
+        let shift = try work(
+            (2026, 8, 4, 8, 0), (2026, 8, 4, 9, 0), kind: .callout,
+            calloutEventID: UUID())
         let result = try PayCalculator().calculate(
             work: [shift], agreement: rules("1", rate: 50, minimum: 2),
             changes: [

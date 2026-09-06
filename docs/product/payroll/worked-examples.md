@@ -18,6 +18,8 @@
 | EX-08 | 2h at old $50, then 6h at new $60; effective change confirmed; no premium | 100 + 360 = **$460** | Preserve effective rates instead of 8 × latest rate |
 | EX-09 | 6h at $50 then 4h at $60 same workday; daily 1.5× after 8 | 300 + 120 + 180 = **$600** | Rate change does not reset daily accumulation |
 
+EX-08 is represented only for changes at payroll-local date boundaries. EX-09 remains a reference-only arithmetic vector: the current `AgreementTimeline` is midnight-effective and cannot represent an intraday rate change. Do not label EX-09 implemented until effective instants, daily accumulation continuity, reconciliation, callout interaction, and migration behavior are deliberately added and tested.
+
 EX-06 deliberately excludes regular-shift overlap, multiple calls, rest, and rate changes. It must not be labeled a complete test of any actual callout clause.
 
 ## Statutory reference cases, not current engine-coverage claims

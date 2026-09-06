@@ -40,7 +40,11 @@ enum AppStateValidation {
         for original in state.allEvidence + state.pendingEvidenceDeletions {
             guard safeFilename(original.storedFilename) else { throw invalid() }
         }
-        if let draft = state.workDraft, draft.periodID != state.activePeriod?.id { throw invalid() }
+        if let draft = state.workDraft, draft.periodID != state.activePeriod?.id {
+            guard
+                state.history.contains(where: { $0.id == draft.periodID && $0.calculation == nil })
+            else { throw invalid() }
+        }
         if let draft = state.paystubDraft, !ids.contains(draft.targetPeriodID ?? UUID()) {
             throw invalid()
         }
@@ -64,7 +68,20 @@ enum AppStateValidation {
                 agreement: active.agreement)
         }
         for period in state.history {
-            try validate(calculation: period.calculation, agreement: period.agreement)
+            if let calculation = period.calculation {
+                guard period.calculationIssue == nil else { throw invalid() }
+                try validate(calculation: calculation, agreement: period.agreement)
+            } else {
+                guard let issue = period.calculationIssue, !issue.isEmpty,
+                    period.reconciliation == nil
+                else { throw invalid() }
+            }
+            for revision in period.workCorrections ?? [] {
+                guard !revision.reason.isEmpty else { throw invalid() }
+                try validate(
+                    window: period.window, entries: revision.workEntries,
+                    zone: period.timeZoneIdentifier)
+            }
             if let paystub = period.paystub {
                 try validate(
                     paystub: paystub,
@@ -106,6 +123,19 @@ enum AppStateValidation {
             currencyCode: calculation.total.currencyCode
         ).rounded(using: agreement.rounding)
         guard sum == calculation.total else { throw invalid() }
+        for component in calculation.components {
+            if let raw = component.unroundedAmount {
+                guard !raw.amount.isNaN, raw.amount >= 0,
+                    raw.currencyCode == calculation.total.currencyCode
+                else { throw invalid() }
+            }
+        }
+        if let provenance = calculation.provenance {
+            guard provenance.engine == "linepay.configured-pay/2",
+                provenance.rounding == "explicit-snapshot-rounding/1",
+                provenance.callout == "confirmed-event-isolated-minimum/1"
+            else { throw invalid() }
+        }
         // Do not recalculate historical amounts with a new engine version.
     }
 
@@ -142,7 +172,7 @@ enum AppStateValidation {
         }
         // Legacy audits remain review-only.
         guard let assessment = paystub.assessment else { return }
-        guard (1...2).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,
+        guard (1...3).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,
             Set(assessment.comparisons.map(\.id)).count == assessment.comparisons.count
         else { throw invalid() }
         for comparison in assessment.comparisons {

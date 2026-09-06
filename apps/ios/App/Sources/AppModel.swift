@@ -292,6 +292,7 @@ final class AppModel {
             start: start,
             end: end,
             kind: kind,
+            calloutEventID: kind == .callout ? UUID() : nil,
             timeZoneIdentifier: active.agreementTimeZone(fallback: profile?.timeZoneIdentifier),
             unpaidBreakStart: unpaidBreakStart,
             unpaidBreakEnd: unpaidBreakEnd,
@@ -337,12 +338,19 @@ final class AppModel {
             throw AppModelError.workOutsideCurrentPayPeriod
         }
 
+        let calloutEventID: UUID? =
+            if kind == .callout {
+                active.workEntries.first(where: { $0.id == id })?.interval.calloutEventID ?? UUID()
+            } else {
+                nil
+            }
         let replacement = WorkEntry(
             interval: try makeWorkInterval(
                 id: id,
                 start: start,
                 end: end,
                 kind: kind,
+                calloutEventID: calloutEventID,
                 timeZoneIdentifier: active.agreementTimeZone(
                     fallback: profile?.timeZoneIdentifier
                 ),
@@ -1054,6 +1062,7 @@ final class AppModel {
         start: Date,
         end: Date,
         kind: WorkKind,
+        calloutEventID: UUID?,
         timeZoneIdentifier: String,
         unpaidBreakStart: Date?,
         unpaidBreakEnd: Date?,
@@ -1080,7 +1089,8 @@ final class AppModel {
             endEpochSeconds: epochSeconds(end),
             timeZoneIdentifier: timeZoneIdentifier,
             kind: kind,
-            unpaidBreaks: unpaidBreaks + additionalBreaks
+            unpaidBreaks: unpaidBreaks + additionalBreaks,
+            calloutEventID: calloutEventID
         )
     }
 
