@@ -21,6 +21,7 @@ appId: com.streamentry.linepay
       id: paystub.field.periodStart
     direction: UP
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodStart
@@ -37,6 +38,7 @@ appId: com.streamentry.linepay
     element:
       id: paystub.field.periodEnd
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.periodEnd
@@ -53,6 +55,7 @@ appId: com.streamentry.linepay
     element:
       id: paystub.field.grossPay
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.grossPay

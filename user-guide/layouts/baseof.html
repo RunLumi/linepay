@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | LinePaycheck Guide{{ end }}</title>
+  <meta name="description" content="{{ .Description | default .Site.Params.description }}">
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{ if or .Site.Params.noindex .Params.noindex (eq .Kind "404") }}<meta name="robots" content="noindex, follow">{{ end }}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ .Title }} | LinePaycheck">
+  <meta property="og:description" content="{{ .Description | default .Site.Params.description }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  {{ $logo := resources.Get "brand/logo.png" }}
+  {{ $icon := $logo.Resize "48x48 png" }}
+  <link rel="icon" type="image/png" href="{{ $icon.RelPermalink }}">
+  {{ $touch := $logo.Resize "180x180 png" }}
+  <link rel="apple-touch-icon" href="{{ $touch.RelPermalink }}">
+  {{ $theme := resources.Get "js/theme-init.js" | fingerprint "sha384" }}
+  <script src="{{ $theme.RelPermalink }}" integrity="{{ $theme.Data.Integrity }}"></script>
+  {{ $css := resources.Get "css/guide.css" | minify | fingerprint "sha384" }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+  {{ $js := resources.Get "js/guide.js" | fingerprint "sha384" }}
+  <script defer src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="{{ .Site.Home.RelPermalink }}" aria-label="LinePaycheck user guide home">
+      {{ $small := $logo.Resize "96x96 png" }}
+      <img src="{{ $small.RelPermalink }}" alt="" width="44" height="44">
+      <span><strong>LinePaycheck</strong><span class="brand-caption">User guide</span></span>
+    </a>
+    <div class="header-actions">
+      {{ with .Site.GetPage "/search" }}<a class="search-link" href="{{ .RelPermalink }}">Search guides <span aria-hidden="true">↗</span></a>{{ end }}
+      <label class="theme-control" hidden><span class="sr-only">Appearance</span><select id="appearance" aria-label="Appearance"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    </div>
+  </header>
+  <div class="site-layout">
+    <aside class="sidebar">
+      <details id="guide-navigation" open>
+        <summary>Browse the guide</summary>
+        {{ partial "navigation.html" . }}
+      </details>
+      <p class="sidebar-note">A clear record.<br>A careful comparison.<br>Your data to keep.</p>
+    </aside>
+    <main id="main" tabindex="-1">{{ block "main" . }}{{ end }}</main>
+  </div>
+  <footer class="site-footer">
+    <div><strong>Check every paycheck.</strong><p>Estimates and comparisons, not a determination of wages owed.</p></div>
+    <nav aria-label="Footer"><a href="https://linepaycheck.com/support">Contact support</a><a href="https://linepaycheck.com/privacy">Privacy policy</a><a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">App terms</a></nav>
+    <p class="footer-note">iPhone guide · Content reviewed {{ .Site.Params.reviewed }}. Features and labels can vary by app version.</p>
+  </footer>
+</body>
+</html>

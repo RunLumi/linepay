@@ -235,7 +235,13 @@ final class AppModel {
                             timeIntervalSince1970: TimeInterval($0.interval.endEpochSeconds - 1)),
                         timeZoneIdentifier: existing.timeZoneIdentifier)
                 }.max()
-                guard lastWorkDate.map({ date > $0 }) ?? true else {
+                let lastArchivedDate = state.history.map {
+                    localDate(
+                        from: $0.window.displayEndDate,
+                        timeZoneIdentifier: existing.timeZoneIdentifier)
+                }.max()
+                let lastImmutableDate = [lastWorkDate, lastArchivedDate].compactMap { $0 }.max()
+                guard lastImmutableDate.map({ date > $0 }) ?? true else {
                     throw AppModelError.prospectiveChangeTouchesRecordedWork
                 }
                 changes.removeAll { $0.effectiveDate == date }

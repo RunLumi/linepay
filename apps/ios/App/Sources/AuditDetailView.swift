@@ -121,6 +121,7 @@ struct AuditDetailView: View {
                         NavigationLink("View original paystub") {
                             SourceEvidenceView(url: url, region: nil)
                         }
+                        .accessibilityIdentifier("audit.view-original")
                         Text(evidence.originalFilename).font(.footnote)
                         Button("Remove this original", role: .destructive) { showingRemove = true }
                     } else {

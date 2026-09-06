@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 @Suite("PDF receiver handoff preserves the preview", .serialized)
 @MainActor
 struct ReportTransferTests {
+    @available(iOS 18.2, *)
     @Test func actualTransferRepresentationSurvivesWorkingFileCleanup() async throws {
         let store = UnitStateStore()
         let model = AppModel(store: store)
@@ -42,12 +43,13 @@ struct ReportTransferTests {
         let document = try #require(PDFDocument(data: transferredAfterCleanup))
         #expect(document.pageCount > 0)
         let text = try #require(document.string)
-        #expect(text.contains("400.00"))
+        #expect(text.contains("Expected wage pay:") && text.contains("400"))
         #expect(text.contains("Not a complete wage-law check"))
         #expect(text.contains("not anonymous"))
         #expect(store.state == stateBefore)
     }
 
+    @available(iOS 18.2, *)
     @Test func unsupportedReceiverTypeCannotSilentlyExportAnotherFormat() async throws {
         let data = Data("SYNTHETIC PDF REPRESENTATION".utf8)
         let payload = ReportSharePayload(

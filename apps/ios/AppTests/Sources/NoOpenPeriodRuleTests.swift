@@ -124,6 +124,28 @@ struct NoOpenPeriodRuleTests {
         #expect(store.state == before)
     }
 
+    @Test func datedChangeCannotClaimToStartInsideAnArchivedWindow() throws {
+        let store = UnitStateStore()
+        let model = try closedManualPeriod(store: store)
+        let before = store.state
+        var draft = UnitFixture.profile(rate: "60", cadence: .manual)
+        draft.editScope = .datedChange
+        // The archived manual period covers days 0 and 1, although work exists only on day 0.
+        draft.changeEffectiveDate = UnitFixture.start + 86_400
+        #expect(throws: AppModelError.prospectiveChangeTouchesRecordedWork) {
+            try model.saveProfile(draft, scope: .prospective)
+        }
+        #expect(store.state == before)
+
+        // Its exclusive end is the first date that can truthfully begin a new rule timeline.
+        draft.changeEffectiveDate = UnitFixture.start + 2 * 86_400
+        try model.saveProfile(draft, scope: .prospective)
+        #expect(
+            model.profile?.agreementChanges?.first?.effectiveDate
+                == LocalDate(
+                    year: 2026, month: 8, day: 9))
+    }
+
     @Test func failedSaveKeepsBaselineScheduledDatesAndHistory() throws {
         let store = UnitStateStore()
         let model = try closedManualPeriod(store: store, scheduleLaterRate: true)

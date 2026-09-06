@@ -14,6 +14,18 @@ tags: [ios, regression, payroll-scope]
 - tapOn:
     id: pay.check-paycheck
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.choose-photo
+    timeout: 60000
+- assertVisible:
+    id: paystub.choose-photo
+- scrollUntilVisible:
+    element:
+      id: paystub.choose-file
+    timeout: 60000
+- assertVisible:
+    id: paystub.choose-file
 - runFlow:
     file: ../helpers/confirm-paystub.yaml
     env:
@@ -143,17 +155,59 @@ tags: [ios, regression, payroll-scope]
 - assertVisible:
     id: audit.scope
 - takeScreenshot: offsetting-components-needs-review
-- stopApp
-- launchApp
-- tapOn: Pay
+- scrollUntilVisible:
+    element:
+      id: audit.export
+    timeout: 60000
+- tapOn:
+    id: audit.export
+- scrollUntilVisible:
+    element:
+      id: audit.share-report
+    direction: UP
+    timeout: 60000
+- assertVisible:
+    id: audit.share-report
+- takeScreenshot: offsetting-lines-report-ready
+- tapOn:
+    text: Pay
+    index: 0
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: pay.open-audit
+      id: pay.finish-period
+    timeout: 60000
+- tapOn:
+    id: pay.finish-period
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: period.confirm-close
+    centerElement: true
+    timeout: 60000
+- tapOn:
+    id: period.confirm-close
+    text: Finish and archive
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn: History
+- waitForAnimationToEnd
+- tapOn:
+    id: history.period.*
+- waitForAnimationToEnd
+- assertVisible: Needs review
+- takeScreenshot: offsetting-lines-archived
+- stopApp
+- launchApp
+- tapOn: History
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: history.period.*
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
-    id: pay.open-audit
+    id: history.period.*
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element: Needs review

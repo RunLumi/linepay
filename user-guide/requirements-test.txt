@@ -1,0 +1,2 @@
+# Optional developer/CI browser tests only. The site itself has no Python dependency.
+playwright==1.57.0
