@@ -73,18 +73,8 @@ struct PayProfileSetupView: View {
                         Button("Cancel") { dismiss() }
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(
-                        step == 3
-                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
-                    ) {
-                        advance()
-                    }
-                    .accessibilityIdentifier(
-                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
-                }
-                if step == 3, editing {
-                    ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .confirmationAction) {
+                    if step == 3, editing {
                         Menu("Scope") {
                             Button("Future work periods only") {
                                 draft.editScope = .futurePeriods
@@ -98,6 +88,14 @@ struct PayProfileSetupView: View {
                         }
                         .accessibilityIdentifier("pay-profile.change-scope")
                     }
+                    Button(
+                        step == 3
+                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
+                    ) {
+                        advance()
+                    }
+                    .accessibilityIdentifier(
+                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
                 }
             }
         }
