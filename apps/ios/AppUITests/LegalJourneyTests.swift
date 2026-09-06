@@ -7,6 +7,7 @@ final class LegalJourneyTests: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        app.terminate()
         XCUIDevice.shared.appearance = .light
     }
 
