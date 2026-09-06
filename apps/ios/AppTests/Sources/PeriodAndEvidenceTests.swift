@@ -91,6 +91,7 @@ struct PeriodAndEvidenceTests {
 
         var invalid = UnitFixture.paystub(model, original: Data("REPLACEMENT".utf8))
         invalid.regularPay = "not a number"
+        invalid.reviewedFields.insert(.regularPay)
         #expect(throws: (any Error).self) { try model.confirmPaystub(invalid) }
         #expect(model.currentPaystub?.evidence == prior)
         #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).count == 1)
@@ -103,7 +104,8 @@ struct PeriodAndEvidenceTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).count == 1)
         store.failSave = false
         try model.confirmPaystub(UnitFixture.paystub(model, original: Data("REPLACEMENT".utf8)))
-        #expect(originals.url(for: prior) == nil)
+        #expect(try Data(contentsOf: priorURL) == bytes)
+        #expect(model.periodContext()?.revisions.first?.paystub.evidence == prior)
         #expect(model.currentPaystub?.evidence?.id != prior.id)
         let newURL = try #require(model.currentPaystub?.evidence.flatMap { originals.url(for: $0) })
         #expect(try Data(contentsOf: newURL) == Data("REPLACEMENT".utf8))

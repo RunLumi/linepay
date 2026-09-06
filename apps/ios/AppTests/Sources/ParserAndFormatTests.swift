@@ -8,22 +8,23 @@ import Testing
 struct PaystubParserTests {
     @Test(arguments: [
         ("Gross pay $1,234.56", "1234.56"), ("GROSS EARNINGS 1234.56", "1234.56"),
-        ("Gross 0.00", "0.00"),
+        ("Gross 0.00", "0"),
+        ("Gross pay Current $1,234.56 YTD $12,345.67", "1234.56"),
     ])
     func unambiguousGross(_ line: String, _ expected: String) {
-        let result = PaystubTextParser.parse(lines: [line])
-        #expect(result.grossPay == expected)
-        #expect(result.recognizedText == line)
+        let result = parse([line])
+        #expect(result[.grossPay]?.value == expected)
+        #expect(result[.grossPay]?.sourceText == line)
     }
 
     @Test(arguments: [
-        "Gross pay Current $1,234.56 YTD $12,345.67", "Gross pay 100.00 200.00",
+        "Gross pay 100.00 200.00",
         "Gross adjustment -125.00", "Gross ($125.00)", "Gross 125.00-",
         "Gross YEAR TO DATE 125.00", "Gross 1,23.00", "Gross 125.000",
         "Gross nothing", "Gross 1.234,56", "Grosspay 125.00", "Gross abc125.00",
     ])
     func uncertainOrMalformedValueIsNotSuggested(_ line: String) {
-        #expect(PaystubTextParser.parse(lines: [line]).grossPay == nil)
+        #expect(parse([line])[.grossPay]?.value == nil)
     }
 
     @Test func supportedLabelsStayIndependent() {
@@ -31,13 +32,24 @@ struct PaystubParserTests {
             "Gross 500.00", "Regular pay 300.00", "OT pay 100.00", "Double-time 50.00",
             "Per-diem 50.00",
         ]
-        let result = PaystubTextParser.parse(lines: lines)
-        #expect(result.regularPay == "300.00" && result.overtimePay == "100.00")
-        #expect(result.doubleTimePay == "50.00" && result.perDiemPay == "50.00")
-        #expect(result.recognizedText == lines.joined(separator: "\n"))
-        #expect(PaystubTextParser.parse(lines: ["Gross 100.00", "Gross 200.00"]).grossPay == nil)
-        #expect(PaystubTextParser.parse(lines: []).recognizedText.isEmpty)
-        #expect(PaystubTextParser.parse(lines: []).grossPay == nil)
+        let result = parse(lines)
+        #expect(result[.regularPay]?.value == "300" && result[.overtimePay]?.value == "100")
+        #expect(result[.doubleTimePay]?.value == "50" && result[.perDiemPay]?.value == "50")
+        #expect(result[.grossPay]?.sourceText == lines[0])
+        #expect(parse(["Gross 100.00", "Gross 200.00"])[.grossPay]?.value == nil)
+        #expect(parse([]).isEmpty)
+        #expect(parse([])[.grossPay]?.value == nil)
+    }
+
+    private func parse(_ lines: [String]) -> [PaystubField: OCRFieldSuggestion] {
+        PaystubTextParser.parse(
+            lines.enumerated().map { index, text in
+                RecognizedPaystubLine(
+                    text: text,
+                    region: SourceRegion(
+                        page: 0, x: 0, y: Double(index) / 20, width: 1, height: 0.04),
+                    confidence: 0.99)
+            })
     }
 
     @Test(arguments: ["pdf", "PDF", "png", "", "heic"])

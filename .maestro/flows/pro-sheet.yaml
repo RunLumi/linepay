@@ -4,20 +4,23 @@ tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
 - tapOn: Settings
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: settings.view-pro
-    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: settings.view-pro
+- waitForAnimationToEnd
 - assertVisible:
-    id: paywall.not-now
+    id: paywall.dismiss
 - scrollUntilVisible:
     element:
       id: paywall.monthly
+- waitForAnimationToEnd
 - tapOn:
     id: paywall.monthly
+- waitForAnimationToEnd
 - assertVisible:
     id: paywall.purchase
     enabled: false
@@ -25,17 +28,22 @@ tags: [smoke, ios, regression]
 - scrollUntilVisible:
     element:
       id: paywall.restore
+- waitForAnimationToEnd
 - takeScreenshot: pro-terms
 - scrollUntilVisible:
     element:
       id: paywall.terms
+    direction: UP
     visibilityPercentage: 30
+- waitForAnimationToEnd
 - scroll
 - takeScreenshot: pro-terms-end
 - tapOn:
-    id: paywall.not-now
+    id: paywall.dismiss
+- waitForAnimationToEnd
 - assertVisible:
     id: settings.view-pro
 - tapOn: Today
+- waitForAnimationToEnd
 - assertVisible:
     id: today.add-work

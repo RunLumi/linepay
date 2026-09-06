@@ -3,25 +3,49 @@ appId: com.streamentry.linepay
 - scrollUntilVisible:
     element:
       id: today.add-work
-    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: today.add-work
+- waitForAnimationToEnd
 - assertVisible:
     id: work.start
 - takeScreenshot: work-form
 - scrollUntilVisible:
     element:
       id: work.note
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: work.note
+- waitForAnimationToEnd
 - inputText: Synthetic QA shift
 - tapOn:
     id: keyboard.done
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: work.save
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: work.save
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: activation.keep-logging
+    timeout: 60000
+- waitForAnimationToEnd
 - assertVisible:
-    id: today.repeat-shift
+    id: activation.keep-logging
+- takeScreenshot: first-real-result
+- tapOn:
+    id: activation.keep-logging
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.repeat-shift
-    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
+- assertVisible:
+    id: today.repeat-shift

@@ -15,13 +15,17 @@ struct AuditScopeRegressionTests {
         var stub = UnitFixture.paystub(model)
         stub.regularPay = "350"
         stub.overtimePay = "50"
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
         try model.confirmPaystub(stub)
         #expect(model.reconciliation?.direction == .matches)
         #expect(model.currentAuditStatus == .needsReview)
         let assessment = evaluate(model)
         #expect(
             assessment.status == .needsReview
-                && assessment.explanation.contains("gross total matches"))
+                && assessment.explanation.lowercased().contains("gross total matches"))
         let period = try #require(model.activePeriod)
         let url = try ReconciliationReportExporter().export(
             window: period.window, timeZoneIdentifier: "UTC", agreement: period.agreement,
@@ -44,14 +48,22 @@ struct AuditScopeRegressionTests {
         let model = AppModel()
         try UnitFixture.populate(model)
         var stub = UnitFixture.paystub(model)
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
         try model.confirmPaystub(stub)
         #expect(model.currentAuditStatus == .grossMatches)
-        #expect(evaluate(model).explanation.contains("hours have not been verified"))
+        #expect(model.currentPaystub?.assessment?.scope == .grossOnly)
         stub.regularPay = "400"
         stub.regularHours = "8"
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
         try model.confirmPaystub(stub)
         #expect(model.currentAuditStatus == .matches)
-        #expect(evaluate(model).explanation.contains("Blank fields"))
+        #expect(model.currentPaystub?.assessment?.scope == .confirmedLines)
     }
 
     @Test(arguments: ["7.5", "8.5", "0"])
@@ -61,6 +73,10 @@ struct AuditScopeRegressionTests {
         var stub = UnitFixture.paystub(model)
         stub.regularPay = "400"
         stub.regularHours = hours
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
         try model.confirmPaystub(stub)
         #expect(model.currentAuditStatus == .needsReview)
         #expect(evaluate(model).hours.first?.expected == 8)

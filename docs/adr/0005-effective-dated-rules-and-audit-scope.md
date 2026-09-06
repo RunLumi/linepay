@@ -24,7 +24,7 @@ The backup envelope remains format 1. It includes the embedded state schema; imp
 
 ## One audit assessment
 
-`AuditAssessment` owns amount aggregation, confirmed worked-hour comparisons, the summary verdict, and its scope explanation. AppModel, live views, history, and PDF exports use that assessment. A stored gross reconciliation remains a gross observation, not the display verdict for an entire paycheck.
+`LinePayDomain.PaycheckAssessor` owns comparison arithmetic and scope from explicitly confirmed facts. Its result is saved with each audit. The app's `AuditAssessment` validates that a saved assessment still matches its calculation/reconciliation before presenting it. AppModel, live views, history and PDF exports share this validity check. [ADR 0006](0006-evidence-aware-payday-records.md) adds confirmed gross basis, work completeness, source provenance and durable audit revisions. A stored gross reconciliation remains a gross observation, not the display verdict for an entire paycheck.
 
 - **Gross total matches:** only gross was compared; components and hours are unverified.
 - **Confirmed items match:** the supplied details match; blank items, deductions, and unsupported rules remain unverified.
@@ -33,7 +33,7 @@ The backup envelope remains format 1. It includes the embedded state schema; imp
 
 Hours compare actual worked-hour buckets, not synthetic callout-guarantee hours. Differences are reasons to review payroll categorization/rounding, not legal conclusions. Missing optional values are not zero. Auditing with no work is blocked without consuming the free audit.
 
-This change does not solve every existing product gap, especially paycheck layouts that report allowances separately from gross, late first audits of closed periods, arbitrary agreement support, durable drafts, or source-crop OCR review.
+ADR 0006 integrates separate per-diem comparability, late audits of closed periods, durable drafts and source review. Arbitrary agreement interpretation remains unsupported. A future-period timezone change closes on the old frozen boundary and requires an explicit non-overlapping new boundary.
 
 ## Verification contract
 

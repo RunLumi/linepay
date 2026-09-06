@@ -27,7 +27,12 @@ final class AppSession {
     }
 
     static func production() -> AppSession {
-        AppSession(store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore())
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                return UITestFixtures.session()
+            }
+        #endif
+        return AppSession(store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore())
     }
 
     func prepareBackup() async throws -> Data {
@@ -94,6 +99,9 @@ final class AppSession {
                 )
             }
             var candidate = archive.state.replacingEvidence(replacements)
+            // Imported deletion queues contain physical filenames from a different install.
+            candidate.pendingEvidenceDeletions =
+                oldReferences + (previous?.pendingEvidenceDeletions ?? [])
             // A data restore is not a way to grant Pro or reset previously used free access.
             candidate.hasUsedFreeAudit =
                 candidate.hasUsedFreeAudit
@@ -107,12 +115,12 @@ final class AppSession {
             throw cleanupFailed ? BackupError.cleanupFailed : BackupError.restoreFailed
         }
 
-        // The state is now committed; cleanup errors must not be reported as a failed restore.
-        var cleanupFailed = false
-        for reference in oldReferences {
-            do { try evidenceStore.delete(reference) } catch { cleanupFailed = true }
-        }
+        // The state is now committed; retain a retryable queue for failed old-file cleanup.
         model = AppModel(store: store, evidenceStore: evidenceStore)
+        var cleanupFailed = false
+        if model.pendingDeletionCount > 0 {
+            do { try model.retryEvidenceDeletion() } catch { cleanupFailed = true }
+        }
         revision = UUID()
         if model.persistenceIssue != nil {
             restoreNotice =

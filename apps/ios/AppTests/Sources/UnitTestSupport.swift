@@ -41,6 +41,10 @@ enum UnitFixture {
         draft.payPeriodStartDate = model.activePeriod?.window.startDate
         draft.payPeriodEndDate = model.activePeriod?.window.displayEndDate
         draft.grossPay = gross
+        draft.targetPeriodID = model.activePeriod?.id
+        draft.workComplete = true
+        draft.grossBasis = .wagesOnly
+        draft.reviewedFields = [.periodStart, .periodEnd, .grossPay]
         draft.sourceData = original
         draft.originalFilename = "synthetic.pdf"
         draft.mediaType = "application/pdf"

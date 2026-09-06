@@ -25,10 +25,10 @@ struct ReportExporterTests {
         let pdf = try #require(PDFDocument(url: url))
         let text = try #require(pdf.string)
         #expect(pdf.pageCount > 0)
-        #expect(text.contains("Expected gross") && text.contains("Confirmed paid gross"))
+        #expect(text.contains("Expected wage pay") && text.contains("Confirmed paystub gross"))
         #expect(text.contains(model.currentAuditStatus.title))
         #expect(text.contains("Rule snapshot") && text.contains("not a legal determination"))
-        #expect(text.contains("Original paystub images/PDFs are not included"))
+        #expect(text.contains("Original paystub pages are excluded"))
     }
 
     @Test func longLedgerPaginatesWithoutDroppingTail() throws {
@@ -54,6 +54,6 @@ struct ReportExporterTests {
         let pdf = try #require(PDFDocument(url: url))
         let text = try #require(pdf.string)
         #expect(pdf.pageCount > 1 && text.contains("SYNTHETIC-ROW-89"))
-        #expect(text.contains("Not entered") && text.contains("Rule snapshot"))
+        #expect(text.contains("Awaiting paycheck") && text.contains("Rule snapshot"))
     }
 }

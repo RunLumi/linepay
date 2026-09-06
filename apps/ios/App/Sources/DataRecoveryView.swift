@@ -48,6 +48,16 @@ struct DataRecoveryView: View {
                         .foregroundStyle(LinePayColor.textSecondary)
                     }
 
+                    Button("Try opening data again") {
+                        do {
+                            try model.retryLoad()
+                            errorMessage = nil
+                        } catch { errorMessage = error.localizedDescription }
+                    }.buttonStyle(LinePayPrimaryButtonStyle())
+                        .accessibilityIdentifier("recovery.retry")
+                    NavigationLink("Support and recovery information") {
+                        LegalTextView(kind: .support)
+                    }
                     BackupRestoreEntryPoint(title: "Restore from iCloud Drive")
 
                     Button(role: .destructive) {

@@ -9,8 +9,8 @@ struct OnboardingFlowView: View {
     let model: AppModel
     let onComplete: () -> Void
 
-    @State private var step: Step = .welcome
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var step: Step = .welcome
 
     var body: some View {
         Group {

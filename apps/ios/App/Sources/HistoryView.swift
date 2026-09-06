@@ -3,266 +3,191 @@ import SwiftUI
 
 struct HistoryView: View {
     let model: AppModel
-
+    let subscriptionStore: SubscriptionStore
+    var onOpenCurrent: () -> Void = {}
     var body: some View {
         NavigationStack {
-            Group {
+            List {
                 if model.history.isEmpty {
-                    emptyState
+                    Section {
+                        Text("No finished work periods yet").font(.title2.bold())
+                        Text(
+                            "Close a work period to keep it here. Its paycheck can be audited later."
+                        )
+                        Button("Go to current pay period") { onOpenCurrent() }.frame(minHeight: 48)
+                    }
                 } else {
-                    List {
-                        ForEach(model.history) { period in
-                            NavigationLink {
-                                HistoricalPayPeriodView(model: model, period: period)
-                            } label: {
-                                historyRow(period)
+                    let groups = Dictionary(grouping: model.history, by: monthKey)
+                    ForEach(groups.keys.sorted().reversed(), id: \.self) { key in
+                        Section(key) {
+                            ForEach(
+                                (groups[key] ?? []).sorted {
+                                    $0.window.startEpochSeconds > $1.window.startEpochSeconds
+                                }
+                            ) { period in
+                                NavigationLink {
+                                    HistoricalPeriodView(
+                                        model: model, subscriptionStore: subscriptionStore,
+                                        periodID: period.id)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(
+                                            LinePayFormat.payPeriod(
+                                                period.window,
+                                                timeZoneIdentifier: model.timeZoneIdentifier(
+                                                    for: period))
+                                        ).font(.headline)
+                                        Text(
+                                            "Expected wages \(LinePayFormat.money(period.calculation.expectedWages))"
+                                        ).monospacedDigit()
+                                        if let paid = period.paystub {
+                                            Text("Paid gross \(LinePayFormat.money(paid.grossPay))")
+                                                .monospacedDigit()
+                                            if let difference = paid.assessment?.difference {
+                                                Text(
+                                                    "Difference \(LinePayFormat.money(difference))"
+                                                ).monospacedDigit()
+                                            }
+                                            AuditStatusView(status: model.auditStatus(for: period))
+                                        } else {
+                                            Label("Awaiting paycheck", systemImage: "clock")
+                                                .foregroundStyle(LinePayColor.review)
+                                        }
+                                    }.padding(.vertical, 8).accessibilityElement(children: .combine)
+                                }
+                                .accessibilityIdentifier("history.period.\(period.id.uuidString)")
                             }
-                            .accessibilityIdentifier("history.open-period")
                         }
                     }
-                    .listStyle(.plain)
                 }
             }
-            .background(LinePayColor.canvas)
-            .labeledContentStyle(LinePayValueStyle())
+            .listStyle(.plain).scrollContentBackground(.hidden).background(LinePayColor.canvas)
             .navigationTitle("History")
         }
     }
-
-    private var emptyState: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-                Text("No finished pay periods yet")
-                    .font(.title2.bold())
-                Text(
-                    "When you finish a pay period, LinePaycheck freezes its work facts, rule snapshot, "
-                        + "calculation, and any paycheck audit here."
-                )
-                .foregroundStyle(LinePayColor.textSecondary)
-            }
-            .padding(LinePaySpacing.section)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private func historyRow(_ period: CompletedPayPeriod) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(
-                LinePayFormat.payPeriod(
-                    period.window,
-                    timeZoneIdentifier: model.timeZoneIdentifier(for: period)
-                )
-            )
-            .font(.headline)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(LinePayFormat.money(period.calculation.total))
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
-                if let paid = period.paystub?.grossPay {
-                    Text("Paid \(LinePayFormat.money(paid))")
-                        .font(.footnote.monospacedDigit())
-                        .foregroundStyle(LinePayColor.textSecondary)
-                }
-            }
-
-            AuditStatusView(status: model.auditStatus(for: period))
-        }
-        .padding(.vertical, LinePaySpacing.compact)
+    private func monthKey(_ period: CompletedPayPeriod) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: model.timeZoneIdentifier(for: period))
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: period.window.startDate)
     }
 }
 
-private struct HistoricalPayPeriodView: View {
+struct HistoricalPeriodView: View {
     let model: AppModel
-    let period: CompletedPayPeriod
-
+    let subscriptionStore: SubscriptionStore
+    let periodID: UUID
     @Environment(\.dismiss) private var dismiss
-    @State private var showingDeleteConfirmation = false
-    @State private var reportURL: URL?
+    @State private var showingImport = false
+    @State private var showingResult = false
+    @State private var showingPaywall = false
+    @State private var showingDelete = false
     @State private var errorMessage: String?
-
     var body: some View {
         List {
-            Section("Snapshot") {
-                LabeledContent("Expected gross") {
-                    Text(LinePayFormat.money(period.calculation.total))
-                        .monospacedDigit()
-                }
-                if let paystub = period.paystub {
-                    LabeledContent("Confirmed paid gross") {
-                        Text(LinePayFormat.money(paystub.grossPay))
-                            .monospacedDigit()
-                    }
-                }
-                AuditStatusView(status: model.auditStatus(for: period))
-                LabeledContent("Rule version", value: period.agreement.version)
-            }
-
-            Section("Pay ledger") {
-                ForEach(period.calculation.components) { component in
-                    VStack(alignment: .leading, spacing: 4) {
-                        LabeledContent {
-                            Text(LinePayFormat.money(component.amount))
-                                .font(.headline.monospacedDigit())
-                        } label: {
-                            Text(categoryLabel(component.category))
-                                .font(.headline)
-                        }
-                        HStack(spacing: LinePaySpacing.compact) {
-                            Text(LinePayFormat.localDate(component.localDate))
-                            if let hours = component.hours {
-                                Text("\(LinePayFormat.hours(hours)) h").monospacedDigit()
-                            }
-                            if let multiplier = component.multiplier {
-                                Text("\(LinePayFormat.decimal(multiplier))×").monospacedDigit()
-                            }
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(LinePayColor.textSecondary)
-                        Text(component.explanation)
-                            .font(.footnote)
-                            .foregroundStyle(LinePayColor.textSecondary)
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-
-            if let paystub = period.paystub {
-                Section("Audit") {
-                    NavigationLink("Open paycheck audit") {
-                        AuditDetailView(
-                            window: period.window,
-                            timeZoneIdentifier: model.timeZoneIdentifier(for: period),
-                            agreement: period.agreement,
-                            calculation: period.calculation,
-                            paystub: paystub,
-                            reconciliation: period.reconciliation,
-                            findings: model.auditFindings(
-                                calculation: period.calculation,
-                                paystub: paystub
-                            ),
-                            evidenceURL: paystub.evidence.flatMap(model.evidenceURL),
-                            onRemoveEvidence: paystub.evidence == nil
-                                ? nil
-                                : { try model.removeHistoricalPaystubEvidence(periodID: period.id) }
-                        )
-                    }
-                }
-            }
-
-            Section("Work facts") {
-                ForEach(period.workEntries) { entry in
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(workKindLabel(entry.interval.kind))
-                            .font(.headline)
-                        Text(LinePayFormat.workDateRange(entry.interval))
-                            .font(.footnote)
-                        HStack(spacing: LinePaySpacing.compact) {
-                            Text("\(LinePayFormat.hours(entry.interval.durationHours)) h paid work")
-                                .monospacedDigit()
-                            if let breakText = LinePayFormat.breakDuration(entry.interval) {
-                                Text("· \(breakText)")
-                            }
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(LinePayColor.textSecondary)
-                        if !entry.note.isEmpty {
-                            Text(entry.note)
-                                .font(.footnote)
-                                .foregroundStyle(LinePayColor.textSecondary)
+            if let context = model.periodContext(id: periodID) {
+                Section("Closed work period") {
+                    Text(
+                        LinePayFormat.payPeriod(
+                            context.window, timeZoneIdentifier: context.timeZoneIdentifier)
+                    ).font(.headline)
+                    PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
+                    Text(
+                        "Timezone: \(context.timeZoneIdentifier) · rules v\(context.agreement.version)"
+                    ).font(.footnote)
+                    if context.paystub == nil {
+                        Label("Awaiting paycheck", systemImage: "clock")
+                    } else {
+                        AuditStatusView(status: model.status(for: context))
+                        NavigationLink("Open paycheck audit") {
+                            LiveAuditView(
+                                model: model, subscriptionStore: subscriptionStore,
+                                periodID: periodID)
                         }
                     }
-                    .padding(.vertical, 3)
+                    Button(context.paystub == nil ? "Add this paycheck" : "Correct paycheck facts")
+                    { beginAudit() }
+                    .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
+                        "history.audit")
+                    Text(
+                        "Corrections append a new audit revision. Frozen work, rules and earlier audit revisions remain available."
+                    ).font(.footnote)
                 }
-            }
-
-            Section("Export") {
-                if let reportURL {
-                    ShareLink(item: reportURL) {
-                        Label("Share reconciliation report", systemImage: "square.and.arrow.up")
+                if let calculation = context.calculation {
+                    PayLedgerRows(
+                        calculation: calculation, agreement: context.agreement,
+                        work: context.workEntries)
+                }
+                Section("Audit revisions") {
+                    if context.revisions.isEmpty { Text("No saved audit revisions yet.") }
+                    ForEach(context.revisions.reversed()) { revision in
+                        NavigationLink(
+                            "Audit \(Date(timeIntervalSince1970: TimeInterval(revision.paystub.confirmedEpochSeconds)).formatted(date: .abbreviated, time: .shortened))"
+                        ) {
+                            AuditDetailView(
+                                model: model, context: revision.context(periodID: periodID))
+                        }
                     }
-                } else {
-                    Button {
-                        prepareReport()
-                    } label: {
-                        Label("Prepare report", systemImage: "doc.richtext")
-                    }
                 }
-            }
-
-            Section {
-                Button(role: .destructive) {
-                    showingDeleteConfirmation = true
-                } label: {
-                    Label("Delete pay period", systemImage: "trash")
-                }
-            }
-
-            if let errorMessage {
                 Section {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(LinePayColor.difference)
+                    NavigationLink("Rule sources") { RuleSourcesView(agreement: context.agreement) }
+                    Button("Delete work period and its audits", role: .destructive) {
+                        showingDelete = true
+                    }
                 }
+            }
+            if let errorMessage {
+                Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
-        .navigationTitle("Pay period")
-        .labeledContentStyle(LinePayValueStyle())
-        .navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden)
-        .background(LinePayColor.canvas)
+        .navigationTitle("Pay period").navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showingResult) {
+            LiveAuditView(model: model, subscriptionStore: subscriptionStore, periodID: periodID)
+        }
+        .sheet(isPresented: $showingImport) {
+            PaystubImportView(
+                model: model, subscriptionStore: subscriptionStore, periodID: periodID
+            ) { showingResult = true }
+        }
+        .sheet(isPresented: $showingPaywall) {
+            ProPaywallView(store: subscriptionStore) { showingPaywall = false }
+        }
         .confirmationDialog(
-            "Delete this pay period?",
-            isPresented: $showingDeleteConfirmation,
+            "Delete this period and all its audit revisions?", isPresented: $showingDelete,
             titleVisibility: .visible
         ) {
-            Button("Delete pay period", role: .destructive) { deletePeriod() }
-            Button("Cancel", role: .cancel) {}
+            Button("Delete period", role: .destructive) {
+                do {
+                    try model.deleteHistoryPeriod(id: periodID)
+                    dismiss()
+                } catch { errorMessage = error.localizedDescription }
+            }
         } message: {
             Text(
-                "This permanently deletes the historical snapshot and its stored paystub evidence."
+                "This removes this period's work and confirmed facts. Unshared originals are deleted, or queued for cleanup if the device cannot remove them. Export a backup first to preserve them."
             )
         }
     }
-
-    private func prepareReport() {
-        do {
-            reportURL = try ReconciliationReportExporter().export(
-                window: period.window,
-                timeZoneIdentifier: model.timeZoneIdentifier(for: period),
-                agreement: period.agreement,
-                calculation: period.calculation,
-                paystub: period.paystub,
-                reconciliation: period.reconciliation,
-                findings: period.paystub.map {
-                    model.auditFindings(calculation: period.calculation, paystub: $0)
-                } ?? []
-            )
-        } catch {
-            errorMessage = "LinePaycheck could not prepare the report."
+    private func beginAudit() {
+        Task {
+            await subscriptionStore.refreshEntitlements()
+            if model.canRunAudit(periodID: periodID, hasProAccess: subscriptionStore.hasAuditAccess)
+            {
+                showingImport = true
+            } else {
+                showingPaywall = true
+            }
         }
     }
+}
 
-    private func deletePeriod() {
-        do {
-            try model.deleteHistoryPeriod(id: period.id)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func categoryLabel(_ category: PayComponentCategory) -> String {
-        switch category {
-        case .workedHours: "Worked hours"
-        case .calloutGuarantee: "Callout guarantee"
-        case .perDiem: "Per diem"
-        }
-    }
-
-    private func workKindLabel(_ kind: WorkKind) -> String {
-        switch kind {
-        case .regular: "Regular work"
-        case .callout: "Callout"
-        case .other: "Other work"
-        }
+extension AuditRevision {
+    func context(periodID: UUID) -> PayPeriodContext {
+        PayPeriodContext(
+            id: periodID, window: window, agreement: agreement,
+            timeZoneIdentifier: timeZoneIdentifier, workEntries: workEntries,
+            calculation: calculation,
+            paystub: paystub, reconciliation: reconciliation, revisions: [], isClosed: true,
+            agreementChanges: agreementChanges)
     }
 }

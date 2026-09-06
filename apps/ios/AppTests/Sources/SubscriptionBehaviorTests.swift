@@ -33,7 +33,7 @@ struct SubscriptionBehaviorTests {
         client.identifiers = []
         await store.load()
         #expect(!store.isPro)
-        #expect(!store.isLoading && store.errorMessage == nil)
+        #expect(!store.isLoading && store.errorMessage != nil)
     }
 
     @Test(arguments: [

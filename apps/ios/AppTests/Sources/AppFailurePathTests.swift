@@ -13,9 +13,12 @@ struct AppFailurePathTests {
             interval: try WorkInterval(
                 startEpochSeconds: 0, endEpochSeconds: 3_600, timeZoneIdentifier: "UTC",
                 kind: .regular), note: "Synthetic")
-        #expect(throws: AppModelError.missingActivePayPeriod) { try model.restoreWork(entry) }
+        #expect(throws: AppModelError.staleUndo) {
+            try model.restoreWork(
+                DeletedWorkUndo(periodID: UUID(), expectedRevision: 0, entry: entry))
+        }
         #expect(throws: AppModelError.missingActivePayPeriod) { try model.clearCurrentPaystub() }
-        #expect(throws: AppModelError.missingActivePayPeriod) {
+        #expect(throws: AppModelError.calculationUnavailable) {
             try model.confirmPaystub(PaystubConfirmationDraft())
         }
         #expect(throws: AppModelError.missingActivePayPeriod) { try model.archiveCurrentPeriod() }
@@ -117,13 +120,15 @@ struct AppFailurePathTests {
             model, gross: "0", original: Data("new synthetic original".utf8))
         next.originalFilename = "next.png"
         next.mediaType = "image/png"
-        try model.confirmPaystub(next)
+        try model.confirmPaystub(next, hasProAccess: true)
         let retained = try #require(model.currentPaystub?.evidence)
         try model.deleteHistoryPeriod(id: id)
         #expect(model.history.isEmpty)
         #expect(model.evidenceURL(for: old) == nil)
         #expect(model.evidenceURL(for: retained) != nil)
         try model.clearCurrentPaystub()
+        #expect(model.evidenceURL(for: retained) != nil)
+        try model.removeEvidence(id: retained.id)
         #expect(model.evidenceURL(for: retained) == nil)
     }
 
@@ -136,8 +141,8 @@ struct AppFailurePathTests {
         broken.activePeriod?.workEntries.append(entry)
         store.state = broken
         let model = AppModel(store: store)
-        #expect(model.calculation == nil && model.calculationError != nil)
-        #expect(throws: AppModelError.calculationUnavailable) { try model.archiveCurrentPeriod() }
+        #expect(model.calculation == nil && model.persistenceIssue != nil)
+        #expect(throws: AppModelError.missingActivePayPeriod) { try model.archiveCurrentPeriod() }
         #expect(throws: AppModelError.calculationUnavailable) {
             try model.confirmPaystub(UnitFixture.paystub(model))
         }
@@ -150,8 +155,8 @@ struct AppFailurePathTests {
         try UnitFixture.populate(valid)
         store.state?.profile = nil
         let model = AppModel(store: store)
-        #expect(throws: AppModelError.missingPayProfile) { try model.archiveCurrentPeriod() }
-        #expect(model.workEntries.count == 1)
+        #expect(throws: AppModelError.missingActivePayPeriod) { try model.archiveCurrentPeriod() }
+        #expect(model.persistenceIssue != nil && store.state?.activePeriod?.workEntries.count == 1)
     }
 
     @Test func legacyTimezoneFallbackPreservesWorkBeforeUsingProfile() throws {
@@ -167,6 +172,8 @@ struct AppFailurePathTests {
             reconciliation: nil)
         #expect(original.timeZoneIdentifier(for: legacy) == "UTC")
         var copy = state
+        copy.history = []
+        copy.activePeriod?.window = history.window
         copy.activePeriod?.timeZoneIdentifier = nil
         copy.activePeriod?.workEntries = history.workEntries
         let fromWork = AppModel(store: MemoryStateStore(state: copy))
@@ -190,8 +197,8 @@ struct AppFailurePathTests {
         let model = AppModel(store: store)
         try UnitFixture.populate(model, evidence: true)
         let before = store.state
-        store.failReset = true
-        #expect(throws: UnitFailure.injected) { try model.resetAllData() }
+        store.failSave = true
+        #expect(throws: AppModelError.persistenceFailed) { try model.resetAllData() }
         #expect(store.state == before)
         #expect(model.workEntries.count == 1 && model.currentPaystub?.evidence != nil)
     }
@@ -215,7 +222,9 @@ struct AppFailurePathTests {
         let restored = PayProfileDraft(
             profile: try #require(model.profile), activePeriod: model.activePeriod)
         #expect(restored.useRegularSchedule && restored.regularWeekdays == draft.regularWeekdays)
-        #expect(restored.sourceTitle == "Worker-provided source" && restored.sourceSection.isEmpty)
+        #expect(
+            !restored.sourceTitle.isEmpty && restored.sourceURL == draft.sourceURL
+                && restored.sourceSection.isEmpty)
         #expect(restored.useEffectiveStart && restored.useEffectiveEnd)
         // Agreement effective bounds represent calendar dates, not the input's clock time.
         #expect(restored.effectiveStartDate == dayStart)

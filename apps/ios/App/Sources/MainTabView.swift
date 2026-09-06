@@ -1,42 +1,27 @@
 import SwiftUI
 
 struct MainTabView: View {
+    enum Destination: Hashable { case today, pay, history, settings }
     let model: AppModel
     let subscriptionStore: SubscriptionStore
-    @State private var selectedTab = 0
-
+    @State private var selection: Destination = .today
     var body: some View {
-        TabView(selection: $selectedTab) {
-            TodayView(model: model) { selectedTab = 1 }
-                .tabItem {
-                    Label("Today", systemImage: "clock")
-                }
-                .tag(0)
-
-            PayLedgerView(
-                model: model,
-                subscriptionStore: subscriptionStore
+        TabView(selection: $selection) {
+            TodayView(
+                model: model, onOpenHistory: { selection = .history },
+                onOpenPay: { selection = .pay }
             )
-            .tabItem {
-                Label("Pay", systemImage: "dollarsign")
-            }
-            .tag(1)
-
-            HistoryView(model: model)
-                .tabItem {
-                    Label("History", systemImage: "clock.arrow.circlepath")
-                }
-                .tag(2)
-
-            SettingsView(
-                model: model,
-                subscriptionStore: subscriptionStore
+            .tabItem { Label("Today", systemImage: "clock") }.tag(Destination.today)
+            PayLedgerView(model: model, subscriptionStore: subscriptionStore)
+                .tabItem { Label("Pay", systemImage: "dollarsign") }.tag(Destination.pay)
+            HistoryView(
+                model: model, subscriptionStore: subscriptionStore,
+                onOpenCurrent: { selection = .pay }
             )
-            .tabItem {
-                Label("Settings", systemImage: "gearshape")
-            }
-            .tag(3)
-        }
-        .tint(LinePayColor.actionText)
+            .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }.tag(
+                Destination.history)
+            SettingsView(model: model, subscriptionStore: subscriptionStore)
+                .tabItem { Label("Settings", systemImage: "gearshape") }.tag(Destination.settings)
+        }.tint(LinePayColor.actionText)
     }
 }

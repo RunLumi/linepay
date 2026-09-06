@@ -5,33 +5,41 @@ tags: [ios, regression, backup]
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Settings
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: backup.open
-    timeout: 60000
     centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: backup.open
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: backup.save
     timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - takeScreenshot: backup-actions
 - tapOn:
     id: backup.save
+- waitForAnimationToEnd
 - assertVisible:
     id: backup.choose-location
 - takeScreenshot: backup-sensitive-data-consent
 - tapOn: Cancel
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: backup.restore
     timeout: 60000
+- waitForAnimationToEnd
 - assertVisible:
     id: backup.restore
 - tapOn:
     id: backup.done
+- waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
 - assertVisible:
     id: today.repeat-shift

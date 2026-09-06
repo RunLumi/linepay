@@ -1,67 +1,161 @@
 appId: com.streamentry.linepay
-name: Equal gross cannot hide component discrepancies
+name: Equal gross cannot hide confirmed component differences
 tags: [ios, regression, payroll-scope]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
 - tapOn: Pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: pay.audit-paycheck
-- tapOn:
-    id: pay.audit-paycheck
-- tapOn:
-    id: paystub.enter-manually
-- scrollUntilVisible:
-    element:
-      id: paystub.gross-pay
+      id: pay.check-paycheck
     timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
-    id: paystub.gross-pay
-- inputText: "467.20"
-- tapOn:
-    id: keyboard.done
-- scrollUntilVisible:
-    element:
-      id: paystub.regular-pay
-- tapOn:
-    id: paystub.regular-pay
-- inputText: "417.20"
-- tapOn:
-    id: keyboard.done
-- scrollUntilVisible:
-    element:
-      id: paystub.overtime-pay
-- tapOn:
-    id: paystub.overtime-pay
-- inputText: "50.00"
-- tapOn:
-    id: keyboard.done
-- tapOn:
-    id: paystub.audit
-- scrollUntilVisible:
-    element:
-      id: pay.open-audit
-    direction: UP
-    centerElement: true
-- tapOn:
-    id: pay.open-audit
+    id: pay.check-paycheck
+- waitForAnimationToEnd
+- runFlow:
+    file: ../helpers/confirm-paystub.yaml
+    env:
+      GROSS: "467.20"
 - scrollUntilVisible:
     element:
       id: audit.status
+    timeout: 60000
+- waitForAnimationToEnd
+- assertVisible: Gross total matches
+- scrollUntilVisible:
+    element:
+      id: audit.correct
+    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: audit.correct
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.correct-existing
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.correct-existing
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Review optional line details
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn: Review optional line details
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.field.regularPay
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.field.regularPay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.value
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.value
+- waitForAnimationToEnd
+- inputText: "417.20"
+- tapOn:
+    id: keyboard.done
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.confirm-field
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.field.overtimePay
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.field.overtimePay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.value
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.value
+- waitForAnimationToEnd
+- inputText: "50.00"
+- tapOn:
+    id: keyboard.done
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.confirm-field
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.confirm-field
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: How earnings lines are reported
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn: How earnings lines are reported
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.line-layout
+    visibilityPercentage: 100
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.line-layout
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn: Each line includes its full hourly pay
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: paystub.audit
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: paystub.audit
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: audit.status
+    direction: UP
+    timeout: 60000
+- waitForAnimationToEnd
 - assertVisible: Needs review
+- scrollUntilVisible:
+    element:
+      id: audit.scope
+    timeout: 60000
 - assertVisible:
     id: audit.scope
 - takeScreenshot: offsetting-components-needs-review
 - stopApp
 - launchApp
 - tapOn: Pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay.open-audit
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: pay.open-audit
+- waitForAnimationToEnd
 - scrollUntilVisible:
-    element:
-      id: audit.status
+    element: Needs review
+    timeout: 60000
 - assertVisible: Needs review

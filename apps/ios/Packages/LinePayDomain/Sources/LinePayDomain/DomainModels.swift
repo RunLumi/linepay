@@ -212,22 +212,29 @@ public struct FlatPerDiemRule: Codable, Hashable, Sendable {
     }
 }
 
+public enum PayRuleKey: String, CaseIterable, Codable, Hashable, Sendable {
+    case base, schedule, weekday, date, dailyOvertime, callout, perDiem
+}
+
 public struct AgreementSource: Codable, Hashable, Sendable {
     public let title: String
     public let url: String
     public let section: String?
     public let verifiedEpochSeconds: Int64?
+    public let ruleKey: PayRuleKey?
 
     public init(
         title: String,
         url: String,
         section: String? = nil,
-        verifiedEpochSeconds: Int64? = nil
+        verifiedEpochSeconds: Int64? = nil,
+        ruleKey: PayRuleKey? = nil
     ) {
         self.title = title
         self.url = url
         self.section = section
         self.verifiedEpochSeconds = verifiedEpochSeconds
+        self.ruleKey = ruleKey
     }
 }
 
@@ -247,6 +254,8 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
     public let flatPerDiem: FlatPerDiemRule?
     public let rounding: MoneyRoundingRule
     public let sources: [AgreementSource]
+    public let unsupportedRuleNotes: String?
+    public let confirmedEpochSeconds: Int64?
 
     public init(
         id: String,
@@ -263,7 +272,9 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         calloutMinimum: CalloutMinimumRule? = nil,
         flatPerDiem: FlatPerDiemRule? = nil,
         rounding: MoneyRoundingRule = MoneyRoundingRule(),
-        sources: [AgreementSource] = []
+        sources: [AgreementSource] = [],
+        unsupportedRuleNotes: String? = nil,
+        confirmedEpochSeconds: Int64? = nil
     ) throws {
         guard outsideScheduleMultiplier >= 1 else {
             throw DomainValidationError.invalidMultiplier
@@ -292,6 +303,8 @@ public struct AgreementSnapshot: Codable, Hashable, Sendable {
         self.flatPerDiem = flatPerDiem
         self.rounding = rounding
         self.sources = sources
+        self.unsupportedRuleNotes = unsupportedRuleNotes
+        self.confirmedEpochSeconds = confirmedEpochSeconds
     }
 }
 
@@ -310,6 +323,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
     public let multiplier: Decimal?
     public let amount: Money
     public let explanation: String
+    public let ruleKeys: [PayRuleKey]?
+    public let baseRate: Money?
     public let appliedAgreement: AgreementReference?
 
     public init(
@@ -321,6 +336,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         multiplier: Decimal?,
         amount: Money,
         explanation: String,
+        ruleKeys: [PayRuleKey]? = nil,
+        baseRate: Money? = nil,
         appliedAgreement: AgreementReference? = nil
     ) {
         self.id = id
@@ -331,6 +348,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         self.multiplier = multiplier
         self.amount = amount
         self.explanation = explanation
+        self.ruleKeys = ruleKeys
+        self.baseRate = baseRate
         self.appliedAgreement = appliedAgreement
     }
 }

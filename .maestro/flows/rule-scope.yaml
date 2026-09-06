@@ -1,72 +1,101 @@
 appId: com.streamentry.linepay
-name: Future rule preserves work and correction requires confirmation
+name: Future rules preserve work and correction requires confirmation
 tags: [ios, regression, payroll-scope]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
+- copyTextFrom:
+    id: today.expected-wages
+- evalScript: ${output.beforeRateChange = maestro.copiedText}
 - tapOn: Settings
-- scrollUntilVisible:
-    element:
-      id: settings.edit-pay-rules
-    timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
-    id: settings.edit-pay-rules
+    id: settings.edit-rules
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.hourly-rate
+    timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.hourly-rate
+- waitForAnimationToEnd
 - eraseText
 - inputText: "60"
 - tapOn:
     id: keyboard.done
-- tapOn:
-    id: pay-profile.save
+- waitForAnimationToEnd
+- runFlow: ../helpers/confirm-rules.yaml
 - assertVisible: Review rule change
 - takeScreenshot: prospective-rule-preview
-- tapOn: Confirm rule change
+- tapOn:
+    id: pay-profile.confirm-change
+- waitForAnimationToEnd
 - tapOn: Today
-- scrollUntilVisible:
-    element:
-      id: today.expected-pay
-    direction: UP
-- assertVisible:
-    text: 'US\$467,20'
-    id: today.expected-pay
+- waitForAnimationToEnd
+- copyTextFrom:
+    id: today.expected-wages
+- assertTrue: ${maestro.copiedText == output.beforeRateChange}
 - takeScreenshot: earlier-work-preserved
 - stopApp
 - launchApp
-- assertVisible:
-    text: 'US\$467,20'
-    id: today.expected-pay
+- copyTextFrom:
+    id: today.expected-wages
+- assertTrue: ${maestro.copiedText == output.beforeRateChange}
 - tapOn: Settings
-- scrollUntilVisible:
-    element:
-      id: settings.edit-pay-rules
-    timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
-    id: settings.edit-pay-rules
+    id: settings.edit-rules
+- waitForAnimationToEnd
+- repeat:
+    times: 3
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: pay-profile.continue
+          timeout: 60000
+      - waitForAnimationToEnd
+      - tapOn:
+          id: pay-profile.continue
+      - waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Confirm rules
+    direction: UP
+    timeout: 60000
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay-profile.change-scope
+    direction: DOWN
     timeout: 60000
-    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
     id: pay-profile.change-scope
-- tapOn: "Correct this period's setup"
-- tapOn:
-    id: pay-profile.save
-- assertVisible: Review rule change
-- takeScreenshot: correction-preview
-- tapOn: Confirm rule change
-- tapOn: Today
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: Recalculate this entire current period
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn: Recalculate this entire current period
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: today.expected-pay
-    direction: UP
+      id: pay-profile.save
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: pay-profile.save
+- waitForAnimationToEnd
+- assertVisible: Review rule change
+- assertVisible: ".*Correct this period.*"
+- takeScreenshot: correction-preview
+- tapOn:
+    id: pay-profile.confirm-change
+- waitForAnimationToEnd
+- tapOn: Today
+- waitForAnimationToEnd
 - assertVisible:
-    text: 'US\$480,00'
-    id: today.expected-pay
+    id: today.expected-wages
+    text: '.*480[.,]00.*'
 - takeScreenshot: explicit-correction-applied

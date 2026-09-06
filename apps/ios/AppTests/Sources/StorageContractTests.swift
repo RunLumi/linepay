@@ -36,7 +36,8 @@ struct StorageContractTests {
         #expect(model.persistenceIssue != nil && store.recoveryFileURL == file)
         #expect(try Data(contentsOf: file) == bytes)
         try model.resetAfterPersistenceFailure()
-        #expect(try store.load() == nil && model.persistenceIssue == nil)
+        #expect(try store.load()?.profile == nil && model.persistenceIssue == nil)
+        #expect(try store.load()?.hasUsedFreeAudit == true)
     }
 
     @Test func futureSchemaIsRejectedWithoutOverwritingValidFile() throws {
@@ -73,6 +74,30 @@ struct StorageContractTests {
         #expect(store.recoveryFileURL == nil)
     }
 
+    @Test(arguments: [false, true])
+    func oversizedSavePreservesReloadableState(escapedText: Bool) throws {
+        let root = UnitFixture.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = VersionedLocalStateStore(baseDirectory: root)
+        var existing = AppPersistentState()
+        existing.hasUsedFreeAudit = true
+        try store.save(existing)
+        let file = try #require(store.recoveryFileURL)
+        let originalBytes = try Data(contentsOf: file)
+
+        var candidate = existing
+        var draft = PayProfileDraft()
+        draft.unsupportedRuleNotes = String(
+            repeating: escapedText ? "\n" : "x",
+            count: (escapedText ? 4 : 8) * 1024 * 1024)
+        candidate.setupDraft = draft
+        #expect(try JSONEncoder().encode(candidate).count > 8 * 1024 * 1024)
+
+        #expect(throws: LocalStateStoreError.invalidState) { try store.save(candidate) }
+        #expect(try Data(contentsOf: file) == originalBytes)
+        #expect(try VersionedLocalStateStore(baseDirectory: root).load() == existing)
+    }
+
     @Test func invalidDirectoryFailsWithoutPretendingToSave() throws {
         let root = UnitFixture.temporaryDirectory()
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -82,6 +107,42 @@ struct StorageContractTests {
         let store = VersionedLocalStateStore(baseDirectory: blocked)
         #expect(throws: (any Error).self) { try store.save(AppPersistentState()) }
         #expect(try Data(contentsOf: blocked) == Data([1]))
+    }
+
+    @Test(arguments: ["grossPay", "regularPay"])
+    func inconsistentSavedComparisonsAreRejected(field: String) throws {
+        let store = MemoryStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        var draft = UnitFixture.paystub(model)
+        draft.regularPay = "400"
+        draft.lineLayout = .fullRateBuckets
+        draft.reviewedFields.insert(.regularPay)
+        try model.confirmPaystub(draft)
+        let state = try #require(try store.load())
+        try AppStateValidation.validate(state)
+
+        var document = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        var active = try #require(document["activePeriod"] as? [String: Any])
+        var paystub = try #require(active["paystub"] as? [String: Any])
+        var assessment = try #require(paystub["assessment"] as? [String: Any])
+        var comparisons = try #require(assessment["comparisons"] as? [[String: Any]])
+        let index = try #require(comparisons.firstIndex { $0["field"] as? String == field })
+        comparisons[index]["expected"] = 401
+        if field == "grossPay" {
+            // An internally balanced line must also agree with its saved gross summary.
+            comparisons[index]["paid"] = 401
+        }
+        assessment["comparisons"] = comparisons
+        paystub["assessment"] = assessment
+        active["paystub"] = paystub
+        document["activePeriod"] = active
+        let invalid = try JSONDecoder().decode(
+            AppPersistentState.self, from: JSONSerialization.data(withJSONObject: document))
+        #expect(throws: LocalStateStoreError.invalidState) {
+            try AppStateValidation.validate(invalid)
+        }
     }
 
     @Test(arguments: ["same.PDF", "no-extension", "../../outside.pdf"])

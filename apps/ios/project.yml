@@ -47,6 +47,7 @@ schemes:
       targets:
         LinePay: all
         LinePayAppTests: [test]
+        LinePayUITests: [test]
     run:
       config: Debug
     test:
@@ -56,7 +57,9 @@ schemes:
         - LinePay
       targets:
         - name: LinePayAppTests
-          parallelizable: true
+          parallelizable: false
+        - name: LinePayUITests
+          parallelizable: false
     archive:
       config: Release
 
@@ -100,11 +103,32 @@ targets:
     sources:
       - path: AppTests/Sources
         type: group
+      - path: AppTests/Resources
+        type: group
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.tests
         GENERATE_INFOPLIST_FILE: YES
+        # Xcode 26.6 StoreKitTest headers reference a deprecated StoreKit 1 enum.
+        # Limit this exception to the test-only Clang importer; Swift/app warnings stay errors.
+        OTHER_SWIFT_FLAGS: "$(inherited) -Xcc -Wno-error=deprecated-declarations"
     dependencies:
       - target: LinePay
       - package: LinePayDomain
       - package: ViewInspector
+
+  LinePayUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: AppUITests
+        type: group
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: LinePay
+    dependencies:
+      - target: LinePay

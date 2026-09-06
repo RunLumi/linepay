@@ -1,48 +1,84 @@
 appId: com.streamentry.linepay
-name: Work entry, correction, overlap recovery, and undo
+name: Work correction, overlap review, and period-bound Undo
 tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
-- tapOn:
-    id: today.repeat-shift
-- tapOn:
-    id: work.save
-- assertVisible: "Work wasn't saved"
-- takeScreenshot: overlap-error
-- tapOn: Keep editing
 - scrollUntilVisible:
     element:
-      id: work.note
-- assertVisible: Synthetic QA shift
+      id: today.repeat-shift
+    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
-    id: work.cancel
+    id: today.repeat-shift
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: ".*Overlaps.*"
+    centerElement: true
+- waitForAnimationToEnd
+- assertVisible: ".*Overlaps.*"
+- scrollUntilVisible:
+    element:
+      id: work.save
+- waitForAnimationToEnd
+- assertVisible:
+    id: work.save
+    enabled: false
+- takeScreenshot: overlap-error
+- scrollUntilVisible:
+    element: Discard this draft
+- waitForAnimationToEnd
+- tapOn: Discard this draft
+- waitForAnimationToEnd
+- tapOn: Discard draft
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.edit-work
+- waitForAnimationToEnd
 - tapOn:
     id: today.edit-work
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: work.note
+- waitForAnimationToEnd
 - tapOn:
     id: work.note
+- waitForAnimationToEnd
 - inputText: " QA correction "
 - tapOn:
     id: keyboard.done
-- tapOn:
-    id: work.save
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: today.delete-work
+      id: work.save
+- waitForAnimationToEnd
 - tapOn:
-    id: today.delete-work
+    id: work.save
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.edit-work
+- waitForAnimationToEnd
+- tapOn:
+    id: today.edit-work
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: work.delete
+- waitForAnimationToEnd
+- tapOn:
+    id: work.delete
+- waitForAnimationToEnd
 - assertVisible:
     id: today.undo-delete
 - tapOn:
     id: today.undo-delete
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: today.edit-work
+- waitForAnimationToEnd
 - assertVisible: ".*QA correction.*"
 - takeScreenshot: work-restored

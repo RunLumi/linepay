@@ -1,0 +1,76 @@
+{
+  "identifier": "LinePayTests",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_applicationInternalID": "",
+    "_developerTeamID": "",
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_timeRate": 0
+  },
+  "subscriptionGroups": [
+    {
+      "id": "linepay-pro",
+      "localizations": [],
+      "name": "LinePaycheck Pro",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "linepay-pro-monthly",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Future paycheck audits. Existing records remain accessible.",
+              "displayName": "LinePaycheck Pro monthly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "linepay.pro.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Pro monthly",
+          "subscriptionGroupID": "linepay-pro",
+          "type": "RecurringSubscription",
+          "winBackOffers": []
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "79.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "linepay-pro-yearly",
+          "introductoryOffer": {
+            "internalID": "linepay-pro-yearly-intro",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W",
+            "displayPrice": "0.00"
+          },
+          "localizations": [
+            {
+              "description": "Future paycheck audits. Existing records remain accessible.",
+              "displayName": "LinePaycheck Pro yearly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "linepay.pro.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Pro yearly",
+          "subscriptionGroupID": "linepay-pro",
+          "type": "RecurringSubscription",
+          "winBackOffers": []
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

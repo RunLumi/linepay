@@ -7,7 +7,7 @@ import Testing
 @Suite("Application inputs and atomic mutations")
 @MainActor
 struct AppModelContractTests {
-    @Test(arguments: ["", "0", "-1", "NaN", "1e3", "1,000.00", "1.2.3", "50junk", "$50"])
+    @Test(arguments: ["", "0", "-1", "NaN", "1e3", "50,25", "1.2.3", "50junk"])
     func invalidRateDoesNotCreateProfile(_ value: String) {
         let store = UnitStateStore()
         let model = AppModel(store: store)
@@ -18,7 +18,7 @@ struct AppModelContractTests {
         #expect(store.saveCount == 0)
     }
 
-    @Test(arguments: ["50.25", "50,25", " 50.25\n"])
+    @Test(arguments: ["50.25", "$50.25", " 50.25\n"])
     func acceptedDecimalInput(_ value: String) throws {
         let model = AppModel()
         try model.saveProfile(UnitFixture.profile(rate: value))
@@ -133,7 +133,8 @@ struct AppModelContractTests {
                 id: UUID(), start: UnitFixture.start, end: UnitFixture.start, kind: .regular)
         }
         let entry = try #require(model.workEntries.first)
-        try model.restoreWork(entry)
+        let undo = try #require(model.deleteWork(id: entry.id))
+        try model.restoreWork(undo)
         #expect(model.workEntries.count == 1)
         #expect(throws: AppModelError.workOutsideCurrentPayPeriod) {
             try model.addWork(
@@ -147,7 +148,7 @@ struct AppModelContractTests {
                 unpaidBreakStart: UnitFixture.start, unpaidBreakEnd: nil)
         }
         try model.archiveCurrentPeriod()
-        #expect(throws: AppModelError.workOutsideCurrentPayPeriod) { try model.restoreWork(entry) }
+        #expect(throws: AppModelError.staleUndo) { try model.restoreWork(undo) }
         #expect(model.workEntries.isEmpty)
     }
 
@@ -184,6 +185,10 @@ struct AppModelContractTests {
         stub.calloutPay = "0"
         stub.perDiemPay = "0"
         stub.notes = "  verified manually  "
+        stub.reviewedFields = Set(PaystubField.allCases)
+        stub.lineLayout = .fullRateBuckets
+        stub.hoursBasis = .actualWork
+        stub.guaranteeLayout = .separateLine
         try model.confirmPaystub(stub)
         let confirmed = try #require(model.currentPaystub)
         #expect(confirmed.regularHours == 8 && confirmed.regularPay?.amount == 400)
@@ -195,7 +200,8 @@ struct AppModelContractTests {
             calculation: try #require(model.calculation), paystub: confirmed)
         #expect(
             Set(findings.map(\.id)) == [
-                "gross", "regular", "overtime", "double-time", "callout", "per-diem",
+                "grossPay", "regularPay", "overtimePay", "doubleTimePay", "calloutPay",
+                "perDiemPay",
             ])
         #expect(findings.allSatisfy { $0.difference.amount == 0 && !$0.explanation.isEmpty })
     }
@@ -207,6 +213,7 @@ struct AppModelContractTests {
         let before = store.state
         var stub = UnitFixture.paystub(model)
         stub.overtimeHours = "8oops"
+        stub.reviewedFields.insert(.overtimeHours)
         #expect(throws: (any Error).self) { try model.confirmPaystub(stub) }
         #expect(store.state == before && !model.hasUsedFreeAudit)
     }

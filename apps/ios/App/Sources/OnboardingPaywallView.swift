@@ -4,280 +4,169 @@ import SwiftUI
 struct ProPaywallView: View {
     let store: SubscriptionStore
     let onPurchaseCompleted: () -> Void
-
     @Environment(\.dismiss) private var dismiss
     @State private var selectedProductID = SubscriptionStore.yearlyProductID
     @State private var isPurchasing = false
+    @State private var purchaseConfirmed = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: LinePaySpacing.spacious) {
-                    header
-                    planSelector
-                    actions
-                    benefits
-                    footer
+                VStack(alignment: .leading, spacing: LinePaySpacing.section) {
+                    Text("Check every paycheck.").font(.largeTitle.bold())
+                    Text(
+                        "Compare your recorded work and confirmed rules with the paycheck facts you review."
+                    )
+                    .foregroundStyle(LinePayColor.textSecondary)
+                    plan(SubscriptionStore.yearlyProductID, title: "Annual — recommended")
+                    plan(SubscriptionStore.monthlyProductID, title: "Monthly")
+                    if store.isLoading { ProgressView("Checking App Store prices and offers…") }
+                    Button(purchaseTitle) { purchase() }
+                        .buttonStyle(LinePayPrimaryButtonStyle())
+                        .disabled(!canPurchase || isPurchasing)
+                        .accessibilityIdentifier("paywall.purchase")
+                    Text(billingTerms).font(.footnote)
+                        .accessibilityIdentifier("paywall.terms")
+                    Button("Continue free") { dismiss() }.frame(minHeight: 48)
+                        .accessibilityIdentifier("paywall.continue-free")
+                    if let message = store.errorMessage {
+                        Label(message, systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(LinePayColor.review)
+                    }
+                    if store.products.isEmpty, !store.isLoading {
+                        Button("Retry App Store prices") { Task { await store.load() } }
+                            .frame(minHeight: 48)
+                    }
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label(
+                            "Check future paychecks with scanning or manual entry",
+                            systemImage: "doc.text.magnifyingglass")
+                        Label(
+                            "Trace possible differences to work, rules and sources",
+                            systemImage: "list.bullet.rectangle")
+                        Label(
+                            "Keep and share the evidence behind each audit",
+                            systemImage: "square.and.arrow.up")
+                    }
+                    Text(
+                        "No LinePaycheck account or paycheck upload to our servers. Your first complete audit is free; saved records remain accessible after Pro ends."
+                    )
+                    .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                    Button("Restore Purchases") {
+                        Task {
+                            await store.restorePurchases()
+                            if store.isPro { purchaseConfirmed = true }
+                        }
+                    }
+                    .disabled(!store.purchasingEnabled)
+                    .frame(minHeight: 44).accessibilityIdentifier("paywall.restore")
+                    Link("Manage subscription", destination: AppLinks.subscriptions).frame(
+                        minHeight: 44)
+                    NavigationLink("Privacy policy") { LegalTextView(kind: .privacy) }.frame(
+                        minHeight: 44)
+                    NavigationLink("Terms of use") { LegalTextView(kind: .terms) }.frame(
+                        minHeight: 44)
                 }
                 .padding(LinePaySpacing.section)
             }
             .background(LinePayColor.canvas)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                Button(primaryButtonTitle) { purchaseSelectedPlan() }
-                    .buttonStyle(LinePayPrimaryButtonStyle())
-                    .disabled(!canPurchase || isPurchasing)
-                    .accessibilityIdentifier("paywall.purchase")
-                    .padding(.horizontal, LinePaySpacing.section)
-                    .padding(.vertical, LinePaySpacing.compact)
-                    .background(LinePayColor.canvas)
-            }
-            .navigationTitle("LinePaycheck Pro")
-            .navigationBarTitleDisplayMode(.inline)
+            .accessibilityIdentifier("paywall.screen")
+            .navigationTitle("LinePaycheck Pro").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Not now") { dismiss() }
-                        .accessibilityIdentifier("paywall.not-now")
+                    Button("Not now") { dismiss() }.accessibilityIdentifier("paywall.dismiss")
                 }
+            }
+            .alert("LinePaycheck Pro active", isPresented: $purchaseConfirmed) {
+                Button("Continue") {
+                    onPurchaseCompleted()
+                    dismiss()
+                }
+            } message: {
+                Text(confirmationText)
             }
         }
         .tint(LinePayColor.actionText)
-        .task {
-            if SubscriptionStore.commerceEnabled, store.products.isEmpty {
-                await store.load()
-            }
-        }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            LineGapMark()
-            Text("Audit every paycheck.")
-                .font(.largeTitle.bold())
-                .foregroundStyle(LinePayColor.textPrimary)
-            Text(
-                "Compare every paycheck with the work and pay rules you confirmed."
-            )
-            .font(.title3)
-            .foregroundStyle(LinePayColor.textSecondary)
-        }
-    }
-
-    private var benefits: some View {
-        VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            benefit(
-                icon: "doc.text.magnifyingglass",
-                title: "Unlimited paycheck audits",
-                detail: "Scan or enter each paycheck and compare it with your confirmed work."
-            )
-            benefit(
-                icon: "clock.arrow.circlepath",
-                title: "Durable history",
-                detail: "Keep immutable pay-period records and audit evidence on your iPhone."
-            )
-            benefit(
-                icon: "square.and.arrow.up",
-                title: "Export the evidence",
-                detail: "Create a concise reconciliation report you control."
-            )
-            benefit(
-                icon: "lock.shield",
-                title: "Still private",
-                detail: "Pro does not create a LinePaycheck account or upload your paycheck."
-            )
-        }
-    }
-
-    private var planSelector: some View {
-        VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-            planRow(
-                productID: SubscriptionStore.yearlyProductID,
-                title: "Yearly",
-                badge: "Best value"
-            )
-            planRow(
-                productID: SubscriptionStore.monthlyProductID,
-                title: "Monthly",
-                badge: nil
-            )
-            if store.isLoading {
-                ProgressView("Loading App Store prices…")
-                    .font(.footnote)
-            }
-        }
-    }
-
-    private var actions: some View {
-        VStack(spacing: LinePaySpacing.standard) {
-            if !SubscriptionStore.commerceEnabled {
-                Text(
-                    "Purchasing is disabled in this debug build. Audit access remains open for testing."
-                )
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
-                .multilineTextAlignment(.center)
-            } else if store.products.isEmpty, !store.isLoading {
-                Text(
-                    "App Store prices are unavailable right now. Your existing LinePaycheck data is unaffected."
-                )
-                .font(.footnote)
-                .foregroundStyle(LinePayColor.textSecondary)
-                .multilineTextAlignment(.center)
-            }
-
-            if let errorMessage = store.errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle")
-                    .font(.footnote)
-                    .foregroundStyle(LinePayColor.textSecondary)
-            }
-        }
-    }
-
-    private var footer: some View {
-        VStack(spacing: LinePaySpacing.compact) {
-            Button("Restore Purchases") {
-                Task {
-                    await store.restorePurchases()
-                    if store.isPro {
-                        onPurchaseCompleted()
-                        dismiss()
-                    }
-                }
-            }
-            .font(.footnote.weight(.semibold))
-            .frame(minHeight: 44)
-            .accessibilityIdentifier("paywall.restore")
-            .disabled(!SubscriptionStore.commerceEnabled)
-
-            Text(
-                "Subscriptions renew automatically unless cancelled in App Store subscription "
-                    + "settings. The App Store shows the final localized price and billing terms."
-            )
-            .accessibilityIdentifier("paywall.terms")
-            .font(.caption)
-            .foregroundStyle(LinePayColor.textSecondary)
-            .multilineTextAlignment(.center)
-
-            Link("Privacy policy", destination: AppLinks.privacy)
-                .frame(minHeight: 44)
-            Link("Terms of use", destination: AppLinks.terms)
-                .frame(minHeight: 44)
-        }
-        .frame(maxWidth: .infinity)
+        .task { await store.load() }
     }
 
     private var canPurchase: Bool {
-        SubscriptionStore.commerceEnabled && store.product(id: selectedProductID) != nil
+        store.purchasingEnabled && !store.isLoading && store.product(id: selectedProductID) != nil
     }
-
-    private var primaryButtonTitle: String {
+    private var annualSelected: Bool { selectedProductID == SubscriptionStore.yearlyProductID }
+    private var trial: String? { annualSelected ? store.annualTrialDuration : nil }
+    private var purchaseTitle: String {
         if isPurchasing { return "Purchasing…" }
-        if !canPurchase { return store.isLoading ? "Loading prices…" : "Prices unavailable" }
-        return selectedProductID == SubscriptionStore.yearlyProductID
-            ? "Continue with Yearly"
-            : "Continue with Monthly"
+        guard canPurchase else { return store.isLoading ? "Loading prices…" : "Prices unavailable" }
+        if let trial { return "Start my \(trial) free trial" }
+        return annualSelected ? "Subscribe yearly" : "Subscribe monthly"
     }
-
-    private func planRow(
-        productID: String,
-        title: String,
-        badge: String?
-    ) -> some View {
-        let isSelected = selectedProductID == productID
-        let price = priceLabel(
-            product: store.product(id: productID),
-            productID: productID
-        )
-
+    private var billingTerms: String {
+        guard let product = store.product(id: selectedProductID) else {
+            return
+                "A purchase is available only after Apple supplies its price. Your saved work and first free audit remain available."
+        }
+        let period = annualSelected ? "year" : "month"
+        if let trial {
+            return
+                "\(trial) free, then \(product.displayPrice) per \(period), automatically renewing. Cancel at least 24 hours before the trial ends to avoid renewal."
+        }
+        return
+            "\(product.displayPrice) billed today and every \(period) until cancelled. No free trial is offered for this selection. Manage or cancel through Apple subscription settings."
+    }
+    private var confirmationText: String {
+        guard let date = store.renewalDate else {
+            return
+                "Apple verified your Pro access. Your saved work is ready to continue. Manage billing in Apple subscription settings."
+        }
+        let action = store.willAutoRenew == true ? "Renews" : "Ends"
+        let prefix = store.isTrial ? "Your free trial is active. " : "Your subscription is active. "
+        return prefix
+            + "\(action) on \(date.formatted(date: .abbreviated, time: .shortened)). Manage billing in Apple subscription settings."
+    }
+    private func plan(_ id: String, title: String) -> some View {
+        let product = store.product(id: id)
+        let yearly = id == SubscriptionStore.yearlyProductID
+        let price =
+            product.map { "\($0.displayPrice) per \(yearly ? "year" : "month")" }
+            ?? "Price unavailable"
+        let selected = selectedProductID == id
         return Button {
-            selectedProductID = productID
+            selectedProductID = id
         } label: {
-            HStack(spacing: LinePaySpacing.standard) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(
-                        isSelected ? LinePayColor.brandPrimary : LinePayColor.textSecondary
-                    )
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(title).font(.headline)
-                        if let badge {
-                            Text(badge)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(LinePayColor.actionText)
-                        }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(title).font(.headline)
+                    Text(price).font(.title3.bold().monospacedDigit())
+                    if yearly, let duration = store.annualTrialDuration {
+                        Text("\(duration) free, then billed yearly")
+                    } else if product != nil {
+                        Text("Billed today. No free trial.")
                     }
-                    Text(price)
-                        .font(.headline.monospacedDigit())
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer()
+                }.fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
             }
-            .padding(LinePaySpacing.standard)
+            .padding(16).frame(maxWidth: .infinity, alignment: .leading)
             .background(LinePayColor.surfacePrimary)
             .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(
-                        isSelected ? LinePayColor.brandPrimary : Color(uiColor: .separator),
-                        lineWidth: isSelected ? 2 : 1
-                    )
+                RoundedRectangle(cornerRadius: 10).stroke(
+                    selected ? LinePayColor.actionText : LinePayColor.lineStrong,
+                    lineWidth: selected ? 2 : 1)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title), \(price)")
-        .accessibilityIdentifier(
-            productID == SubscriptionStore.yearlyProductID ? "paywall.yearly" : "paywall.monthly"
-        )
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier(yearly ? "paywall.yearly" : "paywall.monthly")
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
-
-    private func priceLabel(product: Product?, productID: String) -> String {
-        guard let product else { return "Price unavailable" }
-        return productID == SubscriptionStore.yearlyProductID
-            ? "\(product.displayPrice) per year"
-            : "\(product.displayPrice) per month"
-    }
-
-    private func benefit(icon: String, title: String, detail: String) -> some View {
-        HStack(alignment: .top, spacing: LinePaySpacing.standard) {
-            Image(systemName: icon)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(LinePayColor.brandPrimary)
-                .frame(width: 28)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.headline)
-                Text(detail)
-                    .font(.subheadline)
-                    .foregroundStyle(LinePayColor.textSecondary)
-            }
-        }
-    }
-
-    private func purchaseSelectedPlan() {
-        guard let product = store.product(id: selectedProductID) else { return }
+    private func purchase() {
+        guard canPurchase, let product = store.product(id: selectedProductID) else { return }
+        isPurchasing = true
         Task {
-            isPurchasing = true
-            let purchased = await store.purchase(product)
+            purchaseConfirmed = await store.purchase(product)
             isPurchasing = false
-            if purchased {
-                onPurchaseCompleted()
-                dismiss()
-            }
         }
-    }
-}
-
-struct LineGapMark: View {
-    var body: some View {
-        Image(decorative: "LinePaycheckLogo")
-            .renderingMode(.original)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 72, height: 72)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .accessibilityHidden(true)
     }
 }

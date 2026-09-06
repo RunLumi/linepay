@@ -7,7 +7,14 @@ DOMAIN_DIR="$IOS_DIR/Packages/LinePayDomain"
 PRIVACY_MANIFEST="$IOS_DIR/App/Resources/PrivacyInfo.xcprivacy"
 EXPECTED_XCODEGEN_VERSION="2.46.0"
 DERIVED_DATA="$(mktemp -d "${TMPDIR:-/tmp}/linepay-derived.XXXXXX")"
-trap 'rm -rf "$DERIVED_DATA"' EXIT
+cleanup() {
+    if [[ -d "${RESULTS_DIR:-}/AppTests.xcresult" ]]; then
+        xcrun xcresulttool export attachments --path "$RESULTS_DIR/AppTests.xcresult" \
+            --output-path "$RESULTS_DIR/screenshots" > "$RESULTS_DIR/attachments.log" 2>&1 || true
+    fi
+    rm -rf "$DERIVED_DATA"
+}
+trap cleanup EXIT
 
 SIMULATOR_DESTINATION="${IOS_SIMULATOR_DESTINATION:-}"
 if [[ -z "$SIMULATOR_DESTINATION" ]]; then
@@ -54,7 +61,7 @@ check_package_lock() {
     fi
 }
 
-RESULTS_DIR="${LINEPAY_TEST_RESULTS_DIR:-$ROOT/.test-results}"
+RESULTS_DIR="${LINEPAY_RESULTS_DIR:-${LINEPAY_TEST_RESULTS_DIR:-$ROOT/.test-results}}"
 mkdir -p "$RESULTS_DIR"
 RESULTS_DIR="$(cd "$RESULTS_DIR" && pwd)"
 if [[ -e "$RESULTS_DIR/AppTests.xcresult" ]]; then
@@ -109,6 +116,9 @@ xcodebuild \
     -derivedDataPath "$DERIVED_DATA" \
     -resultBundlePath "$RESULTS_DIR/AppTests.xcresult" \
     -enableCodeCoverage YES \
+    -parallel-testing-enabled NO \
+    -test-timeouts-enabled YES \
+    -maximum-test-execution-time-allowance 180 \
     -onlyUsePackageVersionsFromResolvedFile \
     CODE_SIGNING_ALLOWED=NO \
     test

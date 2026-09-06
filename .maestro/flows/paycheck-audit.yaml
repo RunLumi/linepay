@@ -4,70 +4,53 @@ tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
-- scrollUntilVisible:
-    element:
-      id: today.open-pay
 - tapOn:
     id: today.open-pay
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: pay.audit-paycheck
+      id: pay.check-paycheck
+- waitForAnimationToEnd
 - tapOn:
-    id: pay.audit-paycheck
-- tapOn:
-    id: paystub.enter-manually
-- tapOn:
-    id: paystub.audit
-- assertVisible: Paycheck needs review
-- takeScreenshot: paycheck-missing-gross
-- tapOn: Keep editing
-- scrollUntilVisible:
-    element:
-      id: paystub.gross-pay
-- tapOn:
-    id: paystub.gross-pay
-- inputText: "450,00"
-- assertVisible:
-    id: keyboard.done
-- takeScreenshot: paycheck-keyboard
-- tapOn:
-    id: keyboard.done
-- tapOn:
-    id: paystub.audit
-- scrollUntilVisible:
-    element:
-      id: pay.open-audit
-    direction: UP
-    centerElement: true
-- tapOn:
-    id: pay.open-audit
-- assertVisible:
-    id: audit.comparison
+    id: pay.check-paycheck
+- waitForAnimationToEnd
+- runFlow:
+    file: ../helpers/confirm-paystub.yaml
+    env:
+      GROSS: "450.00"
+- assertVisible: Possible shortfall
 - takeScreenshot: paycheck-comparison
-- scrollUntilVisible:
-    element:
-      id: audit.difference
-    centerElement: true
-- takeScreenshot: paycheck-difference
-- tapOn: Pay
+- tapOn:
+    text: Pay
+    index: 0
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: pay.finish-period
-    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: pay.finish-period
-    retryTapIfNoChange: true
-- tapOn: Finish and archive
-- tapOn: History
-- assertVisible:
-    id: history.open-period
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: period.confirm-close
+    centerElement: true
+- waitForAnimationToEnd
 - tapOn:
-    id: history.open-period
-- assertVisible: Snapshot
+    id: period.confirm-close
+    text: Finish and archive
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn: History
+- waitForAnimationToEnd
+- tapOn:
+    id: history.period.*
+- waitForAnimationToEnd
+- assertVisible: Possible shortfall
 - takeScreenshot: archived-pay-period
 - stopApp
 - launchApp
 - tapOn: History
+- waitForAnimationToEnd
 - assertVisible:
-    id: history.open-period
+    id: history.period.*

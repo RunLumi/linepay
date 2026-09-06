@@ -23,7 +23,9 @@ struct SubscriptionOperations {
             entitlementIDs: {
                 var identifiers: Set<String> = []
                 for await result in Transaction.currentEntitlements {
-                    if case .verified(let transaction) = result {
+                    if case .verified(let transaction) = result,
+                        transaction.revocationDate == nil, !transaction.isUpgraded
+                    {
                         identifiers.insert(transaction.productID)
                     }
                 }

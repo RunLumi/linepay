@@ -109,6 +109,9 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.workComplete = true
+        paystub.grossBasis = .wagesOnly
+        paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
         try model.confirmPaystub(paystub)
 
         #expect(model.hasUsedFreeAudit)
@@ -220,8 +223,13 @@ struct AppModelTests {
 
         draft.timeZoneIdentifier = "America/New_York"
         try model.saveProfile(draft)
+        #expect(throws: AppModelError.overlappingPayPeriods) {
+            try model.startNewPayPeriod(
+                startDate: testStart.addingTimeInterval(7 * 86_400),
+                manualEndDate: testStart.addingTimeInterval(13 * 86_400))
+        }
         try model.startNewPayPeriod(
-            startDate: testStart.addingTimeInterval(7 * 86_400),
+            startDate: testStart.addingTimeInterval(8 * 86_400),
             manualEndDate: testStart.addingTimeInterval(13 * 86_400))
 
         let archived = try #require(model.history.first)
@@ -246,6 +254,9 @@ struct AppModelTests {
         paystub.payPeriodStartDate = testStart.addingTimeInterval(24 * 60 * 60)
         paystub.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 60 * 60)
         paystub.grossPay = "400"
+        paystub.workComplete = true
+        paystub.grossBasis = .wagesOnly
+        paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
 
         #expect(throws: AppModelError.invalidPayPeriod) {
             try model.confirmPaystub(paystub)
@@ -265,8 +276,8 @@ struct AppModelTests {
     }
 
     @Test(
-        "A decimal comma and point preserve the full entered rate",
-        arguments: ["58.40", "58,40", " 58,40 \n"])
+        "Declared decimal-point input preserves the full entered rate",
+        arguments: ["58.40", "$58.40", " 58.40 \n"])
     func decimalRateInput(_ input: String) throws {
         let model = AppModel()
         try model.saveProfile(makeDraft(rate: input, start: testStart))
@@ -275,7 +286,7 @@ struct AppModelTests {
 
     @Test(
         "Partial numeric input cannot replace saved rules",
-        arguments: ["58.40USD", "1,234.56", "1.234,56", "58.4.0", "1e3", "NaN", "-1"])
+        arguments: ["58.40USD", "58,40", "1.234,56", "58.4.0", "1e3", "NaN", "-1"])
     func invalidRateInputIsAtomic(_ input: String) throws {
         let model = AppModel()
         try model.saveProfile(makeDraft(rate: "50", start: testStart))
@@ -286,7 +297,7 @@ struct AppModelTests {
         #expect(model.profile?.agreement.version == "1")
     }
 
-    @Test("Paycheck amounts and optional hours keep decimal-comma precision")
+    @Test("Paycheck amounts and confirmed hours keep decimal precision")
     func decimalPaystubInputIsExact() throws {
         let model = AppModel()
         try model.saveProfile(makeDraft(rate: "50", start: testStart))
@@ -295,8 +306,11 @@ struct AppModelTests {
         var draft = PaystubConfirmationDraft()
         draft.payPeriodStartDate = testStart
         draft.payPeriodEndDate = testStart.addingTimeInterval(6 * 24 * 3600)
-        draft.grossPay = "400,50"
-        draft.regularHours = "8,25"
+        draft.grossPay = "400.50"
+        draft.workComplete = true
+        draft.grossBasis = .wagesOnly
+        draft.reviewedFields = [.periodStart, .periodEnd, .grossPay, .regularHours]
+        draft.regularHours = "8.25"
         try model.confirmPaystub(draft)
         #expect(model.currentPaystub?.grossPay.amount == Decimal(40050) / 100)
         #expect(model.currentPaystub?.regularHours == Decimal(825) / 100)

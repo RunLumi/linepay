@@ -12,6 +12,11 @@ protocol EvidenceStoring: AnyObject {
     func url(for evidence: PaystubEvidence) -> URL?
     func delete(_ evidence: PaystubEvidence) throws
     func deleteAll() throws
+    func unreferencedFiles(excluding filenames: Set<String>) throws -> [PaystubEvidence]
+}
+
+extension EvidenceStoring {
+    func unreferencedFiles(excluding filenames: Set<String>) throws -> [PaystubEvidence] { [] }
 }
 
 @MainActor
@@ -94,11 +99,13 @@ final class LocalEvidenceStore: EvidenceStoring {
         let fileExtension = URL(fileURLWithPath: originalFilename).pathExtension
         let storedFilename = makeStoredFilename(fileExtension: fileExtension)
         let destination = directoryURL.appendingPathComponent(storedFilename, isDirectory: false)
-        try data.write(to: destination, options: [.atomic])
-        try? fileManager.setAttributes(
-            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: destination.path
-        )
+        #if os(iOS)
+            try data.write(
+                to: destination,
+                options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        #else
+            try data.write(to: destination, options: [.atomic])
+        #endif
 
         return PaystubEvidence(
             storedFilename: storedFilename,
@@ -110,6 +117,7 @@ final class LocalEvidenceStore: EvidenceStoring {
     }
 
     func url(for evidence: PaystubEvidence) -> URL? {
+        guard AppStateValidation.safeFilename(evidence.storedFilename) else { return nil }
         let candidate = directoryURL.appendingPathComponent(
             evidence.storedFilename,
             isDirectory: false
@@ -124,7 +132,30 @@ final class LocalEvidenceStore: EvidenceStoring {
 
     func deleteAll() throws {
         guard fileManager.fileExists(atPath: directoryURL.path) else { return }
-        try fileManager.removeItem(at: directoryURL)
+        for file in try ownedFiles() { try fileManager.removeItem(at: file) }
+    }
+
+    func unreferencedFiles(excluding filenames: Set<String>) throws -> [PaystubEvidence] {
+        try ownedFiles().filter { !filenames.contains($0.lastPathComponent) }.map {
+            PaystubEvidence(
+                storedFilename: $0.lastPathComponent, originalFilename: "Interrupted local import",
+                mediaType: "application/octet-stream", sourceKind: .file)
+        }
+    }
+
+    private func ownedFiles() throws -> [URL] {
+        guard fileManager.fileExists(atPath: directoryURL.path) else { return [] }
+        return try fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey]
+        ).filter { url in
+            let stem =
+                url.pathExtension.isEmpty
+                ? url.lastPathComponent : url.deletingPathExtension().lastPathComponent
+            let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+            return UUID(uuidString: stem) != nil && values.isRegularFile == true
+                && values.isSymbolicLink != true
+        }
     }
 
     private func ensureDirectory() throws {
@@ -133,10 +164,12 @@ final class LocalEvidenceStore: EvidenceStoring {
             at: directoryURL,
             withIntermediateDirectories: true
         )
-        try? fileManager.setAttributes(
-            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: directoryURL.path
-        )
+        #if os(iOS)
+            try fileManager.setAttributes(
+                [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                ofItemAtPath: directoryURL.path
+            )
+        #endif
     }
 
     private func makeStoredFilename(fileExtension: String) -> String {

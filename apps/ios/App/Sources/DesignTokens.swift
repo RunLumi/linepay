@@ -17,6 +17,8 @@ enum LinePayColor {
     static let difference = dynamicColor(light: 0xB13C35, dark: 0xFFB4AB)
     static let match = dynamicColor(light: 0x276749, dark: 0x88D5A6)
     static let information = dynamicColor(light: 0x2C5F90, dark: 0xA7C8F5)
+    static let lineStrong = dynamicColor(
+        light: 0x7A8388, dark: 0x75848D, highLight: 0x4A5358, highDark: 0xB5BEC3)
     static let brandCopper = dynamicColor(light: 0xA94E25, dark: 0xE48A59)
 
     private static func dynamicColor(

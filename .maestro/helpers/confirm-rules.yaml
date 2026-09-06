@@ -1,0 +1,21 @@
+appId: com.streamentry.linepay
+---
+- repeat:
+    times: 3
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: pay-profile.continue
+          timeout: 60000
+      - waitForAnimationToEnd
+      - tapOn:
+          id: pay-profile.continue
+      - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: pay-profile.save
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: pay-profile.save
+- waitForAnimationToEnd
