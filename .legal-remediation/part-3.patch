@@ -1,0 +1,269 @@
+diff --git a/apps/ios/AppTests/Sources/LegalRegressionTests.swift b/apps/ios/AppTests/Sources/LegalRegressionTests.swift
+index 5584a78..05c801c 100644
+--- a/apps/ios/AppTests/Sources/LegalRegressionTests.swift
++++ b/apps/ios/AppTests/Sources/LegalRegressionTests.swift
+@@ -115,6 +115,129 @@ struct LegalRegressionTests {
+         #expect(support.contains("does not extend"))
+     }
+ 
++    @Test func sharingRequiresPreviewOfTheExactCurrentFileAndOptionChangesInvalidateIt() throws {
++        let root = UnitFixture.temporaryDirectory()
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        defer { try? FileManager.default.removeItem(at: root) }
++        var seenOptions: [ReportPrivacyOptions] = []
++        let session = ReportShareSession(
++            export: { privacy in
++                seenOptions.append(privacy)
++                let url = root.appendingPathComponent(UUID().uuidString + ".pdf")
++                try Data("SYNTHETIC PDF".utf8).write(to: url)
++                return url
++            }, remove: { try FileManager.default.removeItem(at: $0) })
++        #expect(session.shareURL == nil)
++        session.prepare(privacy: ReportPrivacyOptions())
++        let first = try #require(session.preparedURL)
++        #expect(session.shareURL == nil)
++        session.previewLoaded(root.appendingPathComponent("unrelated.pdf"))
++        #expect(session.shareURL == nil)
++        session.previewLoaded(first)
++        #expect(session.shareURL == first)
++        session.prepare(privacy: ReportPrivacyOptions(includeSourceDetails: true))
++        let second = try #require(session.preparedURL)
++        #expect(second != first && session.shareURL == nil)
++        #expect(!FileManager.default.fileExists(atPath: first.path))
++        session.previewLoaded(first)
++        #expect(session.shareURL == nil)
++        session.previewFailed(second)
++        #expect(session.shareURL == nil && session.errorMessage != nil)
++        session.previewLoaded(second)
++        #expect(session.shareURL == second)
++        session.discard()
++        #expect(session.shareURL == nil && session.preparedURL == nil)
++        #expect(!FileManager.default.fileExists(atPath: second.path))
++        #expect(seenOptions.map(\.includeSourceDetails) == [false, true])
++    }
++
++    @Test func failedExportOrCleanupCannotLeaveAnOldShareAction() throws {
++        let root = UnitFixture.temporaryDirectory()
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        defer { try? FileManager.default.removeItem(at: root) }
++        let url = root.appendingPathComponent("synthetic.pdf")
++        var failExport = false
++        var failCleanup = true
++        let session = ReportShareSession(
++            export: { _ in
++                if failExport { throw UnitFailure.injected }
++                try Data("SYNTHETIC".utf8).write(to: url)
++                return url
++            },
++            remove: { path in
++                if failCleanup { throw UnitFailure.injected }
++                try FileManager.default.removeItem(at: path)
++            })
++        session.prepare(privacy: ReportPrivacyOptions())
++        session.previewLoaded(url)
++        #expect(session.shareURL == url)
++        failExport = true
++        session.prepare(privacy: ReportPrivacyOptions(includeSourceDetails: true))
++        #expect(session.preparedURL == nil && session.shareURL == nil)
++        #expect(session.errorMessage != nil)
++        #expect(FileManager.default.fileExists(atPath: url.path))
++        failCleanup = false
++        session.discard()
++        #expect(!FileManager.default.fileExists(atPath: url.path))
++    }
++
++    @Test func scopedTemporaryCleanupCannotDeleteAnUnrelatedFileOrSymlinkTarget() throws {
++        let root = UnitFixture.temporaryDirectory()
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        defer { try? FileManager.default.removeItem(at: root) }
++        let outside = root.appendingPathComponent("LinePaycheck-audit-unrelated.pdf")
++        try Data("UNRELATED".utf8).write(to: outside)
++        #expect(throws: (any Error).self) { try TemporaryExports.removeReport(outside) }
++        let link = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
++        defer { try? FileManager.default.removeItem(at: link) }
++        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: outside)
++        #expect(throws: (any Error).self) { try TemporaryExports.removeReport(link) }
++        #expect(try Data(contentsOf: outside) == Data("UNRELATED".utf8))
++    }
++
++    @Test func sourceDetailsAreAnExplicitOptInAndDoNotAlterSavedData() throws {
++        let model = AppModel()
++        try UnitFixture.populate(model)
++        let context = try #require(model.periodContext())
++        let url = try ReconciliationReportExporter().export(
++            window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
++            agreement: context.agreement, calculation: #require(context.calculation),
++            paystub: nil, reconciliation: nil, findings: [],
++            privacy: ReportPrivacyOptions(includeSourceDetails: true))
++        defer { try? FileManager.default.removeItem(at: url) }
++        let text = try #require(PDFDocument(url: url)?.string)
++        #expect(text.contains("Profile: " + context.agreement.displayName))
++        #expect(text.contains("includes optional OCR source text"))
++        #expect(text.contains("does not extend"))
++    }
++
++    @Test func consentDateUsesTheFrozenPayrollZoneAndAllScopesHaveDistinctMessages() throws {
++        let instant = Date(timeIntervalSince1970: 1_788_736_200)
++        let messages = RuleEditScope.allCases.map {
++            RuleChangeConsent.explanation(
++                scope: $0, effectiveDate: instant,
++                timeZoneIdentifier: "America/Los_Angeles", workCount: 3)
++        }
++        #expect(Set(messages).count == 3)
++        let dated = RuleChangeConsent.explanation(
++            scope: .datedChange, effectiveDate: instant,
++            timeZoneIdentifier: "America/Los_Angeles", workCount: 3)
++        let formatter = DateFormatter()
++        formatter.dateStyle = .long
++        formatter.timeZone = TimeZone(identifier: "America/Los_Angeles")
++        #expect(dated.contains(formatter.string(from: instant)))
++        #expect(dated.contains("America/Los_Angeles"))
++        let invalid = RuleChangeConsent.explanation(
++            scope: .datedChange, effectiveDate: instant,
++            timeZoneIdentifier: "Invalid/Zone", workCount: 3)
++        #expect(invalid.contains("needs review"))
++        let correction = RuleChangeConsent.explanation(
++            scope: .currentPeriod, effectiveDate: instant,
++            timeZoneIdentifier: "UTC", workCount: 3)
++        #expect(correction.contains("All 3 saved work entries"))
++        #expect(correction.contains("before and after"))
++    }
++
+     private func export(_ context: PayPeriodContext) throws -> URL {
+         try ReconciliationReportExporter().export(
+             window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
+diff --git a/apps/ios/AppUITests/LegalJourneyTests.swift b/apps/ios/AppUITests/LegalJourneyTests.swift
+new file mode 100644
+index 0000000..7f4ae80
+--- /dev/null
++++ b/apps/ios/AppUITests/LegalJourneyTests.swift
+@@ -0,0 +1,97 @@
++import XCTest
++
++/// Native interaction receipts for changed legal-consent and report-sharing boundaries.
++@MainActor
++final class LegalJourneyTests: XCTestCase {
++    private var app = XCUIApplication()
++
++    override func setUp() async throws {
++        continueAfterFailure = false
++        XCUIDevice.shared.appearance = .light
++    }
++
++    func testDefaultReportRequiresPrivateOptionsAndExactPreviewBeforeSharing() {
++        launch(scenario: "matches")
++        tab("Pay")
++        tap("pay.open-audit")
++        let scope = app.staticTexts["Not a complete wage-law check"].firstMatch
++        scrollTo(scope)
++        XCTAssertTrue(scope.exists)
++        capture("legal-audit-scope")
++        tap("audit.export")
++        XCTAssertTrue(app.buttons["report.preview"].waitForExistence(timeout: 10))
++        XCTAssertFalse(app.buttons["audit.share-report"].exists)
++        let details = app.switches["report.include-source-details"]
++        XCTAssertTrue(details.exists)
++        XCTAssertEqual(details.value as? String, "0")
++        capture("legal-minimal-report-consent")
++        tap("report.preview")
++        XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 15))
++        XCTAssertTrue(app.staticTexts["report.preview-warning"].exists)
++        capture("legal-exact-pdf-preview")
++        // A share sheet opens only after user intent. No recipient is selected in this test.
++        tap("audit.share-report")
++        capture("legal-native-share-sheet")
++    }
++
++    func testDatedRuleConsentRemainsTruthfulAtLargestTextInDarkMode() {
++        XCUIDevice.shared.appearance = .dark
++        launch(scenario: "work", largeText: true)
++        tab("Settings")
++        tap("settings.edit-rules")
++        for _ in 0..<3 { tap("pay-profile.continue") }
++        tap("pay-profile.change-scope")
++        tap("New rules from a date")
++        let explanation = app.staticTexts["pay-profile.scope-explanation"]
++        scrollTo(explanation)
++        XCTAssertTrue(explanation.exists)
++        XCTAssertTrue(
++            explanation.label.contains("Previously recorded work keeps its original rules"))
++        XCTAssertFalse(explanation.label.contains("entire current period will be recalculated"))
++        capture("legal-dated-consent-large-dark")
++        tap("pay-profile.save")
++        XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
++        capture("legal-dated-confirmation-large-dark")
++        tap("pay-profile.confirm-change")
++        tab("Today")
++        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 10))
++    }
++
++    private func launch(scenario: String, largeText: Bool = false) {
++        app = XCUIApplication()
++        app.launchArguments = [
++            "--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
++        ]
++        if largeText {
++            app.launchArguments += [
++                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
++            ]
++        }
++        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
++        app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
++        app.launch()
++    }
++    private func tab(_ name: String) {
++        let tab = app.tabBars.buttons[name]
++        XCTAssertTrue(tab.waitForExistence(timeout: 10))
++        tab.tap()
++    }
++    private func tap(_ id: String) {
++        let button = app.buttons[id].firstMatch
++        scrollTo(button)
++        XCTAssertTrue(button.exists, "Missing control: \(id)")
++        button.tap()
++    }
++    private func scrollTo(_ element: XCUIElement) {
++        for _ in 0..<16 {
++            if element.exists && element.isHittable { return }
++            app.swipeUp()
++        }
++    }
++    private func capture(_ name: String) {
++        let attachment = XCTAttachment(screenshot: app.screenshot())
++        attachment.name = name
++        attachment.lifetime = .keepAlways
++        add(attachment)
++    }
++}
+diff --git a/docs/checklists/ios-before-first-testflight.md b/docs/checklists/ios-before-first-testflight.md
+index ba4b5c5..599dde0 100644
+--- a/docs/checklists/ios-before-first-testflight.md
++++ b/docs/checklists/ios-before-first-testflight.md
+@@ -93,3 +93,14 @@ If subscriptions exist:
+ - [ ] A worker can understand *why* a discrepancy was flagged and which input/rule caused it.
+ 
+ If any unchecked item can cause data loss, incorrect money, privacy leakage, or an irreversible App Store identity decision, fix it before distributing the build.
++
++
++## Source-bound legal release gate
++
++Before submission or distribution, follow [the legal remediation procedure](../legal/README.md).
++Run `python3 scripts/legal_guardrails.py release --stage submission --evidence /private/release/evidence.json`
++or `--stage distribution` for an actual release. The API helper also requires `--release-evidence`
++for submission/publishing endpoints. `--allow-write` alone is not sufficient. Reads/withdrawal
++remain separately available. No template, local StoreKit test or old build handoff is owner approval.
++Keep the first reviewed candidate on manual release; use actual release captures and a new unused
++build number, not the previously uploaded 1.0(2). This is an engineering gate, not legal clearance.
+diff --git a/docs/legal.md b/docs/legal.md
+index 8c88d87..408eaff 100644
+--- a/docs/legal.md
++++ b/docs/legal.md
+@@ -536,3 +536,8 @@ Sources consulted for the September 6, 2026 assessment. These links support the
+ | A29–A30 | Apple export-compliance process and EU DSA trader information requirements. |
+ 
+ **Final position:** preserve the small local-first product, close the concrete misleading-copy and release-evidence gaps, and keep promises no broader than the software and business can support. The legal work should sharpen the product's truthfulness, not expand its data collection or bury its limitations in boilerplate.
++
++
++## Remediation tracking — September 6, 2026
++
++The original audit above remains a dated source record. [Remediation and evidence](legal/README.md) maps all 21 findings to GitHub issues #13–#33 and PR #34. Engineering controls and external clearance have distinct completion criteria. No finding is automatically closed by adding that register or passing a test.
