@@ -48,16 +48,17 @@ struct PayProfileSetupView: View {
                             .foregroundStyle(LinePayColor.review)
                     }
                 }
-                Section {
-                    Button(
-                        step == 3
-                            ? (editing ? "Save reviewed rules" : "Use these rules") : "Continue"
-                    ) {
-                        advance()
+                if step < 3 || !editing {
+                    Section {
+                        Button(
+                            step == 3 ? "Use these rules" : "Continue"
+                        ) {
+                            advance()
+                        }
+                        .buttonStyle(LinePayPrimaryButtonStyle())
+                        .accessibilityIdentifier(
+                            step == 3 ? "pay-profile.save" : "pay-profile.continue")
                     }
-                    .buttonStyle(LinePayPrimaryButtonStyle())
-                    .accessibilityIdentifier(
-                        step == 3 ? "pay-profile.save" : "pay-profile.continue")
                 }
             }
             .linePayKeyboardDismiss()
@@ -71,6 +72,26 @@ struct PayProfileSetupView: View {
                         Button("Back") { draft.setupStep -= 1 }
                     } else if editing {
                         Button("Cancel") { dismiss() }
+                    }
+                }
+                ToolbarItemGroup(placement: .confirmationAction) {
+                    if step == 3, editing {
+                        Menu("Scope") {
+                            Button("Future work periods only") {
+                                draft.editScope = .futurePeriods
+                            }.accessibilityIdentifier("pay-profile.scope.future")
+                            Button("New rules from a date") {
+                                draft.editScope = .datedChange
+                            }.accessibilityIdentifier("pay-profile.scope.dated")
+                            Button("Recalculate this entire current period") {
+                                draft.editScope = .currentPeriod
+                            }.accessibilityIdentifier("pay-profile.scope.current")
+                        }
+                        .accessibilityIdentifier("pay-profile.change-scope")
+                        Button("Save reviewed rules") {
+                            advance()
+                        }
+                        .accessibilityIdentifier("pay-profile.save")
                     }
                 }
             }
@@ -92,7 +113,7 @@ struct PayProfileSetupView: View {
         } message: {
             if let preview = changePreview {
                 Text(
-                    "\(selectedScope.title). Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
+                    "\(selectedScope.title). \(changeExplanation) Open-period total, including per diem: \(preview.before.map(LinePayFormat.money) ?? "Unavailable") → \(preview.after.map(LinePayFormat.money) ?? "Unavailable"). \(preview.workCount) saved work entries. Earlier audit revisions remain unchanged."
                 )
             }
         }
@@ -312,24 +333,12 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Picker("Scope", selection: $draft.editScope) {
-                        Text("Future work periods only").tag(RuleEditScope.futurePeriods)
-                            .accessibilityIdentifier("pay-profile.scope.future")
-                        Text("New rules from a date").tag(RuleEditScope.datedChange)
-                            .accessibilityIdentifier("pay-profile.scope.dated")
-                        Text("Recalculate this entire current period").tag(
-                            RuleEditScope.currentPeriod
-                        )
-                        .accessibilityIdentifier("pay-profile.scope.current")
-                    }.pickerStyle(.navigationLink).accessibilityIdentifier(
-                        "pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
                             selection: Binding(
                                 get: {
-                                    draft.changeEffectiveDate ?? model.activePeriod?.window.endDate
-                                        ?? draft.periodStartDate
+                                    ruleChangeDate
                                 },
                                 set: { draft.changeEffectiveDate = $0 }), displayedComponents: .date
                         )
@@ -346,16 +355,14 @@ struct PayProfileSetupView: View {
                         LabeledContent(
                             "Reviewed rate", value: LinePayFormat.money(agreement.hourlyRate))
                     }
-                    Text(
-                        draft.editScope == .futurePeriods
-                            ? "Logged work keeps its current rules. The new snapshot is used when the next work period starts."
-                            : "All work in the current open period will be recalculated. Earlier audit revisions remain available. This does not implement a mid-period rate change."
-                    )
-                    .foregroundStyle(LinePayColor.review)
+                    Text(changeExplanation)
+                        .accessibilityIdentifier("pay-profile.scope-explanation")
+                        .foregroundStyle(LinePayColor.review)
                     Text("Closed work periods and their calculation snapshots are not changed.")
                         .font(.footnote)
                 }
             }
+            Section { ComparisonScopeView(showDetails: true) }
             Section("Confirmation") {
                 Text(
                     "These are the rules you entered, not rules inferred from your union or employer. Review the summary before using them."
@@ -383,6 +390,19 @@ struct PayProfileSetupView: View {
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
+    private var ruleChangeDate: Date {
+        draft.changeEffectiveDate
+            ?? (draft.useEffectiveStart
+                ? draft.effectiveStartDate
+                : model.activePeriod?.window.endDate ?? draft.periodStartDate)
+    }
+    private var changeExplanation: String {
+        RuleChangeConsent.explanation(
+            scope: draft.editScope, effectiveDate: ruleChangeDate,
+            timeZoneIdentifier: model.currentTimeZoneIdentifier,
+            workCount: model.activePeriod?.workEntries.count ?? 0)
+    }
+
     private var selectedScope: RuleChangeScope {
         switch draft.editScope {
         case .futurePeriods: .futurePeriods

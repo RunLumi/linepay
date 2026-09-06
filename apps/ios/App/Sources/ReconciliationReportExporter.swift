@@ -13,7 +13,8 @@ struct ReconciliationReportExporter {
         calculation: CalculationResult,
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
-        findings: [AuditFinding]
+        findings: [AuditFinding],
+        privacy: ReportPrivacyOptions = ReportPrivacyOptions()
     ) throws -> URL {
         let created = Date()
         let url = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
@@ -58,6 +59,12 @@ struct ReconciliationReportExporter {
                 writer.text("Awaiting paycheck. No paid amount has been confirmed.")
             }
 
+            writer.section(ComparisonScopeDisclosure.title)
+            writer.text(ComparisonScopeDisclosure.summary)
+            writer.caption(ComparisonScopeDisclosure.supported)
+            writer.caption(ComparisonScopeDisclosure.unsupported)
+            writer.caption(ComparisonScopeDisclosure.combination)
+
             writer.section("Pay ledger")
             for component in calculation.components {
                 writer.text(
@@ -87,7 +94,9 @@ struct ReconciliationReportExporter {
                         "Expected minus confirmed", format(comparison.difference, comparison))
                     if let suggestion = paystub?.confirmation?.suggestions[comparison.field] {
                         writer.caption(
-                            "Source: page \(suggestion.region.page + 1), \(suggestion.sourceText)")
+                            "Source: page \(suggestion.region.page + 1), value confirmed by the worker."
+                        )
+                        if privacy.includeSourceDetails { writer.caption(suggestion.sourceText) }
                     } else {
                         writer.caption("Source: value entered and confirmed by the worker.")
                     }
@@ -96,8 +105,10 @@ struct ReconciliationReportExporter {
 
             for agreement in calculation.agreementSnapshots ?? [agreement] {
                 writer.section("Rule snapshot")
-                writer.row("Profile", agreement.displayName)
-                writer.row("Agreement ID", agreement.id)
+                if privacy.includeSourceDetails {
+                    writer.row("Profile", agreement.displayName)
+                    writer.row("Agreement ID", agreement.id)
+                }
                 writer.row("Rule version", agreement.version)
                 writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
                 if let confirmed = agreement.confirmedEpochSeconds {
@@ -108,19 +119,35 @@ struct ReconciliationReportExporter {
                 if agreement.sources.isEmpty {
                     writer.caption("Rules confirmed by you; no source attached.")
                 }
-                for source in agreement.sources {
-                    writer.text(
-                        "\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
-                    if !source.url.isEmpty { writer.caption(source.url) }
-                    if let section = source.section { writer.caption(section) }
+                if privacy.includeSourceDetails {
+                    for source in agreement.sources {
+                        writer.text(
+                            "\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
+                        if !source.url.isEmpty { writer.caption(source.url) }
+                        if let section = source.section { writer.caption(section) }
+                    }
+                } else if !agreement.sources.isEmpty {
+                    writer.caption(
+                        "Source names, URLs and free-text references omitted from this sharing copy. Review originals in LinePaycheck."
+                    )
                 }
                 if let notes = agreement.unsupportedRuleNotes, !notes.isEmpty {
-                    writer.text("Incomplete rule coverage: \(notes)")
+                    writer.text(
+                        privacy.includeSourceDetails
+                            ? "Incomplete rule coverage: \(notes)"
+                            : "Incomplete rule coverage: a rule is not represented. The private note is retained in LinePaycheck."
+                    )
                 }
             }
             writer.section("Important")
             writer.caption(
                 "LinePaycheck estimates and reconciles only the facts and rules you confirmed. A difference is a reason to review the paycheck, not a legal determination of wages owed. Positive difference means expected was higher, not that recovery is guaranteed."
+            )
+            writer.caption(ComparisonScopeDisclosure.deadlines)
+            writer.caption(
+                privacy.includeSourceDetails
+                    ? "Sensitive sharing copy: includes optional OCR source text, profile identity and rule references. It is not anonymous. Review before sharing."
+                    : "Sensitive sharing copy: pay amounts, dates and rule details can identify a worker. It is not anonymous. Optional OCR source text and profile/source identifiers are omitted."
             )
             writer.caption(
                 "Original paystub pages are excluded. No file is uploaded unless you choose to share it. Copies saved outside LinePaycheck remain under your control."

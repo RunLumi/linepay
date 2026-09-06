@@ -262,7 +262,7 @@ The first five screenshot messages should be outcome-first:
 | Work logging | **Log the shift. Keep your own record.** | Real shift timeline |
 | Rule math | **See exactly how every hour was calculated.** | Regular / OT / double-time ledger rows |
 | Reconciliation | **Expected → Paid → Possible shortfall** | Pay Ledger comparison |
-| Trust | **Your wage data stays on your iPhone.** | Quiet privacy/local-device diagram, only while factually true |
+| Trust | **Your wage data stays on your iPhone by default.** | Quiet privacy/local-device diagram, only while factually true |
 
 For lineworker-specific CPPs, once the corresponding domain logic is actually shipped:
 

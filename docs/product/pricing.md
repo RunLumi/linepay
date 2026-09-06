@@ -194,7 +194,7 @@ Then $79.99/year, automatically renewing.
 Cancel at least 24 hours before trial end to avoid renewal.
 Continue free
 
-Your pay data stays on this device.
+Your pay data stays on this device by default.
 Restore Purchases · Manage Subscription · Terms · Privacy
 ```
 
