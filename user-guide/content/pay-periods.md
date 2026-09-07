@@ -10,7 +10,7 @@ keywords: [weekly, biweekly, manual, payday, late paycheck, archive]
 
 The work period identifies the dates the paycheck covers. Payday is when the employer issues or deposits the payment. These dates do not have to coincide.
 
-LinePaycheck lets you close the completed work period and keep recording the next one while the earlier paycheck is still pending. There is no need to invent a paycheck or enter zero gross to move forward.
+LinePaycheck can close a completed work period and keep recording the next one while the earlier paycheck is still pending when its calculation is safe to finish. If the period has an unresolved calculation or unpriceable callout, keep it open and review the stated problem; there is no need to invent a paycheck or enter zero gross to move forward.
 
 ## Check or correct the open period
 
@@ -24,7 +24,7 @@ This corrects an open period. It does not unlock arbitrary editing of already cl
 
 1. Review all work and unpaid breaks in **Today**.
 2. Open **Pay → Finish work period**.
-3. Check the displayed dates and expected wages. Review any calculation problem before proceeding.
+3. Check the displayed dates and expected wages. Review any calculation problem before proceeding; a period that cannot be priced safely is not ready to close.
 4. Without a paycheck, choose **Close work, await paycheck**. With a confirmed paycheck, choose **Finish and archive**.
 
 Choose **Keep period open** or **Cancel** to return without closing. Closing preserves the work and rule snapshot. If the calculation cannot be completed safely, resolve the stated problem rather than substituting a guessed amount.

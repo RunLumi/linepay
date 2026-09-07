@@ -24,7 +24,9 @@ Use **Back** to correct a step. Unfinished setup is saved on the device; a save-
 
 ## Record one actual shift
 
-Open **Today → Add work**. Select the work type, start and end dates and times, and any unpaid breaks. Check **Actual worked time** and the payroll timezone, then choose **Save work**.
+After **Use these rules**, the first-run flow opens **Your first work**. Choose **Log my first work** to enter a real shift, or **I'll log work later** if you are not ready. After the first saved shift, **Your expected pay** offers **Check every paycheck** or **Keep logging work**; the normal tabs appear after that choice. For later entries, use **Today → Add work**.
+
+Select the work type, start and end dates and times, and any unpaid breaks. Check **Actual worked time** and the payroll timezone, then choose **Save work**.
 
 For example, eight actual hours at an explicitly entered $50 rate, with no other configured rules, produce $400 in expected wages. This is a synthetic example, not a recommended rate or overtime policy. Only log a shift you actually worked in your own records.
 
@@ -38,6 +40,6 @@ The first comparable paycheck audit is free. An optional Pro offer can appear af
 
 ## Finish the loop
 
-Read the result and its scope; a matching gross total is not a complete audit of every rule. Save a complete backup somewhere private. You can close a work period before payday and continue logging the next one.
+Read the result and its scope; a matching gross total is not a complete audit of every rule. Save a complete backup somewhere private. When the period has a safe, reviewable calculation, **Pay → Finish work period** can close it before payday and let you continue with the next period. If the app says **Calculation needs review** or cannot price an unresolved callout, keep the period open and resolve the stated problem; do not invent a paycheck or zero amount to force rollover.
 
 Next: [Set up a pay profile]({{< relref "/pay-profile" >}}) or [review paystub fields]({{< relref "/confirming-fields" >}}).
