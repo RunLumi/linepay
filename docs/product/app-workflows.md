@@ -54,6 +54,8 @@ Blank is unknown, not zero. A manual path is equally legitimate and subject to t
 
 The Pay screen shows the comparison scope first, then expected vs confirmed paid, then actionable reasons. [Reconciliation](payroll/reconciliation.md) owns exact semantics.
 
+When the profile includes the restricted weekly overtime rule, Pay also offers **Review weekly overtime**. That review is a separate, complete-workweek estimate: the worker chooses the workweek, confirms completeness, and sees the qualifying hours, regular rate, additional premium, and expected cash. It must remain visibly qualified and must not be presented as a state, CBA, exemption, public-agency, or universal legal determination. An incomplete or incompatible workweek remains **Needs review** with the calculation error exposed.
+
 | Outcome | Meaning | Next action |
 |---|---|---|
 | Matches within stated scope | Comparable totals/confirmed lines agree under the recorded rules | Inspect scope; save the audit |

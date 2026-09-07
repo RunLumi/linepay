@@ -266,7 +266,7 @@ public struct WeeklyRegularRateCalculator: Sendable {
     }
 }
 
-public enum WeeklyRegularRateError: Error, Equatable, Sendable {
+public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
     case incompleteWorkweek
     case applicabilityUnknown
     case unsupportedThreshold(Decimal)
@@ -276,4 +276,27 @@ public enum WeeklyRegularRateError: Error, Equatable, Sendable {
     case invalidCreditClassification(UUID)
     case currencyMismatch
     case remunerationWithoutQualifyingHours
+
+    public var errorDescription: String? {
+        switch self {
+        case .incompleteWorkweek:
+            "The selected workweek is not complete. Confirm all work in this week before calculating."
+        case .applicabilityUnknown:
+            "Weekly overtime applicability or historical rule scope is unknown. Review the pay profile and stored periods."
+        case .unsupportedThreshold:
+            "Only a 40-hour weekly threshold is supported."
+        case .duplicateFactID:
+            "The weekly work or remuneration facts contain a duplicate identity."
+        case .invalidWorkFact:
+            "A weekly work fact is invalid. Review the recorded hours and rate."
+        case .invalidRemunerationFact:
+            "A weekly remuneration fact is invalid. Review the recorded amount."
+        case .invalidCreditClassification:
+            "An extra-premium credit classification is invalid. Review the payment type and credit status."
+        case .currencyMismatch:
+            "The weekly work and remuneration use different currencies."
+        case .remunerationWithoutQualifyingHours:
+            "Remuneration was provided without qualifying work hours. Review the workweek inputs."
+        }
+    }
 }

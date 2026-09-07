@@ -13,6 +13,10 @@ struct WeeklyOvertimeReviewView: View {
         _weekStart = State(initialValue: weekStart)
     }
 
+    static func errorMessage(for error: any Error) -> String {
+        "Needs review: \(error.localizedDescription)"
+    }
+
     var body: some View {
         List {
             Section("Restricted weekly layer") {
@@ -57,7 +61,7 @@ struct WeeklyOvertimeReviewView: View {
             errorMessage = nil
         } catch {
             result = nil
-            errorMessage = "Needs review: (error.localizedDescription)"
+            errorMessage = Self.errorMessage(for: error)
         }
     }
 }
