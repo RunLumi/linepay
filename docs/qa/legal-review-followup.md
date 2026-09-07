@@ -209,3 +209,23 @@ run because Hugo 0.165.0 is not installed on this Mac; no guide build pass is cl
 This receipt proves current local native execution only. The hosted required checks remain the merge
 gate, and external legal, storefront, physical-device, VoiceOver, support-operations, ownership,
 trademark and counsel obligations remain open under the issue ledger.
+
+## Current-main exact candidate — September 7, 2026
+
+`origin/main` later advanced through PRs #69 and #72 (plus the already integrated #41 callout work)
+to `92e5bfb738a2816e6ec63b59643e9fd98e601d0c`. The follow-up branch integrated that main and the
+final callout test ordering fix in candidate `7ca4820461e89d3f74c68ed3f67f5c05db882b9a`, tree
+`1738ec551cb2dbf39a190553c5714484fdd5b0c0`.
+
+The exact native gate at that candidate passed on macOS 26.6.2, Xcode 26.6 (`17F113`), Swift 6.3.3,
+and iPhone 16 Pro / iOS 18.5 (`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`): 229 tests passed, 0
+failures, 0 skips and 0 expected failures across 322 configured device executions. The retained
+result is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-final-current-main/AppTests.xcresult`.
+The pure-domain portion passed 105 tests. The targeted callout-event suite passed 7 tests at
+`/Volumes/SSD/linepay-pr34-evidence/callout-fixed.xcresult`; the large-text User Guide entry passed
+at `/Volumes/SSD/linepay-pr34-evidence/guide-link2.xcresult`.
+
+This exact local evidence does not satisfy hosted branch protection or physical-device/provider
+acceptance. The final required GitHub jobs still need to start and pass; Issue #37 remains open for
+the account-owner billing/spending-limit repair. Hugo 0.165.0 was unavailable, so the public-guide
+static check remains unrun and is not claimed as passed.

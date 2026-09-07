@@ -95,6 +95,12 @@ because the required GitHub jobs still fail before steps with the account-paymen
 annotation. Physical-device VoiceOver, provider/two-device behavior, storefront transactions,
 publisher/legal ownership, counsel and support-operations acceptance remain external obligations.
 
+The branch subsequently integrated current `origin/main` through `92e5bfb738a2816e6ec63b59643e9fd98e601d0c`
+and the final callout test ordering fix in candidate `7ca4820461e89d3f74c68ed3f67f5c05db882b9a`.
+The exact full native gate then passed 229 tests with 0 failures, skips or expected failures across
+322 configured device executions; retained result:
+`/Volumes/SSD/linepay-pr34-evidence/integrated-ios-final-current-main/AppTests.xcresult`.
+
 The same branch later integrated `origin/main` PR #68 (Repeat Shift/DST) in merge commit
 `2e45223b7a241b23e523ba7606a290d209948228`; formatter and Swift Testing fixes landed in
 `cd68adb9cb5aebb5c0987418bcfd262200ce526c`. The final full native gate at that tree passed 221
