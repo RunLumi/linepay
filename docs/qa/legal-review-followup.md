@@ -232,12 +232,12 @@ static check remains unrun and is not claimed as passed.
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-The latest executable PR #57 candidate is `0a36dab`; it fixes the hosted shell continuation,
-explicitly asserts cancellation at the native Files destination, and falls back to exact visible
-scope labels when SwiftUI omits menu-child identifiers in the hosted accessibility tree.
+The latest executable PR #57 candidate is `dffff45`; it fixes the hosted shell continuation, native
+Files/Documents handoff and cancellation targeting, scope-label fallback, bidirectional review
+reveal, and bounded intermediate-step retries.
 The large-text scope
 journey remains ordered so all three promised effects are exercised in one receipt; the focused
-workflow's per-test XCTest allowance is 420 seconds, still bounded by the job's 25-minute timeout.
+workflow's per-test XCTest allowance is 720 seconds, still bounded by the job's 25-minute timeout.
 This addresses the prior hosted timeout at 240 seconds (run `34086657229`) without weakening any
 assertion or adding an expected-failure path.
 
@@ -254,11 +254,13 @@ The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner. This does not change the executable evidence.
 
-The retained artifact from the earlier split-selector run (`34087766410`) proved two concrete
-failures at `LegalJourneyTests.swift:111`: dated and current scope menu options were not exposed
-under their child identifiers, while the future option passed. Candidate `0a36dab` addresses that
-observed accessibility-tree behavior without weakening the scope outcome assertions. It still
-requires a fresh native/hosted execution; the local CoreSimulator service is unavailable.
+The allocated native run `34108177442` proved the three scope screenshots could complete, but found
+the system Files action was exposed through Documents/SpringBoard rather than the app query and that
+the combined journey needed more than the former 420-second allowance. The subsequent allocated
+run `34111505100` also exposed the need for stable explanation lookup and retrying an intermediate
+step. Candidate `dffff45` addresses those observations without weakening outcome assertions. The
+next exact-head run `34112865086` failed before runner allocation, so the current candidate still
+requires a fresh native/hosted execution.
 
 ## Issue #60 targeted guide QA — September 7, 2026
 
