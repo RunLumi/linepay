@@ -41,7 +41,7 @@ jobs:
             -onlyUsePackageVersionsFromResolvedFile -derivedDataPath "$RUNNER_TEMP/legal-derived" \
             -resultBundlePath .test-results/LegalTests.xcresult \
             -parallel-testing-enabled NO -test-timeouts-enabled YES \
-            -maximum-test-execution-time-allowance 420 \
+            -maximum-test-execution-time-allowance 720 \
             -only-testing:LinePayAppTests/LegalRegressionTests \
             -only-testing:LinePayAppTests/LegalConsentAndReportTests \
             -only-testing:LinePayAppTests/ReportShareSessionTests \

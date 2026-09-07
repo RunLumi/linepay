@@ -44,16 +44,28 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(saveToFiles.isHittable)
         capture("legal-system-share-sheet")
         saveToFiles.tap()
-        let save = app.buttons["Save"].firstMatch
+        let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
+        let saveInFiles = documentsApp.buttons["Save"].firstMatch
+        let saveInShareSheet = app.buttons["Save"].firstMatch
+        let saveVisible =
+            saveInFiles.waitForExistence(timeout: 15)
+            || saveInShareSheet.waitForExistence(timeout: 15)
         XCTAssertTrue(
-            save.waitForExistence(timeout: 30),
+            saveVisible,
             "The PDF did not reach the system Files export destination.")
         capture("legal-files-export-ready")
         // Cancel at the native Files destination: no recipient is selected and no synthetic
         // report is persisted into a connected provider.
-        let cancel = app.buttons["Cancel"].firstMatch
-        XCTAssertTrue(cancel.waitForExistence(timeout: 10), "Files did not expose cancellation.")
-        cancel.tap()
+        let cancelInFiles = documentsApp.buttons["Cancel"].firstMatch
+        let cancelInShareSheet = app.buttons["Cancel"].firstMatch
+        if cancelInFiles.waitForExistence(timeout: 10) {
+            cancelInFiles.tap()
+        } else {
+            XCTAssertTrue(
+                cancelInShareSheet.waitForExistence(timeout: 10),
+                "Files did not expose cancellation.")
+            cancelInShareSheet.tap()
+        }
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
         app.terminate()
         XCUIDevice.shared.press(.home)
