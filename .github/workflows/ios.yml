@@ -23,12 +23,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: linepay-ios-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   check:
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -36,7 +36,15 @@ jobs:
         with:
           persist-credentials: false
       - name: Select Xcode 26.6
-        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+        run: |
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
       - name: Install pinned XcodeGen 2.46.0
         run: |
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
@@ -75,7 +83,7 @@ jobs:
   ui:
     name: UI (${{ matrix.name }})
     needs: check
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -97,7 +105,14 @@ jobs:
           persist-credentials: false
       - name: Select native tools
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "JAVA_HOME=$(/usr/libexec/java_home -v 17)" >> "$GITHUB_ENV"

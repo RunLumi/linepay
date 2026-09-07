@@ -1,5 +1,12 @@
 name: Legal regressions
 on:
+  push:
+    branches: [dev, testing]
+    paths:
+      - 'apps/ios/**'
+      - 'scripts/**'
+      - 'docs/legal/**'
+      - '.github/workflows/legal-regressions.yml'
   pull_request:
     paths:
       - 'apps/ios/**'
@@ -9,11 +16,11 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: legal-regressions-${{ github.ref }}
-  cancel-in-progress: true
+  group: linepay-ios-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   targeted-native:
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -21,7 +28,14 @@ jobs:
           persist-credentials: false
       - name: Select pinned tools
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Run legal behavior and interaction regressions
