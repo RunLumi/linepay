@@ -4,7 +4,7 @@ linkTitle: Troubleshooting
 weight: 170
 group: Get help
 description: Recover from input, calculation, import, backup, and purchase problems while preserving evidence.
-keywords: [error, cannot save, wrong total, missing data, offline, disabled, stuck, daylight saving, repeat shift]
+keywords: [error, cannot save, wrong total, missing data, offline, disabled, stuck, daylight saving, repeat shift, calculation review]
 ---
 ## Protect the existing data first
 
@@ -37,6 +37,10 @@ If gross matches but a component differs, check full-rate versus premium-only re
 
 A calculation problem around a dated change or callout guarantee should not be replaced with zero. Keep the work and establish the unsupported or ambiguous rule. [Supported limits]({{< relref "/supported-rules" >}}) explain common boundaries.
 
+If the work period is complete but the calculation still cannot be produced safely, use **Pay → Finish work period → Close work, review calculation later**. This freezes the work/rules/review reason and lets the next weekly or biweekly period start normally. It does not consume the Free audit or treat the missing amount as $0.
+
+In **History**, open the item marked **Calculation needs review**. Review **Frozen work** and the rule snapshot. Use **Retry saved calculation** after the underlying app/rule support has been clarified. Retry never changes the current period; if the same frozen facts still cannot be priced, the unresolved history remains unchanged.
+
 ## Scanning and imports
 
 If the scanner is absent, use a supported photo/file route or **Enter manually**. If camera permission is denied, use **Open iOS Settings** or an alternative input method.
@@ -50,6 +54,8 @@ If another period owns a review draft, resume it from the correct period or expl
 A saved-to-location message does not prove that iCloud upload has completed. Verify the file in Files. A JSON data export or audit PDF is not the complete restorable backup.
 
 If restoration rejects a file, preserve it unchanged, confirm it is a LinePaycheck backup, check available storage and app-version compatibility, and retry. Restoration replaces records rather than merging; always preserve the destination records you need first.
+
+An unresolved closed period is part of the complete backup. Its saved calculation-review reason remains unresolved after restore unless the same frozen facts/rules can later be calculated safely; restore does not substitute a number.
 
 If original-file cleanup remains pending, use **Privacy and local data → Retry original cleanup** after resolving the cause.
 

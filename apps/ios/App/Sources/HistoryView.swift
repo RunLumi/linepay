@@ -85,11 +85,17 @@ struct HistoricalPeriodView: View {
     let subscriptionStore: SubscriptionStore
     let periodID: UUID
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.linePaySession) private var session
     @State private var showingImport = false
     @State private var showingResult = false
     @State private var showingPaywall = false
     @State private var showingDelete = false
     @State private var errorMessage: String?
+
+    private var storedPeriod: CompletedPayPeriod? {
+        model.history.first { $0.id == periodID }
+    }
+
     var body: some View {
         List {
             if let context = model.periodContext(id: periodID) {
@@ -98,7 +104,15 @@ struct HistoricalPeriodView: View {
                         LinePayFormat.payPeriod(
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.headline)
-                    PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
+                    if let calculation = context.calculation {
+                        PayAmount(label: "Expected wages", money: calculation.expectedWages)
+                    } else {
+                        Label(
+                            "Calculation needs review",
+                            systemImage: "exclamationmark.triangle"
+                        )
+                        .foregroundStyle(LinePayColor.review)
+                    }
                     Text(
                         "Timezone: \(context.timeZoneIdentifier) · rules v\(context.agreement.version)"
                     ).font(.footnote)
@@ -106,25 +120,34 @@ struct HistoricalPeriodView: View {
                         Label("Awaiting paycheck", systemImage: "clock")
                     } else {
                         AuditStatusView(status: model.status(for: context))
-                        NavigationLink("Open paycheck audit") {
-                            LiveAuditView(
-                                model: model, subscriptionStore: subscriptionStore,
-                                periodID: periodID)
+                        if context.calculation != nil {
+                            NavigationLink("Open paycheck audit") {
+                                LiveAuditView(
+                                    model: model, subscriptionStore: subscriptionStore,
+                                    periodID: periodID)
+                            }
                         }
                     }
-                    Button(context.paystub == nil ? "Add this paycheck" : "Correct paycheck facts")
-                    { beginAudit() }
-                    .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
-                        "history.audit")
-                    Text(
-                        "Corrections append a new audit revision. Frozen work, rules and earlier audit revisions remain available."
-                    ).font(.footnote)
+                    if context.calculation != nil {
+                        Button(
+                            context.paystub == nil ? "Add this paycheck" : "Correct paycheck facts"
+                        ) { beginAudit() }
+                        .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
+                            "history.audit")
+                        Text(
+                            "Corrections append a new audit revision. Frozen work, rules and earlier audit revisions remain available."
+                        ).font(.footnote)
+                    }
                 }
-                if let calculation = context.calculation {
+
+                if context.calculation == nil {
+                    unresolvedReview(context)
+                } else if let calculation = context.calculation {
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
                         work: context.workEntries)
                 }
+
                 Section("Audit revisions") {
                     if context.revisions.isEmpty { Text("No saved audit revisions yet.") }
                     ForEach(context.revisions.reversed()) { revision in
@@ -175,7 +198,70 @@ struct HistoricalPeriodView: View {
             )
         }
     }
+
+    @ViewBuilder
+    private func unresolvedReview(_ context: PayPeriodContext) -> some View {
+        Section("Calculation review") {
+            Text(
+                storedPeriod?.calculationIssue
+                    ?? "Expected pay could not be calculated with the frozen facts and rules."
+            )
+            .foregroundStyle(LinePayColor.review)
+            Text(
+                "No $0 value was substituted. The work and rule timeline below are frozen evidence. Review them and the rule sources before changing any real-world facts. A paycheck audit stays unavailable until this calculation can be resolved safely."
+            )
+            .font(.footnote)
+            NavigationLink("Review rule snapshot") {
+                RuleSourcesView(agreement: context.agreement)
+            }
+            if session != nil {
+                Button("Retry saved calculation") { retryCalculation() }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("history.retry-calculation")
+                Text(
+                    "Retry uses only this period's frozen work and rules. It does not edit the current work period or guess a missing rule."
+                )
+                .font(.footnote)
+            }
+        }
+
+        Section("Frozen work") {
+            if context.workEntries.isEmpty {
+                Text("No work was saved in this period.")
+            }
+            ForEach(context.workEntries) { entry in
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(workKindTitle(entry.interval.kind)).font(.headline)
+                    Text(LinePayFormat.workDateRange(entry.interval)).font(.callout)
+                    Text("\(LinePayFormat.hours(entry.interval.durationHours)) actual h")
+                        .monospacedDigit()
+                    if let text = LinePayFormat.breakDuration(entry.interval) {
+                        Text(text).font(.footnote)
+                    }
+                    if !entry.note.isEmpty { Text(entry.note).font(.footnote) }
+                }
+                .padding(.vertical, 6)
+            }
+        }
+    }
+
+    private func retryCalculation() {
+        guard let session else { return }
+        do {
+            try session.retryHistoricalCalculation(periodID: periodID)
+            errorMessage = nil
+        } catch {
+            errorMessage =
+                "This period still needs review. Its frozen work and rules were not changed. \(error.localizedDescription)"
+        }
+    }
+
     private func beginAudit() {
+        guard model.periodContext(id: periodID)?.calculation != nil else {
+            errorMessage =
+                "Resolve the saved calculation review before starting a paycheck audit. Your Free audit remains unused."
+            return
+        }
         Task {
             await subscriptionStore.refreshEntitlements()
             if model.canRunAudit(periodID: periodID, hasProAccess: subscriptionStore.hasAuditAccess)

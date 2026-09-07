@@ -83,11 +83,15 @@ struct PayLedgerView: View {
                         PayLedgerRows(
                             calculation: calculation, agreement: context.agreement,
                             work: context.workEntries)
-                        Section {
-                            Button("Finish work period") { showingFinish = true }.frame(
-                                minHeight: 48
-                            )
+                    }
+                    Section {
+                        Button("Finish work period") { showingFinish = true }.frame(minHeight: 48)
                             .accessibilityIdentifier("pay.finish-period")
+                        if context.calculation == nil {
+                            Text(
+                                "You can close this work period without inventing a pay amount. Its work, rules and review reason stay in History while the next period remains usable."
+                            ).font(.footnote)
+                        } else {
                             Text(
                                 "The next work period can start before this paycheck arrives. Pending paychecks stay available in History."
                             ).font(.footnote)
@@ -157,7 +161,9 @@ struct PayLedgerView: View {
 struct FinishPayPeriodView: View {
     let model: AppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.linePaySession) private var session
     @State private var errorMessage: String?
+
     var body: some View {
         NavigationStack {
             List {
@@ -167,35 +173,57 @@ struct FinishPayPeriodView: View {
                             LinePayFormat.payPeriod(
                                 context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                         ).font(.headline)
-                        PayAmount(
-                            label: "Expected wages", money: context.calculation?.expectedWages)
+                        if let calculation = context.calculation {
+                            PayAmount(label: "Expected wages", money: calculation.expectedWages)
+                        } else {
+                            Label(
+                                "Calculation needs review",
+                                systemImage: "exclamationmark.triangle"
+                            )
+                            .foregroundStyle(LinePayColor.review)
+                            Text(
+                                model.calculationError
+                                    ?? "Expected pay is unavailable with the current saved facts and rules."
+                            )
+                            .font(.footnote)
+                        }
                         if let paid = context.paystub {
                             PayAmount(label: "Confirmed paid gross", money: paid.grossPay)
                             AuditStatusView(status: model.status(for: context))
                         } else {
                             Label("Awaiting paycheck", systemImage: "clock")
-                            Text(
-                                "Work and rules will be frozen. Attach this paycheck later from History while continuing to log the next period."
-                            )
                         }
                         if let difference = context.paystub?.assessment?.difference {
                             PayAmount(label: "Possible difference", money: difference)
                         }
                     }
                     Section {
-                        Button(
-                            context.paystub == nil
-                                ? "Close work, await paycheck" : "Finish and archive"
-                        ) {
+                        Button(closeTitle(context)) {
                             do {
-                                try model.archiveCurrentPeriod()
+                                if context.calculation == nil {
+                                    guard let session else {
+                                        throw AppModelError.calculationUnavailable
+                                    }
+                                    try session.archiveCurrentPeriod()
+                                } else {
+                                    try model.archiveCurrentPeriod()
+                                }
                                 dismiss()
                             } catch { errorMessage = error.localizedDescription }
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .disabled(context.calculation == nil)
                         .accessibilityIdentifier("period.confirm-close")
                         Button("Keep period open") { dismiss() }.frame(minHeight: 44)
+                    } footer: {
+                        if context.calculation == nil {
+                            Text(
+                                "Closing freezes the work and rules exactly as saved and records the calculation reason in History. It does not set expected pay to $0, confirm payment, consume the Free audit, or hide the problem."
+                            )
+                        } else if context.paystub == nil {
+                            Text(
+                                "Work and rules will be frozen. Attach this paycheck later from History while continuing to log the next period."
+                            )
+                        }
                     }
                 }
                 if let errorMessage {
@@ -207,5 +235,10 @@ struct FinishPayPeriodView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             }
         }
+    }
+
+    private func closeTitle(_ context: PayPeriodContext) -> String {
+        if context.calculation == nil { return "Close work, review calculation later" }
+        return context.paystub == nil ? "Close work, await paycheck" : "Finish and archive"
     }
 }

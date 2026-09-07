@@ -39,7 +39,9 @@ enum CalloutEntryWorkflow {
         let segmentEndSeconds = Int64(segmentEnd.timeIntervalSince1970.rounded())
         guard existing.interval.endEpochSeconds == segmentStartSeconds
             || segmentEndSeconds == existing.interval.startEpochSeconds
-        else { throw DomainValidationError.invalidWorkInterval }
+        else {
+            throw DomainValidationError.invalidWorkInterval
+        }
 
         return CalloutMergePlan(
             start: Date(
@@ -55,7 +57,9 @@ enum CalloutEntryWorkflow {
     static func merge(_ first: WorkEntry, _ second: WorkEntry) throws -> CalloutMergePlan {
         guard first.interval.kind == .callout, second.interval.kind == .callout,
             first.interval.timeZoneIdentifier == second.interval.timeZoneIdentifier
-        else { throw DomainValidationError.invalidWorkInterval }
+        else {
+            throw DomainValidationError.invalidWorkInterval
+        }
         let secondStart = Date(
             timeIntervalSince1970: TimeInterval(second.interval.startEpochSeconds))
         let secondEnd = Date(

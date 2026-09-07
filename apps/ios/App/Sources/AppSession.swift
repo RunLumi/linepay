@@ -1,8 +1,10 @@
 import Foundation
+import LinePayDomain
 import Observation
 
-/// Owns the local model's lifetime, including an explicit replacement after a successful restore.
-/// StoreKit is intentionally not part of a data snapshot or this ownership boundary.
+/// Owns the local model's lifetime, including explicit replacements after restore or an
+/// unresolved-period lifecycle transition. StoreKit is intentionally not part of a data snapshot
+/// or this ownership boundary.
 @MainActor
 @Observable
 final class AppSession {
@@ -33,6 +35,100 @@ final class AppSession {
             }
         #endif
         return AppSession(store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore())
+    }
+
+    /// Close the current work period without turning an unavailable calculation into zero.
+    ///
+    /// Priceable periods stay on AppModel's ordinary path. When the current facts/rules are
+    /// deliberately preserved but cannot be priced safely, the session owns the one atomic store
+    /// transition because it also owns replacement of the long-lived model instance.
+    func archiveCurrentPeriod() throws {
+        guard !isBusy else { throw BackupError.operationInProgress }
+        if model.calculation != nil {
+            try model.archiveCurrentPeriod()
+            return
+        }
+        guard model.workDraft == nil else { throw AppModelError.unfinishedWorkDraft }
+        guard let active = model.activePeriod else { throw AppModelError.missingActivePayPeriod }
+        guard let profile = model.profile else { throw AppModelError.missingPayProfile }
+        let issue = model.calculationError?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let issue, !issue.isEmpty else { throw AppModelError.calculationUnavailable }
+
+        isBusy = true
+        defer { isBusy = false }
+        var candidate = try store.load() ?? AppPersistentState()
+        guard let storedActive = candidate.activePeriod, storedActive.id == active.id else {
+            throw AppModelError.staleUndo
+        }
+
+        let zone = storedActive.timeZoneIdentifier
+            ?? storedActive.workEntries.first?.interval.timeZoneIdentifier
+            ?? profile.timeZoneIdentifier
+        let completed = CompletedPayPeriod(
+            id: storedActive.id,
+            window: storedActive.window,
+            agreement: storedActive.agreement,
+            timeZoneIdentifier: zone,
+            workEntries: storedActive.workEntries,
+            calculation: nil,
+            paystub: storedActive.paystub,
+            reconciliation: nil,
+            archivedEpochSeconds: Int64(Date().timeIntervalSince1970.rounded()),
+            auditRevisions: storedActive.auditRevisions,
+            hasConsumedAuditAccess: storedActive.hasConsumedAuditAccess,
+            agreementChanges: storedActive.agreementChanges,
+            calculationIssue: issue
+        )
+        candidate.history.insert(completed, at: 0)
+        candidate.workDraft = nil
+
+        if zone != profile.timeZoneIdentifier {
+            candidate.activePeriod = nil
+        } else {
+            candidate.activePeriod = try nextPeriod(after: storedActive, profile: profile)
+        }
+
+        try AppStateValidation.validate(candidate)
+        try store.save(candidate)
+        reloadModel()
+    }
+
+    /// Retry a closed unresolved period against the exact frozen work and rule timeline.
+    /// This never edits B or rewrites A's facts to make the calculator succeed.
+    func retryHistoricalCalculation(periodID: UUID) throws {
+        guard !isBusy else { throw BackupError.operationInProgress }
+        isBusy = true
+        defer { isBusy = false }
+        var candidate = try store.load() ?? AppPersistentState()
+        guard let index = candidate.history.firstIndex(where: { $0.id == periodID }) else {
+            throw AppModelError.missingActivePayPeriod
+        }
+        let period = candidate.history[index]
+        guard period.calculation == nil, period.calculationIssue != nil else { return }
+
+        let calculation = try PayCalculator().calculate(
+            work: period.workEntries.map(\.interval),
+            agreement: period.agreement,
+            changes: period.agreementChanges ?? [],
+            policy: .highestApplicable)
+        candidate.history[index] = CompletedPayPeriod(
+            id: period.id,
+            window: period.window,
+            agreement: period.agreement,
+            timeZoneIdentifier: period.timeZoneIdentifier,
+            workEntries: period.workEntries,
+            calculation: calculation,
+            paystub: period.paystub,
+            reconciliation: nil,
+            archivedEpochSeconds: period.archivedEpochSeconds,
+            auditRevisions: period.auditRevisions,
+            hasConsumedAuditAccess: period.hasConsumedAuditAccess,
+            agreementChanges: period.agreementChanges,
+            calculationIssue: nil,
+            workCorrections: period.workCorrections)
+        try AppStateValidation.validate(candidate)
+        try store.save(candidate)
+        reloadModel()
     }
 
     func prepareBackup() async throws -> Data {
@@ -135,6 +231,48 @@ final class AppSession {
                 "Backup restored, including retained paystub originals. "
                 + "Your App Store subscription is unchanged. Your iCloud backup was not changed."
         }
+    }
+
+    private func nextPeriod(after active: ActivePayPeriod, profile: PayProfile) throws
+        -> ActivePayPeriod?
+    {
+        guard profile.preferredCadence != .manual else { return nil }
+        guard let zone = TimeZone(identifier: profile.timeZoneIdentifier) else {
+            throw AppModelError.invalidField("Time zone")
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let start = calendar.startOfDay(for: active.window.endDate)
+        let dayCount = profile.preferredCadence == .weekly ? 7 : 14
+        guard let end = calendar.date(byAdding: .day, value: dayCount, to: start) else {
+            throw AppModelError.invalidPayPeriod
+        }
+        let window = PayPeriodWindow(
+            startEpochSeconds: Int64(start.timeIntervalSince1970.rounded()),
+            endEpochSeconds: Int64(end.timeIntervalSince1970.rounded()),
+            cadence: profile.preferredCadence)
+        let timeline = try AgreementTimeline(
+            baseline: profile.baselineAgreement ?? profile.agreement,
+            changes: profile.agreementChanges ?? [])
+        let localStart = localDate(start, timeZone: zone)
+        let future = timeline.changes.filter { $0.effectiveDate > localStart }
+        return ActivePayPeriod(
+            window: window,
+            agreement: timeline.agreement(on: localStart),
+            timeZoneIdentifier: profile.timeZoneIdentifier,
+            agreementChanges: future.isEmpty ? nil : future)
+    }
+
+    private func reloadModel() {
+        model = AppModel(store: store, evidenceStore: evidenceStore)
+        revision = UUID()
+    }
+
+    private func localDate(_ date: Date, timeZone: TimeZone) -> LocalDate {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return LocalDate(year: parts.year ?? 0, month: parts.month ?? 0, day: parts.day ?? 0)
     }
 
     private func safeFilename(for mediaType: String) -> String {
