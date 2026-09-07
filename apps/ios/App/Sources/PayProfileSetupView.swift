@@ -206,7 +206,14 @@ struct PayProfileSetupView: View {
             Toggle("Sunday premium", isOn: $draft.useSundayPremium)
             if draft.useSundayPremium { number("Sunday multiplier", $draft.sundayMultiplier) }
             Toggle("Callout minimum", isOn: $draft.useCalloutMinimum)
-            if draft.useCalloutMinimum { number("Minimum paid hours", $draft.calloutMinimumHours) }
+            if draft.useCalloutMinimum {
+                number("Minimum paid hours", $draft.calloutMinimumHours)
+                Text(
+                    "This isolated minimum is evaluated once per confirmed physical callout event. Keep actual worked time separate; adjacent Callout rows are not automatically the same event."
+                )
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+            }
             Toggle("Flat per diem", isOn: $draft.usePerDiem)
             if draft.usePerDiem { number("USD per worked date", $draft.perDiemAmount) }
         }
@@ -525,6 +532,10 @@ struct AgreementSummaryView: View {
         if let rule = agreement.calloutMinimum {
             LabeledContent(
                 "Callout minimum", value: "\(LinePayFormat.hours(rule.minimumHours)) paid h")
+            Text(
+                "One isolated minimum per confirmed physical callout event; actual worked time stays separate."
+            )
+            .font(.footnote)
         }
         if let rule = agreement.flatPerDiem {
             LabeledContent("Per worked date", value: LinePayFormat.money(rule.amountPerWorkDate))

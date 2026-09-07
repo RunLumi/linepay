@@ -3,8 +3,8 @@ title: Configure the rules that apply
 linkTitle: Overtime, callouts, and per diem
 weight: 50
 group: Record your work
-description: Understand daily overtime, date premiums, callout minimums, and separate per-diem amounts.
-keywords: [OT, double time, daily overtime, Sunday, holiday, guarantee, allowance]
+description: Understand daily and restricted weekly overtime, date premiums, callout minimums, and separate per-diem amounts.
+keywords: [OT, double time, daily overtime, weekly overtime, Sunday, holiday, guarantee, allowance, callout event]
 ---
 ## Confirm your agreement, not a common example
 
@@ -20,6 +20,12 @@ A synthetic example: after eight worked hours at 1.5×, ten hours at a $50 base 
 
 Multiple entries on the same payroll-local date share the daily overtime calculation. Unpaid breaks do not count as worked time. A weekly threshold is different from a daily threshold: do not enter 40 as a daily threshold to simulate weekly overtime.
 
+## Restricted weekly overtime review
+
+For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime (restricted)** and choose the payroll workweek start. Open **Pay → Review weekly overtime**, select the workweek, and confirm that the week is complete before calculating. The review can include recorded work from more than one stored pay period.
+
+This is a restricted estimate for one complete workweek. It does not determine state, local, public-agency, union, CBA, exemption, or alternative-method coverage. If the week is incomplete, historical weekly rules differ, or the inputs cannot be combined safely, the review stays **Needs review**; keep the actual work and clarify the rule instead of adding hours or treating the result as a legal conclusion.
+
 ## Weekdays, dates, and outside-schedule pay
 
 **Sunday premium** sets a Sunday multiplier. Under **Other weekdays**, add another weekday premium. Under **Holidays and specific dates**, use **Add premium date** for the particular dates and multipliers you have confirmed. The app does not maintain an automatically authoritative holiday calendar for your agreement.
@@ -30,9 +36,15 @@ When supported premiums overlap, the **highest applicable multiplier wins**; the
 
 ## Callout minimums
 
-Enable **Callout minimum** and enter **Minimum paid hours**. Log the actual start and end of the callout and any unpaid breaks. The engine can add a separate guarantee component for a short callout, using its supported multiplier policy.
+Enable **Callout minimum** only when you have confirmed the minimum-hours rule that applies to your work, then enter **Minimum paid hours**.
 
-A one-hour callout with a confirmed four-hour minimum is still one hour of real work. Do not record four clock hours to represent the guarantee. A callout crossing a rule-change boundary can need review when the correct guarantee pricing is ambiguous.
+The admitted LinePaycheck rule is an **isolated minimum per confirmed physical callout event**. A saved Callout row represents that event in iOS 1.0. Splitting one physical call into two rows must not create two minimums, while two genuinely separate triggering calls may be separate events even if their times are adjacent.
+
+Log the actual start and end of the callout and any unpaid breaks. A one-hour callout with a confirmed four-hour minimum is still one hour of real work. Do not record four clock hours to represent the guarantee; the extra paid-equivalent time is a separate calculated component.
+
+When adding a Callout that touches another Callout, use **Continue existing callout** if it is the same physical event, or explicitly confirm **This is a separate callout** only when another triggering call actually happened. Older ambiguous rows are not automatically grouped.
+
+Regular-shift overlap, discontinuous duty, effective-rate boundaries, canceled calls, rest interactions, or other agreement-specific variants can require review. A callout crossing a rule-change boundary can therefore remain unpriced rather than receiving an invented guarantee.
 
 ## Flat per diem
 

@@ -61,4 +61,17 @@ struct WeeklyRegularRateAppTests {
             try model.calculateWeeklyRegularRate(weekStart: start, completeWorkweek: false)
         }
     }
+
+    @Test("Weekly review includes the underlying calculation failure")
+    func weeklyErrorCopyIncludesReason() {
+        let error = WeeklyRegularRateError.incompleteWorkweek
+        let expected =
+            "Needs review: The selected workweek is not complete. "
+            + "Confirm all work in this week before calculating."
+        let message = WeeklyOvertimeReviewView.errorMessage(for: error)
+        #expect(
+            message == expected
+        )
+        #expect(!message.contains("(error.localizedDescription)"))
+    }
 }

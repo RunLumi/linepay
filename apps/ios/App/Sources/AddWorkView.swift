@@ -14,6 +14,7 @@ struct AddWorkView: View {
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
     @State private var isClosing = false
+    @State private var separateAdjacentCalloutConfirmed = false
 
     init(
         model: AppModel,
@@ -97,6 +98,24 @@ struct AddWorkView: View {
         model.conflictingWork(start: draft.start, end: draft.end, excluding: draft.editingEntryID)
     }
 
+    private var adjacentCallouts: [WorkEntry] {
+        guard draft.kind == .callout else { return [] }
+        return CalloutEntryWorkflow.adjacentCallouts(
+            start: draft.start,
+            end: draft.end,
+            excluding: draft.editingEntryID,
+            entries: model.workEntries)
+    }
+
+    private var newCalloutNeedsDecision: Bool {
+        draft.kind == .callout && draft.editingEntryID == nil && !adjacentCallouts.isEmpty
+            && !separateAdjacentCalloutConfirmed
+    }
+
+    private var legacyCalloutNeedsReview: Bool {
+        draft.kind == .callout && draft.editingEntryID != nil && draft.calloutEventID == nil
+    }
+
     private var worked: Decimal {
         let seconds = max(
             0,
@@ -142,6 +161,10 @@ struct AddWorkView: View {
                     Text(
                         "An overnight shift uses the next date. Changing one field does not move another."
                     ).font(.footnote)
+                }
+
+                if draft.kind == .callout {
+                    calloutEventSection
                 }
 
                 Section("Unpaid breaks") {
@@ -198,7 +221,9 @@ struct AddWorkView: View {
                 Section {
                     Button("Save work") { save() }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .disabled(conflict != nil || draft.end <= draft.start)
+                        .disabled(
+                            conflict != nil || draft.end <= draft.start || newCalloutNeedsDecision
+                                || legacyCalloutNeedsReview)
                         .accessibilityIdentifier("work.save")
                     Button("Discard this draft", role: .destructive) { discardConfirmation = true }
                     if let existingEntry = model.workEntries.first(where: {
@@ -248,6 +273,15 @@ struct AddWorkView: View {
                 errorMessage = "Draft could not be saved. Your earlier records are unchanged."
             }
         }
+        .onChange(of: draft.kind) { _, _ in
+            separateAdjacentCalloutConfirmed = false
+        }
+        .onChange(of: draft.start) { _, _ in
+            separateAdjacentCalloutConfirmed = false
+        }
+        .onChange(of: draft.end) { _, _ in
+            separateAdjacentCalloutConfirmed = false
+        }
         .sheet(item: $viewingConflict) { item in
             NavigationStack {
                 List {
@@ -276,6 +310,176 @@ struct AddWorkView: View {
                     errorMessage = error.localizedDescription
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var calloutEventSection: some View {
+        Section("Callout event") {
+            if legacyCalloutNeedsReview {
+                Label(
+                    "This older callout has no confirmed event identity.",
+                    systemImage: "exclamationmark.triangle"
+                )
+                .foregroundStyle(LinePayColor.review)
+                Text(
+                    "Do not let LinePaycheck guess whether older rows were one call or several. Confirm this row as one event, or merge it with an adjacent segment only when you know they were the same physical callout."
+                )
+                .font(.footnote)
+                Button("Confirm this row is one callout event") {
+                    draft.calloutEventID = UUID()
+                }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("work.callout-confirm-event")
+            }
+
+            if draft.editingEntryID == nil {
+                if adjacentCallouts.isEmpty {
+                    Text(
+                        "One Callout entry represents one physical callout event. If later work is part of this same call, extend this entry instead of adding another event."
+                    )
+                    .font(.footnote)
+                } else {
+                    Label(
+                        adjacentCallouts.count == 1
+                            ? "This segment touches an existing callout."
+                            : "This segment touches more than one existing callout.",
+                        systemImage: "link"
+                    )
+                    Text(
+                        "If this is continued work from the same physical call, merge it into the matching callout. If a new triggering call happened, explicitly confirm that it is separate."
+                    )
+                    .font(.footnote)
+                    ForEach(adjacentCallouts) { callout in
+                        Button(
+                            "Continue existing callout · \(LinePayFormat.workDateRange(callout.interval))"
+                        ) {
+                            mergeDraftInto(callout)
+                        }
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier("work.callout-continue")
+                    }
+                    Toggle(
+                        "This is a separate callout",
+                        isOn: $separateAdjacentCalloutConfirmed
+                    )
+                    .accessibilityIdentifier("work.callout-separate")
+                }
+            } else {
+                Text(
+                    "Keep one physical callout as one row in this version of LinePaycheck. If this row was split from an adjacent segment of the same call, merge them below."
+                )
+                .font(.footnote)
+                ForEach(adjacentCallouts) { callout in
+                    Button(
+                        "Merge adjacent callout · \(LinePayFormat.workDateRange(callout.interval))"
+                    ) {
+                        mergeSavedCallout(with: callout)
+                    }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("work.callout-merge")
+                }
+            }
+
+            Text(
+                "Callout grouping does not create a pay rule. If your confirmed rules include a minimum, that minimum is evaluated once per physical callout event; actual worked time stays unchanged."
+            )
+            .font(.footnote)
+        }
+    }
+
+    private func draftBreaks() throws -> [WorkBreak] {
+        var breaks: [WorkBreak] = []
+        if draft.hasUnpaidBreak {
+            breaks.append(
+                try WorkBreak(
+                    startEpochSeconds: Int64(draft.breakStart.timeIntervalSince1970.rounded()),
+                    endEpochSeconds: Int64(draft.breakEnd.timeIntervalSince1970.rounded())))
+        }
+        breaks.append(
+            contentsOf: try draft.additionalBreaks.map {
+                try WorkBreak(
+                    id: $0.id,
+                    startEpochSeconds: Int64($0.start.timeIntervalSince1970.rounded()),
+                    endEpochSeconds: Int64($0.end.timeIntervalSince1970.rounded()))
+            })
+        return breaks.sorted { $0.startEpochSeconds < $1.startEpochSeconds }
+    }
+
+    private func apply(_ plan: CalloutMergePlan, to entryID: UUID) throws {
+        let first = plan.breaks.first
+        try model.updateWork(
+            id: entryID,
+            start: plan.start,
+            end: plan.end,
+            kind: .callout,
+            note: plan.note,
+            unpaidBreakStart: first.map {
+                Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds))
+            },
+            unpaidBreakEnd: first.map {
+                Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds))
+            },
+            additionalBreaks: Array(plan.breaks.dropFirst()))
+    }
+
+    private func mergeDraftInto(_ existing: WorkEntry) {
+        do {
+            let plan = try CalloutEntryWorkflow.merge(
+                existing: existing,
+                segmentStart: draft.start,
+                segmentEnd: draft.end,
+                segmentNote: draft.note,
+                segmentBreaks: draftBreaks())
+            isClosing = true
+            try apply(plan, to: existing.id)
+            dismiss()
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func mergeSavedCallout(with adjacent: WorkEntry) {
+        guard let currentID = draft.editingEntryID,
+            model.workEntries.contains(where: { $0.id == currentID })
+        else {
+            errorMessage = "The callout being edited is no longer available."
+            return
+        }
+        do {
+            // Use the visible draft facts, not a stale saved copy. A worker may correct the
+            // current row and merge it in the same review without losing those unsaved changes.
+            let plan = try CalloutEntryWorkflow.merge(
+                existing: adjacent,
+                segmentStart: draft.start,
+                segmentEnd: draft.end,
+                segmentNote: draft.note,
+                segmentBreaks: draftBreaks())
+            isClosing = true
+            guard let undo = model.deleteWork(id: adjacent.id) else {
+                isClosing = false
+                errorMessage = model.lastPersistenceError ?? "The adjacent callout could not be merged."
+                return
+            }
+            do {
+                try apply(plan, to: currentID)
+                dismiss()
+            } catch {
+                do {
+                    try model.restoreWork(undo)
+                    isClosing = false
+                    errorMessage =
+                        "The merge was not saved. The adjacent callout was restored and your edits remain in this draft. \(error.localizedDescription)"
+                } catch let restoreError {
+                    isClosing = false
+                    errorMessage =
+                        "The merge failed and the adjacent row could not be restored automatically. Preserve your records and contact support. \(restoreError.localizedDescription)"
+                }
+            }
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
         }
     }
 
