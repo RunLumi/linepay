@@ -76,3 +76,21 @@ bash scripts/test-report-core.sh
 It creates a disposable Swift 6.2+ test package outside the repository, copies the two actual
 production files byte-for-byte, changes only the test-module import, runs the nine assertions and
 cleans up. It neither replaces `agent-verify.sh ios` nor marks a native issue resolved.
+
+## Integrated current-main continuation — September 7, 2026
+
+PR #34 is merged at `19264cf0728a01bd3ee6cacda291ebeff692622b`. The follow-up branch was then
+integrated with current `origin/main` (including merged PRs #58, #59 and #66) in commit
+`6bb14e5c54f5b50ed86fa935828174b522b15476`, tree `d4e7477fbe2a0d25935a048e0fe3eb181d844b03`.
+
+On macOS 26.6.2 with Xcode 26.6 (`17F113`) / Swift 6.3.3 and the existing iPhone 16 Pro / iOS
+18.5 simulator, the full `bash scripts/agent-verify.sh ios` gate passed 212 tests with zero
+failures, skips or expected failures. The retained result is
+`/Volumes/SSD/linepay-pr34-evidence/integrated-ios-6bb/AppTests.xcresult`; app coverage was 85.30%
+(13,625 / 15,973 lines). The three-scope XXXL journey and Save-to-Files journey also passed in
+separate bounded runs; see [the follow-up receipt](legal-review-followup.md) for exact result paths.
+
+This is current local native evidence, not hosted branch-protection evidence. Issue #37 remains open
+because the required GitHub jobs still fail before steps with the account-payment/spending-limit
+annotation. Physical-device VoiceOver, provider/two-device behavior, storefront transactions,
+publisher/legal ownership, counsel and support-operations acceptance remain external obligations.

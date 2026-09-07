@@ -141,3 +141,31 @@ invocations; the combined hosted workflow remains the authoritative rerun once I
 external GitHub billing/spending-limit condition is repaired. That hosted condition cannot be
 resolved by repository changes, so PR #57 must not be merged until its required checks execute and
 pass on the exact final head.
+
+## Integrated current-main candidate — September 7, 2026
+
+After PRs #58, #59 and #66 advanced `origin/main` to `dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e`,
+the follow-up branch was merged with that current main in integration commit `6bb14e5c54f5b50ed86fa935828174b522b15476`
+(tree `d4e7477fbe2a0d25935a048e0fe3eb181d844b03`). The merge was conflict-free and the previous
+PR #57 head is protected by backup ref `backup/pr57-before-main-sync-20260906`.
+
+The full native gate was rerun on the integrated candidate with Xcode 26.6 (`17F113`), Swift 6.3.3,
+macOS 26.6.2, and the existing iPhone 16 Pro / iOS 18.5 simulator
+(`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`). `bash scripts/agent-verify.sh ios` passed 212 tests,
+with 0 failures, 0 skips and 0 expected failures; the retained result is
+`/Volumes/SSD/linepay-pr34-evidence/integrated-ios-6bb/AppTests.xcresult`. The app coverage report
+was 85.30% (13,625 / 15,973 lines). The pure-domain portion passed 104 tests, including the merged
+weekly regular-rate and product-correctness suites.
+
+The critical UI journeys were then run as separate bounded invocations at the same integrated tree:
+
+- `/Volumes/SSD/linepay-pr34-evidence/integrated-share-6bb14e5.xcresult`: Save-to-Files appeared,
+  Save was observed, and the native sheet was dismissed without writing.
+- `/Volumes/SSD/linepay-pr34-evidence/integrated-scope-6bb14e5.xcresult`: all three scope effects
+  passed at XXXL text, including `$550.00`, `$550.00`, and `$660.00` outcomes.
+
+The legal register and this receipt are documentation-only changes after the executable integration
+commit; they do not change the tested app/source tree. Hosted branch-protection checks still need to
+execute on the pushed final head before merge. Physical VoiceOver, two-device/provider behavior,
+storefront transactions, publisher identity, trademark, ownership, counsel and operational-support
+acceptance remain separate external obligations.
