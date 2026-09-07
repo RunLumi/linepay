@@ -146,26 +146,28 @@ final class LegalJourneyTests: XCTestCase {
             dismissKeyboard()
             for expectedStep in 1...2 {
                 let next = app.buttons["pay-profile.continue"].firstMatch
+                let expectedTitle = expectedStep == 1 ? "Pay period" : "Your rules"
                 var advanced = false
                 for attempt in 0..<4 {
-                    if !next.exists { scrollTo(next, maxSwipes: 8) }
-                    guard next.exists else { continue }
-                    if attempt == 0 {
-                        if next.isHittable {
-                            next.tap()
-                        } else {
-                            next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2)).tap()
-                        }
-                    } else {
-                        if next.isHittable {
-                            next.press(forDuration: 0.1)
-                        } else {
-                            next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
-                                .press(forDuration: 0.1)
-                        }
-                    }
-                    let expectedTitle = expectedStep == 1 ? "Pay period" : "Your rules"
                     let stepTitle = app.staticTexts["pay-profile.step-title"].firstMatch
+                    // The step-title header is virtualized while the Form is scrolled away
+                    // from the top; bring it back before deciding whether the step already
+                    // advanced, so a repeated tap can never overshoot into a later step.
+                    revealStepTitle(maxSwipes: 12)
+                    if stepTitle.waitForExistence(timeout: 2), stepTitle.label == expectedTitle {
+                        advanced = true
+                        break
+                    }
+                    // Continue stays in the accessibility tree while scrolled offscreen;
+                    // only a hittable tap can advance, so keep scrolling until tappable.
+                    scrollTo(next, maxSwipes: 12)
+                    guard next.exists, next.isHittable else { continue }
+                    if attempt == 0 {
+                        next.tap()
+                    } else {
+                        next.press(forDuration: 0.1)
+                    }
+                    revealStepTitle(maxSwipes: 12)
                     if stepTitle.waitForExistence(timeout: 5), stepTitle.label == expectedTitle {
                         advanced = true
                         break
@@ -270,15 +272,26 @@ final class LegalJourneyTests: XCTestCase {
     private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
         if element.exists && element.isHittable { return }
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let windowFrame = frontmostWindow.frame
         for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
-            frontmostWindow.swipeDown()
+            if element.exists, element.frame.minY >= windowFrame.maxY {
+                // The element is below the viewport; downward swipes would scroll
+                // away from it and, at the form top, drag the sheet's dismissal.
+                frontmostWindow.swipeUp()
+            } else {
+                frontmostWindow.swipeDown()
+            }
         }
         scrollTo(element, maxSwipes: maxSwipes)
     }
-    private func revealEarlierContent() {
+    private func revealStepTitle(maxSwipes: Int) {
+        let title = app.staticTexts["pay-profile.step-title"].firstMatch
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<8 { frontmostWindow.swipeDown() }
+        for _ in 0..<maxSwipes {
+            if title.exists && title.isHittable { return }
+            frontmostWindow.swipeDown()
+        }
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
