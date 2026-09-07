@@ -229,3 +229,18 @@ This exact local evidence does not satisfy hosted branch protection or physical-
 acceptance. The final required GitHub jobs still need to start and pass; Issue #37 remains open for
 the account-owner billing/spending-limit repair. Hugo 0.165.0 was unavailable, so the public-guide
 static check remains unrun and is not claimed as passed.
+
+## Hosted retry and bounded runtime — September 7, 2026
+
+The exact PR #57 head is now `df53814bee9abf6cda77ef08723f79667430c3e5`. The large-text scope
+journey remains ordered so all three promised effects are exercised in one receipt; the focused
+workflow's per-test XCTest allowance is 420 seconds, still bounded by the job's 25-minute timeout.
+This addresses the prior hosted timeout at 240 seconds (run `34086657229`) without weakening any
+assertion or adding an expected-failure path.
+
+Fresh exact-head runs `34089263567` (Legal regressions) and `34089263636` (iOS) failed before any
+workflow step ran because GitHub did not allocate a macOS runner. They are CI-capacity failures,
+not native test receipts. PR #57 remains open and must not merge until exact-head required checks
+execute and pass. Local `bash scripts/agent-verify.sh quick` ran 57 repository tests successfully,
+but the Swift package portion was blocked by this checkout's unwritable user Clang module cache;
+the local CoreSimulator service was also unavailable for a new native rerun.
