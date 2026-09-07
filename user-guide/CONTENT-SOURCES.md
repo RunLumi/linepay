@@ -4,6 +4,8 @@ The original full-site content review was completed **2026-09-06** against `stre
 
 For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossary** Repeat Shift guidance was separately re-reviewed on **2026-09-06** against the `fix/40-repeat-shift-dst-ui` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#40 changes. This partial review does not relabel the rest of the site as current and is not a claim that native simulator, hardware, billing, or release validation passed.
 
+For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance was re-reviewed on **2026-09-06** against the `weekly-review-error-copy` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#69 changes. This partial review covers the restricted weekly regular-rate instructions and failure wording only; the full-site freshness review remains owned by #60/#64.
+
 ## Source map
 
 Paths below are relative to the repository root. These notes are outside `content/` and are not published.
