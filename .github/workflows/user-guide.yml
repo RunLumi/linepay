@@ -4,7 +4,7 @@ on:
   pull_request:
     paths: ['user-guide/**', '.github/workflows/user-guide.yml']
   push:
-    branches: [main]
+    branches: [dev, main, testing]
     paths: ['user-guide/**', '.github/workflows/user-guide.yml']
   workflow_dispatch:
 
@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   check:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/testing'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -47,18 +48,28 @@ jobs:
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
+  pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned Hugo
+        run: |
+          bash user-guide/scripts/install-hugo.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Build GitHub Pages artifact
-        if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
         env:
           GUIDE_BASE_URL: ${{ vars.USER_GUIDE_BASE_URL || 'https://streamentry.github.io/linepay/' }}
         run: bash user-guide/scripts/build.sh
       - name: Upload GitHub Pages artifact
-        if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: user-guide/public
   deploy:
-    needs: check
+    needs: pages
     if: github.ref == 'refs/heads/main' && vars.USER_GUIDE_PAGES_ENABLED == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
