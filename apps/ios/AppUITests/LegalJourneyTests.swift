@@ -139,8 +139,11 @@ final class LegalJourneyTests: XCTestCase {
                     } else {
                         next.press(forDuration: 0.1)
                     }
-                    let expected = app.buttons["pay-profile.continue"].matching(
-                        NSPredicate(format: "value == %@", "step-\(expectedStep)")
+                    let expected = app.buttons.matching(
+                        NSPredicate(
+                            format: "identifier == %@ AND value == %@",
+                            "pay-profile.continue", "step-\(expectedStep)"
+                        )
                     ).firstMatch
                     if expected.waitForExistence(timeout: 5) {
                         advanced = true
