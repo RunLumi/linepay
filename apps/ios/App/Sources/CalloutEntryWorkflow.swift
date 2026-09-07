@@ -35,16 +35,23 @@ enum CalloutEntryWorkflow {
         guard existing.interval.kind == .callout else {
             throw DomainValidationError.invalidWorkInterval
         }
+        let segmentStartSeconds = Int64(segmentStart.timeIntervalSince1970.rounded())
+        let segmentEndSeconds = Int64(segmentEnd.timeIntervalSince1970.rounded())
+        guard existing.interval.endEpochSeconds == segmentStartSeconds
+            || segmentEndSeconds == existing.interval.startEpochSeconds
+        else { throw DomainValidationError.invalidWorkInterval }
+
         let existingStart = Date(
             timeIntervalSince1970: TimeInterval(existing.interval.startEpochSeconds))
         let existingEnd = Date(
             timeIntervalSince1970: TimeInterval(existing.interval.endEpochSeconds))
-        guard existingEnd == segmentStart || segmentEnd == existingStart else {
-            throw DomainValidationError.invalidWorkInterval
-        }
         return CalloutMergePlan(
-            start: min(existingStart, segmentStart),
-            end: max(existingEnd, segmentEnd),
+            start: Date(
+                timeIntervalSince1970: TimeInterval(
+                    min(existing.interval.startEpochSeconds, segmentStartSeconds))),
+            end: Date(
+                timeIntervalSince1970: TimeInterval(
+                    max(existing.interval.endEpochSeconds, segmentEndSeconds))),
             note: combinedNote(existing.note, segmentNote),
             breaks: sortedBreaks(existing.interval.unpaidBreaks + segmentBreaks))
     }
