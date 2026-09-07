@@ -14,6 +14,20 @@ Selecting Callout identifies the work type; it does not invent a minimum-hours r
 
 Review **Actual worked time** and **Payroll timezone**, then choose **Save work**. Your entry should appear in the work log and update expected pay. If saving fails, the error is not confirmation that the entry was recorded.
 
+## Keep one physical callout as one event
+
+In LinePaycheck 1.0, **one saved Callout row represents one physical callout event**. This matters because a configured callout minimum is evaluated once per physical event, not once merely because the work was split into more rows.
+
+If a new Callout segment touches an existing Callout, LinePaycheck asks you to decide what actually happened:
+
+- Choose **Continue existing callout** when it is another adjacent segment of the same physical call. The app extends the existing row instead of creating another event.
+- Turn on **This is a separate callout** only when a new triggering call actually occurred. Two real calls can be separate even when their times happen to touch.
+- When editing older adjacent Callout rows that you know were one physical call, use **Merge adjacent callout**. Do not merge merely because two times are adjacent.
+
+Older records can have no saved callout-event identity. If the editor says **This older callout has no confirmed event identity**, LinePaycheck does not guess. Confirm the row as one event only when that is what happened, or merge known segments of the same call.
+
+A discontinuous callout, regular-shift overlap, rate change, or another agreement-specific interaction can still require review. The app does not infer that separated work belongs to one event just because the notes look similar.
+
 ## Record unpaid breaks accurately
 
 Enable **Unpaid break** and enter its actual start and end. Use **Add another break** for additional intervals. Breaks must fit inside the shift and must not overlap each other.

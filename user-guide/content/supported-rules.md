@@ -4,7 +4,7 @@ linkTitle: What the app can check
 weight: 180
 group: Get help
 description: Know when the app’s calculation fits your agreement and when to leave the result incomplete.
-keywords: [limitations, unsupported, weekly overtime, union, agreement, CBA, taxes]
+keywords: [limitations, unsupported, weekly overtime, union, agreement, CBA, taxes, callout]
 ---
 ## A configured tool, not an agreement authority
 
@@ -14,11 +14,21 @@ The iPhone setup currently uses a U.S.-dollar base rate and one active pay profi
 
 ## What the current setup represents
 
-The setup includes actual work intervals, multiple unpaid breaks, daily overtime tiers, a restricted weekly regular-rate review for a confirmed complete workweek, Sunday and additional weekday premiums, specific-date premiums, a same-day regular schedule and outside-schedule multiplier, callout minimums, flat per diem by worked local date, source references, and rule effective dates.
+The setup includes actual work intervals, multiple unpaid breaks, daily overtime tiers, a restricted weekly regular-rate review for a confirmed complete workweek, Sunday and additional weekday premiums, specific-date premiums, a same-day regular schedule and outside-schedule multiplier, an isolated callout-minimum variant, flat per diem by worked local date, source references, and rule effective dates.
 
 Supported premium overlaps use the highest applicable multiplier; they do not stack. Actual worked time remains separate from guarantee entitlements. Expected wages remain separate from per diem until you select a confirmed comparison basis.
 
 This describes available rule shapes, not a statement that all agreements using similar words have identical meaning.
+
+## Callout coverage is deliberately narrow
+
+The current callout model treats **one saved Callout row as one confirmed physical callout event**. A configured minimum can add one isolated guarantee for that event while leaving actual worked time unchanged.
+
+When adjacent Callout rows are known to be continued segments of the same physical call, merge them rather than allowing row count to create another minimum. When another triggering call really occurred, keep it separate even if the times happen to touch. LinePaycheck does not infer event identity from adjacency, notes, employer, or job description.
+
+Discontinuous duty, regular-shift overlap, mixed pricing within the minimum window, a minimum spanning an effective-rate change, canceled/reporting calls, rest/fatigue rules, and other agreement-specific callout interactions are not generalized by this isolated variant. They can produce **Needs review** or an unavailable calculation instead of a guessed amount.
+
+Older callout rows that predate event identity remain ambiguous until explicitly reviewed. The app must not retroactively assign them to one event merely because that would produce a cleaner result.
 
 ## Do not approximate missing rules
 
