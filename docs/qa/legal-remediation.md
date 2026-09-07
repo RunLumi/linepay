@@ -94,3 +94,9 @@ This is current local native evidence, not hosted branch-protection evidence. Is
 because the required GitHub jobs still fail before steps with the account-payment/spending-limit
 annotation. Physical-device VoiceOver, provider/two-device behavior, storefront transactions,
 publisher/legal ownership, counsel and support-operations acceptance remain external obligations.
+
+The same branch later integrated `origin/main` PR #68 (Repeat Shift/DST) in merge commit
+`2e45223b7a241b23e523ba7606a290d209948228`; formatter and Swift Testing fixes landed in
+`cd68adb9cb5aebb5c0987418bcfd262200ce526c`. The final full native gate at that tree passed 221
+tests with 0 failures, 0 skips and 0 expected failures; app coverage was 83.21% (14,665 / 17,625
+lines). Its retained result is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-d054-final/AppTests.xcresult`.

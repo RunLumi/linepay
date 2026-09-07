@@ -169,3 +169,25 @@ commit; they do not change the tested app/source tree. Hosted branch-protection 
 execute on the pushed final head before merge. Physical VoiceOver, two-device/provider behavior,
 storefront transactions, publisher identity, trademark, ownership, counsel and operational-support
 acceptance remain separate external obligations.
+
+## Latest integrated candidate — September 7, 2026
+
+`origin/main` subsequently advanced with merged PR #68 (`d05428e34103088dd85179ad39c74b904df10061`),
+which adds explicit DST review to Repeat Shift. The follow-up branch integrated it in merge commit
+`2e45223b7a241b23e523ba7606a290d209948228` and then fixed only the formatter and Swift Testing
+compile violations exposed by the pinned Xcode 26.6 gate in commit
+`cd68adb9cb5aebb5c0987418bcfd262200ce526c` (tree `aa19b228da10a5c9d329bc3fd6ca338801a5ec3c`).
+
+The corrected full native gate passed on the existing iPhone 16 Pro / iOS 18.5 simulator with
+Xcode 26.6 (`17F113`) and Swift 6.3.3: 221 total tests, 314 configured device executions, 0
+failures, 0 skips and 0 expected failures. App coverage was 83.21% (14,665 / 17,625 lines). The
+retained exact-current result is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-d054-final/AppTests.xcresult`.
+The isolated StoreKit lifecycle retry also passed all seven tests at
+`/Volumes/SSD/linepay-pr34-evidence/storekit-suite-retry.xcresult` after one transient full-suite
+notice race.
+
+The earlier integrated Save-to-Files and XXXL scope receipts were run against the same app source
+before the formatter/test-only correction and remain valid for those unchanged flows; the full
+gate reran both UI journeys successfully after the correction. The latest branch is not yet pushed
+after these commits. Hosted branch-protection checks remain the merge gate and Issue #37 remains
+open while GitHub rejects job startup for account billing/spending-limit reasons.
