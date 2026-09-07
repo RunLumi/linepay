@@ -232,8 +232,9 @@ static check remains unrun and is not claimed as passed.
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-The latest executable PR #57 candidate is `5c51fdef140eb2835d05760e1f113c44aa1bb6a0`; it fixes
-the hosted shell continuation and explicitly asserts cancellation at the native Files destination.
+The latest executable PR #57 candidate is `0a36dab`; it fixes the hosted shell continuation,
+explicitly asserts cancellation at the native Files destination, and falls back to exact visible
+scope labels when SwiftUI omits menu-child identifiers in the hosted accessibility tree.
 The large-text scope
 journey remains ordered so all three promised effects are exercised in one receipt; the focused
 workflow's per-test XCTest allowance is 420 seconds, still bounded by the job's 25-minute timeout.
@@ -252,6 +253,12 @@ restricted sandbox; the local CoreSimulator service was unavailable for a new na
 The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner. This does not change the executable evidence.
+
+The retained artifact from the earlier split-selector run (`34087766410`) proved two concrete
+failures at `LegalJourneyTests.swift:111`: dated and current scope menu options were not exposed
+under their child identifiers, while the future option passed. Candidate `0a36dab` addresses that
+observed accessibility-tree behavior without weakening the scope outcome assertions. It still
+requires a fresh native/hosted execution; the local CoreSimulator service is unavailable.
 
 ## Issue #60 targeted guide QA — September 7, 2026
 

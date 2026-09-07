@@ -109,8 +109,9 @@ lines). Its retained result is `/Volumes/SSD/linepay-pr34-evidence/integrated-io
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-PR #57's latest executable candidate is `5c51fdef140eb2835d05760e1f113c44aa1bb6a0`; it fixes the
-hosted shell continuation and explicitly asserts cancellation at the native Files destination. The
+PR #57's latest executable candidate is `0a36dab`; it fixes the hosted shell continuation, explicitly
+asserts cancellation at the native Files destination, and falls back to exact visible scope labels
+when SwiftUI omits menu-child identifiers in the hosted accessibility tree. The
 ordered three-scope
 large-text journey keeps all assertions intact; its focused workflow allowance is now 420 seconds
 per XCTest, within the existing 25-minute job timeout. This is a bounded runtime correction for
@@ -127,6 +128,11 @@ restricted sandbox; the local CoreSimulator service was unavailable for a new na
 The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner.
+
+The retained artifact from run `34087766410` showed the dated/current scope tests failing at the
+identifier tap while the future scope passed. Candidate `0a36dab` addresses that observed menu
+accessibility behavior without weakening the three outcome assertions; a fresh native/hosted run is
+still required, and the local CoreSimulator service remains unavailable.
 
 ## Issue #60 targeted guide QA — September 7, 2026
 
