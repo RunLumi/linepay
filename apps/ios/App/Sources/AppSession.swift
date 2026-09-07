@@ -3,8 +3,8 @@ import LinePayDomain
 import Observation
 
 /// Owns the local model's lifetime, including explicit replacements after restore or an
-/// unresolved-period rollover. StoreKit is intentionally not part of a data snapshot or this
-/// ownership boundary.
+/// unresolved-period lifecycle transition. StoreKit is intentionally not part of a data snapshot
+/// or this ownership boundary.
 @MainActor
 @Observable
 final class AppSession {
@@ -90,8 +90,45 @@ final class AppSession {
 
         try AppStateValidation.validate(candidate)
         try store.save(candidate)
-        model = AppModel(store: store, evidenceStore: evidenceStore)
-        revision = UUID()
+        reloadModel()
+    }
+
+    /// Retry a closed unresolved period against the exact frozen work and rule timeline.
+    /// This never edits B or rewrites A's facts to make the calculator succeed.
+    func retryHistoricalCalculation(periodID: UUID) throws {
+        guard !isBusy else { throw BackupError.operationInProgress }
+        isBusy = true
+        defer { isBusy = false }
+        var candidate = try store.load() ?? AppPersistentState()
+        guard let index = candidate.history.firstIndex(where: { $0.id == periodID }) else {
+            throw AppModelError.missingActivePayPeriod
+        }
+        let period = candidate.history[index]
+        guard period.calculation == nil, period.calculationIssue != nil else { return }
+
+        let calculation = try PayCalculator().calculate(
+            work: period.workEntries.map(\.interval),
+            agreement: period.agreement,
+            changes: period.agreementChanges ?? [],
+            policy: .highestApplicable)
+        candidate.history[index] = CompletedPayPeriod(
+            id: period.id,
+            window: period.window,
+            agreement: period.agreement,
+            timeZoneIdentifier: period.timeZoneIdentifier,
+            workEntries: period.workEntries,
+            calculation: calculation,
+            paystub: period.paystub,
+            reconciliation: nil,
+            archivedEpochSeconds: period.archivedEpochSeconds,
+            auditRevisions: period.auditRevisions,
+            hasConsumedAuditAccess: period.hasConsumedAuditAccess,
+            agreementChanges: period.agreementChanges,
+            calculationIssue: nil,
+            workCorrections: period.workCorrections)
+        try AppStateValidation.validate(candidate)
+        try store.save(candidate)
+        reloadModel()
     }
 
     func prepareBackup() async throws -> Data {
@@ -224,6 +261,11 @@ final class AppSession {
             agreement: timeline.agreement(on: localStart),
             timeZoneIdentifier: profile.timeZoneIdentifier,
             agreementChanges: future.isEmpty ? nil : future)
+    }
+
+    private func reloadModel() {
+        model = AppModel(store: store, evidenceStore: evidenceStore)
+        revision = UUID()
     }
 
     private func localDate(_ date: Date, timeZone: TimeZone) -> LocalDate {
