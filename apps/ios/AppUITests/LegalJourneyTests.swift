@@ -62,7 +62,7 @@ final class LegalJourneyTests: XCTestCase {
             "The system PDF activity sheet did not expose a Files destination; preview alone is not a handoff."
         )
         XCTAssertTrue(saveToFiles.isHittable)
-        capture("legal-system-share-sheet")
+        captureSystem("legal-system-share-sheet")
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
@@ -77,7 +77,7 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(
             saveVisible,
             "The PDF did not reach the system Files export destination.")
-        capture("legal-files-export-ready")
+        captureSystem("legal-files-export-ready")
         // Cancel at the native Files destination: no recipient is selected and no synthetic
         // report is persisted into a connected provider.
         let cancelInFiles = documentsApp.descendants(matching: .any)
@@ -269,6 +269,12 @@ final class LegalJourneyTests: XCTestCase {
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    private func captureSystem(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
