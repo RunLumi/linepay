@@ -138,7 +138,8 @@ final class PaydayJourneyTests: XCTestCase {
         tap("About LinePaycheck")
         capture("45-about")
         let guide = app.descendants(matching: .any)
-            .matching(identifier: "settings.user-guide").firstMatch
+            .matching(NSPredicate(format: "label == %@", "User Guide")).firstMatch
+        scrollTo(guide)
         XCTAssertTrue(guide.waitForExistence(timeout: 10))
         XCTAssertTrue(guide.isHittable)
         tap("Privacy policy")
