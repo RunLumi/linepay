@@ -131,8 +131,8 @@ struct CalloutEntryWorkflowTests {
                 endEpochSeconds: seconds(start + 2 * 3_600),
                 timeZoneIdentifier: "UTC",
                 kind: .callout,
-                calloutEventID: UUID(),
-                unpaidBreaks: [firstBreak]),
+                unpaidBreaks: [firstBreak],
+                calloutEventID: UUID()),
             note: "Before midnight")
         let secondBreak = try WorkBreak(
             startEpochSeconds: seconds(start + 2.5 * 3_600),
@@ -143,8 +143,8 @@ struct CalloutEntryWorkflowTests {
                 endEpochSeconds: seconds(start + 4 * 3_600),
                 timeZoneIdentifier: "UTC",
                 kind: .callout,
-                calloutEventID: UUID(),
-                unpaidBreaks: [secondBreak]),
+                unpaidBreaks: [secondBreak],
+                calloutEventID: UUID()),
             note: "After midnight")
 
         let plan = try CalloutEntryWorkflow.merge(first, second)
