@@ -1,6 +1,8 @@
 # User-guide source coverage
 
-Content reviewed **2026-09-06** against `streamentry/linepay` main commit **fdf323e8e370bf50c93fb5596ffac542c58f31dd**. This is a source/label review, not a claim that the app has been released or that native UI, hardware, billing, and two-device recovery have all been validated. Website QA has a separate evidence artifact.
+The original full-site content review was completed **2026-09-06** against `streamentry/linepay` main commit **fdf323e8e370bf50c93fb5596ffac542c58f31dd**. It is now known to be stale for several later user-visible changes; issue #60 owns the complete release-candidate re-review and issue #64 owns a machine-checkable freshness contract.
+
+For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossary** Repeat Shift guidance was separately re-reviewed on **2026-09-06** against the `fix/40-repeat-shift-dst-ui` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#40 changes. This partial review does not relabel the rest of the site as current and is not a claim that native simulator, hardware, billing, or release validation passed.
 
 ## Source map
 
@@ -10,14 +12,14 @@ Paths below are relative to the repository root. These notes are outside `conten
 | --- | --- |
 | Get started; pay profile | `apps/ios/App/Sources/OnboardingFlowView.swift`, `PayProfileSetupView.swift`, `TodayView.swift` |
 | Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `SettingsView.swift`, `AppState.swift` under the same Sources directory |
-| Recording work | `AddWorkView.swift`, `TodayView.swift` |
+| Recording work | `AddWorkView.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; Repeat regressions in `apps/ios/AppTests/Sources/RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
 | Pay rules; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `AuditDetailView.swift`; `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/AgreementTimeline.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
 | Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `AppState.swift`, domain `PaycheckAssessment.swift` |
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
 | Pro and billing | `SubscriptionStore.swift`, `SettingsView.swift`, `AuditDetailView.swift`, `docs/pricing.md` |
 | Support addresses | `apps/ios/App/Sources/AppLinks.swift` |
-| Visual language | `DESIGN.md` revision 2.0, current main blob `4c7bc03cf1548d6eb92be94f474265f1ff96f41a` |
+| Visual language | `DESIGN.md` revision 2.0; semantic implementation must be rechecked on the exact release candidate |
 
 ## Important reconciliation decisions
 
@@ -29,12 +31,13 @@ Paths below are relative to the repository root. These notes are outside `conten
 - Late-arriving paychecks and audit revisions exist in current History. They are not described as missing features.
 - Current statuses are `Compared values match`, `Gross total matches`, `Not ready to compare`, `Possible shortfall`, `Possible overpayment`, `Needs review`, and `Not audited`, with `Awaiting paycheck` as a history/workflow state.
 - Numeric guidance follows the current field UI and strict decimal-point format, not the older decimal-comma examples.
-- `New rules from a date` is described using the explicit dated-timeline contract. The rule editor contains a broader ternary help sentence that can sound like every non-future scope recalculates the whole period. The guide does not repeat that misleading sentence; this documentation change does not alter app logic or claim the UI wording is fixed.
+- `New rules from a date` is described using the explicit dated-timeline contract. The complete rule-change UX is tracked separately and must be re-reviewed under #15/#60.
 - Backup is manual, not live sync; it replaces rather than merges; it is not password-encrypted by the app. Restore Purchases is separate. JSON/PDF exports are not the complete backup format.
+- Repeat Shift copies payroll-local wall-clock facts for the shift and every recorded break. A repeated DST fold requires an explicit occurrence choice; a nonexistent local time requires manual fact review; unresolved copies cannot be saved. The ordinary Add Work editor no longer owns a template-copy API.
 - Do not claim source verification, universal agreement coverage, tax treatment, legally owed wages, or a recovery amount. All numerical examples are synthetic and their arithmetic is checked.
 
 ## Maintenance gate
 
-For each release, review changed visible labels, rule shapes, audit prerequisites, scope language, data-deletion/restore behavior, and billing copy against these guides. Update the reviewed date only after that review. Add real screenshots only from a verified build and synthetic fixtures, with build/device provenance; do not publish generated app mockups as product captures.
+For each release, review changed visible labels, rule shapes, audit prerequisites, scope language, data-deletion/restore behavior, billing copy, and Repeat Shift time semantics against these guides. Update the full-site reviewed date/commit only after that complete review. Add real screenshots only from a verified build and synthetic fixtures, with build/device provenance; do not publish generated app mockups as product captures.
 
 No public guide exports this source map, root AGENTS.md, internal docs, private repository links, or code snapshots. Hosting URLs and screenshots in QA artifacts are website test data only.

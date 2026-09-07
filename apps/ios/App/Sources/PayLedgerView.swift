@@ -5,6 +5,7 @@ struct PayLedgerView: View {
     let model: AppModel
     let subscriptionStore: SubscriptionStore
     @State private var showingAdd = false
+    @State private var showingRepeatDraft = false
     @State private var showingImport = false
     @State private var showingPaywall = false
     @State private var showingFinish = false
@@ -45,7 +46,7 @@ struct PayLedgerView: View {
                     if context.workEntries.isEmpty {
                         Section {
                             Text("No work to audit yet. Add an actual shift first.")
-                            Button("Add work") { showingAdd = true }.buttonStyle(
+                            Button(workButtonTitle) { openWorkEntry() }.buttonStyle(
                                 LinePayPrimaryButtonStyle())
                         }
                     } else {
@@ -105,7 +106,7 @@ struct PayLedgerView: View {
             .labeledContentStyle(LinePayValueStyle())
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Add work", systemImage: "plus") { showingAdd = true }.disabled(
+                    Button(workButtonTitle, systemImage: "plus") { openWorkEntry() }.disabled(
                         model.activePeriod == nil)
                 }
             }
@@ -116,6 +117,7 @@ struct PayLedgerView: View {
             }
         }
         .sheet(isPresented: $showingAdd) { AddWorkView(model: model) }
+        .sheet(isPresented: $showingRepeatDraft) { RepeatWorkView(model: model) }
         .sheet(isPresented: $showingImport) {
             if let id = model.activePeriod?.id {
                 PaystubImportView(model: model, subscriptionStore: subscriptionStore, periodID: id)
@@ -127,6 +129,19 @@ struct PayLedgerView: View {
         }
         .sheet(isPresented: $showingFinish) { FinishPayPeriodView(model: model) }
     }
+
+    private var workButtonTitle: String {
+        model.workDraft?.templateSource != nil ? "Resume repeated shift" : "Add work"
+    }
+
+    private func openWorkEntry() {
+        if model.workDraft?.templateSource != nil {
+            showingRepeatDraft = true
+        } else {
+            showingAdd = true
+        }
+    }
+
     private func beginAudit(_ id: UUID) {
         Task {
             await subscriptionStore.refreshEntitlements()
