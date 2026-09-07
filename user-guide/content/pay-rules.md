@@ -3,8 +3,8 @@ title: Configure the rules that apply
 linkTitle: Overtime, callouts, and per diem
 weight: 50
 group: Record your work
-description: Understand daily overtime, date premiums, callout minimums, and separate per-diem amounts.
-keywords: [OT, double time, daily overtime, Sunday, holiday, guarantee, allowance]
+description: Understand daily and restricted weekly overtime, date premiums, callout minimums, and separate per-diem amounts.
+keywords: [OT, double time, daily overtime, weekly overtime, Sunday, holiday, guarantee, allowance]
 ---
 ## Confirm your agreement, not a common example
 
@@ -19,6 +19,12 @@ Enable **Daily overtime**, then enter **After worked hours** and the applicable 
 A synthetic example: after eight worked hours at 1.5×, ten hours at a $50 base rate produce eight hours at $50 and two at $75: $550 before any other applicable rule. This is an illustration, not a default policy.
 
 Multiple entries on the same payroll-local date share the daily overtime calculation. Unpaid breaks do not count as worked time. A weekly threshold is different from a daily threshold: do not enter 40 as a daily threshold to simulate weekly overtime.
+
+## Restricted weekly overtime review
+
+For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime (restricted)** and choose the payroll workweek start. Open **Pay → Review weekly overtime**, select the workweek, and confirm that the week is complete before calculating. The review can include recorded work from more than one stored pay period.
+
+This is a restricted estimate for one complete workweek. It does not determine state, local, public-agency, union, CBA, exemption, or alternative-method coverage. If the week is incomplete, historical weekly rules differ, or the inputs cannot be combined safely, the review stays **Needs review**; keep the actual work and clarify the rule instead of adding hours or treating the result as a legal conclusion.
 
 ## Weekdays, dates, and outside-schedule pay
 

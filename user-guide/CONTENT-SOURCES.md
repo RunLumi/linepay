@@ -13,7 +13,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Get started; pay profile | `apps/ios/App/Sources/OnboardingFlowView.swift`, `PayProfileSetupView.swift`, `TodayView.swift` |
 | Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `SettingsView.swift`, `AppState.swift` under the same Sources directory |
 | Recording work | `AddWorkView.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; Repeat regressions in `apps/ios/AppTests/Sources/RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
-| Pay rules; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `AuditDetailView.swift`; `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/AgreementTimeline.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
+| Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
 | Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `AppState.swift`, domain `PaycheckAssessment.swift` |
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
@@ -28,6 +28,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 - The pricing contract now includes an eligible seven-day Annual offer. This supersedes the earlier no-calendar-trial discussion; actual StoreKit metadata/eligibility and purchase-sheet prices govern the user's offer.
 - The app explicitly keeps existing records and exports available without Pro. Do not turn the older pricing feature list into a restriction on reading/exporting saved data.
 - Expected wages and per diem are separate. Paystub gross basis and complete-work confirmation are required for a comparable full-paycheck result.
+- The weekly regular-rate review is a restricted complete-workweek estimate. It requires explicit profile applicability and complete-week confirmation; it does not establish state, CBA, public-agency, exemption, or universal statutory coverage.
 - Late-arriving paychecks and audit revisions exist in current History. They are not described as missing features.
 - Current statuses are `Compared values match`, `Gross total matches`, `Not ready to compare`, `Possible shortfall`, `Possible overpayment`, `Needs review`, and `Not audited`, with `Awaiting paycheck` as a history/workflow state.
 - Numeric guidance follows the current field UI and strict decimal-point format, not the older decimal-comma examples.
