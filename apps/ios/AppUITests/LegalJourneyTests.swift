@@ -108,7 +108,7 @@ final class LegalJourneyTests: XCTestCase {
             scrollTo(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
-            tap(scopeID)
+            chooseScope(label: scope, identifier: scopeID)
             let explanation = app.descendants(matching: .any).matching(
                 NSPredicate(format: "label CONTAINS %@", fragment)
             ).firstMatch
@@ -150,6 +150,23 @@ final class LegalJourneyTests: XCTestCase {
         scrollTo(button, maxSwipes: maxSwipes)
         XCTAssertTrue(button.exists, "Missing control: \(id)")
         button.tap()
+    }
+    private func chooseScope(label: String, identifier: String) {
+        let stableOption = app.descendants(matching: .any)
+            .matching(identifier: identifier).firstMatch
+        if stableOption.exists && stableOption.isHittable {
+            stableOption.tap()
+            return
+        }
+
+        // SwiftUI Menu options can expose their visible label without preserving the child
+        // identifier in the hosted accessibility tree. The exact label remains the user-facing
+        // contract; prefer the stable identifier whenever the platform exposes it.
+        let visibleOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(visibleOption.waitForExistence(timeout: 15), "Missing scope option: \(label)")
+        XCTAssertTrue(visibleOption.isHittable, "Scope option is not hittable: \(label)")
+        visibleOption.tap()
     }
     private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
