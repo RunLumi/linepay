@@ -34,13 +34,13 @@ jobs:
           (cd apps/ios && xcodegen generate)
           cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
           UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in json.load(sys.stdin)["devices"].values() for d in ds if d.get("isAvailable") and "iPhone" in d["name"]))')
+          # Large-text scope evidence is a real simulator journey; keep it bounded while
+          # allowing the hosted iPhone simulator enough time for all three scopes.
           xcodebuild -project apps/ios/LinePay.xcodeproj -scheme LinePay \
             -configuration Debug -destination "platform=iOS Simulator,id=$UDID" \
             -onlyUsePackageVersionsFromResolvedFile -derivedDataPath "$RUNNER_TEMP/legal-derived" \
             -resultBundlePath .test-results/LegalTests.xcresult \
             -parallel-testing-enabled NO -test-timeouts-enabled YES \
-            # Large-text scope evidence is a real simulator journey; keep it bounded while
-            # allowing the hosted iPhone simulator enough time for all three scopes.
             -maximum-test-execution-time-allowance 420 \
             -only-testing:LinePayAppTests/LegalRegressionTests \
             -only-testing:LinePayAppTests/LegalConsentAndReportTests \

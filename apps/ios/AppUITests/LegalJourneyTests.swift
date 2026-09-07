@@ -49,8 +49,11 @@ final class LegalJourneyTests: XCTestCase {
             save.waitForExistence(timeout: 30),
             "The PDF did not reach the system Files export destination.")
         capture("legal-files-export-ready")
-        // Never select a recipient or persist a synthetic report into a connected provider.
-        app.swipeDown()
+        // Cancel at the native Files destination: no recipient is selected and no synthetic
+        // report is persisted into a connected provider.
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10), "Files did not expose cancellation.")
+        cancel.tap()
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
         app.terminate()
         XCUIDevice.shared.press(.home)
