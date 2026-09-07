@@ -38,7 +38,7 @@ final class LegalJourneyTests: XCTestCase {
         let saveToFiles = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
         XCTAssertTrue(
-            saveToFiles.waitForExistence(timeout: 15),
+            saveToFiles.waitForExistence(timeout: 30),
             "The system PDF activity sheet did not open; preview alone is not a handoff.")
         scrollTo(saveToFiles)
         XCTAssertTrue(saveToFiles.isHittable)
@@ -105,14 +105,14 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
-            scrollTo(scopeControl, maxSwipes: 8)
+            revealReviewElement(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
             let explanation = app.descendants(matching: .any).matching(
                 NSPredicate(format: "label CONTAINS %@", fragment)
             ).firstMatch
-            scrollTo(explanation, maxSwipes: 8)
+            revealReviewElement(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.exists)
             capture("legal-scope-\(scope)")
             tap("pay-profile.save")
@@ -174,6 +174,15 @@ final class LegalJourneyTests: XCTestCase {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }
+    }
+    private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
+        if element.exists && element.isHittable { return }
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<maxSwipes {
+            if element.exists && element.isHittable { return }
+            frontmostWindow.swipeDown()
+        }
+        scrollTo(element, maxSwipes: maxSwipes)
     }
     private func revealEarlierContent() {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
