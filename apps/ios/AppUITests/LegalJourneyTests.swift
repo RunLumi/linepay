@@ -72,12 +72,25 @@ final class LegalJourneyTests: XCTestCase {
         // report is persisted into a connected provider.
         let cancelInFiles = documentsApp.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        // iOS 26.4 presents the Files destination as a navigation stack with a
+        // back-chevron button, not a literal Cancel control. Both paths dismiss
+        // the destination without saving; prefer the explicit Cancel label when
+        // a runtime exposes it, then use the actual Files navigation control.
+        let backInFiles = documentsApp.navigationBars.buttons.firstMatch
+        let backButtonInFiles = documentsApp.buttons["Back"].firstMatch
         let cancelInShareSheet = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         let cancelInSpringboard = springboard.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         if cancelInFiles.waitForExistence(timeout: 10) {
             cancelInFiles.tap()
+        } else if backInFiles.waitForExistence(timeout: 10) {
+            XCTAssertTrue(backInFiles.isHittable, "Files navigation back control is not hittable.")
+            backInFiles.tap()
+        } else if backButtonInFiles.waitForExistence(timeout: 10) {
+            XCTAssertTrue(
+                backButtonInFiles.isHittable, "Files navigation back control is not hittable.")
+            backButtonInFiles.tap()
         } else if cancelInShareSheet.waitForExistence(timeout: 10) {
             cancelInShareSheet.tap()
         } else {
@@ -118,10 +131,14 @@ final class LegalJourneyTests: XCTestCase {
             for expectedStep in 1...2 {
                 let next = app.buttons["pay-profile.continue"].firstMatch
                 var advanced = false
-                for _ in 0..<3 {
+                for attempt in 0..<4 {
                     scrollTo(next, maxSwipes: 8)
                     XCTAssertTrue(next.isHittable)
-                    next.press(forDuration: 0.1)
+                    if attempt == 0 {
+                        next.tap()
+                    } else {
+                        next.press(forDuration: 0.1)
+                    }
                     if next.waitForExistence(timeout: 3),
                         next.value as? String == "step-\(expectedStep)"
                     {
