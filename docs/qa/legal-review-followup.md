@@ -191,3 +191,21 @@ before the formatter/test-only correction and remain valid for those unchanged f
 gate reran both UI journeys successfully after the correction. The latest branch is not yet pushed
 after these commits. Hosted branch-protection checks remain the merge gate and Issue #37 remains
 open while GitHub rejects job startup for account billing/spending-limit reasons.
+
+## Final exact candidate — September 7, 2026
+
+The final executable source/test candidate is `edda6f9` (tree
+`68189cf218c301d0ba69e972bbd05493fd10ebac`), with documentation/source-map follow-up at
+`612b7b3` (tree `d63dd1c8aea634ddb47ac5c3b0e39da962c63b94`). It includes the stable in-app User
+Guide link, targeted public-help corrections for rule changes and report sharing, the Repeat Shift
+formatter/Swift Testing fixes, and the integrated current-main payroll/report/DST changes.
+
+The exact final native receipt is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-final-candidate/AppTests.xcresult`:
+221 tests passed, 0 failed, 0 skipped, 0 expected failures, on the iPhone 16 Pro / iOS 18.5
+simulator with Xcode 26.6 / Swift 6.3.3. The focused large-text User Guide entry journey passed at
+`/Volumes/SSD/linepay-pr34-evidence/guide-link2.xcresult`. The public-guide static gate could not
+run because Hugo 0.165.0 is not installed on this Mac; no guide build pass is claimed.
+
+This receipt proves current local native execution only. The hosted required checks remain the merge
+gate, and external legal, storefront, physical-device, VoiceOver, support-operations, ownership,
+trademark and counsel obligations remain open under the issue ledger.
