@@ -88,6 +88,8 @@ final class LegalJourneyTests: XCTestCase {
         // a runtime exposes it, then use the actual Files navigation control.
         let backInFiles = documentsApp.navigationBars.buttons.firstMatch
         let backButtonInFiles = documentsApp.buttons["Back"].firstMatch
+        let backInShareSheet = app.navigationBars.buttons.firstMatch
+        let backInSpringboard = springboard.navigationBars.buttons.firstMatch
         let cancelInShareSheet = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         let cancelInSpringboard = springboard.descendants(matching: .any)
@@ -101,6 +103,10 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(
                 backButtonInFiles.isHittable, "Files navigation back control is not hittable.")
             backButtonInFiles.tap()
+        } else if backInShareSheet.waitForExistence(timeout: 10) {
+            backInShareSheet.tap()
+        } else if backInSpringboard.waitForExistence(timeout: 10) {
+            backInSpringboard.tap()
         } else if cancelInShareSheet.waitForExistence(timeout: 10) {
             cancelInShareSheet.tap()
         } else {
@@ -142,12 +148,21 @@ final class LegalJourneyTests: XCTestCase {
                 let next = app.buttons["pay-profile.continue"].firstMatch
                 var advanced = false
                 for attempt in 0..<4 {
-                    scrollTo(next, maxSwipes: 8)
-                    guard next.exists, next.isHittable else { continue }
+                    if !next.exists { scrollTo(next, maxSwipes: 8) }
+                    guard next.exists else { continue }
                     if attempt == 0 {
-                        next.tap()
+                        if next.isHittable {
+                            next.tap()
+                        } else {
+                            next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2)).tap()
+                        }
                     } else {
-                        next.press(forDuration: 0.1)
+                        if next.isHittable {
+                            next.press(forDuration: 0.1)
+                        } else {
+                            next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+                                .press(forDuration: 0.1)
+                        }
                     }
                     let expected = app.buttons
                         .matching(identifier: "pay-profile.continue")
