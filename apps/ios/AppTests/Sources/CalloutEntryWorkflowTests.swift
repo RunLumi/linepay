@@ -172,6 +172,20 @@ struct CalloutEntryWorkflowTests {
                 .isDisabled())
     }
 
+    @Test func payRuleSetupStatesTheCalloutMinimumUnit() throws {
+        let model = AppModel()
+        var draft = UnitFixture.profile()
+        draft.setupStep = 2
+        draft.useCalloutMinimum = true
+        draft.calloutMinimumHours = "4"
+        try model.saveSetupDraft(draft)
+
+        let content = try text(PayProfileSetupView(model: model))
+        #expect(content.contains("Minimum paid hours"))
+        #expect(content.contains("once per confirmed physical callout event"))
+        #expect(content.contains("actual worked time separate"))
+    }
+
     private func saveAdjacentDraft(model: AppModel, start: Date) throws {
         let draft = WorkDraft(
             periodID: try #require(model.activePeriod).id,
