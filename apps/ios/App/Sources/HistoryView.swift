@@ -85,6 +85,7 @@ struct HistoricalPeriodView: View {
     let subscriptionStore: SubscriptionStore
     let periodID: UUID
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.linePaySession) private var session
     @State private var showingImport = false
     @State private var showingResult = false
     @State private var showingPaywall = false
@@ -213,6 +214,15 @@ struct HistoricalPeriodView: View {
             NavigationLink("Review rule snapshot") {
                 RuleSourcesView(agreement: context.agreement)
             }
+            if session != nil {
+                Button("Retry saved calculation") { retryCalculation() }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("history.retry-calculation")
+                Text(
+                    "Retry uses only this period's frozen work and rules. It does not edit the current work period or guess a missing rule."
+                )
+                .font(.footnote)
+            }
         }
 
         Section("Frozen work") {
@@ -232,6 +242,17 @@ struct HistoricalPeriodView: View {
                 }
                 .padding(.vertical, 6)
             }
+        }
+    }
+
+    private func retryCalculation() {
+        guard let session else { return }
+        do {
+            try session.retryHistoricalCalculation(periodID: periodID)
+            errorMessage = nil
+        } catch {
+            errorMessage =
+                "This period still needs review. Its frozen work and rules were not changed. \(error.localizedDescription)"
         }
     }
 
