@@ -18,19 +18,7 @@ struct CalloutEntryWorkflowTests {
             kind: .callout,
             note: "First physical call")
 
-        let draft = WorkDraft(
-            periodID: try #require(model.activePeriod).id,
-            editingEntryID: nil,
-            start: start + 3_600,
-            end: start + 2 * 3_600,
-            kind: .callout,
-            note: "Possible continuation",
-            hasUnpaidBreak: false,
-            breakStart: start + 4_500,
-            breakEnd: start + 5_400,
-            copiedFrom: nil)
-        try model.saveWorkDraft(draft)
-
+        try saveAdjacentDraft(model: model, start: start + 3_600)
         let view = AddWorkView(model: model)
         let content = try text(view)
         #expect(content.contains("touches an existing callout"))
@@ -38,6 +26,28 @@ struct CalloutEntryWorkflowTests {
         #expect(
             try view.inspect().find(viewWithAccessibilityIdentifier: "work.save").button()
                 .isDisabled())
+    }
+
+    @Test func continueExistingCalloutExtendsOneEventInsteadOfCreatingAnotherMinimum() throws {
+        let model = try calloutModel()
+        let start = UnitFixture.start + 8 * 3_600
+        try model.addWork(
+            start: start,
+            end: start + 3_600,
+            kind: .callout,
+            note: "First segment")
+        try saveAdjacentDraft(model: model, start: start + 3_600)
+
+        let view = AddWorkView(model: model)
+        try view.inspect().find(viewWithAccessibilityIdentifier: "work.callout-continue").button().tap()
+
+        #expect(model.workEntries.count == 1)
+        let merged = try #require(model.workEntries.first)
+        #expect(merged.interval.durationHours == 2)
+        #expect(merged.note.contains("First segment") && merged.note.contains("Possible continuation"))
+        let calculation = try #require(model.calculation)
+        #expect(calculation.total.amount == 200)
+        #expect(calculation.components.filter { $0.category == .calloutGuarantee }.count == 1)
     }
 
     @Test func mergingTwoAdjacentSavedRowsRestoresOnePhysicalCalloutMinimum() throws {
@@ -55,6 +65,8 @@ struct CalloutEntryWorkflowTests {
             note: "Storm ticket B")
 
         #expect(model.workEntries.count == 2)
+        let beforeIDs = Set(model.workEntries.compactMap(\.interval.calloutEventID))
+        #expect(beforeIDs.count == 2)
         #expect(try #require(model.calculation).total.amount == 400)
 
         let first = try #require(model.workEntries.first)
@@ -66,11 +78,9 @@ struct CalloutEntryWorkflowTests {
         let merged = try #require(model.workEntries.first)
         #expect(merged.interval.durationHours == 2)
         #expect(merged.note.contains("Storm ticket A") && merged.note.contains("Storm ticket B"))
-        #expect(try #require(model.calculation).total.amount == 200)
-        #expect(
-            try #require(model.calculation).components.filter {
-                $0.category == .calloutGuarantee
-            }.count == 1)
+        let calculation = try #require(model.calculation)
+        #expect(calculation.total.amount == 200)
+        #expect(calculation.components.filter { $0.category == .calloutGuarantee }.count == 1)
     }
 
     @Test func mergePlanPreservesBreakFactsAcrossMidnight() throws {
@@ -126,6 +136,21 @@ struct CalloutEntryWorkflowTests {
         #expect(
             try view.inspect().find(viewWithAccessibilityIdentifier: "work.save").button()
                 .isDisabled())
+    }
+
+    private func saveAdjacentDraft(model: AppModel, start: Date) throws {
+        let draft = WorkDraft(
+            periodID: try #require(model.activePeriod).id,
+            editingEntryID: nil,
+            start: start,
+            end: start + 3_600,
+            kind: .callout,
+            note: "Possible continuation",
+            hasUnpaidBreak: false,
+            breakStart: start + 900,
+            breakEnd: start + 1_800,
+            copiedFrom: nil)
+        try model.saveWorkDraft(draft)
     }
 
     private func calloutModel() throws -> AppModel {
