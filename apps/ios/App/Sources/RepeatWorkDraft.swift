@@ -135,6 +135,11 @@ enum RepeatWorkDraft {
         }
         guard draft.end > draft.start else { return false }
 
+        // A manual repair for a nonexistent wall time must never waive a separate fold decision.
+        // Every repeated clock time still needs an explicit first/last occurrence.
+        let ambiguous = proposal.points.filter { $0.candidates.count > 1 }
+        guard ambiguous.allSatisfy({ $0.chosen != nil }) else { return false }
+
         let decisions = draft.repeatedTimeChoices ?? [:]
         let nonexistent = proposal.points.filter { $0.candidates.isEmpty }
         if !nonexistent.isEmpty {
