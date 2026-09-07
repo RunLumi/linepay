@@ -442,13 +442,20 @@ struct AddWorkView: View {
 
     private func mergeSavedCallout(with adjacent: WorkEntry) {
         guard let currentID = draft.editingEntryID,
-            let current = model.workEntries.first(where: { $0.id == currentID })
+            model.workEntries.contains(where: { $0.id == currentID })
         else {
             errorMessage = "The callout being edited is no longer available."
             return
         }
         do {
-            let plan = try CalloutEntryWorkflow.merge(current, adjacent)
+            // Use the visible draft facts, not a stale saved copy. A worker may correct the
+            // current row and merge it in the same review without losing those unsaved changes.
+            let plan = try CalloutEntryWorkflow.merge(
+                existing: adjacent,
+                segmentStart: draft.start,
+                segmentEnd: draft.end,
+                segmentNote: draft.note,
+                segmentBreaks: draftBreaks())
             isClosing = true
             guard let undo = model.deleteWork(id: adjacent.id) else {
                 isClosing = false
@@ -462,7 +469,8 @@ struct AddWorkView: View {
                 do {
                     try model.restoreWork(undo)
                     isClosing = false
-                    errorMessage = "The merge was not saved. Both original callout rows were restored. \(error.localizedDescription)"
+                    errorMessage =
+                        "The merge was not saved. The adjacent callout was restored and your edits remain in this draft. \(error.localizedDescription)"
                 } catch let restoreError {
                     isClosing = false
                     errorMessage =
