@@ -125,6 +125,13 @@ struct WeeklyRegularRateTests {
         }
     }
 
+    @Test("Weekly calculation failures explain the recovery action")
+    func failuresHaveActionableDescriptions() {
+        let message = WeeklyRegularRateError.incompleteWorkweek.localizedDescription
+        #expect(message.contains("workweek is not complete"))
+        #expect(message.contains("Confirm"))
+    }
+
     @Test("Remaining premium is allocated across pay periods and conserves cents")
     func premiumAllocationConservesTotal() throws {
         let first = UUID()

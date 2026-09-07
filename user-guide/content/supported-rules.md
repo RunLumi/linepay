@@ -14,7 +14,7 @@ The iPhone setup currently uses a U.S.-dollar base rate and one active pay profi
 
 ## What the current setup represents
 
-The setup includes actual work intervals, multiple unpaid breaks, daily overtime tiers, Sunday and additional weekday premiums, specific-date premiums, a same-day regular schedule and outside-schedule multiplier, an isolated callout-minimum variant, flat per diem by worked local date, source references, rule effective dates, and a separately restricted weekly-overtime review where explicitly enabled.
+The setup includes actual work intervals, multiple unpaid breaks, daily overtime tiers, a restricted weekly regular-rate review for a confirmed complete workweek, Sunday and additional weekday premiums, specific-date premiums, a same-day regular schedule and outside-schedule multiplier, an isolated callout-minimum variant, flat per diem by worked local date, source references, and rule effective dates.
 
 Supported premium overlaps use the highest applicable multiplier; they do not stack. Actual worked time remains separate from guarantee entitlements. Expected wages remain separate from per diem until you select a confirmed comparison basis.
 
@@ -32,7 +32,7 @@ Older callout rows that predate event identity remain ambiguous until explicitly
 
 ## Do not approximate missing rules
 
-Rest-period premiums, unusual stacking, meal penalties, travel guarantees, and overnight regular-schedule windows are not automatically inferred by the setup. The restricted weekly-overtime layer is separate and does not establish federal, state, public-agency, union, or CBA applicability by itself. More specialized agreements may have further requirements not represented here.
+The restricted weekly review is available only after you explicitly confirm a covered, nonexempt hourly profile and a complete single-employer workweek. It does not establish state/local, public-agency, exemption, union/CBA, alternative-method, or universal federal coverage. Rest-period premiums, unusual stacking, meal penalties, travel guarantees, and overnight regular-schedule windows are not automatically inferred by the setup. More specialized agreements may have further requirements not represented here.
 
 Use **I don’t see my rule** in setup and record what is missing. A nonempty missing-rule note marks coverage as incomplete. Do not hide the limitation by adding fake hours, setting a misleading base rate, or choosing a near-enough rule.
 
