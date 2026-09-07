@@ -35,12 +35,26 @@ final class LegalJourneyTests: XCTestCase {
         tap("audit.share-report")
         // A screenshot alone also succeeds when ShareLink never opens. Require the actual
         // system activity, then its non-sending Files destination to exercise PDF transfer.
-        let saveToFiles = app.descendants(matching: .any)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        var saveToFiles = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        if !saveToFiles.waitForExistence(timeout: 15) {
+            saveToFiles =
+                springboard.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        }
+        if !saveToFiles.waitForExistence(timeout: 15) {
+            // Some hosted iOS 26 share sheets expose the selected Files action only as the
+            // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
+            // below still prove that this action reached the actual Files destination.
+            saveToFiles =
+                springboard.descendants(matching: .any)
+                .matching(identifier: "actionGroupCell").firstMatch
+        }
         XCTAssertTrue(
-            saveToFiles.waitForExistence(timeout: 30),
-            "The system PDF activity sheet did not open; preview alone is not a handoff.")
-        scrollTo(saveToFiles)
+            saveToFiles.waitForExistence(timeout: 15),
+            "The system PDF activity sheet did not expose a Files destination; preview alone is not a handoff."
+        )
         XCTAssertTrue(saveToFiles.isHittable)
         capture("legal-system-share-sheet")
         saveToFiles.tap()
