@@ -109,13 +109,13 @@ lines). Its retained result is `/Volumes/SSD/linepay-pr34-evidence/integrated-io
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-PR #57's exact head is `df53814bee9abf6cda77ef08723f79667430c3e5`. The ordered three-scope
+PR #57's exact head is `46a18616b391abd82cea80426648bb2ab9b3fb14`. The ordered three-scope
 large-text journey keeps all assertions intact; its focused workflow allowance is now 420 seconds
 per XCTest, within the existing 25-minute job timeout. This is a bounded runtime correction for
 the prior 240-second hosted timeout, not a skipped or expected-failure test.
 
-Exact-head runs `34089263567` (Legal regressions) and `34089263636` (iOS) failed before any steps
+Exact-head runs `34089603309` (Legal regressions) and `34089603302` (iOS) failed before any steps
 because GitHub did not allocate a macOS runner. They are not native pass receipts. The PR remains
 open pending an exact-head hosted execution and review. Local quick verification ran 57 repository
-tests successfully; its Swift package step was blocked by an unwritable user Clang module cache,
-and the local CoreSimulator service was unavailable for a new native rerun.
+tests and the 105-test LinePayDomain suite successfully with a task-local cache outside the
+restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
