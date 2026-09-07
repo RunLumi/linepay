@@ -37,8 +37,9 @@ enum CalloutEntryWorkflow {
         }
         let segmentStartSeconds = Int64(segmentStart.timeIntervalSince1970.rounded())
         let segmentEndSeconds = Int64(segmentEnd.timeIntervalSince1970.rounded())
-        guard existing.interval.endEpochSeconds == segmentStartSeconds
-            || segmentEndSeconds == existing.interval.startEpochSeconds
+        guard
+            existing.interval.endEpochSeconds == segmentStartSeconds
+                || segmentEndSeconds == existing.interval.startEpochSeconds
         else {
             throw DomainValidationError.invalidWorkInterval
         }

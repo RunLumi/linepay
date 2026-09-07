@@ -157,8 +157,9 @@ enum RepeatWorkDraft {
         timeZoneIdentifier: String,
         window: PayPeriodWindow?
     ) throws {
-        guard canConfirmManualReview(
-            draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
+        guard
+            canConfirmManualReview(
+                draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
         else {
             throw RepeatWorkReviewError.incompleteManualReview
         }

@@ -154,7 +154,8 @@ struct UnresolvedPeriodLifecycleTests {
         let session = AppSession(store: store, evidenceStore: MemoryEvidenceStore())
         try createAmbiguousCallout(in: session.model)
 
-        let finish = FinishPayPeriodView(model: session.model).environment(\.linePaySession, session)
+        let finish = FinishPayPeriodView(model: session.model).environment(
+            \.linePaySession, session)
         let finishText = try text(finish)
         #expect(finishText.contains("Calculation needs review"))
         #expect(finishText.contains("does not set expected pay to $0"))

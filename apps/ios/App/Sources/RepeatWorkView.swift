@@ -231,7 +231,8 @@ struct RepeatWorkView: View {
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .disabled(
                             conflict != nil || draft.end <= draft.start || !withinCurrentPeriod
-                                || draft.templateUnresolved == true)
+                                || draft.templateUnresolved == true
+                        )
                         .accessibilityIdentifier("repeat.save")
                     Button("Discard this draft", role: .destructive) {
                         discardConfirmation = true

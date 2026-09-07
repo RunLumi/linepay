@@ -61,7 +61,8 @@ final class AppSession {
             throw AppModelError.staleUndo
         }
 
-        let zone = storedActive.timeZoneIdentifier
+        let zone =
+            storedActive.timeZoneIdentifier
             ?? storedActive.workEntries.first?.interval.timeZoneIdentifier
             ?? profile.timeZoneIdentifier
         let completed = CompletedPayPeriod(
