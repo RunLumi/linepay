@@ -117,8 +117,10 @@ per XCTest, within the existing 25-minute job timeout. This is a bounded runtime
 the prior 240-second hosted timeout, not a skipped or expected-failure test.
 
 Candidate runs `34090444070` (Legal regressions) and `34090444025` (iOS) failed before any steps
-because GitHub did not allocate a macOS runner. They are not native pass receipts. The PR remains
-open pending an exact-head hosted execution and review. Local quick verification ran 57 repository
+because GitHub did not allocate a macOS runner. The latest check-run annotation states: “The job was
+not started because recent account payments have failed or your spending limit needs to be
+increased.” They are not native pass receipts. The PR remains open pending an exact-head hosted
+execution and review. Local quick verification ran 57 repository
 tests and the 105-test LinePayDomain suite successfully with a task-local cache outside the
 restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
 

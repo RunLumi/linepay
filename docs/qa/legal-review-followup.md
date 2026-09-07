@@ -241,8 +241,10 @@ This addresses the prior hosted timeout at 240 seconds (run `34086657229`) witho
 assertion or adding an expected-failure path.
 
 Fresh candidate runs `34090444070` (Legal regressions) and `34090444025` (iOS) failed before any
-workflow step ran because GitHub did not allocate a macOS runner. They are CI-capacity failures,
-not native test receipts. PR #57 remains open and must not merge until exact-head required checks
+workflow step ran because GitHub did not allocate a macOS runner. The latest check-run annotation
+states: “The job was not started because recent account payments have failed or your spending limit
+needs to be increased.” They are CI-capacity failures, not native test receipts. PR #57 remains open
+and must not merge until exact-head required checks
 execute and pass. Local `bash scripts/agent-verify.sh quick` ran 57 repository tests successfully,
 and the 105-test LinePayDomain suite also passed when run with a task-local cache outside the
 restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
