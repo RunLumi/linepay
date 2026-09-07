@@ -144,17 +144,18 @@ final class LegalJourneyTests: XCTestCase {
             rate.tap()
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
+            let stepIndicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
             for expectedStep in 1...2 {
                 let next = app.buttons["pay-profile.continue"].firstMatch
-                let expectedTitle = expectedStep == 1 ? "Pay period" : "Your rules"
+                let expectedStepLabel = "Step \(expectedStep + 1) of 4"
                 var advanced = false
                 for attempt in 0..<4 {
-                    let stepTitle = app.staticTexts["pay-profile.step-title"].firstMatch
-                    // The step-title header is virtualized while the Form is scrolled away
-                    // from the top; bring it back before deciding whether the step already
-                    // advanced, so a repeated tap can never overshoot into a later step.
-                    revealStepTitle(maxSwipes: 12)
-                    if stepTitle.waitForExistence(timeout: 2), stepTitle.label == expectedTitle {
+                    // The toolbar indicator stays materialized wherever the Form is
+                    // scrolled; decide from the rendered step before acting so a retry
+                    // tap can never overshoot into a later step.
+                    if stepIndicator.waitForExistence(timeout: 2),
+                        stepIndicator.label == expectedStepLabel
+                    {
                         advanced = true
                         break
                     }
@@ -167,8 +168,9 @@ final class LegalJourneyTests: XCTestCase {
                     } else {
                         next.press(forDuration: 0.1)
                     }
-                    revealStepTitle(maxSwipes: 12)
-                    if stepTitle.waitForExistence(timeout: 5), stepTitle.label == expectedTitle {
+                    if stepIndicator.waitForExistence(timeout: 5),
+                        stepIndicator.label == expectedStepLabel
+                    {
                         advanced = true
                         break
                     }
@@ -178,12 +180,19 @@ final class LegalJourneyTests: XCTestCase {
                     "The editor did not advance to step \(expectedStep + 1) of 4.")
             }
             var reachedReview = false
-            for _ in 0..<3 {
+            let saveControl = app.buttons["pay-profile.save"].firstMatch
+            for attempt in 0..<3 {
                 let finalContinue = app.buttons["pay-profile.continue"].firstMatch
-                scrollTo(finalContinue, maxSwipes: 8)
+                scrollTo(finalContinue, maxSwipes: 12)
                 XCTAssertTrue(finalContinue.isHittable)
-                finalContinue.press(forDuration: 0.1)
-                if finalContinue.waitForNonExistence(timeout: 3) {
+                if attempt == 0 {
+                    finalContinue.tap()
+                } else {
+                    finalContinue.press(forDuration: 0.1)
+                }
+                // The toolbar exposes "Save reviewed rules" wherever the Form is
+                // scrolled; its appearance is the step-4 signal.
+                if saveControl.waitForExistence(timeout: 8) {
                     reachedReview = true
                     break
                 }
@@ -191,13 +200,13 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
-            revealReviewElement(scopeControl, maxSwipes: 8)
+            scrollTo(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
             let explanation = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.scope-explanation").firstMatch
-            revealReviewElement(explanation, maxSwipes: 8)
+            scrollTo(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.waitForExistence(timeout: 15))
             XCTAssertTrue(
                 explanation.label.contains(fragment),
@@ -267,30 +276,6 @@ final class LegalJourneyTests: XCTestCase {
         for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
-        }
-    }
-    private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
-        if element.exists && element.isHittable { return }
-        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        let windowFrame = frontmostWindow.frame
-        for _ in 0..<maxSwipes {
-            if element.exists && element.isHittable { return }
-            if element.exists, element.frame.minY >= windowFrame.maxY {
-                // The element is below the viewport; downward swipes would scroll
-                // away from it and, at the form top, drag the sheet's dismissal.
-                frontmostWindow.swipeUp()
-            } else {
-                frontmostWindow.swipeDown()
-            }
-        }
-        scrollTo(element, maxSwipes: maxSwipes)
-    }
-    private func revealStepTitle(maxSwipes: Int) {
-        let title = app.staticTexts["pay-profile.step-title"].firstMatch
-        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<maxSwipes {
-            if title.exists && title.isHittable { return }
-            frontmostWindow.swipeDown()
         }
     }
     private func capture(_ name: String) {

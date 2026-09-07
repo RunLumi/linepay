@@ -33,7 +33,6 @@ struct PayProfileSetupView: View {
                 Section {
                     Text(["Pay basics", "Pay period", "Your rules", "Confirm rules"][step])
                         .font(.title2.bold())
-                        .accessibilityIdentifier("pay-profile.step-title")
                     Text("Step \(step + 1) of 4. Your unfinished setup is saved on this device.")
                         .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                 }
@@ -72,6 +71,14 @@ struct PayProfileSetupView: View {
             .navigationTitle(editing ? "Edit pay rules" : "Set up my pay")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    // The in-form header scrolls away at the largest text sizes; the
+                    // toolbar keeps the rendered step visible wherever the worker is.
+                    Text("Step \(step + 1) of 4")
+                        .font(.footnote)
+                        .foregroundStyle(LinePayColor.textSecondary)
+                        .accessibilityIdentifier("pay-profile.step-indicator")
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     if step > 0 {
                         Button("Back") { draft.setupStep -= 1 }
