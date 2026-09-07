@@ -70,7 +70,8 @@ struct UnresolvedPeriodLifecycleTests {
         try createAmbiguousCallout(in: session.model)
         try session.archiveCurrentPeriod()
         let state = try #require(store.state)
-        let archive = BackupArchive(createdAt: Date(timeIntervalSince1970: 1_800_000_000), state: state, files: [])
+        let archive = BackupArchive(
+            createdAt: Date(timeIntervalSince1970: 1_800_000_000), state: state, files: [])
         let restored = try BackupArchive.decode(archive.encoded())
         let period = try #require(restored.state.history.first)
 
@@ -78,6 +79,74 @@ struct UnresolvedPeriodLifecycleTests {
         #expect(period.calculationIssue == state.history.first?.calculationIssue)
         #expect(period.workEntries == state.history.first?.workEntries)
         #expect(period.reconciliation == nil)
+    }
+
+    @Test func failedRetryLeavesOldReviewAndNewPeriodUntouched() throws {
+        let store = UnitStateStore()
+        let session = AppSession(store: store, evidenceStore: MemoryEvidenceStore())
+        try createAmbiguousCallout(in: session.model)
+        try session.archiveCurrentPeriod()
+        let periodAID = try #require(session.model.history.first).id
+        let periodB = try #require(session.model.activePeriod)
+        try session.model.addWork(
+            start: periodB.window.startDate + 8 * 3_600,
+            end: periodB.window.startDate + 16 * 3_600,
+            kind: .regular)
+        let before = try #require(store.state)
+
+        #expect(throws: (any Error).self) {
+            try session.retryHistoricalCalculation(periodID: periodAID)
+        }
+        #expect(store.state == before)
+        #expect(session.model.activePeriod == before.activePeriod)
+        #expect(session.model.history == before.history)
+    }
+
+    @Test func laterRetryCanResolveOnlyAWhileBRemainsByteForByteEquivalent() throws {
+        let store = UnitStateStore()
+        let session = AppSession(store: store, evidenceStore: MemoryEvidenceStore())
+        try UnitFixture.populate(session.model)
+        let periodAID = try #require(session.model.activePeriod).id
+        try session.model.archiveCurrentPeriod()
+        let periodB = try #require(session.model.activePeriod)
+        try session.model.addWork(
+            start: periodB.window.startDate + 8 * 3_600,
+            end: periodB.window.startDate + 16 * 3_600,
+            kind: .regular,
+            note: "B must not move")
+
+        var syntheticUnresolved = try #require(store.state)
+        let index = try #require(syntheticUnresolved.history.firstIndex { $0.id == periodAID })
+        let originalA = syntheticUnresolved.history[index]
+        syntheticUnresolved.history[index] = CompletedPayPeriod(
+            id: originalA.id,
+            window: originalA.window,
+            agreement: originalA.agreement,
+            timeZoneIdentifier: originalA.timeZoneIdentifier,
+            workEntries: originalA.workEntries,
+            calculation: nil,
+            paystub: originalA.paystub,
+            reconciliation: nil,
+            archivedEpochSeconds: originalA.archivedEpochSeconds,
+            auditRevisions: originalA.auditRevisions,
+            hasConsumedAuditAccess: originalA.hasConsumedAuditAccess,
+            agreementChanges: originalA.agreementChanges,
+            calculationIssue: "Synthetic older engine could not calculate this period.",
+            workCorrections: originalA.workCorrections)
+        try AppStateValidation.validate(syntheticUnresolved)
+        store.state = syntheticUnresolved
+
+        let retrySession = AppSession(store: store, evidenceStore: MemoryEvidenceStore())
+        let beforeB = try #require(retrySession.model.activePeriod)
+        let beforeBBytes = try JSONEncoder().encode(beforeB)
+        try retrySession.retryHistoricalCalculation(periodID: periodAID)
+
+        let resolvedA = try #require(retrySession.model.history.first { $0.id == periodAID })
+        #expect(resolvedA.calculation?.total.amount == 400)
+        #expect(resolvedA.calculationIssue == nil)
+        #expect(resolvedA.workEntries == originalA.workEntries)
+        let afterB = try #require(retrySession.model.activePeriod)
+        #expect(try JSONEncoder().encode(afterB) == beforeBBytes)
     }
 
     @Test func unresolvedFinishAndHistoryExplainTheStateWithoutOfferingAnAudit() throws {
@@ -98,11 +167,14 @@ struct UnresolvedPeriodLifecycleTests {
         let history = HistoricalPeriodView(
             model: session.model,
             subscriptionStore: SubscriptionStore(commerceEnabled: false),
-            periodID: periodID)
+            periodID: periodID
+        )
+        .environment(\.linePaySession, session)
         let historyText = try text(history)
         #expect(historyText.contains("Calculation needs review"))
         #expect(historyText.contains("No $0 value was substituted"))
         #expect(historyText.contains("Frozen work"))
+        #expect(historyText.contains("Retry saved calculation"))
         #expect(!historyText.contains("Add this paycheck"))
         #expect(throws: (any Error).self) {
             try history.inspect().find(viewWithAccessibilityIdentifier: "history.audit")
