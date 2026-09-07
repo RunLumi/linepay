@@ -41,10 +41,6 @@ enum CalloutEntryWorkflow {
             || segmentEndSeconds == existing.interval.startEpochSeconds
         else { throw DomainValidationError.invalidWorkInterval }
 
-        let existingStart = Date(
-            timeIntervalSince1970: TimeInterval(existing.interval.startEpochSeconds))
-        let existingEnd = Date(
-            timeIntervalSince1970: TimeInterval(existing.interval.endEpochSeconds))
         return CalloutMergePlan(
             start: Date(
                 timeIntervalSince1970: TimeInterval(
