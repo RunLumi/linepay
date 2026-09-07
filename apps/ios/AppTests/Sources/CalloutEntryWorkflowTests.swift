@@ -39,12 +39,14 @@ struct CalloutEntryWorkflowTests {
         try saveAdjacentDraft(model: model, start: start + 3_600)
 
         let view = AddWorkView(model: model)
-        try view.inspect().find(viewWithAccessibilityIdentifier: "work.callout-continue").button().tap()
+        try view.inspect().find(viewWithAccessibilityIdentifier: "work.callout-continue").button()
+            .tap()
 
         #expect(model.workEntries.count == 1)
         let merged = try #require(model.workEntries.first)
         #expect(merged.interval.durationHours == 2)
-        #expect(merged.note.contains("First segment") && merged.note.contains("Possible continuation"))
+        #expect(
+            merged.note.contains("First segment") && merged.note.contains("Possible continuation"))
         let calculation = try #require(model.calculation)
         #expect(calculation.total.amount == 200)
         #expect(calculation.components.filter { $0.category == .calloutGuarantee }.count == 1)
@@ -72,7 +74,8 @@ struct CalloutEntryWorkflowTests {
         let first = try #require(model.workEntries.first)
         let edit = AddWorkView(model: model, existingEntry: first)
         #expect(try text(edit).contains("Merge adjacent callout"))
-        try edit.inspect().find(viewWithAccessibilityIdentifier: "work.callout-merge").button().tap()
+        try edit.inspect().find(viewWithAccessibilityIdentifier: "work.callout-merge").button()
+            .tap()
 
         #expect(model.workEntries.count == 1)
         let merged = try #require(model.workEntries.first)
@@ -128,8 +131,8 @@ struct CalloutEntryWorkflowTests {
                 endEpochSeconds: seconds(start + 2 * 3_600),
                 timeZoneIdentifier: "UTC",
                 kind: .callout,
-                calloutEventID: UUID(),
-                unpaidBreaks: [firstBreak]),
+                unpaidBreaks: [firstBreak],
+                calloutEventID: UUID()),
             note: "Before midnight")
         let secondBreak = try WorkBreak(
             startEpochSeconds: seconds(start + 2.5 * 3_600),
@@ -140,8 +143,8 @@ struct CalloutEntryWorkflowTests {
                 endEpochSeconds: seconds(start + 4 * 3_600),
                 timeZoneIdentifier: "UTC",
                 kind: .callout,
-                calloutEventID: UUID(),
-                unpaidBreaks: [secondBreak]),
+                unpaidBreaks: [secondBreak],
+                calloutEventID: UUID()),
             note: "After midnight")
 
         let plan = try CalloutEntryWorkflow.merge(first, second)

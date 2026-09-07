@@ -26,10 +26,11 @@ A manually entered audit or one whose original was removed can retain confirmed 
 
 1. Open the required audit from Pay or History. For an older revision, select that revision first.
 2. Under **Worker-owned report**, choose **Prepare audit report**.
-3. Choose **Share report** and select your destination using the system share sheet.
-4. Review the exported file before sending it, including the period, comparison scope, and any limitations.
+3. Keep the default minimized report, or explicitly choose **Include optional source details** after reading its sensitive-content warning.
+4. Choose **Preview this report** and inspect the exact generated PDF. **Share report** becomes available only after this preview.
+5. Review the period, comparison scope, limitations, and sensitive amounts before selecting a destination in the system share sheet.
 
-The report excludes original paystub pages. It can still contain sensitive pay amounts, notes, and source information. Share only with an intended recipient and avoid public links. Preparing or sharing a PDF does not contact payroll on your behalf.
+The default report excludes original paystub pages, optional OCR source text, profile names, and source identifiers, but it still contains sensitive pay amounts/dates and is not anonymous. Optional source details can add private rule, source, and OCR text and require a new review. Share only with an intended recipient and avoid public links. A previously saved or shared copy is outside later local deletion. Preparing or sharing a PDF does not contact payroll on your behalf.
 
 Existing records and exports remain available without Pro. A PDF is a report, not a complete restorable backup.
 

@@ -80,9 +80,11 @@ do not replace these assertions with screenshots or expected-failure wrappers.
 ## Merge and closure gates
 
 [Issue #37](https://github.com/streamentry/linepay/issues/37) tracks hosted jobs
-that stopped before any execution steps. Keep the PR draft until the exact current
-head passes the full native build/tests and relevant UI journeys. Review retained
-logs and xcresult results; a requested rerun is not a completed test.
+that stopped before any execution steps. PR #34 was merged by the repository owner as
+`19264cf0728a01bd3ee6cacda291ebeff692622b` before the later Picker/accessibility and
+receipt commits landed. Those post-merge commits remain a follow-up candidate and must
+still satisfy the hosted checks and retained exact-head receipts; a requested rerun is
+not a completed test.
 
 [LEGAL-03 / #15](https://github.com/streamentry/linepay/issues/15) and
 [LEGAL-08 / #20](https://github.com/streamentry/linepay/issues/20) retain their native
@@ -119,21 +121,157 @@ external condition and rerun the exact final head; repository workflow changes c
 
 ## Final candidate refresh — September 6, 2026
 
-The production-source integration candidate is `b6feb80c9affab26136bcefc1f500db71012a5b4` (tree
-`e08c600eb6a8a5ea1dad3d12741eebb2c958e79c`). It differs from the previously tested candidate
-`c6b7504d8b746611fbcb8a73d93648fa8db4024f` only by the safe temporary-cleanup error wording;
-the later `373e0d7b8083c08607a2be44e1184d3c9b6645bb` tip is documentation-only. Its production source includes
-the Menu-based scope selector, grouped toolbar Scope/Save actions, archived-window rule protection,
-locale-stable PDF checks, exact Transferable availability, and symlink substitution rejection.
+The current production/test candidate is commit `28ee8ee` (tree
+`738fb3a8153cfe691aa46c8a2f4a79137f09af7f`), based on merged `main`
+`19264cf0728a01bd3ee6cacda291ebeff692622b`. It adds stable accessibility identifiers to every
+scope option and makes the XXXL scope journey assert each step before selecting the option. The
+bounded final press retry is only for a simulator event that can be dropped at the largest text
+size; the assertion still requires the editor to reach the review screen.
 
-The prior exact source tree (`c6b7504…`) compiled successfully with Xcode 26.6 / Swift 6.3.3 in a generic arm64
-`build-for-testing` run using task-local Swift/Clang caches and `DEBUG_INFORMATION_FORMAT=dwarf`.
-The repository quick gate also passed: 57 Python tests, 82 domain tests, harness checks, and legal
-guardrails. A prior focused native app receipt passed 30 legal tests, and the fresh-device scope
-and Share-to-Files journeys passed before the final test-isolation-only commit.
+The exact current-source receipts were run with Xcode 26.6 (`17F113`), Swift 6.3.3, on the existing
+iPhone 16 Pro / iOS 18.5 simulator (`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`):
 
-After the final push, `CoreSimulatorService` repeatedly exited before `xcodebuild` could execute
-tests, including `test-without-building` against the existing `.xctestrun`; the host also could not
-resolve the cached ViewInspector manifest when rebuilding. Consequently, no final-head Apple
-`xcresult` proves the full UI suite on this host. The final candidate remains unmerged and the UI
-acceptance gate must be rerun on a healthy simulator/host (or hosted runner after #37 is repaired).
+- `/Volumes/SSD/linepay-pr34-evidence/followup-legal-28ee8ee.xcresult`: 30 focused legal tests in five suites passed at commit `28ee8ee` / tree `738fb3a…`.
+- `/Volumes/SSD/linepay-pr34-evidence/followup-share-28ee8ee.xcresult`: the Save-to-Files activity journey passed at commit `28ee8ee` / tree `738fb3a…`.
+- `/Volumes/SSD/linepay-pr34-evidence/followup-scope-28ee8ee.xcresult`: all three rule-scope edits passed at XXXL text at production/test tree `738fb3a…`.
+
+The earlier `current-head-*` receipts remain historical evidence for their recorded executable
+tree, not proof of this final candidate. The three current receipts were separate bounded
+invocations; the combined hosted workflow remains the authoritative rerun once Issue #37’s
+external GitHub billing/spending-limit condition is repaired. That hosted condition cannot be
+resolved by repository changes, so PR #57 must not be merged until its required checks execute and
+pass on the exact final head.
+
+## Integrated current-main candidate — September 7, 2026
+
+After PRs #58, #59 and #66 advanced `origin/main` to `dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e`,
+the follow-up branch was merged with that current main in integration commit `6bb14e5c54f5b50ed86fa935828174b522b15476`
+(tree `d4e7477fbe2a0d25935a048e0fe3eb181d844b03`). The merge was conflict-free and the previous
+PR #57 head is protected by backup ref `backup/pr57-before-main-sync-20260906`.
+
+The full native gate was rerun on the integrated candidate with Xcode 26.6 (`17F113`), Swift 6.3.3,
+macOS 26.6.2, and the existing iPhone 16 Pro / iOS 18.5 simulator
+(`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`). `bash scripts/agent-verify.sh ios` passed 212 tests,
+with 0 failures, 0 skips and 0 expected failures; the retained result is
+`/Volumes/SSD/linepay-pr34-evidence/integrated-ios-6bb/AppTests.xcresult`. The app coverage report
+was 85.30% (13,625 / 15,973 lines). The pure-domain portion passed 104 tests, including the merged
+weekly regular-rate and product-correctness suites.
+
+The critical UI journeys were then run as separate bounded invocations at the same integrated tree:
+
+- `/Volumes/SSD/linepay-pr34-evidence/integrated-share-6bb14e5.xcresult`: Save-to-Files appeared,
+  Save was observed, and the native sheet was dismissed without writing.
+- `/Volumes/SSD/linepay-pr34-evidence/integrated-scope-6bb14e5.xcresult`: all three scope effects
+  passed at XXXL text, including `$550.00`, `$550.00`, and `$660.00` outcomes.
+
+The legal register and this receipt are documentation-only changes after the executable integration
+commit; they do not change the tested app/source tree. Hosted branch-protection checks still need to
+execute on the pushed final head before merge. Physical VoiceOver, two-device/provider behavior,
+storefront transactions, publisher identity, trademark, ownership, counsel and operational-support
+acceptance remain separate external obligations.
+
+## Latest integrated candidate — September 7, 2026
+
+`origin/main` subsequently advanced with merged PR #68 (`d05428e34103088dd85179ad39c74b904df10061`),
+which adds explicit DST review to Repeat Shift. The follow-up branch integrated it in merge commit
+`2e45223b7a241b23e523ba7606a290d209948228` and then fixed only the formatter and Swift Testing
+compile violations exposed by the pinned Xcode 26.6 gate in commit
+`cd68adb9cb5aebb5c0987418bcfd262200ce526c` (tree `aa19b228da10a5c9d329bc3fd6ca338801a5ec3c`).
+
+The corrected full native gate passed on the existing iPhone 16 Pro / iOS 18.5 simulator with
+Xcode 26.6 (`17F113`) and Swift 6.3.3: 221 total tests, 314 configured device executions, 0
+failures, 0 skips and 0 expected failures. App coverage was 83.21% (14,665 / 17,625 lines). The
+retained exact-current result is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-d054-final/AppTests.xcresult`.
+The isolated StoreKit lifecycle retry also passed all seven tests at
+`/Volumes/SSD/linepay-pr34-evidence/storekit-suite-retry.xcresult` after one transient full-suite
+notice race.
+
+The earlier integrated Save-to-Files and XXXL scope receipts were run against the same app source
+before the formatter/test-only correction and remain valid for those unchanged flows; the full
+gate reran both UI journeys successfully after the correction. The latest branch is not yet pushed
+after these commits. Hosted branch-protection checks remain the merge gate and Issue #37 remains
+open while GitHub rejects job startup for account billing/spending-limit reasons.
+
+## Final exact candidate — September 7, 2026
+
+The final executable source/test candidate is `edda6f9` (tree
+`68189cf218c301d0ba69e972bbd05493fd10ebac`), with documentation/source-map follow-up at
+`612b7b3` (tree `d63dd1c8aea634ddb47ac5c3b0e39da962c63b94`). It includes the stable in-app User
+Guide link, targeted public-help corrections for rule changes and report sharing, the Repeat Shift
+formatter/Swift Testing fixes, and the integrated current-main payroll/report/DST changes.
+
+The exact final native receipt is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-final-candidate/AppTests.xcresult`:
+221 tests passed, 0 failed, 0 skipped, 0 expected failures, on the iPhone 16 Pro / iOS 18.5
+simulator with Xcode 26.6 / Swift 6.3.3. The focused large-text User Guide entry journey passed at
+`/Volumes/SSD/linepay-pr34-evidence/guide-link2.xcresult`. The public-guide static gate could not
+run because Hugo 0.165.0 is not installed on this Mac; no guide build pass is claimed.
+
+This receipt proves current local native execution only. The hosted required checks remain the merge
+gate, and external legal, storefront, physical-device, VoiceOver, support-operations, ownership,
+trademark and counsel obligations remain open under the issue ledger.
+
+## Current-main exact candidate — September 7, 2026
+
+`origin/main` later advanced through PRs #69 and #72 (plus the already integrated #41 callout work)
+to `92e5bfb738a2816e6ec63b59643e9fd98e601d0c`. The follow-up branch integrated that main and the
+final callout test ordering fix in candidate `7ca4820461e89d3f74c68ed3f67f5c05db882b9a`, tree
+`1738ec551cb2dbf39a190553c5714484fdd5b0c0`.
+
+The exact native gate at that candidate passed on macOS 26.6.2, Xcode 26.6 (`17F113`), Swift 6.3.3,
+and iPhone 16 Pro / iOS 18.5 (`A80C669E-2B6A-4380-B39A-5FA5CA7C193D`): 229 tests passed, 0
+failures, 0 skips and 0 expected failures across 322 configured device executions. The retained
+result is `/Volumes/SSD/linepay-pr34-evidence/integrated-ios-final-current-main/AppTests.xcresult`.
+The pure-domain portion passed 105 tests. The targeted callout-event suite passed 7 tests at
+`/Volumes/SSD/linepay-pr34-evidence/callout-fixed.xcresult`; the large-text User Guide entry passed
+at `/Volumes/SSD/linepay-pr34-evidence/guide-link2.xcresult`.
+
+This exact local evidence does not satisfy hosted branch protection or physical-device/provider
+acceptance. The final required GitHub jobs still need to start and pass; Issue #37 remains open for
+the account-owner billing/spending-limit repair. Hugo 0.165.0 was unavailable, so the public-guide
+static check remains unrun and is not claimed as passed.
+
+## Hosted retry and bounded runtime — September 7, 2026
+
+The latest executable PR #57 candidate is `dffff45`; it fixes the hosted shell continuation, native
+Files/Documents handoff and cancellation targeting, scope-label fallback, bidirectional review
+reveal, and bounded intermediate-step retries.
+The large-text scope
+journey remains ordered so all three promised effects are exercised in one receipt; the focused
+workflow's per-test XCTest allowance is 720 seconds, still bounded by the job's 25-minute timeout.
+This addresses the prior hosted timeout at 240 seconds (run `34086657229`) without weakening any
+assertion or adding an expected-failure path.
+
+Fresh candidate runs `34090444070` (Legal regressions) and `34090444025` (iOS) failed before any
+workflow step ran because GitHub did not allocate a macOS runner. The latest check-run annotation
+states: “The job was not started because recent account payments have failed or your spending limit
+needs to be increased.” They are CI-capacity failures, not native test receipts. PR #57 remains open
+and must not merge until exact-head required checks
+execute and pass. Local `bash scripts/agent-verify.sh quick` ran 57 repository tests successfully,
+and the 105-test LinePayDomain suite also passed when run with a task-local cache outside the
+restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
+
+The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
+workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
+before steps with no allocated runner. This does not change the executable evidence.
+
+The allocated native run `34108177442` proved the three scope screenshots could complete, but found
+the system Files action was exposed through Documents/SpringBoard rather than the app query and that
+the combined journey needed more than the former 420-second allowance. The subsequent allocated
+run `34111505100` also exposed the need for stable explanation lookup and retrying an intermediate
+step. Candidate `dffff45` addresses those observations without weakening outcome assertions. The
+next exact-head run `34112865086` failed before runner allocation, so the current candidate still
+requires a fresh native/hosted execution.
+
+## Issue #60 targeted guide QA — September 7, 2026
+
+The guide-content candidate is `2208a970238531bb9490d06ae30939c938917f10`, with the source-map
+receipt carried forward in the later documentation-only head. Targeted fixes cover first-run
+onboarding, Apple/local-data billing wording, and unresolved-calculation period rollover guidance.
+Against that content, Hugo `0.165.0` passed both `/` and `/linepay/` builds: 23 HTML pages, 20 search
+entries, and all internal links/fragments/assets. The six CSS appearance/print/increased-contrast
+fixtures passed, and the browser smoke suite passed 15 checks covering mobile navigation, search,
+dark preference, no-JavaScript reading, keyboard skip links, and print layout.
+
+This is targeted guide evidence, not the complete #60 acceptance: the full 20-guide release-candidate
+walkthrough, exact app/guide release pairing, manual mobile/dark/large-text review, verified real-app
+screenshots, public-domain/content freshness, and external release-surface acceptance remain open.

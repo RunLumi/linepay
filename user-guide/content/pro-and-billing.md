@@ -26,9 +26,9 @@ An audit performed while Pro or its verified trial is active does not consume an
 
 Settings can show **Pro trial active**, **Pro active**, and a **Renews** or **Ends** date. Use **Manage subscription** to inspect the subscription in your Apple account and follow Apple’s cancellation controls.
 
-For a trial you do not want to renew, follow the cancellation timing displayed with the offer; the app’s annual-trial notice asks you to cancel at least 24 hours before trial end. Verify cancellation and the displayed access-end date in Apple’s subscription screen rather than assuming a closed app or deleted account stops billing.
+For a trial you do not want to renew, follow the cancellation timing displayed with the offer; the app’s annual-trial notice asks you to cancel at least 24 hours before trial end. Verify cancellation and the displayed access-end date in Apple’s subscription screen. Deleting the LinePaycheck app or its local data does not cancel an Apple subscription.
 
-Deleting LinePaycheck or its local records does not cancel the subscription. A report of a pay difference is not a promise that the app will recover its purchase price.
+A report of a pay difference is not a promise that the app will recover its purchase price.
 
 ## Restore purchase access
 

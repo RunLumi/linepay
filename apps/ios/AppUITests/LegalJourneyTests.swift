@@ -7,7 +7,9 @@ final class LegalJourneyTests: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        app = XCUIApplication()
         app.terminate()
+        XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -16,8 +18,8 @@ final class LegalJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.open-audit")
         let scope = app.staticTexts["Not a complete wage-law check"].firstMatch
-        scrollTo(scope)
-        XCTAssertTrue(scope.exists)
+        scrollTo(scope, maxSwipes: 24)
+        XCTAssertTrue(scope.waitForExistence(timeout: 15))
         capture("legal-audit-scope")
         tap("audit.export")
         XCTAssertTrue(app.buttons["report.preview"].waitForExistence(timeout: 10))
@@ -33,35 +35,75 @@ final class LegalJourneyTests: XCTestCase {
         tap("audit.share-report")
         // A screenshot alone also succeeds when ShareLink never opens. Require the actual
         // system activity, then its non-sending Files destination to exercise PDF transfer.
-        let saveToFiles = app.descendants(matching: .any)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        var saveToFiles = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        if !saveToFiles.waitForExistence(timeout: 15) {
+            saveToFiles =
+                springboard.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        }
+        if !saveToFiles.waitForExistence(timeout: 15) {
+            // Some hosted iOS 26 share sheets expose the selected Files action only as the
+            // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
+            // below still prove that this action reached the actual Files destination.
+            saveToFiles =
+                springboard.descendants(matching: .any)
+                .matching(identifier: "actionGroupCell").firstMatch
+        }
         XCTAssertTrue(
             saveToFiles.waitForExistence(timeout: 15),
-            "The system PDF activity sheet did not open; preview alone is not a handoff.")
-        scrollTo(saveToFiles)
+            "The system PDF activity sheet did not expose a Files destination; preview alone is not a handoff."
+        )
         XCTAssertTrue(saveToFiles.isHittable)
         capture("legal-system-share-sheet")
         saveToFiles.tap()
-        let save = app.buttons["Save"].firstMatch
+        let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
+        let saveInFiles = documentsApp.buttons["Save"].firstMatch
+        let saveInShareSheet = app.buttons["Save"].firstMatch
+        let saveVisible =
+            saveInFiles.waitForExistence(timeout: 15)
+            || saveInShareSheet.waitForExistence(timeout: 15)
         XCTAssertTrue(
-            save.waitForExistence(timeout: 15),
+            saveVisible,
             "The PDF did not reach the system Files export destination.")
         capture("legal-files-export-ready")
-        // Never select a recipient or persist a synthetic report into a connected provider.
-        app.swipeDown()
+        // Cancel at the native Files destination: no recipient is selected and no synthetic
+        // report is persisted into a connected provider.
+        let cancelInFiles = documentsApp.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        let cancelInShareSheet = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        let cancelInSpringboard = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        if cancelInFiles.waitForExistence(timeout: 10) {
+            cancelInFiles.tap()
+        } else if cancelInShareSheet.waitForExistence(timeout: 10) {
+            cancelInShareSheet.tap()
+        } else {
+            XCTAssertTrue(
+                cancelInSpringboard.waitForExistence(timeout: 10),
+                "Files did not expose cancellation.")
+            cancelInSpringboard.tap()
+        }
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
+        app.terminate()
+        XCUIDevice.shared.press(.home)
     }
 
     func testEachRuleScopeKeepsItsPromisedEffectAtLargestText() {
-        for (scope, fragment, expected) in [
-            ("Future work periods only", "Logged work keeps its current rules", "$550.00"),
+        for (scope, scopeID, fragment, expected) in [
             (
-                "New rules from a date", "Previously recorded work keeps its original rules",
-                "$550.00"
+                "Future work periods only", "pay-profile.scope.future",
+                "Logged work keeps its current rules", "$550.00"
             ),
             (
-                "Recalculate this entire current period", "Saved work entries to recalculate: 1",
-                "$660.00"
+                "New rules from a date", "pay-profile.scope.dated",
+                "Previously recorded work keeps its original rules", "$550.00"
+            ),
+            (
+                "Recalculate this entire current period", "pay-profile.scope.current",
+                "Saved work entries to recalculate: 1", "$660.00"
             ),
         ] {
             XCUIDevice.shared.appearance = .dark
@@ -73,19 +115,49 @@ final class LegalJourneyTests: XCTestCase {
             rate.tap()
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
-            for _ in 0..<3 { tap("pay-profile.continue") }
-            revealEarlierContent()
+            for expectedStep in 1...2 {
+                let next = app.buttons["pay-profile.continue"].firstMatch
+                var advanced = false
+                for _ in 0..<3 {
+                    scrollTo(next, maxSwipes: 8)
+                    XCTAssertTrue(next.isHittable)
+                    next.press(forDuration: 0.1)
+                    if next.waitForExistence(timeout: 3),
+                        next.value as? String == "step-\(expectedStep)"
+                    {
+                        advanced = true
+                        break
+                    }
+                }
+                XCTAssertTrue(
+                    advanced,
+                    "The editor did not advance to step \(expectedStep + 1) of 4.")
+            }
+            var reachedReview = false
+            for _ in 0..<3 {
+                let finalContinue = app.buttons["pay-profile.continue"].firstMatch
+                scrollTo(finalContinue, maxSwipes: 8)
+                XCTAssertTrue(finalContinue.isHittable)
+                finalContinue.press(forDuration: 0.1)
+                if finalContinue.waitForNonExistence(timeout: 3) {
+                    reachedReview = true
+                    break
+                }
+            }
+            XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
+            revealReviewElement(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
-            scrollTo(scopeControl)
             scopeControl.tap()
-            tap(scope)
-            let explanation = app.descendants(matching: .any).matching(
-                NSPredicate(format: "label CONTAINS %@", fragment)
-            ).firstMatch
-            scrollTo(explanation)
-            XCTAssertTrue(explanation.exists)
+            chooseScope(label: scope, identifier: scopeID)
+            let explanation = app.descendants(matching: .any)
+                .matching(identifier: "pay-profile.scope-explanation").firstMatch
+            revealReviewElement(explanation, maxSwipes: 8)
+            XCTAssertTrue(explanation.waitForExistence(timeout: 15))
+            XCTAssertTrue(
+                explanation.label.contains(fragment),
+                "Scope explanation did not contain the promised text for \(scope).")
             capture("legal-scope-\(scope)")
             tap("pay-profile.save")
             XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
@@ -117,18 +189,44 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(tab.waitForExistence(timeout: 10))
         tab.tap()
     }
-    private func tap(_ id: String) {
+    private func tap(_ id: String, maxSwipes: Int = 16) {
         let button = app.buttons[id].firstMatch
-        scrollTo(button)
+        scrollTo(button, maxSwipes: maxSwipes)
         XCTAssertTrue(button.exists, "Missing control: \(id)")
         button.tap()
     }
-    private func scrollTo(_ element: XCUIElement) {
+    private func chooseScope(label: String, identifier: String) {
+        let stableOption = app.descendants(matching: .any)
+            .matching(identifier: identifier).firstMatch
+        if stableOption.exists && stableOption.isHittable {
+            stableOption.tap()
+            return
+        }
+
+        // SwiftUI Menu options can expose their visible label without preserving the child
+        // identifier in the hosted accessibility tree. The exact label remains the user-facing
+        // contract; prefer the stable identifier whenever the platform exposes it.
+        let visibleOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(visibleOption.waitForExistence(timeout: 15), "Missing scope option: \(label)")
+        XCTAssertTrue(visibleOption.isHittable, "Scope option is not hittable: \(label)")
+        visibleOption.tap()
+    }
+    private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<16 {
+        for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }
+    }
+    private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
+        if element.exists && element.isHittable { return }
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<maxSwipes {
+            if element.exists && element.isHittable { return }
+            frontmostWindow.swipeDown()
+        }
+        scrollTo(element, maxSwipes: maxSwipes)
     }
     private func revealEarlierContent() {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))

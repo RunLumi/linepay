@@ -23,6 +23,9 @@ struct AboutLinePayView: View {
                 NavigationLink("Terms of use") { LegalTextView(kind: .terms) }
                 NavigationLink("Acknowledgements") { LegalTextView(kind: .acknowledgements) }
                 NavigationLink("Support and data recovery") { LegalTextView(kind: .support) }
+                Link("User Guide", destination: AppLinks.userGuide)
+                    .accessibilityIdentifier("settings.user-guide")
+                    .frame(minHeight: 44)
             }
         }.navigationTitle("About LinePaycheck").navigationBarTitleDisplayMode(.inline)
     }
