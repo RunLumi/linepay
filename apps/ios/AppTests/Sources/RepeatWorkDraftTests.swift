@@ -32,8 +32,9 @@ struct RepeatWorkDraftTests {
         #expect(clock(draft.breakStart) == (4, 0))
         #expect(clock(draft.breakEnd) == (4, 30))
         #expect(draft.additionalBreaks.count == 1)
-        #expect(clock(try #require(draft.additionalBreaks.first).start) == (6, 0))
-        #expect(clock(try #require(draft.additionalBreaks.first).end) == (6, 15))
+        let additionalBreak = try #require(draft.additionalBreaks.first)
+        #expect(clock(additionalBreak.start) == (6, 0))
+        #expect(clock(additionalBreak.end) == (6, 15))
         #expect(draft.end.timeIntervalSince(draft.start) == 7 * 3_600)
     }
 
@@ -47,8 +48,9 @@ struct RepeatWorkDraftTests {
             day: instant(2026, 3, 8, 0, 0),
             timeZoneIdentifier: zoneID,
             window: nil)
-        let proposal = try #require(
-            RepeatWorkDraft.proposal(for: draft, timeZoneIdentifier: zoneID))
+        let maybeProposal = try RepeatWorkDraft.proposal(
+            for: draft, timeZoneIdentifier: zoneID)
+        let proposal = try #require(maybeProposal)
         let start = try #require(proposal.points.first { $0.key == "start" })
 
         #expect(draft.templateUnresolved == true)
@@ -83,8 +85,9 @@ struct RepeatWorkDraftTests {
             day: instant(2026, 3, 8, 0, 0),
             timeZoneIdentifier: zoneID,
             window: nil)
-        let proposal = try #require(
-            RepeatWorkDraft.proposal(for: draft, timeZoneIdentifier: zoneID))
+        let maybeProposal = try RepeatWorkDraft.proposal(
+            for: draft, timeZoneIdentifier: zoneID)
+        let proposal = try #require(maybeProposal)
         #expect(proposal.points.filter { $0.candidates.isEmpty }.count == 2)
 
         // Choosing the same normalized-looking 03:15 value still counts only because the user
@@ -147,8 +150,9 @@ struct RepeatWorkDraftTests {
             day: instant(2026, 11, 1, 0, 0),
             timeZoneIdentifier: zoneID,
             window: nil)
-        let unresolved = try #require(
-            RepeatWorkDraft.proposal(for: firstDraft, timeZoneIdentifier: zoneID))
+        let maybeProposal = try RepeatWorkDraft.proposal(
+            for: firstDraft, timeZoneIdentifier: zoneID)
+        let unresolved = try #require(maybeProposal)
         #expect(firstDraft.templateUnresolved == true)
         #expect(unresolved.points.first { $0.key == "start" }?.candidates.count == 2)
 
@@ -192,8 +196,9 @@ struct RepeatWorkDraftTests {
             day: start,
             timeZoneIdentifier: zoneID,
             window: window)
-        let proposal = try #require(
-            RepeatWorkDraft.proposal(for: draft, timeZoneIdentifier: zoneID))
+        let maybeProposal = try RepeatWorkDraft.proposal(
+            for: draft, timeZoneIdentifier: zoneID)
+        let proposal = try #require(maybeProposal)
 
         #expect(proposal.isResolved)
         #expect(draft.templateUnresolved == true)
@@ -215,8 +220,9 @@ struct RepeatWorkDraftTests {
             window: nil)
         let restored = try JSONDecoder().decode(
             WorkDraft.self, from: JSONEncoder().encode(draft))
-        let proposal = try #require(
-            RepeatWorkDraft.proposal(for: restored, timeZoneIdentifier: zoneID))
+        let maybeProposal = try RepeatWorkDraft.proposal(
+            for: restored, timeZoneIdentifier: zoneID)
+        let proposal = try #require(maybeProposal)
 
         #expect(restored.templateUnresolved == true)
         #expect(restored.templateSource == draft.templateSource)
