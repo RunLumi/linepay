@@ -39,12 +39,14 @@ struct CalloutEntryWorkflowTests {
         try saveAdjacentDraft(model: model, start: start + 3_600)
 
         let view = AddWorkView(model: model)
-        try view.inspect().find(viewWithAccessibilityIdentifier: "work.callout-continue").button().tap()
+        try view.inspect().find(viewWithAccessibilityIdentifier: "work.callout-continue").button()
+            .tap()
 
         #expect(model.workEntries.count == 1)
         let merged = try #require(model.workEntries.first)
         #expect(merged.interval.durationHours == 2)
-        #expect(merged.note.contains("First segment") && merged.note.contains("Possible continuation"))
+        #expect(
+            merged.note.contains("First segment") && merged.note.contains("Possible continuation"))
         let calculation = try #require(model.calculation)
         #expect(calculation.total.amount == 200)
         #expect(calculation.components.filter { $0.category == .calloutGuarantee }.count == 1)
@@ -72,7 +74,8 @@ struct CalloutEntryWorkflowTests {
         let first = try #require(model.workEntries.first)
         let edit = AddWorkView(model: model, existingEntry: first)
         #expect(try text(edit).contains("Merge adjacent callout"))
-        try edit.inspect().find(viewWithAccessibilityIdentifier: "work.callout-merge").button().tap()
+        try edit.inspect().find(viewWithAccessibilityIdentifier: "work.callout-merge").button()
+            .tap()
 
         #expect(model.workEntries.count == 1)
         let merged = try #require(model.workEntries.first)
