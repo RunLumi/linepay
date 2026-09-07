@@ -2,7 +2,7 @@ name: Agent Harness
 
 on:
   push:
-    branches: [main]
+    branches: ['test/**']
     paths:
       - "AGENTS.md"
       - "CLAUDE.md"

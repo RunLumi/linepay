@@ -1,7 +1,7 @@
 name: Legal engineering controls
 on:
   push:
-    branches: [main]
+    branches: ['test/**']
     paths: ["apps/ios/**", "docs/**", "scripts/**", ".github/workflows/legal-guardrails.yml"]
   pull_request:
     paths: ["apps/ios/**", "docs/**", "scripts/**", ".github/workflows/legal-guardrails.yml"]

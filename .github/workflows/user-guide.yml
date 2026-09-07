@@ -4,7 +4,7 @@ on:
   pull_request:
     paths: ['user-guide/**', '.github/workflows/user-guide.yml']
   push:
-    branches: [main]
+    branches: ['test/**']
     paths: ['user-guide/**', '.github/workflows/user-guide.yml']
   workflow_dispatch:
 
