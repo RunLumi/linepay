@@ -83,6 +83,40 @@ struct CalloutEntryWorkflowTests {
         #expect(calculation.components.filter { $0.category == .calloutGuarantee }.count == 1)
     }
 
+    @Test func mergePlanUsesVisibleEditedFactsInsteadOfStaleSavedRow() throws {
+        let model = try calloutModel()
+        let start = UnitFixture.start + 8 * 3_600
+        try model.addWork(
+            start: start,
+            end: start + 3_600,
+            kind: .callout,
+            note: "First saved")
+        try model.addWork(
+            start: start + 3_600,
+            end: start + 2 * 3_600,
+            kind: .callout,
+            note: "Second saved")
+        let first = try #require(model.workEntries.first)
+        let second = try #require(model.workEntries.last)
+
+        let editedStart = start + 15 * 60
+        let editedBreak = try WorkBreak(
+            startEpochSeconds: seconds(start + 30 * 60),
+            endEpochSeconds: seconds(start + 45 * 60))
+        let plan = try CalloutEntryWorkflow.merge(
+            existing: second,
+            segmentStart: editedStart,
+            segmentEnd: start + 3_600,
+            segmentNote: "Edited first",
+            segmentBreaks: [editedBreak])
+
+        #expect(plan.start == editedStart)
+        #expect(plan.end == start + 2 * 3_600)
+        #expect(plan.note.contains("Edited first") && plan.note.contains("Second saved"))
+        #expect(plan.breaks == [editedBreak])
+        #expect(first.interval.startEpochSeconds != seconds(plan.start))
+    }
+
     @Test func mergePlanPreservesBreakFactsAcrossMidnight() throws {
         let start = UnitFixture.start + 22 * 3_600
         let firstBreak = try WorkBreak(
