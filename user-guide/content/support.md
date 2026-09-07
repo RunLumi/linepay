@@ -10,6 +10,8 @@ keywords: [support, help, contact, bug, feedback]
 
 Use **Settings → Support** in the app or [LinePaycheck support](https://linepaycheck.com/support). The help site cannot access the local records on your phone or restore them from a LinePaycheck account: there is no such account for core pay data.
 
+For task instructions, see the stable [LinePaycheck User Guide](https://linepaycheck-guide.pages.dev/). It is separate from the support contact route; neither site receives your local work, paystub, or wage records from the app.
+
 If the external support page is temporarily unavailable, preserve your records and retry later. Do not use a public repository issue or an unverified email address to send sensitive pay information.
 
 ## Include the useful context

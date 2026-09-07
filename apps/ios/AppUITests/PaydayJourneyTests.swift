@@ -137,6 +137,9 @@ final class PaydayJourneyTests: XCTestCase {
         capture("37-settings")
         tap("About LinePaycheck")
         capture("45-about")
+        let guide = app.links["settings.user-guide"]
+        XCTAssertTrue(guide.waitForExistence(timeout: 10))
+        XCTAssertTrue(guide.isHittable)
         tap("Privacy policy")
         capture("42-privacy")
         app.terminate()
