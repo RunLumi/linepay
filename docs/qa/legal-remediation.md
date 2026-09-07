@@ -109,18 +109,19 @@ lines). Its retained result is `/Volumes/SSD/linepay-pr34-evidence/integrated-io
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-PR #57's latest executable candidate is `df53814bee9abf6cda77ef08723f79667430c3e5`; subsequent
-commits are receipt-only documentation updates. The ordered three-scope
+PR #57's latest executable candidate is `5c51fdef140eb2835d05760e1f113c44aa1bb6a0`; it fixes the
+hosted shell continuation and explicitly asserts cancellation at the native Files destination. The
+ordered three-scope
 large-text journey keeps all assertions intact; its focused workflow allowance is now 420 seconds
 per XCTest, within the existing 25-minute job timeout. This is a bounded runtime correction for
 the prior 240-second hosted timeout, not a skipped or expected-failure test.
 
-Candidate runs `34089603309` (Legal regressions) and `34089603302` (iOS) failed before any steps
+Candidate runs `34090444070` (Legal regressions) and `34090444025` (iOS) failed before any steps
 because GitHub did not allocate a macOS runner. They are not native pass receipts. The PR remains
 open pending an exact-head hosted execution and review. Local quick verification ran 57 repository
 tests and the 105-test LinePayDomain suite successfully with a task-local cache outside the
 restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
 
-The later receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
+The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner.

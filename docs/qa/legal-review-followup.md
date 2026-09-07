@@ -232,20 +232,21 @@ static check remains unrun and is not claimed as passed.
 
 ## Hosted retry and bounded runtime — September 7, 2026
 
-The latest executable PR #57 candidate is `df53814bee9abf6cda77ef08723f79667430c3e5`; subsequent
-commits are receipt-only documentation updates. The large-text scope
+The latest executable PR #57 candidate is `5c51fdef140eb2835d05760e1f113c44aa1bb6a0`; it fixes
+the hosted shell continuation and explicitly asserts cancellation at the native Files destination.
+The large-text scope
 journey remains ordered so all three promised effects are exercised in one receipt; the focused
 workflow's per-test XCTest allowance is 420 seconds, still bounded by the job's 25-minute timeout.
 This addresses the prior hosted timeout at 240 seconds (run `34086657229`) without weakening any
 assertion or adding an expected-failure path.
 
-Fresh candidate runs `34089603309` (Legal regressions) and `34089603302` (iOS) failed before any
+Fresh candidate runs `34090444070` (Legal regressions) and `34090444025` (iOS) failed before any
 workflow step ran because GitHub did not allocate a macOS runner. They are CI-capacity failures,
 not native test receipts. PR #57 remains open and must not merge until exact-head required checks
 execute and pass. Local `bash scripts/agent-verify.sh quick` ran 57 repository tests successfully,
 and the 105-test LinePayDomain suite also passed when run with a task-local cache outside the
 restricted sandbox; the local CoreSimulator service was unavailable for a new native rerun.
 
-The later receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
+The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner. This does not change the executable evidence.
