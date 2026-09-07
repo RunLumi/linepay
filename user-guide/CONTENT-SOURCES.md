@@ -4,17 +4,11 @@ The original full-site content review was completed **2026-09-06** against `stre
 
 Targeted legal/help refresh **2026-09-07** was performed against the integrated candidate at `519f81e1b7926bd3c990b3b4159dc54e2e74b4a3` (tree `4cdb5bcb3e17ec327799cc4597c4968550001be2`), with the large-text app-link assertion stabilized in `edda6f9`. It covers only changing-rules/pay-profile, evidence-and-reports, support, and the in-app User Guide link. The full-site review remains pending under #60; this entry is not a release-wide freshness attestation.
 
-<<<<<<< HEAD
-Targeted refresh **2026-09-07** was performed against the integrated candidate at `519f81e1b7926bd3c990b3b4159dc54e2e74b4a3` (tree `4cdb5bcb3e17ec327799cc4597c4968550001be2`). The large-text app-link assertion was then stabilized in `edda6f9`. The refresh covers only the legal-review drift in `changing-rules.md`, `pay-profile.md`, `evidence-and-reports.md`, `support.md`, and the new in-app User Guide link. The full-site review remains pending under #60; this entry must not be read as a release-wide freshness attestation.
-
-For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossary** Repeat Shift guidance was separately re-reviewed on **2026-09-06** against the `fix/40-repeat-shift-dst-ui` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#40 changes. This partial review does not relabel the rest of the site as current and is not a claim that native simulator, hardware, billing, or release validation passed.
-=======
 For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossary** Repeat Shift guidance was separately re-reviewed on **2026-09-06** against the merged `d05428e34103088dd85179ad39c74b904df10061` implementation. This partial review does not relabel the rest of the site as current.
 
 For issue #41, the **Recording work**, **Overtime, callouts, and per diem**, and **Supported rules** callout-event guidance was separately re-reviewed on **2026-09-07** against the `fix/41-callout-event-identity` candidate based on main `87410ba1494c49ae583ffeb1e329f4b7aeac08ba` plus the issue-#41 changes. This is a source/contract review only; it does not claim hosted native execution while #37 remains unresolved.
 
 For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance was re-reviewed on **2026-09-06** against the `weekly-review-error-copy` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#69 changes. This partial review covers the restricted weekly regular-rate instructions and failure wording only; the full-site freshness review remains owned by #60/#64.
->>>>>>> origin/main
 
 ## Source map
 
