@@ -70,15 +70,21 @@ final class LegalJourneyTests: XCTestCase {
         capture("legal-files-export-ready")
         // Cancel at the native Files destination: no recipient is selected and no synthetic
         // report is persisted into a connected provider.
-        let cancelInFiles = documentsApp.buttons["Cancel"].firstMatch
-        let cancelInShareSheet = app.buttons["Cancel"].firstMatch
+        let cancelInFiles = documentsApp.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        let cancelInShareSheet = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        let cancelInSpringboard = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         if cancelInFiles.waitForExistence(timeout: 10) {
             cancelInFiles.tap()
+        } else if cancelInShareSheet.waitForExistence(timeout: 10) {
+            cancelInShareSheet.tap()
         } else {
             XCTAssertTrue(
-                cancelInShareSheet.waitForExistence(timeout: 10),
+                cancelInSpringboard.waitForExistence(timeout: 10),
                 "Files did not expose cancellation.")
-            cancelInShareSheet.tap()
+            cancelInSpringboard.tap()
         }
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
         app.terminate()
@@ -135,11 +141,13 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
-            let explanation = app.descendants(matching: .any).matching(
-                NSPredicate(format: "label CONTAINS %@", fragment)
-            ).firstMatch
+            let explanation = app.descendants(matching: .any)
+                .matching(identifier: "pay-profile.scope-explanation").firstMatch
             revealReviewElement(explanation, maxSwipes: 8)
-            XCTAssertTrue(explanation.exists)
+            XCTAssertTrue(explanation.waitForExistence(timeout: 15))
+            XCTAssertTrue(
+                explanation.label.contains(fragment),
+                "Scope explanation did not contain the promised text for \(scope).")
             capture("legal-scope-\(scope)")
             tap("pay-profile.save")
             XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
