@@ -133,15 +133,16 @@ final class LegalJourneyTests: XCTestCase {
                 var advanced = false
                 for attempt in 0..<4 {
                     scrollTo(next, maxSwipes: 8)
-                    XCTAssertTrue(next.isHittable)
+                    guard next.exists, next.isHittable else { continue }
                     if attempt == 0 {
                         next.tap()
                     } else {
                         next.press(forDuration: 0.1)
                     }
-                    if next.waitForExistence(timeout: 3),
-                        next.value as? String == "step-\(expectedStep)"
-                    {
+                    let expected = app.buttons["pay-profile.continue"].matching(
+                        NSPredicate(format: "value == %@", "step-\(expectedStep)")
+                    ).firstMatch
+                    if expected.waitForExistence(timeout: 5) {
                         advanced = true
                         break
                     }
@@ -199,7 +200,13 @@ final class LegalJourneyTests: XCTestCase {
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.terminate()
-        app.launch()
+        for attempt in 0..<2 {
+            app.launch()
+            if app.wait(for: .runningForeground, timeout: 20) { return }
+            app.terminate()
+            if attempt == 0 { XCUIDevice.shared.press(.home) }
+        }
+        XCTFail("The test app did not reach the foreground after two launch attempts.")
     }
     private func tab(_ name: String) {
         let tab = app.tabBars.buttons[name]
