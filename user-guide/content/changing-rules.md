@@ -8,7 +8,7 @@ keywords: [raise, rate change, prospective, effective date, correction, rule ver
 ---
 ## Choose the intent before saving
 
-A future raise and an incorrect rate entered earlier are different problems. Open **Settings → Edit pay rules**, make your changes, and continue to **Confirm rules**. Review **Apply this change** before choosing **Save reviewed rules**.
+A future raise and an incorrect rate entered earlier are different problems. Open **Settings → Edit pay rules**, make your changes, and continue to **Confirm rules**. In the **Apply this change** section, the **Scope** row shows the current selection; tap it to choose the intended scope. Review the selected label and its explanation before choosing **Save reviewed rules**.
 
 | Scope | Use it for |
 | --- | --- |
@@ -20,7 +20,7 @@ Do not select a whole-period correction to implement a raise that should affect 
 
 ## Schedule a dated change
 
-Choose **New rules from a date** and set **New rules start**. The change begins at midnight in the payroll timezone, not at the moment you tap Save.
+Choose **New rules from a date** in the **Scope** row and set **New rules start** directly below it. The change begins at midnight in the payroll timezone, not at the moment you tap Save.
 
 A prospective date cannot touch work that is already recorded, including the next-day portion of an overnight shift. This protects earlier work from accidental repricing. Work on either side of an eligible date is associated with the relevant rule snapshot.
 

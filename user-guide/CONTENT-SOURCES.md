@@ -2,6 +2,8 @@
 
 The original full-site content review was completed **2026-09-06** against `streamentry/linepay` main commit **fdf323e8e370bf50c93fb5596ffac542c58f31dd**. It is now known to be stale for several later user-visible changes; issue #60 owns the complete release-candidate re-review and issue #64 owns a machine-checkable freshness contract.
 
+Targeted legal/help refresh **2026-09-07** was performed against the integrated candidate at `519f81e1b7926bd3c990b3b4159dc54e2e74b4a3` (tree `4cdb5bcb3e17ec327799cc4597c4968550001be2`), with the large-text app-link assertion stabilized in `edda6f9`. It covers only changing-rules/pay-profile, evidence-and-reports, support, and the in-app User Guide link. The full-site review remains pending under #60; this entry is not a release-wide freshness attestation.
+
 For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossary** Repeat Shift guidance was separately re-reviewed on **2026-09-06** against the merged `d05428e34103088dd85179ad39c74b904df10061` implementation. This partial review does not relabel the rest of the site as current.
 
 For issue #41, the **Recording work**, **Overtime, callouts, and per diem**, and **Supported rules** callout-event guidance was separately re-reviewed on **2026-09-07** against the `fix/41-callout-event-identity` candidate based on main `87410ba1494c49ae583ffeb1e329f4b7aeac08ba` plus the issue-#41 changes. This is a source/contract review only; it does not claim hosted native execution while #37 remains unresolved.

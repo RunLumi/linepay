@@ -157,8 +157,9 @@ enum RepeatWorkDraft {
         timeZoneIdentifier: String,
         window: PayPeriodWindow?
     ) throws {
-        guard canConfirmManualReview(
-            draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
+        guard
+            canConfirmManualReview(
+                draft, timeZoneIdentifier: timeZoneIdentifier, window: window)
         else { throw RepeatWorkReviewError.incompleteManualReview }
         draft.templateSource = nil
         draft.templateDay = nil
@@ -191,12 +192,14 @@ enum RepeatWorkDraft {
         let previousBreakEnd = draft.breakEnd
         let previousAdditional = draft.additionalBreaks
 
-        draft.start = isManuallyReviewed("start", decisions: decisions)
+        draft.start =
+            isManuallyReviewed("start", decisions: decisions)
             ? previousStart
             : date(
                 for: "start", proposal: proposal, source: source, targetDay: day,
                 targetZone: zone)
-        draft.end = isManuallyReviewed("end", decisions: decisions)
+        draft.end =
+            isManuallyReviewed("end", decisions: decisions)
             ? previousEnd
             : date(
                 for: "end", proposal: proposal, source: source, targetDay: day,
@@ -209,12 +212,14 @@ enum RepeatWorkDraft {
                 !previousFirstBreakEnabled && firstStartReviewed && firstEndReviewed
             draft.hasUnpaidBreak = !firstRemoved
             if !firstRemoved {
-                draft.breakStart = firstStartReviewed
+                draft.breakStart =
+                    firstStartReviewed
                     ? previousBreakStart
                     : date(
                         for: "break.0.start", proposal: proposal, source: source,
                         targetDay: day, targetZone: zone)
-                draft.breakEnd = firstEndReviewed
+                draft.breakEnd =
+                    firstEndReviewed
                     ? previousBreakEnd
                     : date(
                         for: "break.0.end", proposal: proposal, source: source,
@@ -333,7 +338,8 @@ enum RepeatWorkDraft {
         let sourceDay = sourceCalendar.startOfDay(for: sourceStart)
         let pointDay = sourceCalendar.startOfDay(for: sourceInstant)
         let offset = sourceCalendar.dateComponents([.day], from: sourceDay, to: pointDay).day ?? 0
-        let expectedDay = targetCalendar.date(byAdding: .day, value: offset, to: targetDay) ?? targetDay
+        let expectedDay =
+            targetCalendar.date(byAdding: .day, value: offset, to: targetDay) ?? targetDay
         let clock = sourceCalendar.dateComponents([.hour, .minute, .second], from: sourceInstant)
         return targetCalendar.nextDate(
             after: targetCalendar.startOfDay(for: expectedDay).addingTimeInterval(-1),

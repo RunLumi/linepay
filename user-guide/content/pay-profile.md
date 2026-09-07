@@ -39,3 +39,5 @@ Under **Source references, optional**, add a title, URL, and section or note. As
 Use a specific agreement version or section where possible. A saved link is a reference you supplied; it is not independent verification, and it does not guarantee that the external document will remain available.
 
 When editing an established profile, read [Choose where a rule change applies]({{< relref "/changing-rules" >}}) before confirming. A new rate should not accidentally reprice earlier work.
+
+On **Confirm rules**, **Apply this change** keeps the selected **Scope** visible in the form. Review that current value and any **New rules start** date before **Save reviewed rules**; the action is not hidden in a toolbar-only menu.

@@ -50,7 +50,8 @@ struct RepeatWorkView: View {
             _draft = State(initialValue: Self.emptyDraft(periodID: periodID))
             _quick = State(initialValue: false)
             _errorMessage = State(
-                initialValue: "The repeated-shift draft is unavailable. Return to Today and choose Repeat last shift again."
+                initialValue:
+                    "The repeated-shift draft is unavailable. Return to Today and choose Repeat last shift again."
             )
         }
     }
@@ -230,7 +231,8 @@ struct RepeatWorkView: View {
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .disabled(
                             conflict != nil || draft.end <= draft.start || !withinCurrentPeriod
-                                || draft.templateUnresolved == true)
+                                || draft.templateUnresolved == true
+                        )
                         .accessibilityIdentifier("repeat.save")
                     Button("Discard this draft", role: .destructive) {
                         discardConfirmation = true
@@ -294,8 +296,10 @@ struct RepeatWorkView: View {
     private var templateReview: some View {
         if draft.templateUnresolved == true {
             Section("Clock-time review") {
-                Label("Repeated shift needs your review", systemImage: "clock.badge.exclamationmark")
-                    .foregroundStyle(LinePayColor.review)
+                Label(
+                    "Repeated shift needs your review", systemImage: "clock.badge.exclamationmark"
+                )
+                .foregroundStyle(LinePayColor.review)
                 Text(
                     "Daylight-saving changes can make a local clock time occur twice or not exist. LinePaycheck will not silently turn that copied clock time into a work fact."
                 )
@@ -318,7 +322,8 @@ struct RepeatWorkView: View {
                                 Text("Second occurrence").tag(Optional(RepeatedTimeChoice.last))
                             }
                             .accessibilityIdentifier("repeat.occurrence.\(point.key)")
-                            ForEach(Array(point.candidates.enumerated()), id: \.offset) { index, date in
+                            ForEach(Array(point.candidates.enumerated()), id: \.offset) {
+                                index, date in
                                 Text(
                                     "\(index == 0 ? "First" : "Second"): \(candidateLabel(date))"
                                 )
@@ -533,7 +538,9 @@ struct RepeatWorkView: View {
             kind: source.interval.kind,
             note: source.note,
             hasUnpaidBreak: first != nil,
-            breakStart: first.map { Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds)) }
+            breakStart: first.map {
+                Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds))
+            }
                 ?? start.addingTimeInterval(4 * 3_600),
             breakEnd: first.map { Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds)) }
                 ?? start.addingTimeInterval(4.5 * 3_600),

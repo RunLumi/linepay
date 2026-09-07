@@ -7,7 +7,9 @@ final class LegalJourneyTests: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        app = XCUIApplication()
         app.terminate()
+        XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -44,57 +46,84 @@ final class LegalJourneyTests: XCTestCase {
         saveToFiles.tap()
         let save = app.buttons["Save"].firstMatch
         XCTAssertTrue(
-            save.waitForExistence(timeout: 15),
+            save.waitForExistence(timeout: 30),
             "The PDF did not reach the system Files export destination.")
         capture("legal-files-export-ready")
         // Never select a recipient or persist a synthetic report into a connected provider.
         app.swipeDown()
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 10))
+        app.terminate()
+        XCUIDevice.shared.press(.home)
     }
 
-    func testEachRuleScopeKeepsItsPromisedEffectAtLargestText() {
-        for (scope, fragment, expected) in [
-            ("Future work periods only", "Logged work keeps its current rules", "$550.00"),
-            (
-                "New rules from a date", "Previously recorded work keeps its original rules",
-                "$550.00"
-            ),
-            (
-                "Recalculate this entire current period", "Saved work entries to recalculate: 1",
-                "$660.00"
-            ),
-        ] {
-            XCUIDevice.shared.appearance = .dark
-            launch(scenario: "work", largeText: true)
-            tab("Settings")
-            tap("settings.edit-rules")
-            let rate = app.textFields["pay-profile.hourly-rate"]
-            scrollTo(rate)
-            rate.tap()
-            rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
-            dismissKeyboard()
-            for _ in 0..<3 { tap("pay-profile.continue") }
-            revealEarlierContent()
-            let scopeControl = app.descendants(matching: .any)
-                .matching(identifier: "pay-profile.change-scope").firstMatch
-            XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
-            scrollTo(scopeControl)
-            scopeControl.tap()
-            tap(scope)
-            let explanation = app.descendants(matching: .any).matching(
-                NSPredicate(format: "label CONTAINS %@", fragment)
-            ).firstMatch
-            scrollTo(explanation)
-            XCTAssertTrue(explanation.exists)
-            capture("legal-scope-\(scope)")
-            tap("pay-profile.save")
-            XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
-            capture("legal-confirm-\(scope)")
-            tap("pay-profile.confirm-change")
-            tab("Today")
-            XCTAssertTrue(app.staticTexts[expected].firstMatch.waitForExistence(timeout: 10))
-            app.terminate()
+    func testFutureScopeKeepsItsPromisedEffectAtLargestText() {
+        assertRuleScope(
+            scope: "Future work periods only", scopeID: "pay-profile.scope.future",
+            fragment: "Logged work keeps its current rules", expected: "$550.00")
+    }
+
+    func testDatedScopeKeepsItsPromisedEffectAtLargestText() {
+        assertRuleScope(
+            scope: "New rules from a date", scopeID: "pay-profile.scope.dated",
+            fragment: "Previously recorded work keeps its original rules", expected: "$550.00")
+    }
+
+    func testCurrentPeriodScopeKeepsItsPromisedEffectAtLargestText() {
+        assertRuleScope(
+            scope: "Recalculate this entire current period", scopeID: "pay-profile.scope.current",
+            fragment: "Saved work entries to recalculate: 1", expected: "$660.00")
+    }
+
+    private func assertRuleScope(scope: String, scopeID: String, fragment: String, expected: String)
+    {
+        XCUIDevice.shared.appearance = .dark
+        launch(scenario: "work", largeText: true)
+        tab("Settings")
+        tap("settings.edit-rules")
+        let rate = app.textFields["pay-profile.hourly-rate"]
+        scrollTo(rate)
+        rate.tap()
+        rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
+        dismissKeyboard()
+        for expectedStep in 1...2 {
+            tap("pay-profile.continue", maxSwipes: 8)
+            let next = app.buttons["pay-profile.continue"].firstMatch
+            scrollTo(next, maxSwipes: 8)
+            XCTAssertEqual(
+                next.value as? String, "step-\(expectedStep)",
+                "The editor did not advance to step \(expectedStep + 1) of 4.")
         }
+        var reachedReview = false
+        for _ in 0..<3 {
+            let finalContinue = app.buttons["pay-profile.continue"].firstMatch
+            scrollTo(finalContinue, maxSwipes: 8)
+            XCTAssertTrue(finalContinue.isHittable)
+            finalContinue.press(forDuration: 0.1)
+            if finalContinue.waitForNonExistence(timeout: 3) {
+                reachedReview = true
+                break
+            }
+        }
+        XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
+        let scopeControl = app.descendants(matching: .any)
+            .matching(identifier: "pay-profile.change-scope").firstMatch
+        scrollTo(scopeControl, maxSwipes: 8)
+        XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
+        scopeControl.tap()
+        tap(scopeID)
+        let explanation = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS %@", fragment)
+        ).firstMatch
+        scrollTo(explanation, maxSwipes: 8)
+        XCTAssertTrue(explanation.exists)
+        capture("legal-scope-\(scope)")
+        tap("pay-profile.save")
+        XCTAssertTrue(app.alerts["Review rule change"].waitForExistence(timeout: 10))
+        capture("legal-confirm-\(scope)")
+        tap("pay-profile.confirm-change")
+        tab("Today")
+        XCTAssertTrue(app.staticTexts[expected].firstMatch.waitForExistence(timeout: 10))
+        app.terminate()
     }
 
     private func launch(scenario: String, largeText: Bool = false) {
@@ -117,15 +146,15 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(tab.waitForExistence(timeout: 10))
         tab.tap()
     }
-    private func tap(_ id: String) {
+    private func tap(_ id: String, maxSwipes: Int = 16) {
         let button = app.buttons[id].firstMatch
-        scrollTo(button)
+        scrollTo(button, maxSwipes: maxSwipes)
         XCTAssertTrue(button.exists, "Missing control: \(id)")
         button.tap()
     }
-    private func scrollTo(_ element: XCUIElement) {
+    private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<16 {
+        for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }

@@ -223,7 +223,8 @@ struct AddWorkView: View {
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .disabled(
                             conflict != nil || draft.end <= draft.start || newCalloutNeedsDecision
-                                || legacyCalloutNeedsReview)
+                                || legacyCalloutNeedsReview
+                        )
                         .accessibilityIdentifier("work.save")
                     Button("Discard this draft", role: .destructive) { discardConfirmation = true }
                     if let existingEntry = model.workEntries.first(where: {
@@ -459,7 +460,8 @@ struct AddWorkView: View {
             isClosing = true
             guard let undo = model.deleteWork(id: adjacent.id) else {
                 isClosing = false
-                errorMessage = model.lastPersistenceError ?? "The adjacent callout could not be merged."
+                errorMessage =
+                    model.lastPersistenceError ?? "The adjacent callout could not be merged."
                 return
             }
             do {
