@@ -164,13 +164,8 @@ final class LegalJourneyTests: XCTestCase {
                                 .press(forDuration: 0.1)
                         }
                     }
-                    let valueExpectation = XCTNSPredicateExpectation(
-                        predicate: NSPredicate(
-                            format: "value == %@", "step-\(expectedStep)"
-                        ),
-                        object: next
-                    )
-                    if XCTWaiter.wait(for: [valueExpectation], timeout: 5) == .completed {
+                    let expectedTitle = expectedStep == 1 ? "Pay period" : "Your rules"
+                    if app.staticTexts[expectedTitle].waitForExistence(timeout: 5) {
                         advanced = true
                         break
                     }
