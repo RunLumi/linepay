@@ -2,7 +2,7 @@ name: iOS
 
 on:
   push:
-    branches: ['test/**']
+    branches: [dev, testing]
     paths:
       - "apps/ios/**"
       - ".maestro/**"
