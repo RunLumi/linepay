@@ -47,9 +47,15 @@ final class LegalJourneyTests: XCTestCase {
             // Some hosted iOS 26 share sheets expose the selected Files action only as the
             // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
             // below still prove that this action reached the actual Files destination.
-            saveToFiles =
-                springboard.descendants(matching: .any)
-                .matching(identifier: "actionGroupCell").firstMatch
+            let genericCell = springboard.descendants(matching: .any)
+                .matching(identifier: "actionGroupCell")
+                .matching(NSPredicate(format: "label == %@", "Save to Files"))
+                .firstMatch
+            let cellTitle = springboard.descendants(matching: .any)
+                .matching(identifier: "cellTitleLabel")
+                .matching(NSPredicate(format: "label == %@", "Save to Files"))
+                .firstMatch
+            saveToFiles = cellTitle.exists ? cellTitle : genericCell
         }
         XCTAssertTrue(
             saveToFiles.waitForExistence(timeout: 15),
@@ -57,13 +63,17 @@ final class LegalJourneyTests: XCTestCase {
         )
         XCTAssertTrue(saveToFiles.isHittable)
         capture("legal-system-share-sheet")
-        saveToFiles.tap()
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
-        let saveVisible =
-            saveInFiles.waitForExistence(timeout: 15)
-            || saveInShareSheet.waitForExistence(timeout: 15)
+        var saveVisible = false
+        for attempt in 0..<2 {
+            saveToFiles.tap()
+            saveVisible =
+                saveInFiles.waitForExistence(timeout: 15)
+                || saveInShareSheet.waitForExistence(timeout: 15)
+            if saveVisible || attempt == 1 { break }
+        }
         XCTAssertTrue(
             saveVisible,
             "The PDF did not reach the system Files export destination.")
@@ -139,12 +149,10 @@ final class LegalJourneyTests: XCTestCase {
                     } else {
                         next.press(forDuration: 0.1)
                     }
-                    let expected = app.buttons.matching(
-                        NSPredicate(
-                            format: "identifier == %@ AND value == %@",
-                            "pay-profile.continue", "step-\(expectedStep)"
-                        )
-                    ).firstMatch
+                    let expected = app.buttons
+                        .matching(identifier: "pay-profile.continue")
+                        .matching(NSPredicate(format: "value == %@", "step-\(expectedStep)"))
+                        .firstMatch
                     if expected.waitForExistence(timeout: 5) {
                         advanced = true
                         break
