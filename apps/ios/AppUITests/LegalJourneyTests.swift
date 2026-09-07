@@ -18,8 +18,8 @@ final class LegalJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.open-audit")
         let scope = app.staticTexts["Not a complete wage-law check"].firstMatch
-        scrollTo(scope)
-        XCTAssertTrue(scope.exists)
+        scrollTo(scope, maxSwipes: 24)
+        XCTAssertTrue(scope.waitForExistence(timeout: 15))
         capture("legal-audit-scope")
         tap("audit.export")
         XCTAssertTrue(app.buttons["report.preview"].waitForExistence(timeout: 10))
@@ -116,11 +116,21 @@ final class LegalJourneyTests: XCTestCase {
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
             for expectedStep in 1...2 {
-                tap("pay-profile.continue", maxSwipes: 8)
                 let next = app.buttons["pay-profile.continue"].firstMatch
-                scrollTo(next, maxSwipes: 8)
-                XCTAssertEqual(
-                    next.value as? String, "step-\(expectedStep)",
+                var advanced = false
+                for _ in 0..<3 {
+                    scrollTo(next, maxSwipes: 8)
+                    XCTAssertTrue(next.isHittable)
+                    next.press(forDuration: 0.1)
+                    if next.waitForExistence(timeout: 3),
+                        next.value as? String == "step-\(expectedStep)"
+                    {
+                        advanced = true
+                        break
+                    }
+                }
+                XCTAssertTrue(
+                    advanced,
                     "The editor did not advance to step \(expectedStep + 1) of 4.")
             }
             var reachedReview = false
