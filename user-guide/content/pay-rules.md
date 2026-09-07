@@ -4,7 +4,7 @@ linkTitle: Overtime, callouts, and per diem
 weight: 50
 group: Record your work
 description: Understand daily overtime, date premiums, callout minimums, and separate per-diem amounts.
-keywords: [OT, double time, daily overtime, Sunday, holiday, guarantee, allowance]
+keywords: [OT, double time, daily overtime, Sunday, holiday, guarantee, allowance, callout event]
 ---
 ## Confirm your agreement, not a common example
 
@@ -30,9 +30,15 @@ When supported premiums overlap, the **highest applicable multiplier wins**; the
 
 ## Callout minimums
 
-Enable **Callout minimum** and enter **Minimum paid hours**. Log the actual start and end of the callout and any unpaid breaks. The engine can add a separate guarantee component for a short callout, using its supported multiplier policy.
+Enable **Callout minimum** only when you have confirmed the minimum-hours rule that applies to your work, then enter **Minimum paid hours**.
 
-A one-hour callout with a confirmed four-hour minimum is still one hour of real work. Do not record four clock hours to represent the guarantee. A callout crossing a rule-change boundary can need review when the correct guarantee pricing is ambiguous.
+The admitted LinePaycheck rule is an **isolated minimum per confirmed physical callout event**. A saved Callout row represents that event in iOS 1.0. Splitting one physical call into two rows must not create two minimums, while two genuinely separate triggering calls may be separate events even if their times are adjacent.
+
+Log the actual start and end of the callout and any unpaid breaks. A one-hour callout with a confirmed four-hour minimum is still one hour of real work. Do not record four clock hours to represent the guarantee; the extra paid-equivalent time is a separate calculated component.
+
+When adding a Callout that touches another Callout, use **Continue existing callout** if it is the same physical event, or explicitly confirm **This is a separate callout** only when another triggering call actually happened. Older ambiguous rows are not automatically grouped.
+
+Regular-shift overlap, discontinuous duty, effective-rate boundaries, canceled calls, rest interactions, or other agreement-specific variants can require review. A callout crossing a rule-change boundary can therefore remain unpriced rather than receiving an invented guarantee.
 
 ## Flat per diem
 
