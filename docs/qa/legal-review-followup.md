@@ -252,3 +252,17 @@ restricted sandbox; the local CoreSimulator service was unavailable for a new na
 The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner. This does not change the executable evidence.
+
+## Issue #60 targeted guide QA — September 7, 2026
+
+The guide-content candidate is `2208a970238531bb9490d06ae30939c938917f10`, with the source-map
+receipt carried forward in the later documentation-only head. Targeted fixes cover first-run
+onboarding, Apple/local-data billing wording, and unresolved-calculation period rollover guidance.
+Against that content, Hugo `0.165.0` passed both `/` and `/linepay/` builds: 23 HTML pages, 20 search
+entries, and all internal links/fragments/assets. The six CSS appearance/print/increased-contrast
+fixtures passed, and the browser smoke suite passed 15 checks covering mobile navigation, search,
+dark preference, no-JavaScript reading, keyboard skip links, and print layout.
+
+This is targeted guide evidence, not the complete #60 acceptance: the full 20-guide release-candidate
+walkthrough, exact app/guide release pairing, manual mobile/dark/large-text review, verified real-app
+screenshots, public-domain/content freshness, and external release-surface acceptance remain open.

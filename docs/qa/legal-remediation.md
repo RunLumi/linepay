@@ -127,3 +127,13 @@ restricted sandbox; the local CoreSimulator service was unavailable for a new na
 The prior receipt-only head `2fccd4d5f66372712fa3d8b6b3e4c36d0e6c459a` triggered the same required
 workflows (`34090237518`, `34090237460`, `34090237335`, `34090237325`, `34090237324`); each failed
 before steps with no allocated runner.
+
+## Issue #60 targeted guide QA — September 7, 2026
+
+Guide content commit `2208a970238531bb9490d06ae30939c938917f10` contains targeted onboarding,
+Apple/local-data billing, and unresolved-period rollover corrections. Hugo `0.165.0` passed both
+guide bases with 23 HTML pages, 20 search entries, and all link/fragment/asset checks. Six CSS
+fixtures and 15 browser-smoke checks also passed, including mobile navigation, search, dark mode,
+no-JavaScript reading, keyboard skip links, and print layout. The full 20-guide release-candidate
+review, manual walkthrough, verified screenshots, and external release-surface acceptance remain
+open under #60.
