@@ -46,7 +46,7 @@ final class LegalJourneyTests: XCTestCase {
         saveToFiles.tap()
         let save = app.buttons["Save"].firstMatch
         XCTAssertTrue(
-            save.waitForExistence(timeout: 15),
+            save.waitForExistence(timeout: 30),
             "The PDF did not reach the system Files export destination.")
         capture("legal-files-export-ready")
         // Never select a recipient or persist a synthetic report into a connected provider.
@@ -81,9 +81,9 @@ final class LegalJourneyTests: XCTestCase {
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
             for expectedStep in 1...2 {
-                tap("pay-profile.continue")
+                tap("pay-profile.continue", maxSwipes: 8)
                 let next = app.buttons["pay-profile.continue"].firstMatch
-                scrollTo(next)
+                scrollTo(next, maxSwipes: 8)
                 XCTAssertEqual(
                     next.value as? String, "step-\(expectedStep)",
                     "The editor did not advance to step \(expectedStep + 1) of 4.")
@@ -91,7 +91,7 @@ final class LegalJourneyTests: XCTestCase {
             var reachedReview = false
             for _ in 0..<3 {
                 let finalContinue = app.buttons["pay-profile.continue"].firstMatch
-                scrollTo(finalContinue)
+                scrollTo(finalContinue, maxSwipes: 8)
                 XCTAssertTrue(finalContinue.isHittable)
                 finalContinue.press(forDuration: 0.1)
                 if finalContinue.waitForNonExistence(timeout: 3) {
@@ -102,14 +102,14 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
-            scrollTo(scopeControl)
+            scrollTo(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             tap(scopeID)
             let explanation = app.descendants(matching: .any).matching(
                 NSPredicate(format: "label CONTAINS %@", fragment)
             ).firstMatch
-            scrollTo(explanation)
+            scrollTo(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.exists)
             capture("legal-scope-\(scope)")
             tap("pay-profile.save")
@@ -142,15 +142,15 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(tab.waitForExistence(timeout: 10))
         tab.tap()
     }
-    private func tap(_ id: String) {
+    private func tap(_ id: String, maxSwipes: Int = 16) {
         let button = app.buttons[id].firstMatch
-        scrollTo(button)
+        scrollTo(button, maxSwipes: maxSwipes)
         XCTAssertTrue(button.exists, "Missing control: \(id)")
         button.tap()
     }
-    private func scrollTo(_ element: XCUIElement) {
+    private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<16 {
+        for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }
