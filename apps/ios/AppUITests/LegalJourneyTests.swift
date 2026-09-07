@@ -164,11 +164,13 @@ final class LegalJourneyTests: XCTestCase {
                                 .press(forDuration: 0.1)
                         }
                     }
-                    let expected = app.buttons
-                        .matching(identifier: "pay-profile.continue")
-                        .matching(NSPredicate(format: "value == %@", "step-\(expectedStep)"))
-                        .firstMatch
-                    if expected.waitForExistence(timeout: 5) {
+                    let valueExpectation = XCTNSPredicateExpectation(
+                        predicate: NSPredicate(
+                            format: "value == %@", "step-\(expectedStep)"
+                        ),
+                        object: next
+                    )
+                    if XCTWaiter.wait(for: [valueExpectation], timeout: 5) == .completed {
                         advanced = true
                         break
                     }
