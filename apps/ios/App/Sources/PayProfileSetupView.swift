@@ -33,6 +33,7 @@ struct PayProfileSetupView: View {
                 Section {
                     Text(["Pay basics", "Pay period", "Your rules", "Confirm rules"][step])
                         .font(.title2.bold())
+                        .accessibilityIdentifier("pay-profile.step-title")
                     Text("Step \(step + 1) of 4. Your unfinished setup is saved on this device.")
                         .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                 }

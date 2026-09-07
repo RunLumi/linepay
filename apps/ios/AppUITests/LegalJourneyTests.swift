@@ -165,7 +165,8 @@ final class LegalJourneyTests: XCTestCase {
                         }
                     }
                     let expectedTitle = expectedStep == 1 ? "Pay period" : "Your rules"
-                    if app.staticTexts[expectedTitle].waitForExistence(timeout: 5) {
+                    let stepTitle = app.staticTexts["pay-profile.step-title"].firstMatch
+                    if stepTitle.waitForExistence(timeout: 5), stepTitle.label == expectedTitle {
                         advanced = true
                         break
                     }
