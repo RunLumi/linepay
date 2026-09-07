@@ -4,7 +4,7 @@ linkTitle: Glossary
 weight: 190
 group: Get help
 description: A quick reference for work time, expected wages, gross basis, audit scope, and backups.
-keywords: [definitions, terms, OT, CBA, per diem, gross, net]
+keywords: [definitions, terms, OT, CBA, per diem, gross, net, daylight saving, clock time]
 ---
 ## Work and rules
 
@@ -21,6 +21,8 @@ keywords: [definitions, terms, OT, CBA, per diem, gross, net]
 **Flat per diem:** a configured allowance per worked local date. Its tax treatment and inclusion in paystub gross are not inferred by LinePaycheck.
 
 **Payroll timezone:** the saved timezone used to interpret work dates and boundaries. It need not equal the phone’s current timezone.
+
+**Clock-time review:** an explicit Repeat Shift step shown when a copied payroll-local time is ambiguous, nonexistent, or otherwise cannot be accepted automatically. Repeated times require choosing the actual occurrence; nonexistent times require manually entering and confirming the real work time.
 
 **Rule snapshot / version:** the saved set of rules used for a calculation. Later profile changes must not silently replace the meaning of historical results.
 
