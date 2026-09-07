@@ -6,6 +6,8 @@ For issue #40, the **Recording work**, related **Troubleshooting**, and **Glossa
 
 For issue #41, the **Recording work**, **Overtime, callouts, and per diem**, and **Supported rules** callout-event guidance was separately re-reviewed on **2026-09-07** against the `fix/41-callout-event-identity` candidate based on main `87410ba1494c49ae583ffeb1e329f4b7aeac08ba` plus the issue-#41 changes. This is a source/contract review only; it does not claim hosted native execution while #37 remains unresolved.
 
+For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance was re-reviewed on **2026-09-06** against the `weekly-review-error-copy` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#69 changes. This partial review covers the restricted weekly regular-rate instructions and failure wording only; the full-site freshness review remains owned by #60/#64.
+
 ## Source map
 
 Paths below are relative to the repository root. These notes are outside `content/` and are not published.
