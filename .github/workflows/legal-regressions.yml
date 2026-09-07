@@ -39,7 +39,9 @@ jobs:
             -onlyUsePackageVersionsFromResolvedFile -derivedDataPath "$RUNNER_TEMP/legal-derived" \
             -resultBundlePath .test-results/LegalTests.xcresult \
             -parallel-testing-enabled NO -test-timeouts-enabled YES \
-            -maximum-test-execution-time-allowance 240 \
+            # Large-text scope evidence is a real simulator journey; keep it bounded while
+            # allowing the hosted iPhone simulator enough time for all three scopes.
+            -maximum-test-execution-time-allowance 420 \
             -only-testing:LinePayAppTests/LegalRegressionTests \
             -only-testing:LinePayAppTests/LegalConsentAndReportTests \
             -only-testing:LinePayAppTests/ReportShareSessionTests \
