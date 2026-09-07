@@ -35,7 +35,7 @@ Do not collapse these into a completeness percentage. Code establishes implement
 | [#38](https://github.com/streamentry/linepay/issues/38) | P1 behavior | Resolved in #58: contradictory paid gross/components now require review instead of a directional verdict |
 | [#39](https://github.com/streamentry/linepay/issues/39) | P1 calculation policy | Resolved in #58: component rounding is allocated deterministically without making irrelevant segmentation change the total |
 | [#40](https://github.com/streamentry/linepay/issues/40) | P1 time entry | Resolved in `d05428e`: Repeat Shift preserves wall-clock facts and requires explicit DST gap/fold review |
-| [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | Physical callout identity is conflated with each work-entry row |
+| [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | Resolved in `9b015a0`: one saved Callout row carries one confirmed physical event, with explicit continuation/separation and legacy review paths |
 | [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Bounded weekly layer implemented and native review flow present; source/applicability review and broader statutory/CBA admission remain open |
 | [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | An unpriceable saved period A blocks closing A and recording B |
 | [#45](https://github.com/streamentry/linepay/issues/45) | P2 provenance | Resolved in #59: reports surface recorded calculation provenance; legacy results remain explicitly unknown |
@@ -49,7 +49,7 @@ Use #42 as the canonical weekly-capability issue and #43 as its duplicate. Concu
 |---|---|---|---|
 | R1 | $50/hour, 08:00–08:02, 1x everywhere | $1.67 as one segment; $1.66 as two one-minute entries OR the same entry with an irrelevant 08:01 schedule boundary | Historical #39 finding; #58 now allocates cents deterministically, while no universal legal rounding policy is inferred |
 | R2 | Expected $550; confirmed paid gross $500, regular $400 and OT $150 | `needsReview`, preserving the contradictory source facts | #38 resolved in #58: paid-source contradictions cannot produce an unsupported directional verdict |
-| R3 | One two-hour Tuesday callout, $50, 2x, four-hour minimum | One record $400; two adjacent records $800 | #41: one physical event is not necessarily two qualifying calls; do not merge genuinely separate calls automatically |
+| R3 | One two-hour Tuesday callout, $50, 2x, four-hour minimum | Historical split-row probe produced one record $400 and two adjacent records $800; the current workflow requires event identity before saving/merging | #41 resolved in `9b015a0`; one physical event is not necessarily two qualifying calls, and adjacency alone never decides identity |
 | R4 | Six eight-hour days, $50, only daily 1.5x after eight configured | Configured daily $2,400; bounded weekly layer $2,600 under explicit assumptions | #42: source/applicability admission remains separate |
 | R5 | New York March 7, 2026 00:00–08:00 with 04:00 break, repeated March 8 | Repeat Shift preserves local wall-clock facts and requires explicit handling for a nonexistent/repeated time | #40 resolved in `d05428e`; native/device acceptance remains separate |
 | R6 | OCR `Pay period ending 09/05/2026` | Both periodStart and periodEnd suggested as `2026-09-05` | #48: complete production parser executed without Vision; the source provides no start |
@@ -74,8 +74,8 @@ Code links below are pinned. Test identifiers refer to files under [App tests][A
 | BR-013 | [DM], [TL], [AM] windows | AgreementTimelineTests, ReadinessBoundaryTests | Partial: payroll timezone explicit; statutory week/non-midnight contract day not represented; #42/#14 and repeat DST #40 |
 | BR-014 | [AM] correctCurrentPeriod | ReadinessTests.periodCorrectionRejectsMovingWorkOrOverlap | S: containment, overlap and invalidation paths exist; old no-op date defect not reopened |
 | BR-015 | [DM] AgreementSource.ruleKey; [PROFILE] | AppFailurePathTests.profileDraftKeepsScheduleSourceAndEffectiveDates | S: per-rule source references; actual preset/source approval #26 |
-| BR-020 | [DM] WorkInterval; [PC] guarantee category | PayCalculatorInvariantTests.actualCalloutBreakAndGuaranteedPayStaySeparate | P/Partial: worked/paid equivalents separate; physical event identity #41 |
-| BR-021 | [DM] validation; [AM] work operations | AppModelContractTests.workGuardsAndUndoAreSafe; domain overlap tests | Partial: row identity/overlap checks do not establish separate callout triggers #41 |
+| BR-020 | [DM] WorkInterval; [PC] guarantee category | PayCalculatorInvariantTests.actualCalloutBreakAndGuaranteedPayStaySeparate | P/Partial: worked/paid equivalents and physical callout identity are separate; unsupported interactions remain #44 |
+| BR-021 | [DM] validation; [AM] work operations | AppModelContractTests.workGuardsAndUndoAreSafe; CalloutEntryWorkflowTests | Partial: explicit continuation/separation and legacy review paths exist; unsupported callout interactions remain #44 |
 | BR-022 | [WORK] repeatDates and break offsets; [AM] lastWork | ScreenContractTests.addEditAndRepeatFormsRetainTheirWorkFacts | Partial: Repeat Shift now preserves local facts and requires DST review; physical-device acceptance remains separate |
 | BR-023 | [AM] save/discard drafts; [STATE] | ReadinessTests.workAndIntakeDraftsSurviveNewModel; PaydayJourneyTests | S: durable draft/context represented; device interruption acceptance separate |
 | BR-024 | [AM] deleteWork/restoreDeletedWork | ReadinessTests.staleUndoCannotMoveWorkToNextPeriod / undoRejectsAnInterveningEdit | S: period/revision-bound Undo present; old defect not reopened |
@@ -119,7 +119,7 @@ The catalog describes required facts and coverage boundaries, not eighteen promi
 | PAY-03 | Weekly overtime | `WeeklyRegularRateCalculator`; `WeeklyRegularRateTests`; native review flow | Restricted complete-week profile only; #42 source/applicability admission remains open |
 | PAY-04 | Outside schedule | [DM] RegularScheduleWindow; PayCalculatorScheduleTests | P: same-day windows; overnight schedule windows explicitly rejected |
 | PAY-05 | Weekend/date premiums | [PC]; PayCalculatorScheduleTests | P: explicit multipliers; no universal holiday/stacking inference |
-| PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests | Partial: isolated variant, event identity #41, unpriceable rollover #44 |
+| PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests; CalloutEntryWorkflowTests | Partial: isolated variant and explicit event identity are implemented; unpriceable rollover and other interactions remain #44 |
 | PAY-07 | Rest/fatigue | No rest state machine in [DM] | Unsupported by design; disclose #14, review named clauses #26 |
 | PAY-08 | Meal entitlement | [DM] actual unpaid breaks, not meal-payment events | Unsupported payment type; break subtraction is not meal-penalty coverage |
 | PAY-09 | Travel | [DM] WorkKind.other is not a travel rule | Unsupported classification/payment; preserve genuine facts and disclose limits |
@@ -144,7 +144,7 @@ Related tests can use different synthetic rates/dates for the same mechanism. Th
 | EX-03 | PayCalculatorTimeAndTierTests.secondOvertimeTier | Related second-tier regression passed |
 | EX-04 | PayCalculatorBreakTests | Exact-break mechanism passed; compensability remains an applicability/input question |
 | EX-05 | PayCalculatorScheduleTests.premiumsDoNotPyramid | Configured highest-applicable mechanism passed, not universal premium precedence |
-| EX-06 | PayCalculatorScheduleTests.calloutMinimum; R3 | Isolated $400 reproduced; one event split into rows #41 |
+| EX-06 | PayCalculatorScheduleTests.calloutMinimum; R3 | Isolated $400 mechanism remains; current event workflow prevents one physical event from gaining another minimum merely from row splitting |
 | EX-07 | PayCalculatorTimeAndTierTests.perDiemOncePerDate | Related allowance-unit deduplication passed |
 | EX-08 | AgreementTimelineTests.ratesApplyByWorkDateAndKeepSourceVersions | Across-date variant represented; intraday interpretation remains out of scope #46 |
 | EX-09 | [TL] LocalDate-only changes | Same-day $600 vector retained as unsupported/reference until an intraday timeline is deliberately implemented #46 |
@@ -181,7 +181,7 @@ EX-13 was re-read directly from its pinned source during consolidation; do not s
 | Workflow | Actual route | Remaining acceptance |
 |---|---|---|
 | Setup and first personal proof | [ROOT] -> [PROFILE] -> [FIRST] -> [WORK] -> [LEDGER] | Present; #14 coverage disclosure; sample work cannot count as personal proof |
-| Repeated work | Today/lastWork -> [WORK] draft -> [AM] save | #40 DST review is implemented; #41 callout-event identity remains |
+| Repeated work | Today/lastWork -> [WORK] draft -> [AM] save | #40 DST review and #41 callout-event identity are implemented; physical-device acceptance remains separate |
 | Close work and delayed paycheck | [LEDGER] -> [AM] close -> [HISTORY] -> historical [IMPORT] | Normal A/B independence present; #44 unresolved calculation |
 | Scan/photo/PDF/manual | [IMPORT] -> [OP] -> original saved -> [OCR]/[PARSER] -> confirmation -> [ASSESS] | Actual device scanner acceptance; #38 paid-source consistency, #48 dates |
 | Explain and correct | AuditDetail -> [RECEIPT] -> [SOURCE] -> confirmed revision | Original retained; private sharing #20 remains, while report calculation provenance is implemented |
