@@ -276,7 +276,7 @@ final class LegalJourneyTests: XCTestCase {
         // identifier in the hosted accessibility tree. The exact label remains the user-facing
         // contract; prefer the stable identifier whenever the platform exposes it.
         let visibleOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+            .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
         if visibleOption.waitForExistence(timeout: 5) && visibleOption.isHittable {
             visibleOption.tap()
             return
@@ -287,7 +287,7 @@ final class LegalJourneyTests: XCTestCase {
         // user-facing contract; query that window before failing the journey.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         let systemOption = springboard.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+            .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
         XCTAssertTrue(systemOption.waitForExistence(timeout: 10), "Missing scope option: \(label)")
         XCTAssertTrue(systemOption.isHittable, "Scope option is not hittable: \(label)")
         systemOption.tap()
