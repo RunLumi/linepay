@@ -12,6 +12,8 @@ For issue #41, the **Recording work**, **Overtime, callouts, and per diem**, and
 
 For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance was re-reviewed on **2026-09-06** against the `weekly-review-error-copy` candidate based on main **dcd23bc6f9121cad29b43cd42a3b8e78e45ccf0e** plus the issue-#69 changes. This partial review covers the restricted weekly regular-rate instructions and failure wording only; the full-site freshness review remains owned by #60/#64.
 
+For issue #44, the **Pay periods**, **History**, and **Troubleshooting** guidance was re-reviewed on **2026-09-09** against the merged #82/#81 implementation on main `a0479466e8f0c0b27f84535ce52162dd374ad8c3`. This targeted review covers unresolved-period closure, frozen-history review, later paycheck facts, retry, backup wording, and next-period independence; it is not a release-wide freshness attestation.
+
 ## Source map
 
 Paths below are relative to the repository root. These notes are outside `content/` and are not published.
@@ -19,7 +21,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Public guides | Primary implementation / contract |
 | --- | --- |
 | Get started; pay profile | `apps/ios/App/Sources/OnboardingFlowView.swift`, `PayProfileSetupView.swift`, `TodayView.swift` |
-| Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `SettingsView.swift`, `AppState.swift` under the same Sources directory |
+| Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `AppSession.swift`, `SettingsView.swift`, `AppState.swift`, `AppStateValidation.swift`; `UnresolvedPeriodLifecycleTests.swift` |
 | Recording work | `AddWorkView.swift`, `CalloutEntryWorkflow.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; app regressions in `CalloutEntryWorkflowTests.swift` / `RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
 | Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
@@ -36,6 +38,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 - The pricing contract now includes an eligible seven-day Annual offer. This supersedes the earlier no-calendar-trial discussion; actual StoreKit metadata/eligibility and purchase-sheet prices govern the user's offer.
 - The app explicitly keeps existing records and exports available without Pro. Do not turn the older pricing feature list into a restriction on reading/exporting saved data.
 - Expected wages and per diem are separate. Paystub gross basis and complete-work confirmation are required for a comparable full-paycheck result.
+- A completed period whose expected pay cannot be calculated safely can close for later review. Its frozen work, rules, and nonempty calculation issue remain in History; a later paycheck can be recorded as **Not ready to compare** without inventing expected pay or consuming the Free audit. Retry uses only that period's frozen facts.
 - The weekly regular-rate review is a restricted complete-workweek estimate. It requires explicit profile applicability and complete-week confirmation; it does not establish state, CBA, public-agency, exemption, or universal statutory coverage.
 - Late-arriving paychecks and audit revisions exist in current History. They are not described as missing features.
 - Current statuses are `Compared values match`, `Gross total matches`, `Not ready to compare`, `Possible shortfall`, `Possible overpayment`, `Needs review`, and `Not audited`, with `Awaiting paycheck` as a history/workflow state.
