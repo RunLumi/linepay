@@ -57,7 +57,9 @@ enum AppStateValidation {
                 zone: revision.timeZoneIdentifier)
             try validate(revision.agreement)
             try validateTimeline(revision.agreement, revision.agreementChanges)
-            try validate(calculation: revision.calculation, agreement: revision.agreement)
+            if let calculation = revision.calculation {
+                try validate(calculation: calculation, agreement: revision.agreement)
+            }
             try validate(
                 paystub: revision.paystub, calculation: revision.calculation,
                 agreement: revision.agreement)

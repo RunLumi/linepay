@@ -103,6 +103,29 @@ public struct PaycheckAssessment: Codable, Hashable, Sendable {
 public struct PaycheckAssessor: Sendable {
     public init() {}
 
+    /// Records paycheck facts without inventing an expected amount when the saved work
+    /// cannot be calculated safely. The result is intentionally not comparable.
+    public func assessWithoutCalculation(
+        agreement: AgreementSnapshot, facts: PaycheckFacts, reason: String
+    ) throws -> PaycheckAssessment {
+        let currency = agreement.hourlyRate.currencyCode
+        guard facts.grossPay.currencyCode == currency,
+            facts.amounts.values.allSatisfy({ $0.currencyCode == currency })
+        else { throw PaycheckAssessmentError.currencyMismatch }
+        guard !facts.grossPay.amount.isNaN, facts.grossPay.amount >= 0,
+            facts.amounts.values.allSatisfy({ !$0.amount.isNaN && $0.amount >= 0 }),
+            facts.hours.values.allSatisfy({ !$0.isNaN && $0 >= 0 })
+        else { throw PaycheckAssessmentError.invalidFact }
+        return PaycheckAssessment(
+            engineVersion: 3, verdict: .notComparable, scope: .grossOnly,
+            expectedGross: nil, paidGross: facts.grossPay, difference: nil,
+            comparisons: [],
+            reviewReasons: [reason],
+            scopeNotes: [
+                "The saved work and rules could not produce an expected amount. Confirm the missing rule or work fact before comparing this paycheck."
+            ])
+    }
+
     public func assess(
         calculation: CalculationResult, agreement: AgreementSnapshot, facts: PaycheckFacts
     ) throws -> PaycheckAssessment {
