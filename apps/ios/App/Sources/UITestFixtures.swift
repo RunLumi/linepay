@@ -50,14 +50,14 @@
                 try model.saveProfile(profile)
                 if scenario == "unresolved" {
                     let boundary = profile.periodStartDate.addingTimeInterval(86_400)
-                    try model.addWork(
-                        start: profile.periodStartDate.addingTimeInterval(23 * 3_600),
-                        end: profile.periodStartDate.addingTimeInterval(25 * 3_600),
-                        kind: .callout, note: "Synthetic unresolved spanning callout")
                     var changed = profile
                     changed.hourlyRate = "60"
                     changed.changeEffectiveDate = boundary
                     try model.saveProfile(changed)
+                    try model.addWork(
+                        start: boundary.addingTimeInterval(-3_600),
+                        end: boundary.addingTimeInterval(3_600),
+                        kind: .callout, note: "Synthetic unresolved spanning callout")
                     try model.completeFirstResult()
                     return session
                 }
