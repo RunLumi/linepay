@@ -23,7 +23,10 @@ final class LegalJourneyTests: XCTestCase {
         capture("legal-audit-scope")
         tap("audit.export")
         let preview = app.buttons["report.preview"].firstMatch
-        scrollTo(preview, maxSwipes: 12)
+        for _ in 0..<12 {
+            if preview.exists && preview.isHittable { break }
+            app.swipeUp()
+        }
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["audit.share-report"].exists)
         let details = app.switches["report.include-source-details"]
