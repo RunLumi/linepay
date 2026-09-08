@@ -38,9 +38,9 @@ installed iOS 26.4 StoreKit test daemon reproducibly returns
 an environment limitation, not a relaxed product assertion.
 
 Before the full iOS gate, its dedicated iOS 18.5 simulator is shut down and
-its simulator-scoped StoreKit daemon is restarted, then it is booted again to
-give local StoreKit a clean session; this is a daemon restart and reboot, not
-an erase.
+its simulator-scoped StoreKit, App Store, and iTunes Store daemons are
+kickstarted, then it is booted again to give local StoreKit a clean session;
+this is a scoped daemon restart and reboot, not an erase.
 
 The two Maestro matrix jobs use the existing `QC iPhone 17 Pro v2` and
 `LinePay Release iPhone 18` devices; they do not create or auto-select a

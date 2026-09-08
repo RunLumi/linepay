@@ -60,9 +60,12 @@ jobs:
           xcrun simctl shutdown "$UDID" 2>/dev/null || true
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
-          # Restart only the daemon inside this simulator; do not touch other
-          # simulator runtimes or host services.
-          xcrun simctl spawn "$UDID" killall storekitd 2>/dev/null || true
+          # Restart only commerce daemons inside this simulator; do not touch
+          # other simulator runtimes or host services.
+          for SERVICE in com.apple.storekitd com.apple.appstored com.apple.itunesstored; do
+            xcrun simctl spawn "$UDID" launchctl kickstart -k "system/$SERVICE" 2>/dev/null || true
+          done
+          sleep 10
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Toolchain
         run: |
