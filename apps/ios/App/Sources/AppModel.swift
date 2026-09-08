@@ -621,13 +621,18 @@ final class AppModel {
         guard let profile = state.profile else {
             throw AppModelError.missingPayProfile
         }
-        guard
-            let calculation = active.auditCompletedEpochSeconds != nil
-                ? (active.auditRevisions?.last?.calculation ?? calculate(period: active))
-                : calculate(period: active)
-        else {
-            throw AppModelError.calculationUnavailable
-        }
+        let calculation: CalculationResult? =
+            if active.auditCompletedEpochSeconds != nil {
+                active.auditRevisions?.last?.calculation ?? calculate(period: active)
+            } else {
+                calculate(period: active)
+            }
+        let calculationIssue: String? =
+            if calculation == nil {
+                calculationError ?? "Calculation needs review before a pay amount can be shown."
+            } else {
+                nil
+            }
 
         let completed = CompletedPayPeriod(
             id: active.id,
@@ -643,7 +648,8 @@ final class AppModel {
             archivedEpochSeconds: Int64(now().timeIntervalSince1970.rounded()),
             auditRevisions: active.auditRevisions,
             hasConsumedAuditAccess: active.hasConsumedAuditAccess,
-            agreementChanges: active.agreementChanges
+            agreementChanges: active.agreementChanges,
+            calculationIssue: calculationIssue
         )
 
         var candidate = state
@@ -804,7 +810,8 @@ final class AppModel {
                     : (active.auditRevisions?.last?.calculation ?? calculation),
                 paystub: active.paystub, reconciliation: active.reconciliation,
                 revisions: active.auditRevisions ?? [], isClosed: false,
-                agreementChanges: active.agreementChanges)
+                agreementChanges: active.agreementChanges,
+                calculationIssue: calculation == nil ? calculationError : nil)
         }
         guard let period = state.history.first(where: { $0.id == id }) else { return nil }
         return PayPeriodContext(
@@ -813,7 +820,8 @@ final class AppModel {
             calculation: period.calculation, paystub: period.paystub,
             reconciliation: period.reconciliation,
             revisions: period.auditRevisions ?? [], isClosed: true,
-            agreementChanges: period.agreementChanges)
+            agreementChanges: period.agreementChanges,
+            calculationIssue: period.calculationIssue)
     }
 
     func status(for context: PayPeriodContext) -> AuditDisplayStatus {

@@ -35,7 +35,7 @@ Review in this order: correct period → complete work → unpaid breaks → bas
 
 If gross matches but a component differs, check full-rate versus premium-only reporting and guarantee placement. If the paystub is higher than expected, check missing work and pay types as carefully as you would a shortfall.
 
-A calculation problem around a dated change or callout guarantee should not be replaced with zero. Keep the work and establish the unsupported or ambiguous rule. [Supported limits]({{< relref "/supported-rules" >}}) explain common boundaries.
+A calculation problem around a dated change or callout guarantee should not be replaced with zero. Keep the work and establish the unsupported or ambiguous rule. If you must continue logging work, close the period with **Calculation needs review**; History preserves the warning and the original facts for later review. [Supported limits]({{< relref "/supported-rules" >}}) explain common boundaries.
 
 ## Scanning and imports
 
