@@ -39,6 +39,8 @@
                 profile.useDailyOvertime = true
                 profile.overtimeAfterHours = "8"
                 profile.overtimeMultiplier = "1.5"
+                profile.useCalloutMinimum = true
+                profile.calloutMinimumHours = "4"
                 if scenario == "unsupported" {
                     profile.unsupportedRuleNotes = "SAMPLE rest-period premium not configured"
                 }
@@ -54,8 +56,7 @@
                         kind: .callout, note: "Synthetic unresolved spanning callout")
                     var changed = profile
                     changed.hourlyRate = "60"
-                    changed.useEffectiveStart = true
-                    changed.effectiveStartDate = boundary
+                    changed.changeEffectiveDate = boundary
                     try model.saveProfile(changed)
                     try model.completeFirstResult()
                     return session
