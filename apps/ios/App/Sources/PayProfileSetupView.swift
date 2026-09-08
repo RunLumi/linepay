@@ -353,19 +353,29 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Picker("Scope", selection: $draft.editScope) {
-                        Text("Future work periods only")
+                    Menu {
+                        Button("Future work periods only") { draft.editScope = .futurePeriods }
                             .accessibilityIdentifier("pay-profile.scope.future")
-                            .tag(RuleEditScope.futurePeriods)
-                        Text("New rules from a date")
+                        Button("New rules from a date") { draft.editScope = .datedChange }
                             .accessibilityIdentifier("pay-profile.scope.dated")
-                            .tag(RuleEditScope.datedChange)
-                        Text("Recalculate this entire current period")
-                            .accessibilityIdentifier("pay-profile.scope.current")
-                            .tag(RuleEditScope.currentPeriod)
+                        Button("Recalculate this entire current period") {
+                            draft.editScope = .currentPeriod
+                        }
+                        .accessibilityIdentifier("pay-profile.scope.current")
+                    } label: {
+                        HStack {
+                            Text("Scope")
+                            Spacer()
+                            Text(editScopeTitle)
+                                .foregroundStyle(LinePayColor.actionText)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(LinePayColor.actionText)
+                        }
+                        .frame(minHeight: 44)
                     }
-                    .pickerStyle(.menu)
                     .accessibilityIdentifier("pay-profile.change-scope")
+                    .accessibilityValue(editScopeTitle)
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
@@ -404,6 +414,14 @@ struct PayProfileSetupView: View {
                     Text("Confirmed by you; no source attached.").font(.footnote)
                 }
             }
+        }
+    }
+
+    private var editScopeTitle: String {
+        switch draft.editScope {
+        case .futurePeriods: "Future work periods only"
+        case .datedChange: "New rules from a date"
+        case .currentPeriod: "Recalculate this entire current period"
         }
     }
 
