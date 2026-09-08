@@ -8,7 +8,7 @@ keywords: [closed period, late paycheck, revisions, archive, correction, delete]
 ---
 ## Find the right period
 
-Open **History**. Closed work periods are grouped by month and show their dates and expected wages. A period with no paystub is marked **Awaiting paycheck**. A period with confirmed paycheck facts shows the available audit status and amounts.
+Open **History**. Closed work periods are grouped by month and show their dates and expected wages when a safe calculation exists. A period with no paystub is marked **Awaiting paycheck**. A period that was closed before its calculation could be priced is marked **Calculation needs review** and keeps the warning that explains why; it is not a zero or an estimate.
 
 Select the work dates covered by the paycheck, not simply the most recent item. History uses the period’s saved timezone context, rather than your phone’s current location.
 
@@ -16,7 +16,7 @@ Select the work dates covered by the paycheck, not simply the most recent item. 
 
 Select the pending period and choose **Add this paycheck**. Import or enter its paystub and complete field review. You can do this while the next work period remains open for new shifts.
 
-The closed period’s work and rules stay frozen. A late audit does not recalculate old work using the latest profile rate.
+The closed period’s work and rules stay frozen. A late audit or later rule correction does not recalculate old work using the latest profile rate unless you explicitly review and confirm it.
 
 ## Correct paycheck facts
 

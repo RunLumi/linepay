@@ -156,6 +156,17 @@ struct RuleScopeRegressionTests {
         }
         #expect(!model.hasUsedFreeAudit && model.currentPaystub == nil)
         #expect(AppModel(store: store).workEntries == model.workEntries)
+
+        try model.archiveCurrentPeriod()
+        let archived = try #require(model.history.first)
+        #expect(archived.calculation == nil)
+        #expect(archived.calculationIssue?.isEmpty == false)
+        #expect(model.activePeriod != nil)
+        try model.addWork(
+            start: model.activePeriod!.window.startDate,
+            end: model.activePeriod!.window.startDate.addingTimeInterval(3_600),
+            kind: .regular)
+        #expect(model.workEntries.count == 1)
     }
 
     @Test(arguments: [RuleChangeScope.prospective, .correctCurrentPeriod])

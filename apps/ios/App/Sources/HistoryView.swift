@@ -135,6 +135,13 @@ struct HistoricalPeriodView: View {
                                 model: model, context: revision.context(periodID: periodID))
                         }
                     }
+                    if let issue = context.calculationIssue {
+                        Label(
+                            "Calculation needs review", systemImage: "exclamationmark.triangle"
+                        )
+                        .foregroundStyle(LinePayColor.review)
+                        Text(issue).font(.footnote)
+                    }
                 }
                 Section {
                     NavigationLink("Rule sources") { RuleSourcesView(agreement: context.agreement) }

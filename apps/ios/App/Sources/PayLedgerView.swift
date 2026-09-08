@@ -178,6 +178,13 @@ struct FinishPayPeriodView: View {
                                 "Work and rules will be frozen. Attach this paycheck later from History while continuing to log the next period."
                             )
                         }
+                        if let issue = context.calculationIssue {
+                            Label(
+                                "Calculation needs review", systemImage: "exclamationmark.triangle"
+                            )
+                            .foregroundStyle(LinePayColor.review)
+                            Text(issue).font(.footnote)
+                        }
                         if let difference = context.paystub?.assessment?.difference {
                             PayAmount(label: "Possible difference", money: difference)
                         }
@@ -193,7 +200,7 @@ struct FinishPayPeriodView: View {
                             } catch { errorMessage = error.localizedDescription }
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .disabled(context.calculation == nil)
+                        .disabled(false)
                         .accessibilityIdentifier("period.confirm-close")
                         Button("Keep period open") { dismiss() }.frame(minHeight: 44)
                     }
