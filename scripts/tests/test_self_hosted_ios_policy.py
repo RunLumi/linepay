@@ -6,7 +6,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 class SelfHostedIOSPolicyTests(unittest.TestCase):
-    PIN = "IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=0A8C774B-C1D3-4A43-816C-81D3D3D849D8"
+    FULL_PIN = "IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9"
+    LEGAL_PIN = "IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=0A8C774B-C1D3-4A43-816C-81D3D3D849D8"
     RESET_STEP = "Reset synthetic app data on the pinned simulator"
 
     def test_ios_jobs_use_the_dedicated_runner(self):
@@ -14,7 +15,7 @@ class SelfHostedIOSPolicyTests(unittest.TestCase):
         self.assertEqual(workflow.count("runs-on: linepay-ios"), 2)
         self.assertIn("branches: [dev, testing]", workflow)
         self.assertIn("pull_request:", workflow)
-        self.assertEqual(workflow.count(self.PIN), 1)
+        self.assertEqual(workflow.count(self.FULL_PIN), 1)
         self.assertIn(self.RESET_STEP, workflow)
 
     def test_legal_regressions_use_the_dedicated_runner(self):
@@ -22,7 +23,7 @@ class SelfHostedIOSPolicyTests(unittest.TestCase):
         self.assertIn("push:\n    branches: [dev, testing]", workflow)
         self.assertIn("pull_request:", workflow)
         self.assertEqual(workflow.count("runs-on: linepay-ios"), 1)
-        self.assertEqual(workflow.count(self.PIN), 1)
+        self.assertEqual(workflow.count(self.LEGAL_PIN), 1)
         self.assertNotIn("list devices available -j", workflow)
         self.assertIn(self.RESET_STEP, workflow)
 
