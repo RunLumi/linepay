@@ -71,6 +71,28 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["pay.check-paycheck"].waitForExistence(timeout: 10))
     }
 
+    func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() {
+        launch(scenario: "unresolved")
+        tab("Pay")
+        XCTAssertTrue(app.buttons["pay.finish-period"].waitForExistence(timeout: 10))
+        tap("pay.finish-period")
+        XCTAssertTrue(app.staticTexts["Calculation needs review"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["period.confirm-close"].isEnabled)
+        tap("period.confirm-close")
+
+        tab("Today")
+        XCTAssertTrue(app.buttons["today.add-work"].waitForExistence(timeout: 10))
+        tap("today.add-work")
+        tap("work.save")
+        tab("History")
+        XCTAssertTrue(app.staticTexts["Calculation needs review"].waitForExistence(timeout: 10))
+
+        app.terminate()
+        launch(reset: false, scenario: "unresolved")
+        tab("History")
+        XCTAssertTrue(app.staticTexts["Calculation needs review"].waitForExistence(timeout: 10))
+    }
+
     func testAuditVerdictsAndEvidenceRoutes() {
         for (scenario, verdict) in [
             ("matches", "Gross total matches"),

@@ -39,6 +39,8 @@
                 profile.useDailyOvertime = true
                 profile.overtimeAfterHours = "8"
                 profile.overtimeMultiplier = "1.5"
+                profile.useCalloutMinimum = true
+                profile.calloutMinimumHours = "4"
                 if scenario == "unsupported" {
                     profile.unsupportedRuleNotes = "SAMPLE rest-period premium not configured"
                 }
@@ -46,6 +48,19 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
+                if scenario == "unresolved" {
+                    let boundary = profile.periodStartDate.addingTimeInterval(86_400)
+                    var changed = profile
+                    changed.hourlyRate = "60"
+                    changed.changeEffectiveDate = boundary
+                    try model.saveProfile(changed)
+                    try model.addWork(
+                        start: boundary.addingTimeInterval(-3_600),
+                        end: boundary.addingTimeInterval(3_600),
+                        kind: .callout, note: "Synthetic unresolved spanning callout")
+                    try model.completeFirstResult()
+                    return session
+                }
                 let start = profile.periodStartDate.addingTimeInterval(7 * 3600)
                 try model.addWork(
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,

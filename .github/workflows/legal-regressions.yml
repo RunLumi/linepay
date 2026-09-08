@@ -68,6 +68,7 @@ jobs:
             -only-testing:LinePayAppTests/NoOpenPeriodRuleTests \
             -only-testing:LinePayAppTests/ReportTransferTests \
             -only-testing:LinePayUITests/LegalJourneyTests \
+            -only-testing:LinePayUITests/PaydayJourneyTests/testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent \
             CODE_SIGNING_ALLOWED=NO test 2>&1 | tee .test-results/legal-verification.log
           cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
       - name: Extract test receipts
