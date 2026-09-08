@@ -23,24 +23,50 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: linepay-ios-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   check:
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 20
+    env:
+      # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime.
+      IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Select Xcode 26.6
-        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+        run: |
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
       - name: Install pinned XcodeGen 2.46.0
         run: |
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Reset synthetic app data on the pinned simulator
+        run: |
+          UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          # Reboot the dedicated full-gate simulator so StoreKit starts from a
+          # clean daemon session without erasing the device or other data.
+          xcrun simctl shutdown "$UDID" 2>/dev/null || true
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          # Restart only commerce daemons inside this simulator; do not touch
+          # other simulator runtimes or host services.
+          for SERVICE in com.apple.storekitd com.apple.appstored com.apple.itunesstored; do
+            xcrun simctl spawn "$UDID" launchctl kickstart -k "system/$SERVICE" 2>/dev/null || true
+          done
+          sleep 10
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Toolchain
         run: |
           xcodebuild -version
@@ -75,19 +101,21 @@ jobs:
   ui:
     name: UI (${{ matrix.name }})
     needs: check
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 40
+    env:
+      MAESTRO_CLI_NO_ANALYTICS: "1"
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: standard-light
-            device: iPhone 17 Pro
+            device: QC iPhone 17 Pro v2
             appearance: light
             text: large
             target: .maestro
           - name: compact-dark-large-text
-            device: LinePay Small
+            device: LinePay Release iPhone 18
             appearance: dark
             text: accessibility-extra-extra-extra-large
             target: .maestro/flows/rule-scope.yaml
@@ -97,16 +125,31 @@ jobs:
           persist-credentials: false
       - name: Select native tools
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "JAVA_HOME=$(/usr/libexec/java_home -v 17)" >> "$GITHUB_ENV"
       - name: Install verified Maestro 2.7.0
         run: |
-          curl --fail --location --retry 2 -o "$RUNNER_TEMP/maestro.zip" \
-            https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.7.0/maestro.zip
-          echo "a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5  $RUNNER_TEMP/maestro.zip" | shasum -a 256 -c -
-          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP/maestro-cli"
+          MAESTRO_CACHE="$HOME/.cache/linepay/maestro-2.7.0.zip"
+          mkdir -p "$(dirname "$MAESTRO_CACHE")"
+          if [[ ! -f "$MAESTRO_CACHE" ]]; then
+            TMP_ARCHIVE="$MAESTRO_CACHE.tmp.$$"
+            curl --fail --location --connect-timeout 30 --max-time 900 --retry 3 --retry-all-errors \
+              -o "$TMP_ARCHIVE" \
+              https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.7.0/maestro.zip
+            mv "$TMP_ARCHIVE" "$MAESTRO_CACHE"
+          fi
+          echo "a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5  $MAESTRO_CACHE" | shasum -a 256 -c -
+          unzip -q "$MAESTRO_CACHE" -d "$RUNNER_TEMP/maestro-cli"
+          mkdir -p "$HOME/.maestro"
           echo "$RUNNER_TEMP/maestro-cli/maestro/bin" >> "$GITHUB_PATH"
       - name: Prepare test appearance and device
         env:
@@ -114,13 +157,15 @@ jobs:
           APPEARANCE: ${{ matrix.appearance }}
           TEXT_SIZE: ${{ matrix.text }}
         run: |
-          if [[ "$DEVICE_NAME" == "LinePay Small" ]]; then
-            RUNTIME=$(xcrun simctl list runtimes -j | python3 -c 'import json,sys; r=[x for x in json.load(sys.stdin)["runtimes"] if x.get("isAvailable") and "iOS" in x["name"]]; print(sorted(r,key=lambda x:tuple(map(int,x["version"].split("."))))[-1]["identifier"])')
-            xcrun simctl create "$DEVICE_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation "$RUNTIME"
-          fi
           UDID=$(xcrun simctl list devices available | grep -F "$DEVICE_NAME (" | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          if [[ -z "$UDID" ]]; then
+            echo "error: pinned UI simulator is unavailable: $DEVICE_NAME" >&2
+            xcrun simctl list devices available >&2
+            exit 1
+          fi
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
           xcrun simctl ui "$UDID" appearance "$APPEARANCE"
           xcrun simctl ui "$UDID" content_size "$TEXT_SIZE"
           echo "MAESTRO_IOS_DEVICE=$DEVICE_NAME" >> "$GITHUB_ENV"

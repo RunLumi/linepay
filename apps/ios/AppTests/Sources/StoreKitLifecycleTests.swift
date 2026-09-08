@@ -91,7 +91,11 @@ struct StoreKitLifecycleTests {
             store.product(id: SubscriptionStore.monthlyProductID)?.subscription)
         _ = try await session.buyProduct(identifier: SubscriptionStore.monthlyProductID)
         let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: .seconds(120))
+        // A rebooted self-hosted simulator can take longer to advance its first
+        // renewal than the nominal 30-second StoreKitTest rate. Keep the same
+        // verified grace/receipt assertions, but allow the daemon four minutes
+        // to publish the renewal state before treating it as absent.
+        let deadline = clock.now.advanced(by: .seconds(240))
         var sawGrace = false
         var sawGraceEnd = false
         var observedStates: Set<String> = []

@@ -1,5 +1,12 @@
 name: Legal regressions
 on:
+  push:
+    branches: [dev, testing]
+    paths:
+      - 'apps/ios/**'
+      - 'scripts/**'
+      - 'docs/legal/**'
+      - '.github/workflows/legal-regressions.yml'
   pull_request:
     paths:
       - 'apps/ios/**'
@@ -9,21 +16,35 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: legal-regressions-${{ github.ref }}
-  cancel-in-progress: true
+  group: linepay-ios-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   targeted-native:
-    runs-on: macos-26
+    runs-on: linepay-ios
     timeout-minutes: 25
+    env:
+      IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=0A8C774B-C1D3-4A43-816C-81D3D3D849D8
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Select pinned tools
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+          if [[ -d /Applications/Xcode_26.6.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer" >> "$GITHUB_ENV"
+          elif [[ -d /Applications/Xcode.app ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "error: Xcode 26.6 installation not found" >&2
+            exit 1
+          fi
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Reset synthetic app data on the pinned simulator
+        run: |
+          UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Run legal behavior and interaction regressions
         run: |
           set -euo pipefail
@@ -33,11 +54,10 @@ jobs:
           cp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
           (cd apps/ios && xcodegen generate)
           cmp "$LOCK" "$RUNNER_TEMP/legal-Package.resolved"
-          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in json.load(sys.stdin)["devices"].values() for d in ds if d.get("isAvailable") and "iPhone" in d["name"]))')
           # Large-text scope evidence is a real simulator journey; keep it bounded while
-          # allowing the hosted iPhone simulator enough time for all three scopes.
+          # allowing the pinned iPhone simulator enough time for all three scopes.
           xcodebuild -project apps/ios/LinePay.xcodeproj -scheme LinePay \
-            -configuration Debug -destination "platform=iOS Simulator,id=$UDID" \
+            -configuration Debug -destination "${IOS_SIMULATOR_DESTINATION}" \
             -onlyUsePackageVersionsFromResolvedFile -derivedDataPath "$RUNNER_TEMP/legal-derived" \
             -resultBundlePath .test-results/LegalTests.xcresult \
             -parallel-testing-enabled NO -test-timeouts-enabled YES \
