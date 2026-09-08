@@ -35,12 +35,9 @@ onFlowComplete:
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT
 - waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: today.add-work
-- waitForAnimationToEnd
 - tapOn:
     id: today.add-work
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

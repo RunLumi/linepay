@@ -161,6 +161,15 @@ tags: [ios, regression, payroll-scope]
     timeout: 60000
 - tapOn:
     id: audit.export
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: report.preview
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: report.preview
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: audit.share-report

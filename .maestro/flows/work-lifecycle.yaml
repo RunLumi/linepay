@@ -19,10 +19,10 @@ tags: [smoke, ios, regression]
 - assertVisible: ".*Overlaps.*"
 - scrollUntilVisible:
     element:
-      id: work.save
+      id: repeat.save
 - waitForAnimationToEnd
 - assertVisible:
-    id: work.save
+    id: repeat.save
     enabled: false
 - takeScreenshot: overlap-error
 - scrollUntilVisible:
