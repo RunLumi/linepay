@@ -347,7 +347,7 @@ struct AuditRevision: Identifiable, Codable, Hashable, Sendable {
     let agreement: AgreementSnapshot
     let timeZoneIdentifier: String
     let workEntries: [WorkEntry]
-    let calculation: CalculationResult
+    let calculation: CalculationResult?
     let paystub: ConfirmedPaystub
     let reconciliation: ReconciliationResult?
     var agreementChanges: [AgreementChange]?

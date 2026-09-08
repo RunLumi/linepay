@@ -460,8 +460,7 @@ final class AppModel {
         _ draft: PaystubConfirmationDraft, periodID: UUID? = nil, hasProAccess: Bool = false
     ) throws {
         let target = periodID ?? draft.targetPeriodID
-        guard let context = periodContext(id: target), let calculation = context.calculation,
-            !context.workEntries.isEmpty
+        guard let context = periodContext(id: target), !context.workEntries.isEmpty
         else { throw AppModelError.calculationUnavailable }
         guard canRunAudit(periodID: context.id, hasProAccess: hasProAccess) else {
             throw AppModelError.proRequired
@@ -509,17 +508,25 @@ final class AppModel {
                 amounts[field] = Money(amount: number, currencyCode: currency)
             }
         }
-        let assessment = try PaycheckAssessor().assess(
-            calculation: calculation, agreement: context.agreement,
-            facts: PaycheckFacts(
-                hasCompleteWork: draft.workComplete == true,
-                grossPay: gross, amounts: amounts, hours: hours,
-                grossBasis: draft.grossBasis, lineLayout: draft.lineLayout,
-                hoursBasis: draft.hoursBasis, guaranteeLayout: draft.guaranteeLayout,
-                hasUnreviewedFields: hasUnreviewed,
-                hasUnsupportedRules: (calculation.agreementSnapshots ?? [context.agreement])
-                    .contains { !($0.unsupportedRuleNotes ?? "").isEmpty })
-        )
+        let facts = PaycheckFacts(
+            hasCompleteWork: draft.workComplete == true,
+            grossPay: gross, amounts: amounts, hours: hours,
+            grossBasis: draft.grossBasis, lineLayout: draft.lineLayout,
+            hoursBasis: draft.hoursBasis, guaranteeLayout: draft.guaranteeLayout,
+            hasUnreviewedFields: hasUnreviewed,
+            hasUnsupportedRules: (context.calculation?.agreementSnapshots ?? [context.agreement])
+                .contains { !($0.unsupportedRuleNotes ?? "").isEmpty })
+        let assessment: PaycheckAssessment
+        let calculation = context.calculation
+        if let calculation = context.calculation {
+            assessment = try PaycheckAssessor().assess(
+                calculation: calculation, agreement: context.agreement, facts: facts)
+        } else {
+            assessment = try PaycheckAssessor().assessWithoutCalculation(
+                agreement: context.agreement, facts: facts,
+                reason: context.calculationIssue
+                    ?? "Expected pay could not be calculated with the saved work and rules.")
+        }
         var createdEvidence: PaystubEvidence?
         var evidence = draft.sourceEvidence ?? context.paystub?.evidence
         if let bytes = draft.sourceData {
@@ -591,7 +598,8 @@ final class AppModel {
                 archivedEpochSeconds: prior.archivedEpochSeconds, auditRevisions: revisions,
                 hasConsumedAuditAccess: (prior.hasConsumedAuditAccess ?? (prior.paystub != nil))
                     || consumesAccess,
-                agreementChanges: prior.agreementChanges
+                agreementChanges: prior.agreementChanges,
+                calculationIssue: prior.calculationIssue
             )
         }
         candidate.hasUsedFreeAudit = candidate.hasUsedFreeAudit || (consumesAccess && !hasProAccess)

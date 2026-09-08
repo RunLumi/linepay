@@ -151,9 +151,6 @@ struct RuleScopeRegressionTests {
         #expect(
             model.calculation == nil
                 && model.calculationError?.contains("Your work is saved") == true)
-        #expect(throws: AppModelError.calculationUnavailable) {
-            try model.confirmPaystub(UnitFixture.paystub(model))
-        }
         #expect(!model.hasUsedFreeAudit && model.currentPaystub == nil)
         #expect(AppModel(store: store).workEntries == model.workEntries)
 
@@ -161,6 +158,15 @@ struct RuleScopeRegressionTests {
         let archived = try #require(model.history.first)
         #expect(archived.calculation == nil)
         #expect(archived.calculationIssue?.isEmpty == false)
+        var correction = try model.paycheckDraft(for: archived.id)
+        correction.grossPay = "120"
+        correction.workComplete = true
+        correction.grossBasis = .wagesOnly
+        correction.reviewedFields = [.periodStart, .periodEnd, .grossPay]
+        try model.confirmPaystub(correction, periodID: archived.id)
+        let reviewed = try #require(model.history.first)
+        #expect(reviewed.paystub != nil && reviewed.reconciliation == nil)
+        #expect(reviewed.auditRevisions?.last?.paystub.grossPay == reviewed.paystub?.grossPay)
         #expect(model.activePeriod != nil)
         try model.addWork(
             start: model.activePeriod!.window.startDate,
