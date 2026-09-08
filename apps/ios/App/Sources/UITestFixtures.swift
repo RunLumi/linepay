@@ -46,6 +46,20 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
+                if scenario == "unresolved" {
+                    let boundary = profile.periodStartDate.addingTimeInterval(86_400)
+                    try model.addWork(
+                        start: profile.periodStartDate.addingTimeInterval(23 * 3_600),
+                        end: profile.periodStartDate.addingTimeInterval(25 * 3_600),
+                        kind: .callout, note: "Synthetic unresolved spanning callout")
+                    var changed = profile
+                    changed.hourlyRate = "60"
+                    changed.useEffectiveStart = true
+                    changed.effectiveStartDate = boundary
+                    try model.saveProfile(changed)
+                    try model.completeFirstResult()
+                    return session
+                }
                 let start = profile.periodStartDate.addingTimeInterval(7 * 3600)
                 try model.addWork(
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,
