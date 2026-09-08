@@ -37,6 +37,10 @@ installed iOS 26.4 StoreKit test daemon reproducibly returns
 `SKInternalErrorDomain Code=3` while clearing local test transactions; that is
 an environment limitation, not a relaxed product assertion.
 
+Before the full iOS gate, its dedicated iOS 18.5 simulator is shut down and
+booted again to give the local StoreKit daemon a clean session; this is a
+reboot, not an erase.
+
 The two Maestro matrix jobs use the existing `QC iPhone 17 Pro v2` and
 `LinePay Release iPhone 18` devices; they do not create or auto-select a
 simulator. Maestro 2.7.0 is downloaded once into the runner user's persistent

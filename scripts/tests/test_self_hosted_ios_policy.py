@@ -17,6 +17,7 @@ class SelfHostedIOSPolicyTests(unittest.TestCase):
         self.assertIn("pull_request:", workflow)
         self.assertEqual(workflow.count(self.FULL_PIN), 1)
         self.assertIn(self.RESET_STEP, workflow)
+        self.assertIn('xcrun simctl shutdown "$UDID"', workflow)
         self.assertIn("device: QC iPhone 17 Pro v2", workflow)
         self.assertIn("device: LinePay Release iPhone 18", workflow)
         self.assertIn("MAESTRO_CACHE=", workflow)

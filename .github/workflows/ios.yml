@@ -55,6 +55,10 @@ jobs:
       - name: Reset synthetic app data on the pinned simulator
         run: |
           UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          # Reboot the dedicated full-gate simulator so StoreKit starts from a
+          # clean daemon session without erasing the device or other data.
+          xcrun simctl shutdown "$UDID" 2>/dev/null || true
+          xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Toolchain
