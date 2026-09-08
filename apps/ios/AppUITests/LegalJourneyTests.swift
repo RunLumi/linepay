@@ -23,9 +23,14 @@ final class LegalJourneyTests: XCTestCase {
         capture("legal-audit-scope")
         tap("audit.export")
         let preview = app.buttons["report.preview"].firstMatch
+        let reportForm = app.scrollViews.firstMatch
         for _ in 0..<12 {
             if preview.exists && preview.isHittable { break }
-            app.swipeUp()
+            if reportForm.exists {
+                reportForm.swipeUp()
+            } else {
+                app.windows.element(boundBy: 0).swipeUp()
+            }
         }
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["audit.share-report"].exists)
