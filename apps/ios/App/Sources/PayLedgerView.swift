@@ -83,13 +83,17 @@ struct PayLedgerView: View {
                         PayLedgerRows(
                             calculation: calculation, agreement: context.agreement,
                             work: context.workEntries)
+                    }
+                    if !context.workEntries.isEmpty {
                         Section {
                             Button("Finish work period") { showingFinish = true }.frame(
                                 minHeight: 48
                             )
                             .accessibilityIdentifier("pay.finish-period")
                             Text(
-                                "The next work period can start before this paycheck arrives. Pending paychecks stay available in History."
+                                context.calculation == nil
+                                    ? "This period needs calculation review. Closing preserves the work and lets you continue logging the next period."
+                                    : "The next work period can start before this paycheck arrives. Pending paychecks stay available in History."
                             ).font(.footnote)
                         }
                     }
