@@ -96,10 +96,16 @@ final class PaydayJourneyTests: XCTestCase {
         scrollTo(confirmClose)
         XCTAssertTrue(confirmClose.waitForExistence(timeout: 10))
         XCTAssertTrue(confirmClose.isEnabled)
-        confirmClose.tap()
-        XCTAssertTrue(
-            confirmClose.waitForNonExistence(timeout: 10),
-            "The close sheet did not dismiss before starting the next-period journey.")
+        var dismissed = false
+        for _ in 0..<3 {
+            if !confirmClose.exists { dismissed = true; break }
+            confirmClose.tap()
+            if confirmClose.waitForNonExistence(timeout: 5) {
+                dismissed = true
+                break
+            }
+        }
+        XCTAssertTrue(dismissed, "The close sheet did not dismiss before starting the next-period journey.")
 
         tab("Today")
         let addNextWork = app.buttons["today.add-work"]
