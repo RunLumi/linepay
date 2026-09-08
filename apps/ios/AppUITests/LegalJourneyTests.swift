@@ -9,6 +9,8 @@ final class LegalJourneyTests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.terminate()
+        _ = app.wait(for: .notRunning, timeout: 10)
+        XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp").terminate()
         XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
@@ -245,10 +247,12 @@ final class LegalJourneyTests: XCTestCase {
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.terminate()
+        _ = app.wait(for: .notRunning, timeout: 10)
         for attempt in 0..<2 {
             app.launch()
             if app.wait(for: .runningForeground, timeout: 20) { return }
             app.terminate()
+            _ = app.wait(for: .notRunning, timeout: 10)
             if attempt == 0 { XCUIDevice.shared.press(.home) }
         }
         XCTFail("The test app did not reach the foreground after two launch attempts.")
@@ -299,7 +303,10 @@ final class LegalJourneyTests: XCTestCase {
                 systemOption.tap()
                 return
             }
-            if attempt < 2, control.exists && control.isHittable { control.tap() }
+            if attempt < 2 {
+                scrollTo(control, maxSwipes: 8)
+                if control.exists && control.isHittable { control.tap() }
+            }
         }
         XCTFail("Missing scope option: \(label)")
     }
