@@ -21,6 +21,8 @@ class SelfHostedIOSPolicyTests(unittest.TestCase):
         self.assertIn("device: LinePay Release iPhone 18", workflow)
         self.assertIn("MAESTRO_CACHE=", workflow)
         self.assertNotIn("simctl create", workflow)
+        self.assertIn("MAESTRO_CLI_NO_ANALYTICS", workflow)
+        self.assertIn('mkdir -p "$HOME/.maestro"', workflow)
 
     def test_legal_regressions_use_the_dedicated_runner(self):
         workflow = (ROOT / ".github/workflows/legal-regressions.yml").read_text()

@@ -93,6 +93,8 @@ jobs:
     needs: check
     runs-on: linepay-ios
     timeout-minutes: 40
+    env:
+      MAESTRO_CLI_NO_ANALYTICS: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -137,6 +139,7 @@ jobs:
           fi
           echo "a4ccab6b604617e7aef6db4f885666056eabe5cfa32befaa3bc994041b8fcbb5  $MAESTRO_CACHE" | shasum -a 256 -c -
           unzip -q "$MAESTRO_CACHE" -d "$RUNNER_TEMP/maestro-cli"
+          mkdir -p "$HOME/.maestro"
           echo "$RUNNER_TEMP/maestro-cli/maestro/bin" >> "$GITHUB_PATH"
       - name: Prepare test appearance and device
         env:
