@@ -269,9 +269,20 @@ final class LegalJourneyTests: XCTestCase {
         // contract; prefer the stable identifier whenever the platform exposes it.
         let visibleOption = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", label)).firstMatch
-        XCTAssertTrue(visibleOption.waitForExistence(timeout: 15), "Missing scope option: \(label)")
-        XCTAssertTrue(visibleOption.isHittable, "Scope option is not hittable: \(label)")
-        visibleOption.tap()
+        if visibleOption.waitForExistence(timeout: 5) && visibleOption.isHittable {
+            visibleOption.tap()
+            return
+        }
+
+        // iOS 18.5 can host a SwiftUI Menu in the system menu window rather than
+        // the app tree at the largest content size. The exact label remains the
+        // user-facing contract; query that window before failing the journey.
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let systemOption = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(systemOption.waitForExistence(timeout: 10), "Missing scope option: \(label)")
+        XCTAssertTrue(systemOption.isHittable, "Scope option is not hittable: \(label)")
+        systemOption.tap()
     }
     private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
