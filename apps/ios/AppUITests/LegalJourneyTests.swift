@@ -265,32 +265,43 @@ final class LegalJourneyTests: XCTestCase {
         button.tap()
     }
     private func chooseScope(label: String, identifier: String) {
-        let stableOption = app.descendants(matching: .any)
-            .matching(identifier: identifier).firstMatch
-        if stableOption.exists && stableOption.isHittable {
-            stableOption.tap()
-            return
-        }
-
-        // SwiftUI Menu options can expose their visible label without preserving the child
-        // identifier in the hosted accessibility tree. The exact label remains the user-facing
-        // contract; prefer the stable identifier whenever the platform exposes it.
-        let visibleOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
-        if visibleOption.waitForExistence(timeout: 5) && visibleOption.isHittable {
-            visibleOption.tap()
-            return
-        }
-
-        // iOS 18.5 can host a SwiftUI Menu in the system menu window rather than
-        // the app tree at the largest content size. The exact label remains the
-        // user-facing contract; query that window before failing the journey.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let systemOption = springboard.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
-        XCTAssertTrue(systemOption.waitForExistence(timeout: 10), "Missing scope option: \(label)")
-        XCTAssertTrue(systemOption.isHittable, "Scope option is not hittable: \(label)")
-        systemOption.tap()
+        let control = app.descendants(matching: .any)
+            .matching(identifier: "pay-profile.change-scope").firstMatch
+        for attempt in 0..<3 {
+            let stableOption = app.descendants(matching: .any)
+                .matching(identifier: identifier).firstMatch
+            if stableOption.exists && stableOption.isHittable {
+                stableOption.tap()
+                return
+            }
+
+            // SwiftUI Menu options can expose their visible label without preserving the child
+            // identifier in the hosted accessibility tree. Prefer the app tree when available.
+            let visibleOption = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            if visibleOption.waitForExistence(timeout: 3) && visibleOption.isHittable {
+                visibleOption.tap()
+                return
+            }
+            let menuButton = app.buttons
+                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            if menuButton.waitForExistence(timeout: 3) && menuButton.isHittable {
+                menuButton.tap()
+                return
+            }
+
+            // iOS 18.5 can host a SwiftUI Menu in the system menu window rather than the app
+            // tree at the largest content size.
+            let systemOption = springboard.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            if systemOption.waitForExistence(timeout: 3) && systemOption.isHittable {
+                systemOption.tap()
+                return
+            }
+            if attempt < 2, control.exists && control.isHittable { control.tap() }
+        }
+        XCTFail("Missing scope option: \(label)")
     }
     private func scrollTo(_ element: XCUIElement, maxSwipes: Int = 16) {
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
