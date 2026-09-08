@@ -22,13 +22,15 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(scope.waitForExistence(timeout: 15))
         capture("legal-audit-scope")
         tap("audit.export")
-        XCTAssertTrue(app.buttons["report.preview"].waitForExistence(timeout: 10))
+        let preview = app.buttons["report.preview"].firstMatch
+        scrollTo(preview, maxSwipes: 12)
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["audit.share-report"].exists)
         let details = app.switches["report.include-source-details"]
         XCTAssertTrue(details.exists)
         XCTAssertEqual(details.value as? String, "0")
         capture("legal-default-report-options")
-        tap("report.preview")
+        preview.tap()
         XCTAssertTrue(app.buttons["audit.share-report"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.staticTexts["report.preview-warning"].exists)
         capture("legal-exact-pdf-preview")
