@@ -170,6 +170,7 @@ tags: [ios, regression, payroll-scope]
 - waitForAnimationToEnd
 - tapOn:
     id: report.preview
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
