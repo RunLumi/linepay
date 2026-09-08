@@ -10,6 +10,7 @@ final class PaydayJourneyTests: XCTestCase {
         // previous app process first so a suite run cannot reuse an earlier fixture session.
         app = XCUIApplication()
         app.terminate()
+        _ = app.wait(for: .notRunning, timeout: 10)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -270,7 +271,10 @@ final class PaydayJourneyTests: XCTestCase {
         }
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
+        app.terminate()
+        _ = app.wait(for: .notRunning, timeout: 10)
         app.launch()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 20))
         XCTAssertGreaterThan(
             app.windows.firstMatch.frame.height, 600,
             "Supported iPhones must not use the legacy 320-by-480 launch window")
