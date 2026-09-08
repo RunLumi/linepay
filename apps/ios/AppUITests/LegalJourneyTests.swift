@@ -200,13 +200,13 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.change-scope").firstMatch
-            scrollTo(scopeControl, maxSwipes: 8)
+            revealReviewElement(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
             let explanation = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.scope-explanation").firstMatch
-            scrollTo(explanation, maxSwipes: 8)
+            revealReviewElement(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.waitForExistence(timeout: 15))
             XCTAssertTrue(
                 explanation.label.contains(fragment),
@@ -277,6 +277,26 @@ final class LegalJourneyTests: XCTestCase {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }
+    }
+    private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
+        if element.exists && element.isHittable { return }
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let windowFrame = frontmostWindow.frame
+        for _ in 0..<maxSwipes {
+            if element.exists && element.isHittable { return }
+            if element.exists, element.frame.minY >= windowFrame.maxY {
+                // The element is below the viewport; keep moving down the Form.
+                frontmostWindow.swipeUp()
+            } else if element.exists {
+                // The review controls can be above the retained Form scroll position.
+                frontmostWindow.swipeDown()
+            } else {
+                // Keep the same bounded fallback as the normal helper if SwiftUI has
+                // temporarily virtualized the control.
+                frontmostWindow.swipeUp()
+            }
+        }
+        scrollTo(element, maxSwipes: maxSwipes)
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
