@@ -37,7 +37,7 @@ Do not collapse these into a completeness percentage. Code establishes implement
 | [#40](https://github.com/streamentry/linepay/issues/40) | P1 time entry | Resolved in `d05428e`: Repeat Shift preserves wall-clock facts and requires explicit DST gap/fold review |
 | [#41](https://github.com/streamentry/linepay/issues/41) | P1 event model | Resolved in `9b015a0`: one saved Callout row carries one confirmed physical event, with explicit continuation/separation and legacy review paths |
 | [#42](https://github.com/streamentry/linepay/issues/42) | P1 scoped capability | Bounded weekly layer implemented and native review flow present; source/applicability review and broader statutory/CBA admission remain open |
-| [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | An unpriceable saved period A blocks closing A and recording B |
+| [#44](https://github.com/streamentry/linepay/issues/44) | P1 lifecycle | Resolved in #81/#82: an unpriceable period can close with frozen review state, the next period stays independent, and later paycheck facts remain non-comparable until expected pay is resolved |
 | [#45](https://github.com/streamentry/linepay/issues/45) | P2 provenance | Resolved in #59: reports surface recorded calculation provenance; legacy results remain explicitly unknown |
 | [#46](https://github.com/streamentry/linepay/issues/46) | P2 specification | EX-08 is represented only across date boundaries; same-day EX-09 remains reference-only because the timeline is midnight-effective |
 | [#47](https://github.com/streamentry/linepay/issues/47) | P2 scope | Optional work-log and renewal reminders are deliberately deferred from iOS 1.0; no notification permission or scheduler is shipped |
@@ -53,8 +53,9 @@ Use #42 as the canonical weekly-capability issue and #43 as its duplicate. Concu
 | R4 | Six eight-hour days, $50, only daily 1.5x after eight configured | Configured daily $2,400; bounded weekly layer $2,600 under explicit assumptions | #42: source/applicability admission remains separate |
 | R5 | New York March 7, 2026 00:00–08:00 with 04:00 break, repeated March 8 | Repeat Shift preserves local wall-clock facts and requires explicit handling for a nonexistent/repeated time | #40 resolved in `d05428e`; native/device acceptance remains separate |
 | R6 | OCR `Pay period ending 09/05/2026` | Both periodStart and periodEnd suggested as `2026-09-05` | #48: complete production parser executed without Vision; the source provides no start |
+| R7 | Period A has a genuine work record but an ambiguous spanning-callout guarantee; B begins afterward; A's paycheck arrives later | A closes with nil expected pay and a saved issue; B accepts work independently; A's paycheck facts are retained as `notComparable`; retry never rewrites B | #44 resolved in #81/#82: preserve evidence and review state instead of blocking rollover or substituting zero |
 
-#44 is source-traced: the domain rejects an ambiguous spanning-callout guarantee; AppModel retains the genuine work with no calculation; archive requires a calculation; starting B requires no active period. Its extended native close/relaunch/start-B test still needs to execute. Refusing an invented audit is correct; blocking all subsequent work logging is a different behavior.
+#44 is resolved in the current implementation: an ambiguous spanning-callout guarantee remains unpriced, but AppSession can close the period atomically, persist the issue and frozen facts, create an independent next period where cadence permits, and allow later paycheck facts to be retained as non-comparable. The native rollover journey and retry/backup regressions are present; hosted/release evidence remains separate.
 
 ## Business-rule mapping: all 45 IDs
 
@@ -74,15 +75,15 @@ Code links below are pinned. Test identifiers refer to files under [App tests][A
 | BR-013 | [DM], [TL], [AM] windows | AgreementTimelineTests, ReadinessBoundaryTests | Partial: payroll timezone explicit; statutory week/non-midnight contract day not represented; #42/#14 and repeat DST #40 |
 | BR-014 | [AM] correctCurrentPeriod | ReadinessTests.periodCorrectionRejectsMovingWorkOrOverlap | S: containment, overlap and invalidation paths exist; old no-op date defect not reopened |
 | BR-015 | [DM] AgreementSource.ruleKey; [PROFILE] | AppFailurePathTests.profileDraftKeepsScheduleSourceAndEffectiveDates | S: per-rule source references; actual preset/source approval #26 |
-| BR-020 | [DM] WorkInterval; [PC] guarantee category | PayCalculatorInvariantTests.actualCalloutBreakAndGuaranteedPayStaySeparate | P/Partial: worked/paid equivalents and physical callout identity are separate; unsupported interactions remain #44 |
-| BR-021 | [DM] validation; [AM] work operations | AppModelContractTests.workGuardsAndUndoAreSafe; CalloutEntryWorkflowTests | Partial: explicit continuation/separation and legacy review paths exist; unsupported callout interactions remain #44 |
+| BR-020 | [DM] WorkInterval; [PC] guarantee category | PayCalculatorInvariantTests.actualCalloutBreakAndGuaranteedPayStaySeparate | P/Partial: worked/paid equivalents and physical callout identity are separate; unsupported interactions remain visible |
+| BR-021 | [DM] validation; [AM] work operations | AppModelContractTests.workGuardsAndUndoAreSafe; CalloutEntryWorkflowTests | Partial: explicit continuation/separation and legacy review paths exist; unsupported callout interactions remain visible |
 | BR-022 | [WORK] repeatDates and break offsets; [AM] lastWork | ScreenContractTests.addEditAndRepeatFormsRetainTheirWorkFacts | Partial: Repeat Shift now preserves local facts and requires DST review; physical-device acceptance remains separate |
 | BR-023 | [AM] save/discard drafts; [STATE] | ReadinessTests.workAndIntakeDraftsSurviveNewModel; PaydayJourneyTests | S: durable draft/context represented; device interruption acceptance separate |
 | BR-024 | [AM] deleteWork/restoreDeletedWork | ReadinessTests.staleUndoCannotMoveWorkToNextPeriod / undoRejectsAnInterveningEdit | S: period/revision-bound Undo present; old defect not reopened |
-| BR-025 | [AM] archive and historical confirmation | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules | Partial: normal delayed-paycheck path exists; unpriceable-A path #44 |
+| BR-025 | [AM] archive and historical confirmation | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules; UnresolvedPeriodLifecycleTests | Partial: priceable and unresolved close paths are represented; external provider/release acceptance remains separate |
 | BR-026 | [STATE] AuditRevision; [AM] confirmPaystub | ReadinessTests.closedAuditCorrectionsAppendRevisions | Partial: immutable facts/rules/results and calculation provenance are present; legacy unknown identity remains explicit |
-| BR-027 | [LEDGER] close confirmation; [HISTORY] | PeriodAndEvidenceTests.periodCadencesAndArchive | Partial: priceable unaudited periods can await pay; unresolved closed state #44 |
-| BR-028 | [AM] calculation/error paths; [LEDGER] | AuditScopeRegressionTests.missingAndStaleCalculationsAreNotSuccess | S plus gap: reject false success without blocking all subsequent work #44 |
+| BR-027 | [LEDGER] close confirmation; [HISTORY] | PeriodAndEvidenceTests.periodCadencesAndArchive; UnresolvedPeriodLifecycleTests | Partial: priceable and unresolved periods show distinct close/review states; external provider/release acceptance remains separate |
+| BR-028 | [AM] calculation/error paths; [LEDGER] | AuditScopeRegressionTests.missingAndStaleCalculationsAreNotSuccess; UnresolvedPeriodLifecycleTests | S: reject false success without blocking later work; unresolved paycheck facts remain non-comparable |
 | BR-030 | [IMPORT], [OCR], DocumentScannerView | DocumentPipelineTests, PaydayJourneyTests | S: shared confirmation path; actual scanner/device permission behavior unverified here |
 | BR-031 | [PARSER], [OCR], [SOURCE] | OCRParserTests.currentNeverSelectsYTD / repeatedLabelsDoNotGuess | Partial: conservative amounts/provenance exist; end-only date counterexample #48 |
 | BR-032 | [OP], [IMPORT] | PaystubImportOperationTests.cancelledReadCannotClaimOrFinishANewerImport | S: token-bound intake/cancellation present |
@@ -119,7 +120,7 @@ The catalog describes required facts and coverage boundaries, not eighteen promi
 | PAY-03 | Weekly overtime | `WeeklyRegularRateCalculator`; `WeeklyRegularRateTests`; native review flow | Restricted complete-week profile only; #42 source/applicability admission remains open |
 | PAY-04 | Outside schedule | [DM] RegularScheduleWindow; PayCalculatorScheduleTests | P: same-day windows; overnight schedule windows explicitly rejected |
 | PAY-05 | Weekend/date premiums | [PC]; PayCalculatorScheduleTests | P: explicit multipliers; no universal holiday/stacking inference |
-| PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests; CalloutEntryWorkflowTests | Partial: isolated variant and explicit event identity are implemented; unpriceable rollover and other interactions remain #44 |
+| PAY-06 | Callout minimum | [PC] calloutGuarantees; CaliforniaOutsideLineFixtureTests; CalloutEntryWorkflowTests | Partial: isolated variant and explicit event identity are implemented; cross-rule and other agreement interactions remain unsupported |
 | PAY-07 | Rest/fatigue | No rest state machine in [DM] | Unsupported by design; disclose #14, review named clauses #26 |
 | PAY-08 | Meal entitlement | [DM] actual unpaid breaks, not meal-payment events | Unsupported payment type; break subtraction is not meal-penalty coverage |
 | PAY-09 | Travel | [DM] WorkKind.other is not a travel rule | Unsupported classification/payment; preserve genuine facts and disclose limits |
@@ -164,7 +165,7 @@ Related tests can use different synthetic rates/dates for the same mechanism. Th
 | EX-23 | OCRParserTests.currentNeverSelectsYTD; DocumentPipelineTests | Conservative current/YTD tests exist; no native OCR run; end-only date is separate #48 |
 | EX-24 | PayCalculatorTimeAndTierTests.springDSTUsesElapsedTime | Domain elapsed-time check and explicit Repeat Shift DST review are present; physical-device acceptance remains separate |
 | EX-25 | PayCalculatorTimeAndTierTests.fallDSTUsesElapsedTime | Domain elapsed-time check passed; repeated local input still needs explicit resolution |
-| EX-26 | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules; PaydayJourneyTests | Normal path represented; unpriceable-A boundary #44 |
+| EX-26 | IntegratedReadinessTests.sundayCloseMondayWorkAndThursdayPaycheckKeepSeparateRules; PaydayJourneyTests; UnresolvedPeriodLifecycleTests | Normal and unresolved-period paths represented; external native/release evidence remains separate |
 | EX-27 | ReadinessTests.staleUndoCannotMoveWorkToNextPeriod | Period-bound regression exists; earlier defect not reopened |
 | EX-28 | PeriodAndEvidenceTests.manualCorrectionPreservesOriginalAndFailedReplacementRollsBack | Original-retention/revision regression exists |
 | EX-29 | ReadinessBoundaryTests, TimelinePersistenceTests; [HISTORY], [REPORT] | Frozen context represented; native acceptance not rerun |
@@ -182,7 +183,7 @@ EX-13 was re-read directly from its pinned source during consolidation; do not s
 |---|---|---|
 | Setup and first personal proof | [ROOT] -> [PROFILE] -> [FIRST] -> [WORK] -> [LEDGER] | Present; #14 coverage disclosure; sample work cannot count as personal proof |
 | Repeated work | Today/lastWork -> [WORK] draft -> [AM] save | #40 DST review and #41 callout-event identity are implemented; physical-device acceptance remains separate |
-| Close work and delayed paycheck | [LEDGER] -> [AM] close -> [HISTORY] -> historical [IMPORT] | Normal A/B independence present; #44 unresolved calculation |
+| Close work and delayed paycheck | [LEDGER] -> [AM] close -> [HISTORY] -> historical [IMPORT] | Normal and unresolved A/B independence present; later unresolved paycheck facts remain non-comparable |
 | Scan/photo/PDF/manual | [IMPORT] -> [OP] -> original saved -> [OCR]/[PARSER] -> confirmation -> [ASSESS] | Actual device scanner acceptance; #38 paid-source consistency, #48 dates |
 | Explain and correct | AuditDetail -> [RECEIPT] -> [SOURCE] -> confirmed revision | Original retained; private sharing #20 remains, while report calculation provenance is implemented |
 | Annual introduction after value | [FIRST] -> [PAYWALL] -> [STORE]/[OPS] | Eligibility-aware flow present; actual storefront #18; optional reminders #47 |
@@ -198,7 +199,7 @@ Existing issue ownership: #14 supported-rule limits, #15 dated consent and #20 p
 
 ## Maintenance and completion
 
-Fix or explicitly gate current misleading results and fact construction before expanding the catalog. Resolve the work-logging dead end without inventing pay. Add version identity alongside changed algorithms. #42 is a bounded supported-scope decision, not authorization to build a nationwide legal engine. #46/#47 can be resolved by honest deferral where their acceptance permits it.
+Fix or explicitly gate current misleading results and fact construction before expanding the catalog. Preserve the resolved work-logging rollover boundary without inventing pay. Add version identity alongside changed algorithms. #42 is a bounded supported-scope decision, not authorization to build a nationwide legal engine. #46/#47 can be resolved by honest deferral where their acceptance permits it.
 
 Every closure records the actual fix/tested commit, meaningful regression, commands/results and remaining native/device limits. Preserve historical findings; append new evidence rather than rewriting old failures as retroactive passes. A generated checklist is not owner/counsel approval. A pending PR is not a shipped fix.
 
