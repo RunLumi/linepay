@@ -30,6 +30,8 @@ jobs:
   check:
     runs-on: linepay-ios
     timeout-minutes: 20
+    env:
+      IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=0A8C774B-C1D3-4A43-816C-81D3D3D849D8
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,6 +51,11 @@ jobs:
         run: |
           XCODEGEN_PREFIX="$HOME/.local" bash scripts/install-xcodegen.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Reset synthetic app data on the pinned simulator
+        run: |
+          UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Toolchain
         run: |
           xcodebuild -version
