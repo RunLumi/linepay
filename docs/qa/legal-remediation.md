@@ -144,3 +144,11 @@ fixtures and 15 browser-smoke checks also passed, including mobile navigation, s
 no-JavaScript reading, keyboard skip links, and print layout. The full 20-guide release-candidate
 review, manual walkthrough, verified screenshots, and external release-surface acceptance remain
 open under #60.
+
+## Post-merge readback — September 7, 2026
+
+PR #57 was squash-merged as `79c5ed4a067276bd7c4388653e80ef1f98f44e7c` into `main` at
+`6a5bd9e67dc14d9bdf8e14987b85e75e5abae4d4`. The merged tree contains the legal engineering and
+guide changes, but the required PR native checks were pre-start failures from the GitHub Actions
+account/runner condition. No hosted native pass is claimed. Issue #37 and all external legal,
+storefront, device, provider, support, ownership, counsel, and release obligations remain open.

@@ -275,3 +275,17 @@ dark preference, no-JavaScript reading, keyboard skip links, and print layout.
 This is targeted guide evidence, not the complete #60 acceptance: the full 20-guide release-candidate
 walkthrough, exact app/guide release pairing, manual mobile/dark/large-text review, verified real-app
 screenshots, public-domain/content freshness, and external release-surface acceptance remain open.
+
+## Post-merge readback — September 7, 2026
+
+PR #57 was squash-merged by the repository owner as `79c5ed4a067276bd7c4388653e80ef1f98f44e7c`
+into `main` at `6a5bd9e67dc14d9bdf8e14987b85e75e5abae4d4`. The merge readback confirms the legal
+engineering, guide, workflow, and accessibility changes are present in the main tree. The required
+PR checks recorded before merge (`Documentation`, legal controls, focused legal regressions, user
+guide, and iOS) were pre-start failures caused by the GitHub Actions billing/runner condition; the
+merge is therefore repository state, not native acceptance. The new push policy intentionally runs
+ordinary CI on `dev`/`testing`, while preserving main-branch User Guide deployment behavior.
+
+Issue #37 remains open with the account owner as responsible for restoring exact-head hosted native
+execution. External storefront, counsel, physical-device, provider, support-operation, ownership,
+trademark, and release-surface acceptance remain separate open obligations.
