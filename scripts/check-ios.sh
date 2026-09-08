@@ -118,7 +118,7 @@ xcodebuild \
     -enableCodeCoverage YES \
     -parallel-testing-enabled NO \
     -test-timeouts-enabled YES \
-    -maximum-test-execution-time-allowance 180 \
+    -maximum-test-execution-time-allowance 720 \
     -onlyUsePackageVersionsFromResolvedFile \
     CODE_SIGNING_ALLOWED=NO \
     test

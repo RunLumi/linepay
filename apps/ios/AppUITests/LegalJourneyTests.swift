@@ -47,37 +47,66 @@ final class LegalJourneyTests: XCTestCase {
             // Some hosted iOS 26 share sheets expose the selected Files action only as the
             // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
             // below still prove that this action reached the actual Files destination.
-            saveToFiles =
-                springboard.descendants(matching: .any)
-                .matching(identifier: "actionGroupCell").firstMatch
+            let genericCell = springboard.descendants(matching: .any)
+                .matching(identifier: "actionGroupCell")
+                .matching(NSPredicate(format: "label == %@", "Save to Files"))
+                .firstMatch
+            let cellTitle = springboard.descendants(matching: .any)
+                .matching(identifier: "cellTitleLabel")
+                .matching(NSPredicate(format: "label == %@", "Save to Files"))
+                .firstMatch
+            saveToFiles = cellTitle.exists ? cellTitle : genericCell
         }
         XCTAssertTrue(
             saveToFiles.waitForExistence(timeout: 15),
             "The system PDF activity sheet did not expose a Files destination; preview alone is not a handoff."
         )
         XCTAssertTrue(saveToFiles.isHittable)
-        capture("legal-system-share-sheet")
-        saveToFiles.tap()
+        captureSystem("legal-system-share-sheet")
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
-        let saveVisible =
-            saveInFiles.waitForExistence(timeout: 15)
-            || saveInShareSheet.waitForExistence(timeout: 15)
+        var saveVisible = false
+        for attempt in 0..<2 {
+            saveToFiles.tap()
+            saveVisible =
+                saveInFiles.waitForExistence(timeout: 15)
+                || saveInShareSheet.waitForExistence(timeout: 15)
+            if saveVisible || attempt == 1 { break }
+        }
         XCTAssertTrue(
             saveVisible,
             "The PDF did not reach the system Files export destination.")
-        capture("legal-files-export-ready")
+        captureSystem("legal-files-export-ready")
         // Cancel at the native Files destination: no recipient is selected and no synthetic
         // report is persisted into a connected provider.
         let cancelInFiles = documentsApp.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
+        // iOS 26.4 presents the Files destination as a navigation stack with a
+        // back-chevron button, not a literal Cancel control. Both paths dismiss
+        // the destination without saving; prefer the explicit Cancel label when
+        // a runtime exposes it, then use the actual Files navigation control.
+        let backInFiles = documentsApp.navigationBars.buttons.firstMatch
+        let backButtonInFiles = documentsApp.buttons["Back"].firstMatch
+        let backInShareSheet = app.navigationBars.buttons.firstMatch
+        let backInSpringboard = springboard.navigationBars.buttons.firstMatch
         let cancelInShareSheet = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         let cancelInSpringboard = springboard.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Cancel")).firstMatch
         if cancelInFiles.waitForExistence(timeout: 10) {
             cancelInFiles.tap()
+        } else if backInFiles.waitForExistence(timeout: 10) {
+            XCTAssertTrue(backInFiles.isHittable, "Files navigation back control is not hittable.")
+            backInFiles.tap()
+        } else if backButtonInFiles.waitForExistence(timeout: 10) {
+            XCTAssertTrue(
+                backButtonInFiles.isHittable, "Files navigation back control is not hittable.")
+            backButtonInFiles.tap()
+        } else if backInShareSheet.waitForExistence(timeout: 10) {
+            backInShareSheet.tap()
+        } else if backInSpringboard.waitForExistence(timeout: 10) {
+            backInSpringboard.tap()
         } else if cancelInShareSheet.waitForExistence(timeout: 10) {
             cancelInShareSheet.tap()
         } else {
@@ -115,15 +144,32 @@ final class LegalJourneyTests: XCTestCase {
             rate.tap()
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
+            let stepIndicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
             for expectedStep in 1...2 {
                 let next = app.buttons["pay-profile.continue"].firstMatch
+                let expectedStepLabel = "Step \(expectedStep + 1) of 4"
                 var advanced = false
-                for _ in 0..<3 {
-                    scrollTo(next, maxSwipes: 8)
-                    XCTAssertTrue(next.isHittable)
-                    next.press(forDuration: 0.1)
-                    if next.waitForExistence(timeout: 3),
-                        next.value as? String == "step-\(expectedStep)"
+                for attempt in 0..<4 {
+                    // The toolbar indicator stays materialized wherever the Form is
+                    // scrolled; decide from the rendered step before acting so a retry
+                    // tap can never overshoot into a later step.
+                    if stepIndicator.waitForExistence(timeout: 2),
+                        stepIndicator.label == expectedStepLabel
+                    {
+                        advanced = true
+                        break
+                    }
+                    // Continue stays in the accessibility tree while scrolled offscreen;
+                    // only a hittable tap can advance, so keep scrolling until tappable.
+                    scrollTo(next, maxSwipes: 12)
+                    guard next.exists, next.isHittable else { continue }
+                    if attempt == 0 {
+                        next.tap()
+                    } else {
+                        next.press(forDuration: 0.1)
+                    }
+                    if stepIndicator.waitForExistence(timeout: 5),
+                        stepIndicator.label == expectedStepLabel
                     {
                         advanced = true
                         break
@@ -134,12 +180,19 @@ final class LegalJourneyTests: XCTestCase {
                     "The editor did not advance to step \(expectedStep + 1) of 4.")
             }
             var reachedReview = false
-            for _ in 0..<3 {
+            let saveControl = app.buttons["pay-profile.save"].firstMatch
+            for attempt in 0..<3 {
                 let finalContinue = app.buttons["pay-profile.continue"].firstMatch
-                scrollTo(finalContinue, maxSwipes: 8)
+                scrollTo(finalContinue, maxSwipes: 12)
                 XCTAssertTrue(finalContinue.isHittable)
-                finalContinue.press(forDuration: 0.1)
-                if finalContinue.waitForNonExistence(timeout: 3) {
+                if attempt == 0 {
+                    finalContinue.tap()
+                } else {
+                    finalContinue.press(forDuration: 0.1)
+                }
+                // The toolbar exposes "Save reviewed rules" wherever the Form is
+                // scrolled; its appearance is the step-4 signal.
+                if saveControl.waitForExistence(timeout: 8) {
                     reachedReview = true
                     break
                 }
@@ -182,7 +235,13 @@ final class LegalJourneyTests: XCTestCase {
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.terminate()
-        app.launch()
+        for attempt in 0..<2 {
+            app.launch()
+            if app.wait(for: .runningForeground, timeout: 20) { return }
+            app.terminate()
+            if attempt == 0 { XCUIDevice.shared.press(.home) }
+        }
+        XCTFail("The test app did not reach the foreground after two launch attempts.")
     }
     private func tab(_ name: String) {
         let tab = app.tabBars.buttons[name]
@@ -222,18 +281,31 @@ final class LegalJourneyTests: XCTestCase {
     private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
         if element.exists && element.isHittable { return }
         let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let windowFrame = frontmostWindow.frame
         for _ in 0..<maxSwipes {
             if element.exists && element.isHittable { return }
-            frontmostWindow.swipeDown()
+            if element.exists, element.frame.minY >= windowFrame.maxY {
+                // The element is below the viewport; keep moving down the Form.
+                frontmostWindow.swipeUp()
+            } else if element.exists {
+                // The review controls can be above the retained Form scroll position.
+                frontmostWindow.swipeDown()
+            } else {
+                // Keep the same bounded fallback as the normal helper if SwiftUI has
+                // temporarily virtualized the control.
+                frontmostWindow.swipeUp()
+            }
         }
         scrollTo(element, maxSwipes: maxSwipes)
     }
-    private func revealEarlierContent() {
-        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        for _ in 0..<8 { frontmostWindow.swipeDown() }
-    }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    private func captureSystem(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
