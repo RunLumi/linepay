@@ -180,6 +180,12 @@ tags: [ios, regression, payroll-scope]
 - assertVisible:
     id: audit.share-report
 - takeScreenshot: offsetting-lines-report-ready
+- tapOn: Back
+- waitForAnimationToEnd
+- assertVisible:
+    id: report.preview
+- tapOn: Done
+- waitForAnimationToEnd
 - tapOn:
     text: Pay
     index: 0
