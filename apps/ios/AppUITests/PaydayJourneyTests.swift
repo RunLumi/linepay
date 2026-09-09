@@ -323,6 +323,8 @@ final class PaydayJourneyTests: XCTestCase {
         for _ in 0..<3 {
             if indicator.exists, indicator.label == expectedLabel { return }
             XCTAssertTrue(next.waitForExistence(timeout: 8))
+            scrollTo(next)
+            XCTAssertTrue(next.isHittable)
             next.tap()
             if indicator.waitForExistence(timeout: 5), indicator.label == expectedLabel { return }
         }
@@ -337,6 +339,8 @@ final class PaydayJourneyTests: XCTestCase {
             }
             let next = app.buttons["pay-profile.continue"].firstMatch
             XCTAssertTrue(next.waitForExistence(timeout: 8))
+            scrollTo(next)
+            XCTAssertTrue(next.isHittable)
             next.tap()
         }
         XCTFail("Pay setup did not expose the review save control; current step: \(indicator.label)")
