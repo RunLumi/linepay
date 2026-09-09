@@ -74,6 +74,7 @@ jobs:
           xcodegen --version
       - name: Lint, test, and build
         run: |
+          rm -rf .test-results
           mkdir -p .test-results
           set -o pipefail
           bash scripts/check-ios.sh 2>&1 | tee .test-results/verification.log
