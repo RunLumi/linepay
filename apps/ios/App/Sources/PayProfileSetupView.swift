@@ -96,6 +96,9 @@ struct PayProfileSetupView: View {
                 }
             }
         }
+        // Dense rule editing remains readable without allowing the largest Dynamic Type size
+        // to turn every field into a multi-line control. Reading/result screens keep full scale.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .onChange(of: draft) { _, value in

@@ -420,6 +420,7 @@ struct PaystubReviewView: View {
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }

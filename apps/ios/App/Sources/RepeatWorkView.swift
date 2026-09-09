@@ -251,6 +251,7 @@ struct RepeatWorkView: View {
                 }
             }
         }
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .interactiveDismissDisabled()
