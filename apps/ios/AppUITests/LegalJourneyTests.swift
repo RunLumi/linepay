@@ -218,8 +218,11 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertEqual(app.buttons.matching(identifier: "pay-profile.change-scope").count, 1)
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
-            let explanation = app.descendants(matching: .any)
-                .matching(identifier: "pay-profile.scope-explanation").firstMatch
+            XCTAssertTrue(
+                scopeControl.waitForExistence(timeout: 5) && scopeControl.value as? String == scope,
+                "Scope control did not commit the selected option: \(scope).")
+            let explanation = app.staticTexts
+                .matching(NSPredicate(format: "label CONTAINS %@", fragment)).firstMatch
             revealReviewElement(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.waitForExistence(timeout: 15))
             XCTAssertTrue(
@@ -241,11 +244,10 @@ final class LegalJourneyTests: XCTestCase {
         app.launchArguments = [
             "--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
         ]
-        if largeText {
-            app.launchArguments += [
-                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
-            ]
-        }
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL",
+        ]
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.terminate()
@@ -284,18 +286,6 @@ final class LegalJourneyTests: XCTestCase {
 
             // SwiftUI Menu options can expose their visible label without preserving the child
             // identifier in the hosted accessibility tree. Prefer the app tree when available.
-            let visibleOption = app.descendants(matching: .any)
-                .matching(
-                    NSPredicate(
-                        format: "label == %@ AND identifier != %@", label,
-                        "pay-profile.change-scope"
-                    )
-                )
-                .firstMatch
-            if visibleOption.waitForExistence(timeout: 3) && visibleOption.isHittable {
-                visibleOption.tap()
-                return
-            }
             let menuButton = app.buttons
                 .matching(
                     NSPredicate(
@@ -306,6 +296,18 @@ final class LegalJourneyTests: XCTestCase {
                 .firstMatch
             if menuButton.waitForExistence(timeout: 3) && menuButton.isHittable {
                 menuButton.tap()
+                return
+            }
+            let visibleOption = app.descendants(matching: .any)
+                .matching(
+                    NSPredicate(
+                        format: "label == %@ AND identifier != %@", label,
+                        "pay-profile.change-scope"
+                    )
+                )
+                .firstMatch
+            if visibleOption.waitForExistence(timeout: 3) && visibleOption.isHittable {
+                visibleOption.tap()
                 return
             }
 

@@ -275,11 +275,10 @@ final class PaydayJourneyTests: XCTestCase {
         app.launchArguments =
             ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
             + (reset ? ["--reset-ui-state"] : [])
-        if largeText {
-            app.launchArguments += [
-                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
-            ]
-        }
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL",
+        ]
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
         app.terminate()
@@ -307,7 +306,12 @@ final class PaydayJourneyTests: XCTestCase {
         let element = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text))
             .firstMatch
         if !element.waitForExistence(timeout: 3) || !element.isHittable {
-            scrollTo(element)
+            let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+            for _ in 0..<15 {
+                if element.exists && element.isHittable { break }
+                frontmostWindow.swipeDown()
+            }
+            if !element.exists || !element.isHittable { scrollTo(element) }
         }
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
         element.tap()
