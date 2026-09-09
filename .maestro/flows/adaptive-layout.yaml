@@ -39,12 +39,10 @@ onFlowComplete:
     id: today.add-work
     retryTapIfNoChange: true
 - waitForAnimationToEnd
-- assertVisible:
-    id: work.cancel
+- setOrientation: PORTRAIT
+- waitForAnimationToEnd
 - tapOn:
     id: work.cancel
-- waitForAnimationToEnd
-- setOrientation: PORTRAIT
 - waitForAnimationToEnd
 - runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
