@@ -16,7 +16,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: linepay-ios-${{ github.ref }}
+  group: linepay-ios-legal-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   targeted-native:

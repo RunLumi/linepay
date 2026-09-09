@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: linepay-ios-${{ github.ref }}
+  group: linepay-ios-full-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
