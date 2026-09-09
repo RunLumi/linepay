@@ -50,3 +50,4 @@ __pycache__/
 
 # Ad-hoc Maestro captures written at the repository root.
 /*.png
+*runner*
