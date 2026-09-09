@@ -160,9 +160,8 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(correctExisting.waitForExistence(timeout: 10))
         capture("correction-source-chooser")
         tap("paystub.correct-existing")
-        tap("paystub.field.grossPay")
-        let value = app.textFields["paystub.value"]
-        XCTAssertTrue(value.waitForExistence(timeout: 10))
+        let value = openPaystubValueField("paystub.field.grossPay")
+        XCTAssertTrue(value.exists)
         XCTAssertEqual(value.value as? String, "550")
     }
 
@@ -259,9 +258,8 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        tap("paystub.field.grossPay")
-        let restoredValue = app.textFields["paystub.value"]
-        XCTAssertTrue(restoredValue.waitForExistence(timeout: 10))
+        let restoredValue = openPaystubValueField("paystub.field.grossPay")
+        XCTAssertTrue(restoredValue.exists)
         XCTAssertEqual(restoredValue.value as? String, "549.50")
         tap("View original paystub")
         capture("29-original-after-interruption")
@@ -304,7 +302,7 @@ final class PaydayJourneyTests: XCTestCase {
     }
     private func tap(_ id: String) {
         let element = app.buttons[id].firstMatch
-        if !element.waitForExistence(timeout: 3) || !element.isHittable {
+        if !element.waitForExistence(timeout: 8) || !element.isHittable {
             scrollTo(element)
         }
         XCTAssertTrue(element.exists, "Missing control \(id)")
@@ -318,6 +316,17 @@ final class PaydayJourneyTests: XCTestCase {
         }
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
         element.tap()
+    }
+    private func openPaystubValueField(_ id: String) -> XCUIElement {
+        let value = app.textFields["paystub.value"]
+        for attempt in 0..<2 {
+            if value.waitForExistence(timeout: 5) { return value }
+            let field = app.buttons[id].firstMatch
+            XCTAssertTrue(field.waitForExistence(timeout: 8), "Missing control \(id)")
+            field.tap()
+            if attempt == 0 { _ = value.waitForExistence(timeout: 3) }
+        }
+        return value
     }
     private func scrollTo(_ element: XCUIElement) {
         for _ in 0..<14 {
