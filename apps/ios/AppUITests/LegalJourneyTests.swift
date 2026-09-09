@@ -335,7 +335,13 @@ final class LegalJourneyTests: XCTestCase {
                 frontmostWindow.swipeUp()
             }
         }
-        scrollTo(element, maxSwipes: maxSwipes)
+        // A long Dynamic Type Form virtualizes rows outside the viewport. If the first
+        // downward search reaches the bottom before SwiftUI materializes the target,
+        // search back toward the top instead of repeatedly swiping against the boundary.
+        for _ in 0..<(maxSwipes * 2) {
+            if element.exists && element.isHittable { return }
+            frontmostWindow.swipeDown()
+        }
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
