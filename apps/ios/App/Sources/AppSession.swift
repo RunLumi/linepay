@@ -128,7 +128,7 @@ final class AppSession {
         } else if cleanupFailed || wasUnreadable {
             restoreNotice =
                 "Backup restored. Some previous original files may remain on this iPhone. "
-                + "Use Delete all local data only when you intend to remove all local records. "
+                + "Retry original cleanup from Settings > Privacy and local data. "
                 + "Your iCloud backup was not changed."
         } else {
             restoreNotice =

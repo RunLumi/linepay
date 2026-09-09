@@ -80,7 +80,7 @@ struct PayProfileSetupView: View {
                         Button("Cancel") { dismiss() }
                     }
                 }
-                ToolbarItemGroup(placement: .confirmationAction) {
+                ToolbarItem(placement: .confirmationAction) {
                     if step < 3 {
                         Button("Continue") {
                             advance()
@@ -376,13 +376,10 @@ struct PayProfileSetupView: View {
                                 .foregroundStyle(LinePayColor.actionText)
                         }
                         .frame(minHeight: 44)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("Scope")
-                        .accessibilityValue(editScopeTitle)
-                        .accessibilityAddTraits(.isButton)
-                        .accessibilityIdentifier("pay-profile.change-scope")
                     }
+                    .accessibilityLabel("Scope")
                     .accessibilityValue(editScopeTitle)
+                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
