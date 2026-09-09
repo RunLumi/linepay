@@ -41,24 +41,6 @@ onFlowComplete:
 - runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
     element:
-      id: work.note
-    direction: DOWN
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: work.note
-- waitForAnimationToEnd
-- inputText: Portrait QA draft
-- tapOn:
-    id: keyboard.done
-- waitForAnimationToEnd
-- tapOn:
-    id: work.cancel
-- waitForAnimationToEnd
-- setOrientation: PORTRAIT
-- runFlow: ../helpers/add-work.yaml
-- scrollUntilVisible:
-    element:
       id: today.open-pay
 - waitForAnimationToEnd
 - tapOn:
