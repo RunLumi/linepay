@@ -275,3 +275,25 @@ dark preference, no-JavaScript reading, keyboard skip links, and print layout.
 This is targeted guide evidence, not the complete #60 acceptance: the full 20-guide release-candidate
 walkthrough, exact app/guide release pairing, manual mobile/dark/large-text review, verified real-app
 screenshots, public-domain/content freshness, and external release-surface acceptance remain open.
+## Current review-fix verification — September 9, 2026
+
+Verified source commit: `58cda1d49d212ac3eee42e6f167c8716a3894bd7`.
+This is the source revision for the checks below; earlier candidate SHAs in this document
+are historical and do not describe the current review fixes. The receipt-only commit that
+contains this section does not change executable source.
+
+Scope accessibility metadata now belongs to the Menu rather than a synthetic button in
+its label. Continue uses a single ToolbarItem rather than a ToolbarItemGroup. Restore
+cleanup copy directs the worker to Settings > Privacy and local data > Retry original
+cleanup, without suggesting deletion of all records.
+
+- `bash scripts/agent-verify.sh quick`: exit 0; 59 repository tests, strict Swift lint,
+  and 105 domain tests in 14 suites passed. Log: `/private/tmp/linepay-review-quick.log`.
+- Generic iOS Simulator `xcodebuild ... build-for-testing`: exit 0, `TEST BUILD SUCCEEDED`.
+  Project `apps/ios/LinePay.xcodeproj`, scheme `LinePay`, Debug, signing disabled,
+  locked package versions; derived data `/private/tmp/linepay-review-build`.
+  Log: `/private/tmp/linepay-review-build.log`.
+
+These checks establish source/build verification. A fresh simulator accessibility-tree
+inspection is still required to confirm runtime control uniqueness; this receipt does
+not claim a full native UI gate or release approval.
