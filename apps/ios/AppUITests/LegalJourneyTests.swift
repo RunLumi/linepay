@@ -288,7 +288,7 @@ final class LegalJourneyTests: XCTestCase {
             let menuButton = app.buttons
                 .matching(
                     NSPredicate(
-                        format: "label == %@ AND identifier != %@", label,
+                        format: "label CONTAINS %@ AND identifier != %@", label,
                         "pay-profile.change-scope"
                     )
                 )
@@ -300,22 +300,30 @@ final class LegalJourneyTests: XCTestCase {
             let visibleOption = app.descendants(matching: .any)
                 .matching(
                     NSPredicate(
-                        format: "label == %@ AND identifier != %@", label,
+                        format: "label CONTAINS %@ AND identifier != %@", label,
                         "pay-profile.change-scope"
                     )
                 )
                 .firstMatch
-            if visibleOption.waitForExistence(timeout: 3) && visibleOption.isHittable {
-                visibleOption.tap()
+            if visibleOption.waitForExistence(timeout: 3) {
+                if visibleOption.isHittable {
+                    visibleOption.tap()
+                } else {
+                    visibleOption.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+                }
                 return
             }
 
             // iOS 18.5 can host a SwiftUI Menu in the system menu window rather than the app
             // tree at the largest content size.
             let systemOption = springboard.descendants(matching: .any)
-                .matching(NSPredicate(format: "label == %@", label)).firstMatch
-            if systemOption.waitForExistence(timeout: 3) && systemOption.isHittable {
-                systemOption.tap()
+                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            if systemOption.waitForExistence(timeout: 3) {
+                if systemOption.isHittable {
+                    systemOption.tap()
+                } else {
+                    systemOption.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+                }
                 return
             }
             if attempt < 2 {
