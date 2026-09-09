@@ -318,6 +318,7 @@ struct PaystubReviewView: View {
     @State private var draft: PaystubConfirmationDraft
     @State private var errorMessage: String?
     @State private var isClosing = false
+    @State private var selectedField: PaystubField?
     init(
         model: AppModel, subscriptionStore: SubscriptionStore, draft: PaystubConfirmationDraft,
         onConfirmed: @escaping () -> Void
@@ -428,7 +429,7 @@ struct PaystubReviewView: View {
             }
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(for: PaystubField.self) { field in
+        .navigationDestination(item: $selectedField) { field in
             PaystubFieldReviewView(model: model, field: field, draft: $draft, timeZone: zone)
         }
         .scrollContentBackground(.hidden).background(LinePayColor.canvas)
@@ -443,7 +444,9 @@ struct PaystubReviewView: View {
         }
     }
     private func fieldRow(_ field: PaystubField) -> some View {
-        NavigationLink(value: field) {
+        Button {
+            selectedField = field
+        } label: {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(field.title).font(.headline)
