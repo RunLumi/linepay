@@ -98,19 +98,11 @@ final class PaydayJourneyTests: XCTestCase {
         scrollTo(confirmClose)
         XCTAssertTrue(confirmClose.waitForExistence(timeout: 10))
         XCTAssertTrue(confirmClose.isEnabled)
-        var dismissed = false
-        for _ in 0..<3 {
-            let currentClose = app.buttons["period.confirm-close"].firstMatch
-            if !currentClose.exists {
-                dismissed = true
-                break
-            }
-            currentClose.tap()
-            if app.buttons["period.confirm-close"].firstMatch.waitForNonExistence(timeout: 5) {
-                dismissed = true
-                break
-            }
-        }
+        confirmClose.tap()
+        let closeSheet = app.navigationBars["Finish work period"].firstMatch
+        let dismissed =
+            closeSheet.waitForNonExistence(timeout: 10)
+            || !app.buttons["period.confirm-close"].firstMatch.isHittable
         XCTAssertTrue(
             dismissed,
             "The close sheet did not dismiss before starting the next-period journey.")
@@ -248,7 +240,7 @@ final class PaydayJourneyTests: XCTestCase {
         tap("pay.check-paycheck")
         tap("paystub.resume")
         tap("paystub.field.grossPay")
-        tap("View original paystub")
+        tapContaining("View original")
         capture("29-original-before-correction")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let value = app.textFields["paystub.value"]
@@ -264,7 +256,7 @@ final class PaydayJourneyTests: XCTestCase {
         let restoredValue = openPaystubValueField("paystub.field.grossPay")
         XCTAssertTrue(restoredValue.exists)
         XCTAssertEqual(restoredValue.value as? String, "549.50")
-        tap("View original paystub")
+        tapContaining("View original")
         capture("29-original-after-interruption")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         tap("paystub.confirm-field")

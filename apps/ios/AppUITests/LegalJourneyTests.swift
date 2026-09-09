@@ -285,13 +285,25 @@ final class LegalJourneyTests: XCTestCase {
             // SwiftUI Menu options can expose their visible label without preserving the child
             // identifier in the hosted accessibility tree. Prefer the app tree when available.
             let visibleOption = app.descendants(matching: .any)
-                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+                .matching(
+                    NSPredicate(
+                        format: "label == %@ AND identifier != %@", label,
+                        "pay-profile.change-scope"
+                    )
+                )
+                .firstMatch
             if visibleOption.waitForExistence(timeout: 3) && visibleOption.isHittable {
                 visibleOption.tap()
                 return
             }
             let menuButton = app.buttons
-                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+                .matching(
+                    NSPredicate(
+                        format: "label == %@ AND identifier != %@", label,
+                        "pay-profile.change-scope"
+                    )
+                )
+                .firstMatch
             if menuButton.waitForExistence(timeout: 3) && menuButton.isHittable {
                 menuButton.tap()
                 return
@@ -300,7 +312,7 @@ final class LegalJourneyTests: XCTestCase {
             // iOS 18.5 can host a SwiftUI Menu in the system menu window rather than the app
             // tree at the largest content size.
             let systemOption = springboard.descendants(matching: .any)
-                .matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+                .matching(NSPredicate(format: "label == %@", label)).firstMatch
             if systemOption.waitForExistence(timeout: 3) && systemOption.isHittable {
                 systemOption.tap()
                 return
