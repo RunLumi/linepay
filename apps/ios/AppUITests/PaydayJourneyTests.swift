@@ -30,7 +30,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("04-optional-rules")
         advanceSetupStep(to: "Step 4 of 4")
         capture("05-confirm-rules")
-        tap("pay-profile.save")
+        tapSetupSave()
         let addWork = app.buttons["activation.add-work"]
         scrollTo(addWork)
         XCTAssertTrue(addWork.waitForExistence(timeout: 10))
@@ -327,6 +327,19 @@ final class PaydayJourneyTests: XCTestCase {
             if indicator.waitForExistence(timeout: 5), indicator.label == expectedLabel { return }
         }
         XCTFail("Pay setup did not reach \(expectedLabel); current step: \(indicator.label)")
+    }
+    private func tapSetupSave() {
+        let indicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
+        for _ in 0..<4 {
+            if indicator.waitForExistence(timeout: 8), indicator.label == "Step 4 of 4" {
+                tap("pay-profile.save")
+                return
+            }
+            let next = app.buttons["pay-profile.continue"].firstMatch
+            XCTAssertTrue(next.waitForExistence(timeout: 8))
+            next.tap()
+        }
+        XCTFail("Pay setup did not expose the review save control; current step: \(indicator.label)")
     }
     private func openPaystubValueField(_ id: String) -> XCUIElement {
         let value = app.textFields["paystub.value"]
