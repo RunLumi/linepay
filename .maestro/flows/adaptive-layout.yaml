@@ -39,6 +39,14 @@ onFlowComplete:
     id: today.add-work
     retryTapIfNoChange: true
 - waitForAnimationToEnd
+- assertVisible:
+    id: work.cancel
+- tapOn:
+    id: work.cancel
+- waitForAnimationToEnd
+- setOrientation: PORTRAIT
+- waitForAnimationToEnd
+- runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
     element:
       id: work.note
@@ -48,10 +56,7 @@ onFlowComplete:
 - tapOn:
     id: work.note
 - waitForAnimationToEnd
-- inputText: Landscape QA draft
-- assertVisible:
-    id: keyboard.done
-- takeScreenshot: landscape-keyboard
+- inputText: Portrait QA draft
 - tapOn:
     id: keyboard.done
 - waitForAnimationToEnd
