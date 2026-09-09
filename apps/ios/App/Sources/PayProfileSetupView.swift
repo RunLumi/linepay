@@ -404,6 +404,7 @@ struct PayProfileSetupView: View {
                     }
                     Text(changeExplanation)
                         .accessibilityIdentifier("pay-profile.scope-explanation")
+                        .accessibilityLabel(changeExplanation)
                         .foregroundStyle(LinePayColor.review)
                     Text("Closed work periods and their calculation snapshots are not changed.")
                         .font(.footnote)

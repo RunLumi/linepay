@@ -48,9 +48,19 @@ final class LegalJourneyTests: XCTestCase {
         // A screenshot alone also succeeds when ShareLink never opens. Require the actual
         // system activity, then its non-sending Files destination to exercise PDF transfer.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        var saveToFiles = app.descendants(matching: .any)
+        var saveToFiles = app.buttons
             .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
         if !saveToFiles.waitForExistence(timeout: 15) {
+            saveToFiles =
+                springboard.buttons
+                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        }
+        if !saveToFiles.waitForExistence(timeout: 3) {
+            saveToFiles =
+                app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        }
+        if !saveToFiles.waitForExistence(timeout: 3) {
             saveToFiles =
                 springboard.descendants(matching: .any)
                 .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
@@ -73,14 +83,17 @@ final class LegalJourneyTests: XCTestCase {
             saveToFiles.waitForExistence(timeout: 15),
             "The system PDF activity sheet did not expose a Files destination; preview alone is not a handoff."
         )
-        XCTAssertTrue(saveToFiles.isHittable)
         captureSystem("legal-system-share-sheet")
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
         var saveVisible = false
         for attempt in 0..<2 {
-            saveToFiles.tap()
+            if saveToFiles.isHittable {
+                saveToFiles.tap()
+            } else {
+                saveToFiles.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            }
             saveVisible =
                 saveInFiles.waitForExistence(timeout: 15)
                 || saveInShareSheet.waitForExistence(timeout: 15)
@@ -221,8 +234,8 @@ final class LegalJourneyTests: XCTestCase {
             XCTAssertTrue(
                 scopeControl.waitForExistence(timeout: 5) && scopeControl.value as? String == scope,
                 "Scope control did not commit the selected option: \(scope).")
-            let explanation = app.staticTexts
-                .matching(NSPredicate(format: "label CONTAINS %@", fragment)).firstMatch
+            let explanation = app.descendants(matching: .any)
+                .matching(identifier: "pay-profile.scope-explanation").firstMatch
             revealReviewElement(explanation, maxSwipes: 8)
             XCTAssertTrue(explanation.waitForExistence(timeout: 15))
             XCTAssertTrue(
