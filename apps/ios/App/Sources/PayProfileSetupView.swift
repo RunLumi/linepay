@@ -376,8 +376,12 @@ struct PayProfileSetupView: View {
                                 .foregroundStyle(LinePayColor.actionText)
                         }
                         .frame(minHeight: 44)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Scope")
+                        .accessibilityValue(editScopeTitle)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityIdentifier("pay-profile.change-scope")
                     }
-                    .accessibilityIdentifier("pay-profile.change-scope")
                     .accessibilityValue(editScopeTitle)
                     if draft.editScope == .datedChange {
                         DatePicker(
