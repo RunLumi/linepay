@@ -294,6 +294,11 @@ cleanup, without suggesting deletion of all records.
   locked package versions; derived data `/private/tmp/linepay-review-build`.
   Log: `/private/tmp/linepay-review-build.log`.
 
-These checks establish source/build verification. A fresh simulator accessibility-tree
-inspection is still required to confirm runtime control uniqueness; this receipt does
-not claim a full native UI gate or release approval.
+Runtime verification also passed on the existing iPhone 17 Pro / iOS 26.4 simulator
+`0A8C774B-C1D3-4A43-816C-81D3D3D849D8`: the large-text rule-scope journey exercised
+all three scope choices and asserted exactly one actionable Continue and Scope button.
+The regression assertions are committed in `2e48398`; app source is unchanged from
+`58cda1d49d212ac3eee42e6f167c8716a3894bd7`. `xcodebuild test` exited 0, with one
+journey passing in 137.295 seconds. Result: `/private/tmp/linepay-review-unique.xcresult`;
+log: `/private/tmp/linepay-review-unique.log`. Full native CI and release approval remain
+separate requirements.
