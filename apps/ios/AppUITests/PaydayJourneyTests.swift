@@ -353,6 +353,8 @@ final class PaydayJourneyTests: XCTestCase {
             if value.waitForExistence(timeout: 5) { return value }
             let field = app.buttons[id].firstMatch
             XCTAssertTrue(field.waitForExistence(timeout: 8), "Missing control \(id)")
+            scrollTo(field)
+            XCTAssertTrue(field.isHittable)
             field.tap()
             if attempt == 0 { _ = value.waitForExistence(timeout: 3) }
         }
