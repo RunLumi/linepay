@@ -35,14 +35,8 @@ onFlowComplete:
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT
 - waitForAnimationToEnd
-- tapOn:
-    id: today.add-work
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
+- takeScreenshot: landscape-long-profile
 - setOrientation: PORTRAIT
-- waitForAnimationToEnd
-- tapOn:
-    id: work.cancel
 - waitForAnimationToEnd
 - runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
