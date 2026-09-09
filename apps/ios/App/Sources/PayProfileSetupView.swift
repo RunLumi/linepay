@@ -48,19 +48,13 @@ struct PayProfileSetupView: View {
                             .foregroundStyle(LinePayColor.review)
                     }
                 }
-                if step < 3 || !editing {
+                if step == 3, !editing {
                     Section {
-                        Button(
-                            step == 3 ? "Use these rules" : "Continue"
-                        ) {
+                        Button("Use these rules") {
                             advance()
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .accessibilityIdentifier(
-                            step == 3
-                                ? "pay-profile.save"
-                                : "pay-profile.continue"
-                        )
+                        .accessibilityIdentifier("pay-profile.save")
                         .accessibilityValue("step-\(step)")
                     }
                 }
@@ -87,7 +81,13 @@ struct PayProfileSetupView: View {
                     }
                 }
                 ToolbarItemGroup(placement: .confirmationAction) {
-                    if step == 3, editing {
+                    if step < 3 {
+                        Button("Continue") {
+                            advance()
+                        }
+                        .accessibilityIdentifier("pay-profile.continue")
+                        .accessibilityValue("step-\(step)")
+                    } else if editing {
                         Button("Save reviewed rules") {
                             advance()
                         }

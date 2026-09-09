@@ -343,7 +343,9 @@ final class PaydayJourneyTests: XCTestCase {
             XCTAssertTrue(next.isHittable)
             next.tap()
         }
-        XCTFail("Pay setup did not expose the review save control; current step: \(indicator.label)")
+        XCTFail(
+            "Pay setup did not expose the review save control; current step: \(indicator.label)"
+        )
     }
     private func openPaystubValueField(_ id: String) -> XCUIElement {
         let value = app.textFields["paystub.value"]
