@@ -161,7 +161,9 @@ final class PaydayJourneyTests: XCTestCase {
         capture("correction-source-chooser")
         tap("paystub.correct-existing")
         tap("paystub.field.grossPay")
-        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "550")
+        let value = app.textFields["paystub.value"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
+        XCTAssertEqual(value.value as? String, "550")
     }
 
     func testDraftRecoveryAndUnsupportedRulePresentation() {
@@ -258,7 +260,9 @@ final class PaydayJourneyTests: XCTestCase {
         tap("pay.check-paycheck")
         tap("paystub.resume")
         tap("paystub.field.grossPay")
-        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "549.50")
+        let restoredValue = app.textFields["paystub.value"]
+        XCTAssertTrue(restoredValue.waitForExistence(timeout: 10))
+        XCTAssertEqual(restoredValue.value as? String, "549.50")
         tap("View original paystub")
         capture("29-original-after-interruption")
         app.navigationBars.buttons.element(boundBy: 0).tap()
@@ -300,14 +304,18 @@ final class PaydayJourneyTests: XCTestCase {
     }
     private func tap(_ id: String) {
         let element = app.buttons[id].firstMatch
-        scrollTo(element)
+        if !element.waitForExistence(timeout: 3) || !element.isHittable {
+            scrollTo(element)
+        }
         XCTAssertTrue(element.exists, "Missing control \(id)")
         element.tap()
     }
     private func tapContaining(_ text: String) {
         let element = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text))
             .firstMatch
-        scrollTo(element)
+        if !element.waitForExistence(timeout: 3) || !element.isHittable {
+            scrollTo(element)
+        }
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
         element.tap()
     }
