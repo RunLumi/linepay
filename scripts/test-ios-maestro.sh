@@ -4,8 +4,18 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IOS_DIR="$ROOT/apps/ios"
 DERIVED_DATA="$ROOT/.build/maestro-ios"
+RESULTS_DIR="$ROOT/.build/maestro-results"
 DEVICE_NAME="${MAESTRO_IOS_DEVICE:-iPhone 17 Pro}"
 TEST_TARGET="${1:-$ROOT/.maestro}"
+MAESTRO_PID=""
+
+cleanup() {
+    if [[ -n "$MAESTRO_PID" ]] && kill -0 "$MAESTRO_PID" 2>/dev/null; then
+        kill "$MAESTRO_PID" 2>/dev/null || true
+        wait "$MAESTRO_PID" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
 
 for command in xcodebuild xcrun xcodegen maestro; do
     if ! command -v "$command" >/dev/null 2>&1; then
@@ -35,7 +45,9 @@ echo "==> Generate Xcode project"
 
 echo "==> Boot $DEVICE_NAME ($DEVICE_UDID)"
 xcrun simctl boot "$DEVICE_UDID" >/dev/null 2>&1 || true
-open -a Simulator >/dev/null 2>&1 || true
+if [[ "${CI:-}" != "true" ]]; then
+    open -a Simulator >/dev/null 2>&1 || true
+fi
 xcrun simctl bootstatus "$DEVICE_UDID" -b
 
 echo "==> Build LinePay for simulator"
@@ -59,4 +71,10 @@ echo "==> Install LinePay"
 xcrun simctl install "$DEVICE_UDID" "$APP_PATH"
 
 echo "==> Run Maestro: $TEST_TARGET"
-maestro --udid "$DEVICE_UDID" test --test-output-dir "$ROOT/.build/maestro-results" "$TEST_TARGET"
+rm -rf "$RESULTS_DIR"
+maestro --udid "$DEVICE_UDID" test --test-output-dir "$RESULTS_DIR" "$TEST_TARGET" &
+MAESTRO_PID=$!
+wait "$MAESTRO_PID"
+MAESTRO_STATUS=$?
+MAESTRO_PID=""
+exit "$MAESTRO_STATUS"
