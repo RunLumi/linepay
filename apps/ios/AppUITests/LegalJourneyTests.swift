@@ -157,6 +157,7 @@ final class LegalJourneyTests: XCTestCase {
             rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "60")
             dismissKeyboard()
             let stepIndicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
+            XCTAssertEqual(app.buttons.matching(identifier: "pay-profile.continue").count, 1)
             for expectedStep in 1...2 {
                 let next = app.buttons["pay-profile.continue"].firstMatch
                 let expectedStepLabel = "Step \(expectedStep + 1) of 4"
@@ -214,6 +215,7 @@ final class LegalJourneyTests: XCTestCase {
                 .matching(identifier: "pay-profile.change-scope").firstMatch
             revealReviewElement(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
+            XCTAssertEqual(app.buttons.matching(identifier: "pay-profile.change-scope").count, 1)
             scopeControl.tap()
             chooseScope(label: scope, identifier: scopeID)
             let explanation = app.descendants(matching: .any)
