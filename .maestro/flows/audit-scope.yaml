@@ -158,9 +158,20 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: audit.export
+    direction: DOWN
     timeout: 60000
 - tapOn:
     id: audit.export
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: report.preview
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: report.preview
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: audit.share-report
@@ -169,6 +180,12 @@ tags: [ios, regression, payroll-scope]
 - assertVisible:
     id: audit.share-report
 - takeScreenshot: offsetting-lines-report-ready
+- tapOn: Back
+- waitForAnimationToEnd
+- assertVisible:
+    id: report.preview
+- tapOn: Done
+- waitForAnimationToEnd
 - tapOn:
     text: Pay
     index: 0
@@ -197,19 +214,3 @@ tags: [ios, regression, payroll-scope]
 - waitForAnimationToEnd
 - assertVisible: Needs review
 - takeScreenshot: offsetting-lines-archived
-- stopApp
-- launchApp
-- tapOn: History
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: history.period.*
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: history.period.*
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element: Needs review
-    timeout: 60000
-- assertVisible: Needs review

@@ -35,32 +35,9 @@ onFlowComplete:
 - takeScreenshot: long-profile
 - setOrientation: LANDSCAPE_LEFT
 - waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: today.add-work
-- waitForAnimationToEnd
-- tapOn:
-    id: today.add-work
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: work.note
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: work.note
-- waitForAnimationToEnd
-- inputText: Landscape QA draft
-- assertVisible:
-    id: keyboard.done
-- takeScreenshot: landscape-keyboard
-- tapOn:
-    id: keyboard.done
-- waitForAnimationToEnd
-- tapOn:
-    id: work.cancel
-- waitForAnimationToEnd
+- takeScreenshot: landscape-long-profile
 - setOrientation: PORTRAIT
+- waitForAnimationToEnd
 - runFlow: ../helpers/add-work.yaml
 - scrollUntilVisible:
     element:

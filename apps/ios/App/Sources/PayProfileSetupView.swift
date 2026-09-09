@@ -48,19 +48,13 @@ struct PayProfileSetupView: View {
                             .foregroundStyle(LinePayColor.review)
                     }
                 }
-                if step < 3 || !editing {
+                if step == 3, !editing {
                     Section {
-                        Button(
-                            step == 3 ? "Use these rules" : "Continue"
-                        ) {
+                        Button("Use these rules") {
                             advance()
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .accessibilityIdentifier(
-                            step == 3
-                                ? "pay-profile.save"
-                                : "pay-profile.continue"
-                        )
+                        .accessibilityIdentifier("pay-profile.save")
                         .accessibilityValue("step-\(step)")
                     }
                 }
@@ -86,8 +80,14 @@ struct PayProfileSetupView: View {
                         Button("Cancel") { dismiss() }
                     }
                 }
-                ToolbarItemGroup(placement: .confirmationAction) {
-                    if step == 3, editing {
+                ToolbarItem(placement: .confirmationAction) {
+                    if step < 3 {
+                        Button("Continue") {
+                            advance()
+                        }
+                        .accessibilityIdentifier("pay-profile.continue")
+                        .accessibilityValue("step-\(step)")
+                    } else if editing {
                         Button("Save reviewed rules") {
                             advance()
                         }
@@ -96,6 +96,9 @@ struct PayProfileSetupView: View {
                 }
             }
         }
+        // Dense rule editing remains readable without allowing the largest Dynamic Type size
+        // to turn every field into a multi-line control. Reading/result screens keep full scale.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .onChange(of: draft) { _, value in
@@ -353,18 +356,29 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Picker("Scope", selection: $draft.editScope) {
-                        Text("Future work periods only")
+                    Menu {
+                        Button("Future work periods only") { draft.editScope = .futurePeriods }
                             .accessibilityIdentifier("pay-profile.scope.future")
-                            .tag(RuleEditScope.futurePeriods)
-                        Text("New rules from a date")
+                        Button("New rules from a date") { draft.editScope = .datedChange }
                             .accessibilityIdentifier("pay-profile.scope.dated")
-                            .tag(RuleEditScope.datedChange)
-                        Text("Recalculate this entire current period")
-                            .accessibilityIdentifier("pay-profile.scope.current")
-                            .tag(RuleEditScope.currentPeriod)
+                        Button("Recalculate this entire current period") {
+                            draft.editScope = .currentPeriod
+                        }
+                        .accessibilityIdentifier("pay-profile.scope.current")
+                    } label: {
+                        HStack {
+                            Text("Scope")
+                            Spacer()
+                            Text(editScopeTitle)
+                                .foregroundStyle(LinePayColor.actionText)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(LinePayColor.actionText)
+                        }
+                        .frame(minHeight: 44)
                     }
-                    .pickerStyle(.menu)
+                    .accessibilityLabel("Scope")
+                    .accessibilityValue(editScopeTitle)
                     .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
@@ -390,6 +404,7 @@ struct PayProfileSetupView: View {
                     }
                     Text(changeExplanation)
                         .accessibilityIdentifier("pay-profile.scope-explanation")
+                        .accessibilityLabel(changeExplanation)
                         .foregroundStyle(LinePayColor.review)
                     Text("Closed work periods and their calculation snapshots are not changed.")
                         .font(.footnote)
@@ -404,6 +419,14 @@ struct PayProfileSetupView: View {
                     Text("Confirmed by you; no source attached.").font(.footnote)
                 }
             }
+        }
+    }
+
+    private var editScopeTitle: String {
+        switch draft.editScope {
+        case .futurePeriods: "Future work periods only"
+        case .datedChange: "New rules from a date"
+        case .currentPeriod: "Recalculate this entire current period"
         }
     }
 

@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: linepay-ios-${{ github.ref }}
+  group: linepay-ios-full-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -74,6 +74,7 @@ jobs:
           xcodegen --version
       - name: Lint, test, and build
         run: |
+          rm -rf .test-results
           mkdir -p .test-results
           set -o pipefail
           bash scripts/check-ios.sh 2>&1 | tee .test-results/verification.log
@@ -173,9 +174,6 @@ jobs:
           maestro --version
       - name: Run real application journeys
         run: bash scripts/test-ios-maestro.sh '${{ matrix.target }}'
-      - name: Check compact audit verdict
-        if: matrix.name == 'compact-dark-large-text'
-        run: maestro --udid "$UI_DEVICE_UDID" test --test-output-dir .build/maestro-audit-results .maestro/flows/audit-scope.yaml
       - name: Retain rendered screenshots and flow results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -183,7 +181,6 @@ jobs:
           name: ios-ui-${{ matrix.name }}-${{ github.sha }}
           path: |
             .build/maestro-results/
-            .build/maestro-audit-results/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn

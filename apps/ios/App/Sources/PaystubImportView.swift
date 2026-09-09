@@ -14,6 +14,7 @@ struct PaystubImportView: View {
     @State private var showingFileImporter = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showingReview = false
+    @State private var reviewDraft: PaystubConfirmationDraft?
     @State private var operation = PaystubImportOperation()
     @State private var errorMessage: String?
     @State private var cameraDenied = false
@@ -49,8 +50,11 @@ struct PaystubImportView: View {
                 } else {
                     Section("Paycheck source") {
                         if model.paystubDraft?.targetPeriodID == periodID {
-                            Button("Resume saved review") { showingReview = true }
-                                .accessibilityIdentifier("paystub.resume")
+                            Button("Resume saved review") {
+                                reviewDraft = model.paystubDraft
+                                showingReview = true
+                            }
+                            .accessibilityIdentifier("paystub.resume")
                         } else if model.periodContext(id: periodID)?.paystub != nil {
                             Button("Correct existing facts, keep original") { manual() }
                                 .accessibilityIdentifier("paystub.correct-existing")
@@ -104,7 +108,9 @@ struct PaystubImportView: View {
                 }
             }
             .navigationDestination(isPresented: $showingReview) {
-                if let draft = model.paystubDraft, draft.targetPeriodID == periodID {
+                if let draft = reviewDraft ?? model.paystubDraft,
+                    draft.targetPeriodID == periodID
+                {
                     PaystubReviewView(
                         model: model, subscriptionStore: subscriptionStore, draft: draft
                     ) {
@@ -188,7 +194,9 @@ struct PaystubImportView: View {
     }
     private func manual() {
         do {
-            try model.savePaystubDraft(model.paycheckDraft(for: periodID))
+            let draft = try model.paycheckDraft(for: periodID)
+            try model.savePaystubDraft(draft)
+            reviewDraft = draft
             showingReview = true
         } catch { errorMessage = error.localizedDescription }
     }
@@ -273,6 +281,7 @@ struct PaystubImportView: View {
             }
             guard operation.owns(token), !Task.isCancelled else { return }
             try model.savePaystubDraft(draft)
+            reviewDraft = draft
             showingReview = true
         } catch {
             if operation.owns(token) { errorMessage = error.localizedDescription }
@@ -309,6 +318,7 @@ struct PaystubReviewView: View {
     @State private var draft: PaystubConfirmationDraft
     @State private var errorMessage: String?
     @State private var isClosing = false
+    @State private var selectedField: PaystubField?
     init(
         model: AppModel, subscriptionStore: SubscriptionStore, draft: PaystubConfirmationDraft,
         onConfirmed: @escaping () -> Void
@@ -419,7 +429,11 @@ struct PaystubReviewView: View {
             }
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(item: $selectedField) { field in
+            PaystubFieldReviewView(model: model, field: field, draft: $draft, timeZone: zone)
+        }
         .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
@@ -430,8 +444,8 @@ struct PaystubReviewView: View {
         }
     }
     private func fieldRow(_ field: PaystubField) -> some View {
-        NavigationLink {
-            PaystubFieldReviewView(model: model, field: field, draft: $draft, timeZone: zone)
+        Button {
+            selectedField = field
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {

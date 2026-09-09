@@ -11,6 +11,8 @@ final class PaydayJourneyTests: XCTestCase {
         app = XCUIApplication()
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
+        XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp").terminate()
+        XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -24,13 +26,13 @@ final class PaydayJourneyTests: XCTestCase {
         rate.typeText("50")
         dismissKeyboard()
         capture("02-pay-basics")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 2 of 4")
         capture("03-pay-period")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 3 of 4")
         capture("04-optional-rules")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 4 of 4")
         capture("05-confirm-rules")
-        tap("pay-profile.save")
+        tapSetupSave()
         let addWork = app.buttons["activation.add-work"]
         scrollTo(addWork)
         XCTAssertTrue(addWork.waitForExistence(timeout: 10))
@@ -96,7 +98,14 @@ final class PaydayJourneyTests: XCTestCase {
         scrollTo(confirmClose)
         XCTAssertTrue(confirmClose.waitForExistence(timeout: 10))
         XCTAssertTrue(confirmClose.isEnabled)
-        tap("period.confirm-close")
+        confirmClose.tap()
+        let closeSheet = app.navigationBars["Finish work period"].firstMatch
+        let dismissed =
+            closeSheet.waitForNonExistence(timeout: 10)
+            || !app.buttons["period.confirm-close"].firstMatch.isHittable
+        XCTAssertTrue(
+            dismissed,
+            "The close sheet did not dismiss before starting the next-period journey.")
 
         tab("Today")
         let addNextWork = app.buttons["today.add-work"]
@@ -146,8 +155,9 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(correctExisting.waitForExistence(timeout: 10))
         capture("correction-source-chooser")
         tap("paystub.correct-existing")
-        tap("paystub.field.grossPay")
-        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "550")
+        let value = openPaystubValueField("paystub.field.grossPay")
+        XCTAssertTrue(value.exists)
+        XCTAssertEqual(value.value as? String, "550")
     }
 
     func testDraftRecoveryAndUnsupportedRulePresentation() {
@@ -230,7 +240,7 @@ final class PaydayJourneyTests: XCTestCase {
         tap("pay.check-paycheck")
         tap("paystub.resume")
         tap("paystub.field.grossPay")
-        tap("View original paystub")
+        tapContaining("View original")
         capture("29-original-before-correction")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let value = app.textFields["paystub.value"]
@@ -243,9 +253,10 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        tap("paystub.field.grossPay")
-        XCTAssertEqual(app.textFields["paystub.value"].value as? String, "549.50")
-        tap("View original paystub")
+        let restoredValue = openPaystubValueField("paystub.field.grossPay")
+        XCTAssertTrue(restoredValue.exists)
+        XCTAssertEqual(restoredValue.value as? String, "549.50")
+        tapContaining("View original")
         capture("29-original-after-interruption")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         tap("paystub.confirm-field")
@@ -264,11 +275,10 @@ final class PaydayJourneyTests: XCTestCase {
         app.launchArguments =
             ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
             + (reset ? ["--reset-ui-state"] : [])
-        if largeText {
-            app.launchArguments += [
-                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
-            ]
-        }
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL",
+        ]
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
         app.terminate()
@@ -286,21 +296,76 @@ final class PaydayJourneyTests: XCTestCase {
     }
     private func tap(_ id: String) {
         let element = app.buttons[id].firstMatch
-        scrollTo(element)
+        if !element.waitForExistence(timeout: 8) || !element.isHittable {
+            scrollTo(element)
+        }
         XCTAssertTrue(element.exists, "Missing control \(id)")
         element.tap()
     }
     private func tapContaining(_ text: String) {
         let element = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text))
             .firstMatch
-        scrollTo(element)
+        if !element.waitForExistence(timeout: 3) || !element.isHittable {
+            let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+            for _ in 0..<15 {
+                if element.exists && element.isHittable { break }
+                frontmostWindow.swipeDown()
+            }
+            if !element.exists || !element.isHittable { scrollTo(element) }
+        }
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
         element.tap()
     }
+    private func advanceSetupStep(to expectedLabel: String) {
+        let indicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
+        let next = app.buttons["pay-profile.continue"].firstMatch
+        for _ in 0..<3 {
+            if indicator.exists, indicator.label == expectedLabel { return }
+            XCTAssertTrue(next.waitForExistence(timeout: 8))
+            scrollTo(next)
+            XCTAssertTrue(next.isHittable)
+            next.tap()
+            if indicator.waitForExistence(timeout: 5), indicator.label == expectedLabel { return }
+        }
+        XCTFail("Pay setup did not reach \(expectedLabel); current step: \(indicator.label)")
+    }
+    private func tapSetupSave() {
+        let indicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
+        for _ in 0..<4 {
+            if indicator.waitForExistence(timeout: 8), indicator.label == "Step 4 of 4" {
+                tap("pay-profile.save")
+                return
+            }
+            let next = app.buttons["pay-profile.continue"].firstMatch
+            XCTAssertTrue(next.waitForExistence(timeout: 8))
+            scrollTo(next)
+            XCTAssertTrue(next.isHittable)
+            next.tap()
+        }
+        XCTFail(
+            "Pay setup did not expose the review save control; current step: \(indicator.label)"
+        )
+    }
+    private func openPaystubValueField(_ id: String) -> XCUIElement {
+        let value = app.textFields["paystub.value"]
+        for attempt in 0..<2 {
+            if value.waitForExistence(timeout: 5) { return value }
+            let field = app.buttons[id].firstMatch
+            XCTAssertTrue(field.waitForExistence(timeout: 8), "Missing control \(id)")
+            scrollTo(field)
+            XCTAssertTrue(field.isHittable)
+            field.tap()
+            if attempt == 0 { _ = value.waitForExistence(timeout: 3) }
+        }
+        return value
+    }
     private func scrollTo(_ element: XCUIElement) {
-        for _ in 0..<14 {
+        // Dense setup and review Forms can exceed fourteen viewport heights at supported
+        // Dynamic Type sizes; keep the search bounded but long enough to reach the row.
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<30 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            frontmostWindow.swipeUp()
         }
     }
     private func dismissKeyboard() {

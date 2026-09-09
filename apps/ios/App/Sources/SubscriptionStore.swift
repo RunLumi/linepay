@@ -145,7 +145,11 @@ final class SubscriptionStore {
                     willAutoRenew = renewal.willAutoRenew
                     isTrial = transaction.offer?.paymentMode == .freeTrial
                 }
-                if status.state == .inGracePeriod, entitled {
+                // The verified subscription state is the source of truth for grace. The
+                // entitlement transaction set can briefly lag that state on a rebooted
+                // StoreKit test device, so do not suppress the user-facing notice while
+                // Apple's signed status is already in grace.
+                if status.state == .inGracePeriod {
                     notice =
                         "Pro remains active during Apple's billing grace period. Review payment details in your App Store account."
                 } else if renewal.isInBillingRetry && !entitled {
