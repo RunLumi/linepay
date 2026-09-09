@@ -11,6 +11,8 @@ final class PaydayJourneyTests: XCTestCase {
         app = XCUIApplication()
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
+        XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp").terminate()
+        XCUIDevice.shared.press(.home)
         XCUIDevice.shared.appearance = .light
     }
 
@@ -98,12 +100,13 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(confirmClose.isEnabled)
         var dismissed = false
         for _ in 0..<3 {
-            if !confirmClose.exists {
+            let currentClose = app.buttons["period.confirm-close"].firstMatch
+            if !currentClose.exists {
                 dismissed = true
                 break
             }
-            confirmClose.tap()
-            if confirmClose.waitForNonExistence(timeout: 5) {
+            currentClose.tap()
+            if app.buttons["period.confirm-close"].firstMatch.waitForNonExistence(timeout: 5) {
                 dismissed = true
                 break
             }
