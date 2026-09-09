@@ -359,9 +359,10 @@ final class PaydayJourneyTests: XCTestCase {
     private func scrollTo(_ element: XCUIElement) {
         // Dense setup and review Forms can exceed fourteen viewport heights at supported
         // Dynamic Type sizes; keep the search bounded but long enough to reach the row.
+        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
         for _ in 0..<30 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            frontmostWindow.swipeUp()
         }
     }
     private func dismissKeyboard() {
