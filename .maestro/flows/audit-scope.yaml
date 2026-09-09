@@ -158,7 +158,7 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: audit.export
-    direction: UP
+    direction: DOWN
     timeout: 60000
 - tapOn:
     id: audit.export

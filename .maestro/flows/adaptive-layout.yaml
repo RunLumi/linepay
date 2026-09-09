@@ -42,6 +42,7 @@ onFlowComplete:
 - scrollUntilVisible:
     element:
       id: work.note
+    direction: DOWN
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
