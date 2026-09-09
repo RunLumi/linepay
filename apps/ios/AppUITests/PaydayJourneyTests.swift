@@ -24,11 +24,11 @@ final class PaydayJourneyTests: XCTestCase {
         rate.typeText("50")
         dismissKeyboard()
         capture("02-pay-basics")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 2 of 4")
         capture("03-pay-period")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 3 of 4")
         capture("04-optional-rules")
-        tap("pay-profile.continue")
+        advanceSetupStep(to: "Step 4 of 4")
         capture("05-confirm-rules")
         tap("pay-profile.save")
         let addWork = app.buttons["activation.add-work"]
@@ -316,6 +316,17 @@ final class PaydayJourneyTests: XCTestCase {
         }
         XCTAssertTrue(element.exists, "Missing row containing \(text)")
         element.tap()
+    }
+    private func advanceSetupStep(to expectedLabel: String) {
+        let indicator = app.staticTexts["pay-profile.step-indicator"].firstMatch
+        let next = app.buttons["pay-profile.continue"].firstMatch
+        for _ in 0..<3 {
+            if indicator.exists, indicator.label == expectedLabel { return }
+            XCTAssertTrue(next.waitForExistence(timeout: 8))
+            next.tap()
+            if indicator.waitForExistence(timeout: 5), indicator.label == expectedLabel { return }
+        }
+        XCTFail("Pay setup did not reach \(expectedLabel); current step: \(indicator.label)")
     }
     private func openPaystubValueField(_ id: String) -> XCUIElement {
         let value = app.textFields["paystub.value"]
