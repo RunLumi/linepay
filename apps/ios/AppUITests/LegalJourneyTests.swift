@@ -48,23 +48,8 @@ final class LegalJourneyTests: XCTestCase {
         // A screenshot alone also succeeds when ShareLink never opens. Require the actual
         // system activity, then its non-sending Files destination to exercise PDF transfer.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        var saveToFiles = app.buttons
+        var saveToFiles = springboard.buttons
             .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
-        if !saveToFiles.waitForExistence(timeout: 15) {
-            saveToFiles =
-                springboard.buttons
-                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
-        }
-        if !saveToFiles.waitForExistence(timeout: 3) {
-            saveToFiles =
-                app.descendants(matching: .any)
-                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
-        }
-        if !saveToFiles.waitForExistence(timeout: 3) {
-            saveToFiles =
-                springboard.descendants(matching: .any)
-                .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
-        }
         if !saveToFiles.waitForExistence(timeout: 15) {
             // Some hosted iOS 26 share sheets expose the selected Files action only as the
             // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
@@ -287,6 +272,10 @@ final class LegalJourneyTests: XCTestCase {
         let control = app.descendants(matching: .any)
             .matching(identifier: "pay-profile.change-scope").firstMatch
         for attempt in 0..<3 {
+            if attempt > 0 {
+                scrollTo(control, maxSwipes: 8)
+                if control.exists && control.isHittable { control.tap() }
+            }
             let stableOption = app.descendants(matching: .any)
                 .matching(identifier: identifier).firstMatch
             if stableOption.exists && stableOption.isHittable {
