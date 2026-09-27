@@ -1,0 +1,50 @@
+PROPRIETARY LICENSE
+All Rights Reserved
+
+Copyright (c) 2026 RunLumi. All rights reserved.
+
+This repository and all source code, object code, binaries, documentation, designs,
+schemas, assets, data, configuration, prompts, tests, and other materials contained
+in or derived from it (collectively, the "Software") are proprietary to RunLumi,
+except for third-party components that are expressly identified as being subject to
+their own licenses.
+
+NO LICENSE OR PERMISSION IS GRANTED TO THE PUBLIC.
+
+Only RunLumi and persons expressly authorized by RunLumi to act on its behalf may
+use the Software, and only within the scope of that authorization.
+
+Without RunLumi's prior written permission, you may not, directly or indirectly:
+
+- use, run, execute, access, or deploy the Software for any purpose;
+- copy, reproduce, download for reuse, modify, adapt, translate, or create
+  derivative works from the Software;
+- compile, build, host, operate, test, benchmark, or integrate the Software;
+- publish, disclose, distribute, transmit, make available, sublicense, rent,
+  lease, sell, resell, commercialize, or otherwise provide the Software or any
+  portion of it to any third party;
+- incorporate the Software or any portion of it into any product, service,
+  application, library, dataset, model, system, or other work;
+- use the Software to train, fine-tune, evaluate, improve, or provide context to
+  an artificial intelligence or machine-learning system;
+- remove, alter, obscure, or bypass any copyright, proprietary, attribution,
+  access-control, or rights notice associated with the Software; or
+- otherwise exploit the Software or any rights in it.
+
+Access to, possession of, or visibility of the Software, including through a public
+source-code hosting service, does not grant any license or other right to use it.
+No rights are granted by implication, estoppel, exhaustion, or otherwise.
+
+Any permission granted by RunLumi must be explicit and may be subject to separate
+written terms. RunLumi may revoke permission to the extent allowed by those terms.
+
+Nothing in this license restricts rights that cannot lawfully be restricted under
+applicable law, or rights that must be granted to a hosting provider solely as
+necessary to operate the service on which this repository is hosted.
+
+THE SOFTWARE IS PROVIDED WITHOUT ANY PUBLIC LICENSE AND WITHOUT ANY WARRANTY TO
+UNAUTHORIZED USERS. TO THE MAXIMUM EXTENT PERMITTED BY LAW, RUNLUMI DISCLAIMS ALL
+LIABILITY ARISING FROM UNAUTHORIZED USE OF THE SOFTWARE.
+
+For licensing or authorization inquiries, contact RunLumi through an official
+RunLumi channel.
