@@ -103,3 +103,11 @@ See `AGENTS.md` before making changes.
 ## Product and documentation
 
 [Documentation map](docs/README.md) · [Business rules](docs/product/business-rules.md) · [Payroll handbook](docs/product/payroll/README.md)
+
+## License and use restrictions
+
+Copyright (c) 2026 RunLumi. All rights reserved.
+
+This repository is **proprietary source code**. No permission is granted to any person or organization outside RunLumi to use, copy, modify, reproduce, distribute, publish, sublicense, sell, host, deploy, execute, reverse engineer, create derivative works from, or otherwise exploit any part of this repository for any purpose without prior written authorization from RunLumi.
+
+Access to or visibility of the source code does **not** grant any license or usage right. See [LICENSE](LICENSE) for the complete terms.
