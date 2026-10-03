@@ -239,7 +239,7 @@ Use real shipping UI and synthetic records for screenshots, with explicit en-US 
 
 ## 7. Submit the reviewed set, not an accidental draft bundle
 
-Read `/v1/apps/{appId}/reviewSubmissions` and reuse the intended editable submission if one exists. Do not create duplicates after uncertain responses. Confirm all items and release policy immediately before the final submission. For first subscriptions, include their eligible subscription-version items with the new app version; do not confuse a product ID with a `subscriptionVersions` resource ID.
+Read `/v1/apps/{appId}/reviewSubmissions` and reuse the intended editable submission if one exists. Do not create duplicates after uncertain responses. Confirm all items and release policy immediately before the final submission. For first subscriptions, include their eligible subscription-version items with the new app version; do not confuse a product ID with a `subscriptionVersions` resource ID. Verified on October 3, 2026: `POST /v1/subscriptionSubmissions` returns `FIRST_SUBSCRIPTION_MUST_BE_SUBMITTED_ON_VERSION`. Instead, add a `reviewSubmissionItems` entry with a `subscriptionVersion` relationship for each subscription and a `subscriptionGroupVersion` entry for the group ([1.0.2 record](evidence/release-1.0.2-2026-10-03.md)).
 
 The following are JSON payload templates, **not instructions to submit an unready build**. Replace uppercase IDs with live-discovered IDs and keep each body under the run directory.
 
