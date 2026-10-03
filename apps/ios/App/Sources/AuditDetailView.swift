@@ -15,10 +15,14 @@ struct LiveAuditView: View {
                 ContentUnavailableView("Period unavailable", systemImage: "doc")
             }
         }
-        .toolbar {
+        // An inset, not a bottom toolbar: a toolbar renders beneath the floating tab bar.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled {
-                ToolbarItem(placement: .bottomBar) {
+                LinePayBottomBar {
                     Button("Check future paychecks with Pro") { paywall = true }
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .accessibilityIdentifier("audit.view-pro")
                 }
             }
         }

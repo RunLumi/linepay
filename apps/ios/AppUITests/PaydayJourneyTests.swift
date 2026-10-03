@@ -96,9 +96,8 @@ final class PaydayJourneyTests: XCTestCase {
         capture("40-onboarding-trial-offer")
         // The purchase controls stay pinned; scroll the plan fully above them before tapping.
         let monthly = app.buttons["paywall.monthly"].firstMatch
-        for _ in 0..<10 where !monthly.exists || monthly.frame.maxY > purchase.frame.minY - 8 {
-            app.swipeUp()
-        }
+        XCTAssertTrue(monthly.waitForExistence(timeout: 10))
+        scrollClearOfPinnedAction(monthly, pinned: purchase)
         monthly.tap()
         XCTAssertEqual(purchase.label, "Subscribe monthly")
         XCTAssertFalse(app.descendants(matching: .any)["paywall.trial-timeline"].exists)
@@ -297,8 +296,9 @@ final class PaydayJourneyTests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let value = app.textFields["paystub.inline.gross"]
         XCTAssertTrue(value.waitForExistence(timeout: 10))
-        value.tap()
-        value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "549.50")
+        // The amount is right-aligned; put the cursor after the existing digits before deleting.
+        value.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "549.50")
         dismissKeyboard()
         app.terminate()
         launch(reset: false)
@@ -352,6 +352,29 @@ final class PaydayJourneyTests: XCTestCase {
             scrollTo(element)
         }
         XCTAssertTrue(element.exists, "Missing control \(id)")
+        element.tap()
+    }
+    /// Pinned bottom actions overlap the end of a scrolling form, where an element can report
+    /// itself hittable while the pinned control actually receives the tap. Drag in short steps
+    /// until the element sits fully between the navigation bar and the pinned control.
+    private func scrollClearOfPinnedAction(_ element: XCUIElement, pinned: XCUIElement) {
+        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<20 {
+            guard element.exists, pinned.exists else { return }
+            let limit = pinned.frame.minY - 8
+            if element.frame.minY > 140, element.frame.maxY < limit { return }
+            let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            let distance: CGFloat = element.frame.maxY >= limit ? -160 : 160
+            start.press(
+                forDuration: 0.05,
+                thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)))
+        }
+    }
+    private func tapAbovePinnedAction(_ id: String, pinned: String) {
+        let element = app.buttons[id].firstMatch
+        if !element.waitForExistence(timeout: 8) { scrollTo(element) }
+        XCTAssertTrue(element.exists, "Missing control \(id)")
+        scrollClearOfPinnedAction(element, pinned: app.buttons[pinned].firstMatch)
         element.tap()
     }
     private func tapContaining(_ text: String) {
@@ -425,10 +448,12 @@ final class PaydayJourneyTests: XCTestCase {
         let completeWork = app.descendants(matching: .any)
             .matching(identifier: "paystub.complete-work").firstMatch
         scrollTo(completeWork)
+        scrollClearOfPinnedAction(completeWork, pinned: app.buttons["paystub.audit"].firstMatch)
         completeWork.tap()
         capture("confirmed-period-work")
         XCTAssertTrue(completeWork.isSelected)
-        tap("paystub.gross-basis.wagesOnly")
+        tapAbovePinnedAction("paystub.gross-basis.wagesOnly", pinned: "paystub.audit")
+        XCTAssertEqual(app.buttons["paystub.audit"].label, "Compare with expected pay")
         tap("paystub.audit")
     }
     private func capture(_ name: String) {

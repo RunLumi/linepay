@@ -463,10 +463,17 @@ struct PaystubReviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                Button(readyToCompare ? "Compare with expected pay" : "Save without comparing") {
-                    confirm()
+                Group {
+                    // Saving without comparing is legitimate but not the next step a worker should
+                    // take by reflex, so it does not wear the primary fill until both answers exist.
+                    if readyToCompare {
+                        Button("Compare with expected pay") { confirm() }
+                            .buttonStyle(LinePayPrimaryButtonStyle())
+                    } else {
+                        Button("Save without comparing") { confirm() }
+                            .buttonStyle(LinePaySecondaryButtonStyle())
+                    }
                 }
-                .buttonStyle(LinePayPrimaryButtonStyle())
                 .disabled(!minimumConfirmed)
                 .accessibilityIdentifier("paystub.audit")
                 Text(actionHint)
@@ -492,7 +499,7 @@ struct PaystubReviewView: View {
         }
         if !readyToCompare {
             return
-                "To compare, confirm your work log is complete and what the gross includes. Saving without comparing does not use your free check."
+                "Answer the two questions below to compare. Saving without comparing does not use your free check."
         }
         return model.hasUsedFreeAudit
             ? "Compares these confirmed facts with the expected pay for this period."

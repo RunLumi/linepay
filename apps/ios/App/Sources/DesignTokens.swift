@@ -166,6 +166,29 @@ struct LinePayPrimaryButtonStyle: ButtonStyle {
     }
 }
 
+/// A full-width action that is available but not the recommended next step.
+struct LinePaySecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, LinePaySpacing.standard)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .foregroundStyle(isEnabled ? LinePayColor.actionText : LinePayColor.textSecondary)
+            .background(LinePayColor.surfacePrimary)
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(LinePayColor.lineStrong, lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .opacity(configuration.isPressed ? 0.85 : 1)
+    }
+}
+
 /// A persistent label prevents a typed amount from losing its meaning.
 struct LinePayTextField: View {
     let title: String

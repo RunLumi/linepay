@@ -44,6 +44,7 @@ appId: com.streamentry.linepay
     element:
       id: paystub.complete-work
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.complete-work
@@ -53,6 +54,7 @@ appId: com.streamentry.linepay
       id: paystub.gross-basis.wagesOnly
     visibilityPercentage: 100
     timeout: 60000
+    centerElement: true
 - waitForAnimationToEnd
 - takeScreenshot: gross-basis-before-selection
 - tapOn:
