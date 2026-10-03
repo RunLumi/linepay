@@ -11,6 +11,6 @@
     "apps/ios/App/Resources/PrivacyInfo.xcprivacy": "528ab3fca910d2ac2f3ef256d5ea4c2327303a7a4a5efb9236987f3018e311f3",
     "apps/ios/LinePay.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved": "0f8b5904e88e6d3ddc03068d6dae893ae25d13d43210eb5f3f658a7fc0aa9cf1",
     "apps/ios/Packages/LinePayDomain/Package.swift": "ae426d7f1b9fd425dc3ff83efffeffcfee0a723f181a8569c57d6676c2ff99d5",
-    "apps/ios/project.yml": "cd4d78b503763697c2584f4c6dde71097de469ff7a480e8abc914eb4231cd6af"
+    "apps/ios/project.yml": "452e7761485c65e900a8fce4571ad88ed700d2a8bb6b8b93f05dfcbb6e728d4b"
   }
 }
