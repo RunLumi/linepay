@@ -242,12 +242,19 @@ Use LinePaycheck Free to set up a pay profile, log work, calculate expected pay,
 
 LinePaycheck Pro is for workers who want recurring paycheck checks, paystub scanning, reconciliation history, and advanced audit tools.
 
+LinePaycheck Pro is an auto-renewing subscription, $9.99 per month or $79.99 per year, charged to your Apple ID and managed in your App Store account settings.
+
+Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Privacy Policy: https://linepaycheck.com/privacy
+
 LinePaycheck helps you organize and compare your own work and pay information. Calculations and possible discrepancies are estimates for review and are not legal, tax, payroll, or employment advice.
 
 Check every paycheck.
 ```
 
 ### Description rules
+
+- Apps with auto-renewing subscriptions must put a working Terms of Use (EULA) link in the description (Guideline 3.1.2). With Apple's standard EULA, use the stdeula URL above. Apple rejected 1.0.2 for omitting it.
 
 - Only mention features that are actually shipping in the submitted build.
 - If paystub OCR is not shipping, remove `paystub processing`, `paystub scanning`, and any screenshot that implies scanning.
