@@ -2,7 +2,9 @@ import SwiftUI
 
 struct FirstWorkIntroductionView: View {
     let model: AppModel
+    let subscriptionStore: SubscriptionStore
     @State private var addingWork = false
+    @State private var offeringPro = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -19,8 +21,11 @@ struct FirstWorkIntroductionView: View {
                     .buttonStyle(LinePayPrimaryButtonStyle())
                     .accessibilityIdentifier("activation.add-work")
                     Button("I'll log work later") {
-                        do { try model.deferFirstWork() } catch {
-                            errorMessage = error.localizedDescription
+                        // Onboarding ends here for this worker, so this is the one offer moment.
+                        if subscriptionStore.canPresentOffer {
+                            offeringPro = true
+                        } else {
+                            deferWork()
                         }
                     }
                     .frame(minHeight: 48)
@@ -32,8 +37,17 @@ struct FirstWorkIntroductionView: View {
             }
             .navigationTitle("Your first work")
             .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .sheet(isPresented: $offeringPro, onDismiss: deferWork) {
+                ProPaywallView(store: subscriptionStore, context: .onboarding(expectedPay: nil)) {
+                    offeringPro = false
+                }
+            }
         }
         .sheet(isPresented: $addingWork) { AddWorkView(model: model) }
+    }
+
+    private func deferWork() {
+        do { try model.deferFirstWork() } catch { errorMessage = error.localizedDescription }
     }
 }
 
@@ -72,11 +86,9 @@ struct FirstPayResultView: View {
                         .font(.footnote)
                     }
                     Section {
-                        Button("Check every paycheck") { showingPro = true }
+                        Button("Continue") { continueAfterResult() }
                             .buttonStyle(LinePayPrimaryButtonStyle())
-                            .accessibilityIdentifier("activation.view-pro")
-                        Button("Keep logging work") { complete() }.frame(minHeight: 48)
-                            .accessibilityIdentifier("activation.keep-logging")
+                            .accessibilityIdentifier("activation.continue")
                     }
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
@@ -94,8 +106,19 @@ struct FirstPayResultView: View {
             .scrollContentBackground(.hidden).background(LinePayColor.canvas)
         }
         .sheet(isPresented: $showingPro, onDismiss: complete) {
-            ProPaywallView(store: subscriptionStore) { showingPro = false }
+            ProPaywallView(
+                store: subscriptionStore,
+                context: .onboarding(
+                    expectedPay: model.periodContext()?.calculation.map {
+                        LinePayFormat.money($0.expectedWages)
+                    })
+            ) { showingPro = false }
         }
+    }
+
+    /// The offer follows a readable result as the last onboarding step; it never covers the number.
+    private func continueAfterResult() {
+        if subscriptionStore.canPresentOffer { showingPro = true } else { complete() }
     }
 
     private func complete() {

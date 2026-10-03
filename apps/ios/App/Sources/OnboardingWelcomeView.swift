@@ -14,8 +14,8 @@ struct OnboardingWelcomeView: View {
                         .foregroundStyle(LinePayColor.textPrimary)
 
                     Text(
-                        "Track the hours and pay rules that matter. LinePaycheck calculates expected "
-                            + "pay and helps you check the paycheck against your work."
+                        "Log your hours, see the math behind your expected pay, and check it "
+                            + "against the paycheck you actually get."
                     )
                     .font(.title3)
                     .foregroundStyle(LinePayColor.textSecondary)
@@ -47,7 +47,7 @@ struct OnboardingWelcomeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Button("Set up my pay") {
+            Button("Calculate my pay") {
                 onContinue()
             }
             .buttonStyle(LinePayPrimaryButtonStyle())
@@ -55,7 +55,7 @@ struct OnboardingWelcomeView: View {
             .padding(.vertical, LinePaySpacing.standard)
             .background(LinePayColor.canvas)
             .accessibilityIdentifier("onboarding.set-up-pay")
-            .accessibilityHint("Continues to your pay rule setup")
+            .accessibilityHint("Starts a short setup of your pay rate and rules")
         }
         .background(LinePayColor.canvas.ignoresSafeArea())
     }

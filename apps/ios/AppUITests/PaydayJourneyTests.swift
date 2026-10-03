@@ -46,7 +46,12 @@ final class PaydayJourneyTests: XCTestCase {
         launch(reset: false, commerce: true)
         XCTAssertTrue(app.staticTexts["$400.00"].firstMatch.waitForExistence(timeout: 10))
         capture("first-expected-pay-proof")
-        tap("activation.keep-logging")
+        tap("activation.continue")
+        // Real StoreKit metadata is absent on an unconfigured simulator, so the onboarding offer
+        // is normally skipped; if Apple did supply prices, leave it through the free route.
+        if app.buttons["paywall.continue-free"].waitForExistence(timeout: 3) {
+            tap("paywall.continue-free")
+        }
         tab("Pay")
         capture("15-pay-ledger")
         tap("pay.finish-period")
@@ -78,6 +83,54 @@ final class PaydayJourneyTests: XCTestCase {
         capture("35-second-audit-paywall")
         tap("paywall.dismiss")
         XCTAssertTrue(app.buttons["pay.check-paycheck"].waitForExistence(timeout: 10))
+    }
+
+    func testOnboardingEndsWithDismissibleTrialOffer() {
+        launch(scenario: "profile", commerce: true, store: "trial")
+        tap("activation.skip-work")
+        XCTAssertTrue(app.staticTexts["paywall.trial-headline"].waitForExistence(timeout: 10))
+        let purchase = app.buttons["paywall.purchase"].firstMatch
+        XCTAssertEqual(purchase.label, "Start my 7-day free trial")
+        XCTAssertTrue(app.descendants(matching: .any)["paywall.trial-timeline"].exists)
+        XCTAssertTrue(app.buttons["paywall.continue-free"].isHittable)
+        capture("40-onboarding-trial-offer")
+        // The purchase controls stay pinned; scroll the plan fully above them before tapping.
+        let monthly = app.buttons["paywall.monthly"].firstMatch
+        for _ in 0..<10 where !monthly.exists || monthly.frame.maxY > purchase.frame.minY - 8 {
+            app.swipeUp()
+        }
+        monthly.tap()
+        XCTAssertEqual(purchase.label, "Subscribe monthly")
+        XCTAssertFalse(app.descendants(matching: .any)["paywall.trial-timeline"].exists)
+        capture("41-onboarding-monthly-offer")
+        tap("paywall.continue-free")
+        let addWork = app.buttons["today.add-work"].firstMatch
+        XCTAssertTrue(addWork.waitForExistence(timeout: 10))
+
+        // The first real result is still followed by the offer, now with the worker's own number.
+        tap("today.add-work")
+        tap("work.save")
+        tap("activation.continue")
+        XCTAssertTrue(
+            app.descendants(matching: .any)["paywall.your-result"].waitForExistence(timeout: 10))
+        capture("42-first-result-trial-offer")
+        tap("paywall.dismiss")
+        XCTAssertTrue(addWork.waitForExistence(timeout: 10))
+    }
+
+    func testTrialOfferKeepsTermsAndFreeExitReachableAtLargestText() {
+        launch(scenario: "work", commerce: true, store: "trial", largeText: true)
+        tab("Settings")
+        tap("settings.view-pro")
+        XCTAssertTrue(app.staticTexts["paywall.trial-headline"].waitForExistence(timeout: 10))
+        capture("43-trial-offer-largest-text")
+        let free = app.buttons["paywall.continue-free"].firstMatch
+        scrollTo(free)
+        XCTAssertTrue(app.staticTexts["paywall.terms"].firstMatch.exists)
+        capture("44-trial-terms-largest-text")
+        XCTAssertTrue(free.isHittable)
+        free.tap()
+        XCTAssertTrue(app.buttons["settings.view-pro"].firstMatch.waitForExistence(timeout: 10))
     }
 
     func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() {
@@ -269,7 +322,7 @@ final class PaydayJourneyTests: XCTestCase {
 
     private func launch(
         reset: Bool = true, scenario: String = "empty", commerce: Bool = false,
-        largeText: Bool = false
+        store: String? = nil, largeText: Bool = false
     ) {
         app = XCUIApplication()
         app.launchArguments =
@@ -281,6 +334,7 @@ final class PaydayJourneyTests: XCTestCase {
         ]
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
+        if let store { app.launchEnvironment["LINEPAY_UI_STORE"] = store }
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
         app.launch()

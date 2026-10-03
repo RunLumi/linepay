@@ -761,10 +761,10 @@ LinePaycheck is a local-first paycheck and work-pay utility for linemen. No acco
 
 Suggested review path:
 1. Launch the app.
-2. Tap "Set up my pay".
+2. Tap "Calculate my pay".
 3. Enter an hourly rate and save the pay profile. Optional overtime/callout/per-diem rules are off until explicitly enabled.
-4. Continue free from the Pro offer if shown.
-5. Add a work interval from Today.
+4. Tap "Log my first work", save the interval, read the expected pay, and tap "Continue". The LinePaycheck Pro offer (7-day free trial on Annual, or Monthly) appears here; it is also available any time from Settings > View Pro options. Tap "Continue free" to keep using the free features.
+5. Add another work interval from Today.
 6. Open Pay to review the expected-pay ledger and rule explanations.
 7. If paycheck scanning/reconciliation is enabled in this build, use the included demo/test path described below to exercise it.
 

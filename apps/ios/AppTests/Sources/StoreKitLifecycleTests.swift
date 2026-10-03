@@ -156,14 +156,24 @@ struct StoreKitLifecycleTests {
         #expect(
             store.product(id: SubscriptionStore.monthlyProductID)?.subscription?.introductoryOffer
                 == nil)
+        let annualPlan = try #require(store.plan(id: SubscriptionStore.yearlyProductID))
+        #expect(annualPlan.freeTrial == .days(7) && annualPlan.price == annual.price)
+        #expect(annualPlan.monthlyEquivalent == "$6.67")
+        #expect(store.plan(id: SubscriptionStore.monthlyProductID)?.freeTrial == nil)
+        #expect(store.annualSavingsPercent == 33)
+        #expect(store.canPresentOffer)
         #expect(await store.purchase(annual))
         await expectTrial(true, store: store)
+        #expect(!store.canPresentOffer, "An active trial is never offered Pro again")
         #expect(store.renewalDate != nil)
         try session.forceRenewalOfSubscription(productIdentifier: annual.id)
         await expectTrial(false, store: store)
         #expect(store.isPro)
         await store.load()
         #expect(store.annualTrialDuration == nil)
+        #expect(
+            store.plan(id: SubscriptionStore.yearlyProductID)?.freeTrial == nil,
+            "A used introductory offer must not be advertised again")
         try await resetSession(session)
     }
 

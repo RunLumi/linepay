@@ -4,7 +4,7 @@ import SwiftUI
 struct LinePayApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var session = AppSession.production()
-    @State private var subscriptionStore = SubscriptionStore()
+    @State private var subscriptionStore = SubscriptionStore.production()
 
     var body: some Scene {
         WindowGroup {

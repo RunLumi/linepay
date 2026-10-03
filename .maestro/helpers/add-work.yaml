@@ -33,14 +33,14 @@ appId: com.streamentry.linepay
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: activation.keep-logging
+      id: activation.continue
     timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
-    id: activation.keep-logging
+    id: activation.continue
 - takeScreenshot: first-real-result
 - tapOn:
-    id: activation.keep-logging
+    id: activation.continue
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
