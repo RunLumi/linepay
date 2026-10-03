@@ -103,6 +103,21 @@ struct PresentationValueTests {
         #expect(!utc.isEmpty && utc != west)
     }
 
+    @Test func firstPeriodDefaultsToTheStartOfThisWeekSoRecentShiftsFit() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "America/Chicago"))
+        calendar.firstWeekday = 1
+        // Saturday afternoon: yesterday's shift must fall inside the proposed first period.
+        let saturday = try #require(
+            calendar.date(from: DateComponents(year: 2026, month: 10, day: 3, hour: 15)))
+        let start = PayProfileDraft.startOfCurrentWeek(now: saturday, calendar: calendar)
+        #expect(calendar.component(.weekday, from: start) == calendar.firstWeekday)
+        #expect(start == calendar.startOfDay(for: start))
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: saturday))
+        #expect(start <= yesterday && start <= saturday)
+        #expect(saturday.timeIntervalSince(start) < 7 * 86_400)
+    }
+
     @Test(arguments: [
         AuditDisplayStatus.notAudited, .matches, .grossMatches, .possibleShortfall,
         .possibleOverpayment, .needsReview, .notComparable,

@@ -105,6 +105,32 @@ struct ScreenContractTests {
                 == 2)
     }
 
+    @Test func nextPeriodStartContinuesFromTheLastClosedPeriodWithoutOverlap() throws {
+        var chicago = Calendar(identifier: .gregorian)
+        chicago.timeZone = try #require(TimeZone(identifier: "America/Chicago"))
+        let start = try #require(
+            chicago.date(from: DateComponents(year: 2026, month: 3, day: 1)))
+        let end = try #require(chicago.date(byAdding: .day, value: 7, to: start))
+        let window = PayPeriodWindow(
+            startEpochSeconds: Int64(start.timeIntervalSince1970),
+            endEpochSeconds: Int64(end.timeIntervalSince1970), cadence: .manual)
+        let later = end.addingTimeInterval(30 * 86_400)
+        // Same zone: the exclusive end is already local midnight, so the next period starts there.
+        #expect(
+            StartPayPeriodView.proposedStart(afterHistory: [window], calendar: chicago, now: later)
+                == end)
+        // A zone where that instant is mid-day must move to the following midnight, not overlap.
+        var tokyo = Calendar(identifier: .gregorian)
+        tokyo.timeZone = try #require(TimeZone(identifier: "Asia/Tokyo"))
+        let proposed = StartPayPeriodView.proposedStart(
+            afterHistory: [window], calendar: tokyo, now: later)
+        #expect(proposed >= end && proposed == tokyo.startOfDay(for: proposed))
+        // No history: today, at local midnight.
+        #expect(
+            StartPayPeriodView.proposedStart(afterHistory: [], calendar: chicago, now: later)
+                == chicago.startOfDay(for: later))
+    }
+
     @Test func addEditAndRepeatFormsRetainTheirWorkFacts() throws {
         let model = try populatedModel()
         let entry = try #require(model.workEntries.first)

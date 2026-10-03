@@ -329,6 +329,7 @@ struct AddWorkView: View {
                     Text(LinePayFormat.workDateRange(item.interval))
                     if !item.note.isEmpty { Text(item.note) }
                 }
+                .linePayCanvas()
                 .navigationTitle("Conflicting work")
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {

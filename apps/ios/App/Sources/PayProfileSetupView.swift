@@ -138,6 +138,7 @@ struct PayProfileSetupView: View {
                         .font(.footnote)
                     }
                 }
+                .linePayCanvas()
                 .navigationTitle("Missing rule")
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
