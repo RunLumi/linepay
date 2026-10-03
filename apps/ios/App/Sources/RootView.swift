@@ -12,7 +12,7 @@ struct RootView: View {
                 PendingRemovalView(model: model)
             } else if model.isOnboarded {
                 if model.onboardingProgress == .firstWork {
-                    FirstWorkIntroductionView(model: model)
+                    FirstWorkIntroductionView(model: model, subscriptionStore: subscriptionStore)
                 } else if model.onboardingProgress == .proof {
                     FirstPayResultView(model: model, subscriptionStore: subscriptionStore)
                 } else {

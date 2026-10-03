@@ -1,6 +1,6 @@
 # LinePaycheck Onboarding and Seven-Day Trial
 
-> Canonical onboarding, trial presentation, and activation specification. Revised September 5, 2026.
+> Canonical onboarding, trial presentation, and activation specification. Revised September 5, 2026; offer placement and presentation revised October 3, 2026 after zero observed trial starts ([diagnosis](../research/trial-conversion-2026-10-03.md)).
 > This is the implementation target, not a claim that the current binary implements it or that conversion lift has been demonstrated.
 
 ## 1. Decision and scope
@@ -57,11 +57,11 @@ Persist real inputs before the offer. Dismissing or cancelling a purchase must r
 
 Headline: **Know what your work should pay.**
 
-Support: **Log your work. See the math. Check the paycheck.**
+Support: **Log your hours, see the math behind your expected pay, and check it against the paycheck you actually get.**
 
 Trust: **No LinePaycheck account. Your pay data stays on this iPhone by default.**
 
-CTA: **Calculate my work pay**.
+CTA: **Calculate my pay**.
 
 Use the actual product's ledger visual or the Line Gap mark. Optional **See an example** opens clearly labeled synthetic data in a separate, discardable preview. It must never write a sample into the worker's real ledger or imply recovered wages. No purchase or permission request on this screen.
 
@@ -79,7 +79,7 @@ Ask for one actual recent work interval: date, start/end, and any unpaid break. 
 
 CTA: **See expected pay**.
 
-Allow **I'll log work later**. That route enters Today with one useful next action; it does not claim personal proof or automatically open the proof-triggered offer. An explicit **Try Pro** action remains available. A returning user sees the offer once after their first real result.
+Allow **I'll log work later**. That choice ends onboarding for that worker, so it is the one offer moment on that route: show the same dismissible offer, without any personal result, and enter Today after **Continue free**, **Not now**, or a verified purchase. It must not claim personal proof. A returning user sees the offer once more after their first real result.
 
 Workers arriving with a paycheck may follow **Check a paycheck I have** as a secondary route after setup. Ask for matching work facts and pay-period dates. Never compare a full paycheck to one shift and label the difference an underpayment.
 
@@ -89,8 +89,11 @@ Display the computed gross estimate, exact interval/period, currency, applied ru
 
 Make this result a real readable screen; no timed auto-advance or immediate modal covering the number.
 
-Primary continuation: **Check every paycheck** → trial offer.
-Secondary: **Keep logging work** → Today.
+Single continuation: **Continue** → trial offer → Today. The offer is the last onboarding step, shown after the worker has read the result and tapped Continue; it never covers the number.
+
+Show the offer only when Apple can actually sell Pro now (product metadata loaded, entitlements checked) and the worker does not already own it. Otherwise **Continue** goes straight to Today; an unsellable offer is skipped rather than shown with disabled prices.
+
+The October 2026 revision removed the former secondary **Keep logging work** bypass. With it, most workers left onboarding without ever seeing the trial terms, while install-day sessions produce the large majority of trial starts. The offer remains fully dismissible and Free remains useful.
 
 The offer is the next step after a result, not a reward for completing a form. A match is a successful check; do not require or manufacture a discrepancy to sell Pro.
 
@@ -108,26 +111,37 @@ For an eligible annual customer, the content hierarchy is:
 
 ```text
 Check every paycheck.
+Try Pro free for 7 days with the annual plan.
 
-[Real result summary, only if available and accurately scoped]
+[Expected gross for the work you logged — only after a real result]
 
-Annual — Recommended
-7 days free, then $79.99 per year
-Billed yearly. About $6.67/month equivalent.
-Save about 33% compared with 12 monthly payments.
+[Three benefits]
+
+Annual · Recommended                         [Save 33%]
+$79.99 / year
+7 days free, then billed yearly. Works out to $6.67/month.
 
 Monthly
-$9.99 per month. Billed today. No free trial.
+$9.99 / month
+Billed monthly, starting today. No free trial.
 
+How the free trial works          (selected annual trial only)
+  Today   Pro unlocks. Nothing is charged today.
+  Day 6   Cancel at least 24 hours before the trial ends and you pay nothing.
+  Day 7   Your annual plan starts: $79.99 for the year.
+
+── pinned below the scrolling content ──
 [ Start my 7-day free trial ]
-Then $79.99/year, automatically renewing.
-Cancel at least 24 hours before the trial ends to avoid renewal.
-
+7 days free, then $79.99 per year, renewing automatically.
+Cancel at least 24 hours before the trial ends to avoid being charged.
 Continue free
-Restore Purchases · Manage Subscription · Terms · Privacy
+
+Restore Purchases · Manage Subscription · Privacy · Terms
 ```
 
-The displayed prices above are U.S. examples. Render the complete annual charge prominently. Calculate any savings using the loaded annual and monthly products in the same currency with Decimal; hide savings if products or comparison validity are unavailable. Do not make the monthly equivalent look like the billing schedule.
+The trial timeline appears only for a selected plan with an eligible day-based free offer, below the plan rows so that changing the selection never moves the rows being tapped; its day numbers come from the offer duration. It states when billing happens; it must not promise a reminder while iOS 1.0 schedules none. The purchase button, terms, and **Continue free** stay pinned and visible without scrolling; at accessibility text sizes they flow inline so they never cover the content.
+
+The displayed prices above are U.S. examples. Render the complete annual charge prominently. Calculate any savings using the loaded annual and monthly products in the same currency with Decimal, rounded down to a whole percent so it is never overstated; hide savings if products or comparison validity are unavailable. Do not make the monthly equivalent look like the billing schedule.
 
 The trial starts only when Apple's purchase flow completes successfully with a verified transaction. Opening the app, tapping the CTA, closing the sheet, or saving a profile does not start it.
 
@@ -260,6 +274,8 @@ Inspection at source commit `03dedaa` found:
 - `SubscriptionStore` verifies purchases and current entitlements but exposes no trial/renewal presentation model.
 - No checked-in `.storekit` file was found.
 - First-work proof, trial roadmap/reminders, and production funnel measurement are specified here; they are not established by this docs change.
+
+October 3, 2026 implementation (`feat/onboarding-trial-offer`): `SubscriptionStore` exposes a `ProPlan` presentation model built only from loaded StoreKit products and verified eligibility; the offer follows the first result and the skip route; the paywall implements the hierarchy above. `AppTests/Resources/LinePay.storekit` drives lifecycle tests, and a Debug-only `LINEPAY_UI_STORE` fixture renders synthetic prices for UI tests without enabling a purchase. Trial reminders, the trial roadmap after purchase, and production funnel measurement remain unimplemented.
 
 A saved App Store offer alone does not close these gaps. Build the flow without modifying payroll arithmetic or retroactively changing stored agreement snapshots.
 

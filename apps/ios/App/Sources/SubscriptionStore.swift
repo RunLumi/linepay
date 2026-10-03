@@ -23,6 +23,8 @@ final class SubscriptionStore {
     private(set) var errorMessage: String?
     private(set) var notice: String?
     private(set) var annualTrialDuration: String?
+    /// Display facts derived only from loaded StoreKit metadata; empty until Apple supplies prices.
+    private(set) var plans: [ProPlan] = []
     private(set) var renewalDate: Date?
     private(set) var willAutoRenew: Bool?
     private(set) var isTrial = false
@@ -31,6 +33,7 @@ final class SubscriptionStore {
     @ObservationIgnored private var refreshGeneration = 0
     @ObservationIgnored private let operations: SubscriptionOperations
     @ObservationIgnored private let observesStoreKit: Bool
+    @ObservationIgnored private var fixturePlans: [ProPlan]?
 
     init(
         commerceEnabled: Bool? = nil,
@@ -49,12 +52,36 @@ final class SubscriptionStore {
         self.operations = selected
         observesStoreKit = operations == nil
     }
+    static func production() -> SubscriptionStore {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+                let fixture = UITestFixtures.subscriptionStore()
+            {
+                return fixture
+            }
+        #endif
+        return SubscriptionStore()
+    }
     deinit {
         transactionTask?.cancel()
         statusTask?.cancel()
     }
     var hasAuditAccess: Bool { isPro || !purchasingEnabled }
     func product(id: String) -> Product? { products.first { $0.id == id } }
+    func plan(id: String) -> ProPlan? { plans.first { $0.id == id } }
+
+    /// Whether the one-time onboarding offer can be shown: Apple can sell Pro right now and the
+    /// worker does not already own it. An unsellable offer is skipped rather than shown broken.
+    var canPresentOffer: Bool {
+        purchasingEnabled && hasCheckedEntitlements && !isPro && !plans.isEmpty
+    }
+
+    var annualSavingsPercent: Int? {
+        guard let annual = plan(id: Self.yearlyProductID),
+            let monthly = plan(id: Self.monthlyProductID)
+        else { return nil }
+        return ProPlan.annualSavingsPercent(annual: annual, monthly: monthly)
+    }
 
     func start() async {
         guard purchasingEnabled else { return }
@@ -87,6 +114,11 @@ final class SubscriptionStore {
         }
         // Signed on-device entitlements are independent of network product merchandising.
         await refreshEntitlements()
+        if let fixturePlans {
+            plans = fixturePlans
+            annualTrialDuration = plan(id: Self.yearlyProductID)?.freeTrial?.duration
+            return
+        }
         guard !isLoading else { return }
         isLoading = true
         annualTrialDuration = nil
@@ -96,15 +128,21 @@ final class SubscriptionStore {
             errorMessage =
                 products.isEmpty
                 ? "App Store prices are unavailable. Your saved pay data remains accessible." : nil
+            var trial: ProPlan.FreeTrial?
             if let annual = product(id: Self.yearlyProductID)?.subscription,
                 let offer = annual.introductoryOffer, offer.paymentMode == .freeTrial,
                 await annual.isEligibleForIntroOffer
             {
-                annualTrialDuration = Self.duration(of: offer)
+                trial = Self.freeTrial(of: offer)
+            }
+            annualTrialDuration = trial?.duration
+            plans = products.compactMap {
+                Self.plan(for: $0, freeTrial: $0.id == Self.yearlyProductID ? trial : nil)
             }
             await refreshEntitlements()
         } catch {
             products = []
+            plans = []
             errorMessage =
                 "App Store prices could not be loaded. Verified access and saved pay data do not depend on this request."
             LinePayLog.storeKit.error("Product metadata unavailable")
@@ -230,15 +268,48 @@ final class SubscriptionStore {
     }
     private func rank(_ id: String) -> Int { id == Self.yearlyProductID ? 0 : 1 }
 
-    private static func duration(of offer: Product.SubscriptionOffer) -> String? {
+    private static func plan(for product: Product, freeTrial: ProPlan.FreeTrial?) -> ProPlan? {
+        let period: ProPlan.Period
+        switch product.id {
+        case yearlyProductID: period = .year
+        case monthlyProductID: period = .month
+        default: return nil
+        }
+        let style = product.priceFormatStyle
+        return ProPlan(
+            id: product.id, period: period, price: product.price, currencyCode: style.currencyCode,
+            displayPrice: product.displayPrice,
+            monthlyEquivalent: period == .year ? (product.price / 12).formatted(style) : nil,
+            freeTrial: freeTrial)
+    }
+
+    private static func freeTrial(of offer: Product.SubscriptionOffer) -> ProPlan.FreeTrial? {
         let count = offer.period.value * offer.periodCount
         guard count > 0 else { return nil }
         switch offer.period.unit {
-        case .day: return "\(count) \(count == 1 ? "day" : "days")"
-        case .week: return "\(count * 7) days"
-        case .month: return "\(count) \(count == 1 ? "month" : "months")"
-        case .year: return "\(count) \(count == 1 ? "year" : "years")"
+        case .day: return .days(count)
+        case .week: return .days(count * 7)
+        case .month: return .months(count)
+        case .year: return .years(count)
         @unknown default: return nil
         }
     }
 }
+
+#if DEBUG
+    extension SubscriptionStore {
+        /// Synthetic merchandising for UI tests and visual QA. It never grants Pro, and a purchase
+        /// fails closed because no StoreKit product exists behind these display facts.
+        static func fixture(plans: [ProPlan], entitled: Bool = false) -> SubscriptionStore {
+            let store = SubscriptionStore(
+                commerceEnabled: true,
+                operations: SubscriptionOperations(
+                    loadProducts: { [] },
+                    entitlementIDs: { entitled ? [yearlyProductID] : [] },
+                    purchase: { _, _ in throw SubscriptionOperationError.productUnavailable },
+                    synchronize: {}))
+            store.fixturePlans = plans
+            return store
+        }
+    }
+#endif

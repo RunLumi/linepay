@@ -7,6 +7,31 @@
     /// addresses the production state directory. Every record is synthetic and locally generated.
     @MainActor
     enum UITestFixtures {
+        /// `LINEPAY_UI_STORE=trial` renders the offer with synthetic U.S. prices and an eligible
+        /// seven-day annual trial. Nothing can be bought and Pro is never granted.
+        static func subscriptionStore() -> SubscriptionStore? {
+            switch ProcessInfo.processInfo.environment["LINEPAY_UI_STORE"] {
+            case "trial": .fixture(plans: samplePlans(trial: true))
+            case "no-trial": .fixture(plans: samplePlans(trial: false))
+            default: nil
+            }
+        }
+
+        static func samplePlans(trial: Bool) -> [ProPlan] {
+            [
+                ProPlan(
+                    id: SubscriptionStore.yearlyProductID, period: .year,
+                    price: Decimal(sign: .plus, exponent: -2, significand: 7_999),
+                    currencyCode: "USD", displayPrice: "$79.99",
+                    monthlyEquivalent: "$6.67", freeTrial: trial ? .days(7) : nil),
+                ProPlan(
+                    id: SubscriptionStore.monthlyProductID, period: .month,
+                    price: Decimal(sign: .plus, exponent: -2, significand: 999),
+                    currencyCode: "USD", displayPrice: "$9.99",
+                    monthlyEquivalent: nil, freeTrial: nil),
+            ]
+        }
+
         static func session() -> AppSession {
             let base = FileManager.default.temporaryDirectory.appendingPathComponent(
                 "LinePayUITest", isDirectory: true)
@@ -48,6 +73,7 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
+                if scenario == "profile" { return session }
                 if scenario == "unresolved" {
                     let boundary = profile.periodStartDate.addingTimeInterval(86_400)
                     var changed = profile

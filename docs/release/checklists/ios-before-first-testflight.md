@@ -75,6 +75,8 @@ If subscriptions exist:
 - [ ] Annual introductory offer is configured and tested as seven days free; Monthly has no introductory trial.
 - [ ] Trial copy depends on both actual offer metadata and eligibility; full renewal price and cancellation timing are visible.
 - [ ] Sandbox/TestFlight proves eligible purchase, ineligible purchase, trial-to-paid, expiry, and restore; a saved App Store offer is not purchase-path proof.
+- [ ] Both subscriptions have complete metadata and are selected under **In-App Purchases and Subscriptions** on the version being submitted. Apple only reviews a first subscription together with an app version; an approved app whose subscriptions were not attached ships with no purchasable Pro.
+- [ ] After release, the public App Store page lists **In-App Purchases** with both prices. If it does not, the paywall shows no prices and no worker can start a trial.
 
 ## Release engineering
 

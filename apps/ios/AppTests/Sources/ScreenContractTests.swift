@@ -228,6 +228,66 @@ struct ScreenContractTests {
         #expect(!session.isBusy && session.restoreNotice == nil)
     }
 
+    @Test func trialOfferStatesTheFullChargeTimelineAndFreeExit() async throws {
+        let store = SubscriptionStore.fixture(plans: UITestFixtures.samplePlans(trial: true))
+        await store.load()
+        let paywall = ProPaywallView(store: store, context: .onboarding(expectedPay: "$400.00")) {}
+        let content = try text(paywall)
+        for expected in [
+            "Try Pro free for 7 days with the annual plan.", "Nothing is charged today.",
+            "$79.99 / year",
+            "7 days free, then billed yearly. Works out to $6.67/month.", "Save 33%",
+            "Day 6", "Day 7", "Your annual plan starts: $79.99 for the year.",
+            "$9.99 / month", "Billed monthly, starting today. No free trial.",
+            "7 days free, then $79.99 per year, renewing automatically.",
+            "Continue free", "$400.00",
+        ] {
+            #expect(content.contains(expected), "Missing offer content: \(expected)")
+        }
+        #expect(
+            !content.localizedCaseInsensitiveContains("remind"), "iOS 1.0 schedules no reminder")
+        let purchase = try paywall.inspect().find(
+            viewWithAccessibilityIdentifier: "paywall.purchase"
+        )
+        .button()
+        #expect(try purchase.labelView().text().string() == "Start my 7-day free trial")
+        #expect(!purchase.isDisabled())
+    }
+
+    @Test func offerWithoutTrialMakesNoFreeClaim() async throws {
+        let store = SubscriptionStore.fixture(plans: UITestFixtures.samplePlans(trial: false))
+        await store.load()
+        let paywall = ProPaywallView(store: store) {}
+        let content = try text(paywall)
+        #expect(!content.contains("days free") && !content.contains("Try Pro free"))
+        #expect(!content.contains("Nothing is charged today"))
+        #expect(content.contains("$79.99 billed today and every year until you cancel"))
+        let purchase = try paywall.inspect().find(
+            viewWithAccessibilityIdentifier: "paywall.purchase"
+        )
+        .button()
+        #expect(try purchase.labelView().text().string() == "Subscribe yearly")
+    }
+
+    @Test func firstResultContinuesThroughTheOfferOnlyWhenProIsSellable() async throws {
+        let model = AppModel()
+        try model.saveProfile(UnitFixture.profile())
+        try model.addWork(
+            start: UnitFixture.start, end: UnitFixture.start.addingTimeInterval(28_800),
+            kind: .regular)
+        #expect(model.onboardingProgress == .proof)
+
+        let sellable = SubscriptionStore.fixture(plans: UITestFixtures.samplePlans(trial: true))
+        await sellable.load()
+        try FirstPayResultView(model: model, subscriptionStore: sellable).inspect()
+            .find(viewWithAccessibilityIdentifier: "activation.continue").button().tap()
+        #expect(model.onboardingProgress == .proof, "The offer is shown before onboarding ends")
+
+        try FirstPayResultView(model: model, subscriptionStore: commerce()).inspect()
+            .find(viewWithAccessibilityIdentifier: "activation.continue").button().tap()
+        #expect(model.onboardingProgress == nil, "Without a sellable offer the result completes")
+    }
+
     @Test func semanticStatusIsNeverColorOnly() throws {
         for status in [
             AuditDisplayStatus.notAudited, .matches, .grossMatches, .needsReview, .notComparable,

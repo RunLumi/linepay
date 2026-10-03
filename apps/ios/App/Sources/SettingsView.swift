@@ -63,8 +63,13 @@ struct SettingsView: View {
                             Text(date.formatted(date: .abbreviated, time: .shortened))
                         }
                     }
-                    Button("View Pro options") { paywall = true }
-                        .frame(minHeight: 48).accessibilityIdentifier("settings.view-pro")
+                    Button(
+                        subscriptionStore.isPro
+                            ? "View Pro options"
+                            : subscriptionStore.annualTrialDuration.map { "Try Pro free for \($0)" }
+                                ?? "View Pro options"
+                    ) { paywall = true }
+                    .frame(minHeight: 48).accessibilityIdentifier("settings.view-pro")
                     Button("Restore Purchases") {
                         Task { await subscriptionStore.restorePurchases() }
                     }
