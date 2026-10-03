@@ -19,21 +19,32 @@ struct TodayView: View {
                 if let active = model.activePeriod {
                     Section {
                         Text(
-                            LinePayFormat.payPeriod(
-                                active.window, timeZoneIdentifier: model.currentTimeZoneIdentifier)
-                        ).font(.subheadline)
-                        PayAmount(
-                            label: "Expected wages", money: model.calculation?.expectedWages,
-                            prominent: true
+                            "This pay period · "
+                                + LinePayFormat.payPeriod(
+                                    active.window,
+                                    timeZoneIdentifier: model.currentTimeZoneIdentifier)
                         )
-                        .accessibilityIdentifier("today.expected-wages")
-                        if let allowance = model.calculation?.expectedAllowances,
-                            allowance.amount > 0
-                        {
-                            PayAmount(label: "Separate expected per diem", money: allowance)
+                        .font(.subheadline).foregroundStyle(LinePayColor.textSecondary)
+                        if model.workEntries.isEmpty {
+                            // An empty period is not "$0.00 earned"; say what is missing instead.
+                            Text("No work logged yet").font(.title2.bold())
+                                .accessibilityIdentifier("today.no-work")
+                        } else {
+                            PayAmount(
+                                label: "Expected wages so far",
+                                money: model.calculation?.expectedWages, prominent: true
+                            )
+                            .accessibilityIdentifier("today.expected-wages")
+                            if let allowance = model.calculation?.expectedAllowances,
+                                allowance.amount > 0
+                            {
+                                PayAmount(label: "Separate expected per diem", money: allowance)
+                            }
+                            Text(
+                                "\(LinePayFormat.hours(model.totalHours)) h worked · \(model.workEntries.count) \(model.workEntries.count == 1 ? "shift" : "shifts")"
+                            )
+                            .font(.footnote).monospacedDigit()
                         }
-                        Text("\(LinePayFormat.hours(model.totalHours)) actual worked hours").font(
-                            .footnote)
                         if let problem = model.calculationError {
                             CalculationProblemView(message: problem)
                         }
@@ -45,19 +56,6 @@ struct TodayView: View {
                         }
                     }
                     Section {
-                        if let last = model.lastWorkEntry {
-                            Button("Repeat last shift") { repeating = last }
-                                .frame(minHeight: 48)
-                                .disabled(model.workDraft != nil)
-                                .accessibilityIdentifier("today.repeat-shift")
-                            if model.workDraft != nil {
-                                Text(
-                                    "Finish or discard the saved work draft before repeating, editing, or deleting another shift."
-                                )
-                                .font(.footnote)
-                                .foregroundStyle(LinePayColor.textSecondary)
-                            }
-                        }
                         Button(workButtonTitle) {
                             if model.workDraft?.templateSource != nil {
                                 showingRepeatDraft = true
@@ -67,28 +65,81 @@ struct TodayView: View {
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
                             "today.add-work")
-                        Button("Check paycheck") { onOpenPay() }.frame(minHeight: 44)
+                        if let last = model.lastWorkEntry {
+                            Button {
+                                repeating = last
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Repeat last shift")
+                                    Text(LinePayFormat.shiftTimes(last.interval))
+                                        .font(.footnote)
+                                        .foregroundStyle(LinePayColor.textSecondary)
+                                }
+                            }
+                            .linePayRowAction()
+                            .disabled(model.workDraft != nil)
+                            .accessibilityIdentifier("today.repeat-shift")
+                        }
+                        if model.workDraft != nil {
+                            Text(
+                                "Finish or discard your unsaved work draft before repeating, editing, or deleting another shift."
+                            )
+                            .font(.footnote)
+                            .foregroundStyle(LinePayColor.textSecondary)
+                        }
+                        if let awaiting = awaitingPaycheck {
+                            // The period just closed is usually the paycheck the worker came for.
+                            Button(awaiting) { onOpenHistory() }
+                                .linePayRowAction()
+                                .accessibilityIdentifier("today.awaiting-paycheck")
+                        }
+                        if !model.workEntries.isEmpty {
+                            Button(
+                                active.paystub == nil ? "Check paycheck" : "View paycheck result"
+                            ) {
+                                onOpenPay()
+                            }
+                            .linePayRowAction()
                             .accessibilityIdentifier("today.open-pay")
+                        }
+                        if active.paystub != nil, let context = model.periodContext() {
+                            AuditStatusView(status: model.status(for: context))
+                        }
                     }
                     Section("Work log") {
                         if model.workEntries.isEmpty {
-                            Text("No work logged this period. Record what actually happened.")
+                            Text(
+                                "Add each shift after you work it. The estimate updates as you go."
+                            )
+                            .foregroundStyle(LinePayColor.textSecondary)
                         }
                         ForEach(model.workEntries.reversed()) { entry in
                             Button {
                                 editing = entry
                             } label: {
-                                VStack(alignment: .leading, spacing: 5) {
-                                    Text(workKindTitle(entry.interval.kind)).font(.headline)
-                                    Text(LinePayFormat.workDateRange(entry.interval)).font(.callout)
-                                    Text(
-                                        "\(LinePayFormat.hours(entry.interval.durationHours)) actual h"
-                                    ).monospacedDigit()
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Text(workKindTitle(entry.interval.kind)).font(.headline)
+                                        Spacer(minLength: LinePaySpacing.compact)
+                                        Text(
+                                            "\(LinePayFormat.hours(entry.interval.durationHours)) h"
+                                        )
+                                        .font(.headline).monospacedDigit()
+                                    }
+                                    Text(LinePayFormat.shiftTimes(entry.interval))
+                                        .font(.subheadline)
                                     if let text = LinePayFormat.breakDuration(entry.interval) {
                                         Text(text).font(.footnote)
+                                            .foregroundStyle(LinePayColor.textSecondary)
                                     }
-                                    if !entry.note.isEmpty { Text(entry.note).font(.footnote) }
-                                }.foregroundStyle(LinePayColor.textPrimary).padding(.vertical, 6)
+                                    if !entry.note.isEmpty {
+                                        Text(entry.note).font(.footnote)
+                                            .foregroundStyle(LinePayColor.textSecondary)
+                                    }
+                                }
+                                .foregroundStyle(LinePayColor.textPrimary).padding(.vertical, 6)
+                                .accessibilityElement(children: .combine)
+                                .accessibilityHint("Opens this shift to edit or delete it")
                             }
                             .accessibilityIdentifier("today.edit-work")
                             .disabled(model.workDraft != nil)
@@ -111,17 +162,20 @@ struct TodayView: View {
                 } else {
                     Section {
                         Text("Ready for the next work period").font(.title2.bold())
+                        Text(
+                            "Your last period is closed. Start the next one to keep logging shifts."
+                        )
+                        .foregroundStyle(LinePayColor.textSecondary)
                         Button("Start pay period") { showingStart = true }.buttonStyle(
                             LinePayPrimaryButtonStyle())
                     }
                 }
 
-                let pending = model.history.filter { $0.paystub == nil }.count
-                if pending > 0 {
+                if model.activePeriod == nil, let awaiting = awaitingPaycheck {
                     Section {
-                        Button("\(pending) closed work period(s) awaiting a paycheck") {
-                            onOpenHistory()
-                        }.frame(minHeight: 44)
+                        Button(awaiting) { onOpenHistory() }
+                            .linePayRowAction()
+                            .accessibilityIdentifier("today.awaiting-paycheck")
                     }
                 }
 
@@ -130,8 +184,7 @@ struct TodayView: View {
                 }
             }
             .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(LinePayColor.canvas)
+            .linePayCanvas()
             .navigationTitle("Today")
             .safeAreaInset(edge: .bottom) {
                 if let undo {
@@ -166,6 +219,17 @@ struct TodayView: View {
         .onChange(of: model.currentWorkRevision) { _, revision in
             if let undo, undo.expectedRevision != revision { self.undo = nil }
         }
+    }
+
+    /// "Add the paycheck for Sep 27 – Oct 3" for one closed period still waiting for its paycheck.
+    private var awaitingPaycheck: String? {
+        let pending = model.history.filter { $0.paystub == nil }
+        guard let first = pending.first else { return nil }
+        guard pending.count == 1 else {
+            return "\(pending.count) closed periods are waiting for their paychecks"
+        }
+        return
+            "Add the paycheck for \(LinePayFormat.payPeriod(first.window, timeZoneIdentifier: model.timeZoneIdentifier(for: first)))"
     }
 
     private var workButtonTitle: String {

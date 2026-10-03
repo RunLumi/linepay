@@ -6,7 +6,9 @@ struct AddWorkView: View {
     let model: AppModel
     let existingEntry: WorkEntry?
     let onDeleted: ((DeletedWorkUndo) -> Void)?
-    let resumesPendingWork: Bool
+    /// Fixed when the sheet first appears. SwiftUI re-creates this view after the draft autosaves,
+    /// so recomputing these from the store would misread a brand-new entry as a resumed draft.
+    @State private var resumesPendingWork: Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
@@ -15,6 +17,10 @@ struct AddWorkView: View {
     @State private var viewingConflict: WorkEntry?
     @State private var isClosing = false
     @State private var separateAdjacentCalloutConfirmed = false
+    @State private var cancelConfirmation = false
+    /// What the sheet opened with. Closing an untouched sheet must not leave a draft behind that
+    /// would block repeating, editing, or deleting other shifts.
+    @State private var initialDraft: WorkDraft
 
     init(
         model: AppModel,
@@ -29,73 +35,113 @@ struct AddWorkView: View {
         let saved = model.workDraft
         let canResumeSavedDraft =
             existingEntry == nil && saved?.periodID == periodID && saved?.templateSource == nil
-        resumesPendingWork = canResumeSavedDraft
+        _resumesPendingWork = State(initialValue: canResumeSavedDraft)
 
+        let initial: WorkDraft
         if canResumeSavedDraft, let saved {
-            _draft = State(initialValue: saved)
+            initial = saved
         } else if let existingEntry {
             let start = Date(
                 timeIntervalSince1970: TimeInterval(existingEntry.interval.startEpochSeconds))
             let end = Date(
                 timeIntervalSince1970: TimeInterval(existingEntry.interval.endEpochSeconds))
             let first = existingEntry.interval.unpaidBreaks.first
-            _draft = State(
-                initialValue: WorkDraft(
-                    periodID: periodID,
-                    editingEntryID: existingEntry.id,
-                    start: start,
-                    end: end,
-                    kind: existingEntry.interval.kind,
-                    note: existingEntry.note,
-                    hasUnpaidBreak: first != nil,
-                    breakStart: first.map {
-                        Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds))
-                    } ?? start.addingTimeInterval(4 * 3_600),
-                    breakEnd: first.map {
-                        Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds))
-                    } ?? start.addingTimeInterval(4.5 * 3_600),
-                    copiedFrom: nil,
-                    calloutEventID: existingEntry.interval.calloutEventID,
-                    additionalBreaks: existingEntry.interval.unpaidBreaks.dropFirst().map {
-                        BreakDraft(
-                            id: $0.id,
-                            start: Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds)),
-                            end: Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds)))
-                    }))
+            initial = WorkDraft(
+                periodID: periodID,
+                editingEntryID: existingEntry.id,
+                start: start,
+                end: end,
+                kind: existingEntry.interval.kind,
+                note: existingEntry.note,
+                hasUnpaidBreak: first != nil,
+                breakStart: first.map {
+                    Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds))
+                } ?? start.addingTimeInterval(4 * 3_600),
+                breakEnd: first.map {
+                    Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds))
+                } ?? start.addingTimeInterval(4.5 * 3_600),
+                copiedFrom: nil,
+                calloutEventID: existingEntry.interval.calloutEventID,
+                additionalBreaks: existingEntry.interval.unpaidBreaks.dropFirst().map {
+                    BreakDraft(
+                        id: $0.id,
+                        start: Date(timeIntervalSince1970: TimeInterval($0.startEpochSeconds)),
+                        end: Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds)))
+                })
         } else {
-            let zone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = zone
-            let today = calendar.startOfDay(for: Date())
-            let periodStart = model.activePeriod?.window.startDate ?? today
-            let periodEnd = model.activePeriod?.window.displayEndDate ?? today
-            let day = min(max(today, periodStart), periodEnd)
-            let hour = model.activePeriod?.agreement.regularSchedule.first?.start.hour ?? 7
-            let minute = model.activePeriod?.agreement.regularSchedule.first?.start.minute ?? 0
-            let start =
-                calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
-            let end = start.addingTimeInterval(8 * 3_600)
-            _draft = State(
-                initialValue: WorkDraft(
-                    periodID: periodID,
-                    editingEntryID: nil,
-                    start: start,
-                    end: end,
-                    kind: .regular,
-                    note: "",
-                    hasUnpaidBreak: false,
-                    breakStart: start.addingTimeInterval(4 * 3_600),
-                    breakEnd: start.addingTimeInterval(4.5 * 3_600),
-                    copiedFrom: nil))
+            let (start, end) = Self.suggestedInterval(model: model, now: Date())
+            initial = WorkDraft(
+                periodID: periodID,
+                editingEntryID: nil,
+                start: start,
+                end: end,
+                kind: .regular,
+                note: "",
+                hasUnpaidBreak: false,
+                breakStart: start.addingTimeInterval(4 * 3_600),
+                breakEnd: start.addingTimeInterval(4.5 * 3_600),
+                copiedFrom: nil)
         }
+        _draft = State(initialValue: initial)
+        _initialDraft = State(initialValue: initial)
     }
 
     private var zone: TimeZone {
         TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
     }
 
+    /// The usual start time today, inside the period. When that would overlap a shift already
+    /// logged that day, suggest the next day instead, so a new entry never opens in conflict.
+    static func suggestedInterval(model: AppModel, now: Date) -> (start: Date, end: Date) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
+        let today = calendar.startOfDay(for: now)
+        let periodStart = model.activePeriod?.window.startDate ?? today
+        let periodEnd = model.activePeriod?.window.displayEndDate ?? today
+        let hour = model.activePeriod?.agreement.regularSchedule.first?.start.hour ?? 7
+        let minute = model.activePeriod?.agreement.regularSchedule.first?.start.minute ?? 0
+        func interval(on day: Date) -> (start: Date, end: Date) {
+            let start =
+                calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+            return (start, start.addingTimeInterval(8 * 3_600))
+        }
+        var day = calendar.startOfDay(for: min(max(today, periodStart), periodEnd))
+        for _ in 0..<31 {
+            let candidate = interval(on: day)
+            guard
+                model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                    != nil
+            else { return candidate }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day),
+                next <= periodEnd
+            else { break }
+            day = next
+        }
+        // Every day is taken: keep today's suggestion and let the overlap warning explain it.
+        return interval(on: calendar.startOfDay(for: min(max(today, periodStart), periodEnd)))
+    }
+
     private var conflict: WorkEntry? {
-        model.conflictingWork(start: draft.start, end: draft.end, excluding: draft.editingEntryID)
+        // A just-saved entry overlaps the closing draft; never flash that as a conflict.
+        guard !isClosing else { return nil }
+        return model.conflictingWork(
+            start: draft.start, end: draft.end, excluding: draft.editingEntryID)
+    }
+
+    private var isDirty: Bool { draft != initialDraft }
+
+    /// Shown only for a draft that could be saved as-is; overlapping or undecided callout drafts
+    /// would otherwise preview a total the saved record will never have.
+    private var wagesChange: Money? {
+        guard conflict == nil, draft.end > draft.start, !newCalloutNeedsDecision,
+            !legacyCalloutNeedsReview
+        else { return nil }
+        return model.expectedWagesChange(saving: draft)
+    }
+
+    private var periodRange: ClosedRange<Date>? {
+        guard let window = model.activePeriod?.window else { return nil }
+        return window.startDate...window.displayEndDate
     }
 
     private var adjacentCallouts: [WorkEntry] {
@@ -148,10 +194,17 @@ struct AddWorkView: View {
                         Text("Callout").tag(WorkKind.callout)
                         Text("Other").tag(WorkKind.other)
                     }
-                    DatePicker(
-                        "Start", selection: $draft.start,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
+                    Group {
+                        if let periodRange {
+                            DatePicker(
+                                "Start", selection: $draft.start, in: periodRange,
+                                displayedComponents: [.date, .hourAndMinute])
+                        } else {
+                            DatePicker(
+                                "Start", selection: $draft.start,
+                                displayedComponents: [.date, .hourAndMinute])
+                        }
+                    }
                     .accessibilityIdentifier("work.start")
                     DatePicker(
                         "End", selection: $draft.end,
@@ -159,8 +212,14 @@ struct AddWorkView: View {
                     )
                     .accessibilityIdentifier("work.end")
                     Text(
-                        "An overnight shift uses the next date. Changing one field does not move another."
+                        "An overnight shift ends on the next date. Changing one field does not move another."
                     ).font(.footnote)
+                    if let window = model.activePeriod?.window {
+                        Text(
+                            "This pay period: \(LinePayFormat.payPeriod(window, timeZoneIdentifier: model.currentTimeZoneIdentifier))"
+                        )
+                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                    }
                 }
 
                 if draft.kind == .callout {
@@ -197,7 +256,23 @@ struct AddWorkView: View {
                 Section("Preview") {
                     LabeledContent(
                         "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
-                    Text("Payroll timezone: \(model.currentTimeZoneIdentifier)").font(.footnote)
+                    if let change = wagesChange {
+                        LabeledContent(
+                            draft.editingEntryID == nil
+                                ? "Adds to expected wages" : "Changes expected wages by"
+                        ) {
+                            Text(
+                                draft.editingEntryID == nil
+                                    ? LinePayFormat.money(change)
+                                    : LinePayFormat.signedMoney(change)
+                            )
+                            .font(.headline).monospacedDigit()
+                        }
+                        .accessibilityIdentifier("work.wages-preview")
+                    }
+                    Text(
+                        "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
+                    ).font(.footnote)
                     Text(
                         "Guaranteed paid time is calculated separately, never added to your clock record."
                     ).font(.footnote)
@@ -206,27 +281,21 @@ struct AddWorkView: View {
                 if let conflict {
                     Section {
                         Label(
-                            "Overlaps \(LinePayFormat.workDateRange(conflict.interval))",
+                            "Overlaps a logged shift: \(LinePayFormat.shiftTimes(conflict.interval)). Change the start or end time.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)
-                        Button("View conflicting entry") { viewingConflict = conflict }
+                        Button("View that shift") { viewingConflict = conflict }
                     }
                 }
 
-                if let errorMessage {
-                    Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
-                }
-
                 Section {
-                    Button("Save work") { save() }
-                        .buttonStyle(LinePayPrimaryButtonStyle())
-                        .disabled(
-                            conflict != nil || draft.end <= draft.start || newCalloutNeedsDecision
-                                || legacyCalloutNeedsReview
-                        )
-                        .accessibilityIdentifier("work.save")
-                    Button("Discard this draft", role: .destructive) { discardConfirmation = true }
+                    if resumesPendingWork {
+                        Button("Discard this draft", role: .destructive) {
+                            discardConfirmation = true
+                        }
+                        .frame(minHeight: 44)
+                    }
                     if let existingEntry = model.workEntries.first(where: {
                         $0.id == draft.editingEntryID
                     }) {
@@ -245,21 +314,36 @@ struct AddWorkView: View {
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(LinePayColor.canvas)
+            .linePayCanvas()
             .linePayKeyboardDismiss()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                LinePayBottomBar {
+                    if let errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline)
+                            .foregroundStyle(LinePayColor.review)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("work.error")
+                    }
+                    Button(draft.editingEntryID != nil ? "Save changes" : "Save work") { save() }
+                        .buttonStyle(LinePayPrimaryButtonStyle())
+                        .disabled(
+                            conflict != nil || draft.end <= draft.start || newCalloutNeedsDecision
+                                || legacyCalloutNeedsReview
+                        )
+                        .accessibilityIdentifier("work.save")
+                }
+            }
             .navigationTitle(draft.editingEntryID != nil ? "Edit work" : "Add work")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep draft") {
-                        do {
-                            isClosing = true
-                            try model.saveWorkDraft(draft)
-                            dismiss()
-                        } catch {
-                            isClosing = false
-                            errorMessage = error.localizedDescription
+                    Button("Cancel") {
+                        if isDirty {
+                            cancelConfirmation = true
+                        } else {
+                            closeUnchanged()
                         }
                     }
                     .accessibilityIdentifier("work.cancel")
@@ -290,6 +374,7 @@ struct AddWorkView: View {
                     Text(LinePayFormat.workDateRange(item.interval))
                     if !item.note.isEmpty { Text(item.note) }
                 }
+                .linePayCanvas()
                 .navigationTitle("Conflicting work")
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
@@ -297,6 +382,35 @@ struct AddWorkView: View {
                     }
                 }
             }
+        }
+        .confirmationDialog(
+            "Keep your changes?", isPresented: $cancelConfirmation, titleVisibility: .visible
+        ) {
+            Button("Keep as draft") {
+                do {
+                    isClosing = true
+                    try model.saveWorkDraft(draft)
+                    dismiss()
+                } catch {
+                    isClosing = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+            .accessibilityIdentifier("work.keep-draft")
+            Button("Discard changes", role: .destructive) {
+                do {
+                    isClosing = true
+                    // A resumed draft returns to how it was saved; a new or edited entry
+                    // leaves no draft behind. Saved work is never touched here.
+                    try model.saveWorkDraft(resumesPendingWork ? initialDraft : nil)
+                    dismiss()
+                } catch {
+                    isClosing = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        } message: {
+            Text("A draft stays on this iPhone so you can finish it later.")
         }
         .confirmationDialog(
             "Discard this unfinished entry?", isPresented: $discardConfirmation,
@@ -387,6 +501,17 @@ struct AddWorkView: View {
                 "Callout grouping does not create a pay rule. If your confirmed rules include a minimum, that minimum is evaluated once per physical callout event; actual worked time stays unchanged."
             )
             .font(.footnote)
+        }
+    }
+
+    private func closeUnchanged() {
+        do {
+            isClosing = true
+            if !resumesPendingWork, model.workDraft == draft { try model.saveWorkDraft(nil) }
+            dismiss()
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
         }
     }
 

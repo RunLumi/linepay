@@ -96,9 +96,8 @@ final class PaydayJourneyTests: XCTestCase {
         capture("40-onboarding-trial-offer")
         // The purchase controls stay pinned; scroll the plan fully above them before tapping.
         let monthly = app.buttons["paywall.monthly"].firstMatch
-        for _ in 0..<10 where !monthly.exists || monthly.frame.maxY > purchase.frame.minY - 8 {
-            app.swipeUp()
-        }
+        XCTAssertTrue(monthly.waitForExistence(timeout: 10))
+        scrollClearOfPinnedAction(monthly, pinned: purchase)
         monthly.tap()
         XCTAssertEqual(purchase.label, "Subscribe monthly")
         XCTAssertFalse(app.descendants(matching: .any)["paywall.trial-timeline"].exists)
@@ -187,7 +186,7 @@ final class PaydayJourneyTests: XCTestCase {
         ] {
             launch(scenario: scenario)
             tab("Pay")
-            tap("Open paycheck audit")
+            tap("View paycheck result")
             XCTAssertTrue(app.staticTexts[verdict].firstMatch.waitForExistence(timeout: 10))
             capture("audit-\(scenario)")
             if scenario == "review" {
@@ -208,9 +207,47 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(correctExisting.waitForExistence(timeout: 10))
         capture("correction-source-chooser")
         tap("paystub.correct-existing")
-        let value = openPaystubValueField("paystub.field.grossPay")
-        XCTAssertTrue(value.exists)
+        let value = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
         XCTAssertEqual(value.value as? String, "550")
+    }
+
+    func testCancellingWorkSheetsNeverLeavesABlockingDraft() {
+        launch(scenario: "work")
+        // Untouched repeat: Cancel leaves nothing behind.
+        tap("today.repeat-shift")
+        XCTAssertTrue(app.buttons["repeat.save"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.buttons["repeat.save"].firstMatch.isEnabled,
+            "Repeating today's shift must propose a free day, not open in conflict")
+        tap("repeat.keep-draft")
+        XCTAssertEqual(app.buttons["today.add-work"].firstMatch.label, "Add work")
+        XCTAssertTrue(app.buttons["today.edit-work"].firstMatch.isEnabled)
+
+        // Edited new entry: Cancel, then Discard changes, also leaves nothing behind.
+        tap("today.add-work")
+        XCTAssertTrue(
+            app.buttons["work.save"].firstMatch.isEnabled,
+            "A new entry must not open overlapping an already logged shift")
+        let note = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
+        scrollTo(note)
+        note.tap()
+        note.typeText("SAMPLE abandoned entry")
+        dismissKeyboard()
+        tap("work.cancel")
+        let discard = app.buttons["Discard changes"].firstMatch
+        XCTAssertTrue(discard.waitForExistence(timeout: 10))
+        capture("cancel-edited-work")
+        discard.tap()
+        // iOS runs a dialog's action after its dismissal animation; wait for the sheet to close.
+        let closed = expectation(
+            for: NSPredicate(format: "exists == false"), evaluatedWith: app.buttons["work.save"])
+        wait(for: [closed], timeout: 10)
+        let addWork = app.buttons["today.add-work"].firstMatch
+        let reset = expectation(
+            for: NSPredicate(format: "label == %@", "Add work"), evaluatedWith: addWork)
+        wait(for: [reset], timeout: 10)
+        XCTAssertTrue(app.buttons["today.repeat-shift"].firstMatch.isEnabled)
     }
 
     func testDraftRecoveryAndUnsupportedRulePresentation() {
@@ -240,7 +277,7 @@ final class PaydayJourneyTests: XCTestCase {
         launch(scenario: "review", largeText: true)
         capture("large-dark-today")
         tab("Pay")
-        tap("Open paycheck audit")
+        tap("View paycheck result")
         capture("large-dark-audit")
         tab("Settings")
         capture("37-settings")
@@ -292,27 +329,26 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        tap("paystub.field.grossPay")
-        tapContaining("View original")
+        tap("paystub.view-original")
         capture("29-original-before-correction")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let value = app.textFields["paystub.value"]
+        let value = app.textFields["paystub.inline.gross"]
         XCTAssertTrue(value.waitForExistence(timeout: 10))
-        value.tap()
-        value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "549.50")
+        // The amount is right-aligned; put the cursor after the existing digits before deleting.
+        value.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "549.50")
         dismissKeyboard()
         app.terminate()
         launch(reset: false)
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        let restoredValue = openPaystubValueField("paystub.field.grossPay")
-        XCTAssertTrue(restoredValue.exists)
+        let restoredValue = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(restoredValue.waitForExistence(timeout: 10))
         XCTAssertEqual(restoredValue.value as? String, "549.50")
-        tapContaining("View original")
+        tap("paystub.view-original")
         capture("29-original-after-interruption")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        tap("paystub.confirm-field")
         scrollTo(app.buttons["paystub.audit"])
         capture("23-partially-confirmed-review")
         XCTAssertFalse(
@@ -354,6 +390,29 @@ final class PaydayJourneyTests: XCTestCase {
             scrollTo(element)
         }
         XCTAssertTrue(element.exists, "Missing control \(id)")
+        element.tap()
+    }
+    /// Pinned bottom actions overlap the end of a scrolling form, where an element can report
+    /// itself hittable while the pinned control actually receives the tap. Drag in short steps
+    /// until the element sits fully between the navigation bar and the pinned control.
+    private func scrollClearOfPinnedAction(_ element: XCUIElement, pinned: XCUIElement) {
+        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<20 {
+            guard element.exists, pinned.exists else { return }
+            let limit = pinned.frame.minY - 8
+            if element.frame.minY > 140, element.frame.maxY < limit { return }
+            let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            let distance: CGFloat = element.frame.maxY >= limit ? -160 : 160
+            start.press(
+                forDuration: 0.05,
+                thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)))
+        }
+    }
+    private func tapAbovePinnedAction(_ id: String, pinned: String) {
+        let element = app.buttons[id].firstMatch
+        if !element.waitForExistence(timeout: 8) { scrollTo(element) }
+        XCTAssertTrue(element.exists, "Missing control \(id)")
+        scrollClearOfPinnedAction(element, pinned: app.buttons[pinned].firstMatch)
         element.tap()
     }
     private func tapContaining(_ text: String) {
@@ -400,19 +459,6 @@ final class PaydayJourneyTests: XCTestCase {
             "Pay setup did not expose the review save control; current step: \(indicator.label)"
         )
     }
-    private func openPaystubValueField(_ id: String) -> XCUIElement {
-        let value = app.textFields["paystub.value"]
-        for attempt in 0..<2 {
-            if value.waitForExistence(timeout: 5) { return value }
-            let field = app.buttons[id].firstMatch
-            XCTAssertTrue(field.waitForExistence(timeout: 8), "Missing control \(id)")
-            scrollTo(field)
-            XCTAssertTrue(field.isHittable)
-            field.tap()
-            if attempt == 0 { _ = value.waitForExistence(timeout: 3) }
-        }
-        return value
-    }
     private func scrollTo(_ element: XCUIElement) {
         // Dense setup and review Forms can exceed fourteen viewport heights at supported
         // Dynamic Type sizes; keep the search bounded but long enough to reach the row.
@@ -430,26 +476,22 @@ final class PaydayJourneyTests: XCTestCase {
     private func confirmManualGross(_ amount: String) {
         tap("paystub.manual")
         capture("20-paystub-review")
-        for field in ["periodStart", "periodEnd", "grossPay"] {
-            tap("paystub.field.\(field)")
-            if field == "grossPay" {
-                let value = app.textFields["paystub.value"]
-                XCTAssertTrue(value.waitForExistence(timeout: 10))
-                value.tap()
-                value.typeText(amount)
-                dismissKeyboard()
-            }
-            capture("21-confirm-\(field)")
-            tap("paystub.confirm-field")
-        }
+        tap("paystub.confirm-dates")
+        let value = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
+        value.tap()
+        value.typeText(amount)
+        dismissKeyboard()
+        capture("21-confirm-minimum-facts")
         let completeWork = app.descendants(matching: .any)
             .matching(identifier: "paystub.complete-work").firstMatch
         scrollTo(completeWork)
+        scrollClearOfPinnedAction(completeWork, pinned: app.buttons["paystub.audit"].firstMatch)
         completeWork.tap()
         capture("confirmed-period-work")
         XCTAssertTrue(completeWork.isSelected)
-        tap("paystub.gross-basis")
-        tapContaining("Wages only")
+        tapAbovePinnedAction("paystub.gross-basis.wagesOnly", pinned: "paystub.audit")
+        XCTAssertEqual(app.buttons["paystub.audit"].label, "Compare with expected pay")
         tap("paystub.audit")
     }
     private func capture(_ name: String) {

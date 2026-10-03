@@ -10,7 +10,20 @@ struct WeeklyOvertimeReviewView: View {
 
     init(model: AppModel, weekStart: Date) {
         self.model = model
-        _weekStart = State(initialValue: weekStart)
+        _weekStart = State(initialValue: Self.alignedWeekStart(weekStart, model: model))
+    }
+
+    /// Starts on the configured workweek day on or before `date`, so the first suggestion is a
+    /// real workweek rather than a pay-period boundary that may fall mid-week.
+    static func alignedWeekStart(_ date: Date, model: AppModel) -> Date {
+        guard let profile = model.profile, let rule = profile.agreement.weeklyOvertime,
+            let zone = TimeZone(identifier: profile.timeZoneIdentifier)
+        else { return date }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let day = calendar.startOfDay(for: date)
+        let back = (calendar.component(.weekday, from: day) - rule.workweekStart.rawValue + 7) % 7
+        return calendar.date(byAdding: .day, value: -back, to: day) ?? date
     }
 
     static func errorMessage(for error: any Error) -> String {
@@ -19,13 +32,14 @@ struct WeeklyOvertimeReviewView: View {
 
     var body: some View {
         List {
-            Section("Restricted weekly layer") {
+            Section {
                 Text(
-                    "This review covers one complete workweek for the configured covered/nonexempt hourly profile. It is not a nationwide legal or CBA determination."
+                    "Checks hours over 40 in one complete workweek, using the weekly regular rate. This is separate from the daily estimate on Pay and is not a state, CBA or nationwide legal determination."
                 ).font(.footnote)
                 DatePicker("Workweek starts", selection: $weekStart, displayedComponents: .date)
-                Toggle("I confirm this workweek is complete", isOn: $completeWorkweek)
-                Button("Calculate weekly regular rate") { calculate() }
+                ConfirmationCheckRow(
+                    "Every shift in this workweek is logged", isOn: $completeWorkweek)
+                Button("Check this workweek") { calculate() }
                     .buttonStyle(LinePayPrimaryButtonStyle())
                     .disabled(!completeWorkweek)
                     .accessibilityIdentifier("weekly.calculate")
@@ -45,11 +59,16 @@ struct WeeklyOvertimeReviewView: View {
                     LabeledContent("Expected cash", value: LinePayFormat.money(result.expectedCash))
                     Text(result.explanation).font(.footnote)
                 }
+                .labeledContentStyle(LinePayValueStyle())
             }
             if let errorMessage {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
+        .linePayCanvas()
+        .environment(
+            \.timeZone, TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
+        )
         .navigationTitle("Weekly overtime")
         .navigationBarTitleDisplayMode(.inline)
     }

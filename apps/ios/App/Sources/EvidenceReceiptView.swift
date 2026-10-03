@@ -14,12 +14,14 @@ struct EvidenceReceiptView: View {
             Section("Work facts") {
                 if let entry = work.first(where: { $0.id == component.workIntervalID }) {
                     Text(workKindTitle(entry.interval.kind)).font(.headline)
-                    Text(LinePayFormat.workDateRange(entry.interval))
+                    Text(LinePayFormat.shiftTimes(entry.interval))
                     LabeledContent(
                         "Actual work",
                         value: "\(LinePayFormat.hours(entry.interval.durationHours)) h")
                     if let text = LinePayFormat.breakDuration(entry.interval) { Text(text) }
-                    Text("Payroll timezone: \(entry.interval.timeZoneIdentifier)").font(.footnote)
+                    Text(
+                        "Payroll timezone: \(LinePayFormat.timeZoneName(entry.interval.timeZoneIdentifier))"
+                    ).font(.footnote)
                     if !entry.note.isEmpty { Text(entry.note) }
                 } else {
                     Text("Work date: \(LinePayFormat.localDate(component.localDate))")
@@ -60,6 +62,7 @@ struct EvidenceReceiptView: View {
                 }
             }
         }
+        .linePayCanvas()
         .navigationTitle("Why this amount?")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("ledger.evidence-receipt")
@@ -93,6 +96,10 @@ struct RuleSourcesView: View {
     var keys: [PayRuleKey]? = nil
     var body: some View {
         List {
+            if keys == nil {
+                Section("Rules") { AgreementSummaryView(agreement: agreement) }
+                    .labeledContentStyle(LinePayValueStyle())
+            }
             Section("Snapshot") { RuleSnapshotSummary(agreement: agreement) }
             if let keys {
                 Section("Applied rules") { ForEach(keys, id: \.self) { Text($0.title) } }
@@ -124,7 +131,8 @@ struct RuleSourcesView: View {
                 }
             }
         }
-        .navigationTitle("Rule sources")
+        .linePayCanvas()
+        .navigationTitle(keys == nil ? "Rules used" : "Rule sources")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -144,19 +152,26 @@ struct PayLedgerRows: View {
                             agreement: appliedSnapshot(
                                 for: component, in: calculation, fallback: agreement), work: work)
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(componentTitle(component)).font(.headline)
-                            Text(LinePayFormat.money(component.amount)).font(
-                                .title3.monospacedDigit())
-                            if let hours = component.hours {
-                                Text(
-                                    "\(LinePayFormat.hours(hours)) \(component.category == .calloutGuarantee ? "additional paid-equivalent hours" : "worked hours")"
-                                )
-                                .font(.footnote)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(componentTitle(component)).font(.headline)
+                                Spacer(minLength: LinePaySpacing.compact)
+                                Text(LinePayFormat.money(component.amount))
+                                    .font(.headline).monospacedDigit()
                             }
-                            if let multiplier = component.multiplier {
-                                Text("\(LinePayFormat.decimal(multiplier))× base rate").font(
-                                    .footnote)
+                            if let formula = componentFormula(
+                                component,
+                                fallbackRate: appliedSnapshot(
+                                    for: component, in: calculation, fallback: agreement
+                                ).hourlyRate)
+                            {
+                                Text(formula).font(.subheadline).monospacedDigit()
+                                    .foregroundStyle(LinePayColor.textSecondary)
+                            }
+                            if component.category == .calloutGuarantee {
+                                Text("Paid-equivalent hours, not extra time worked")
+                                    .font(.footnote)
+                                    .foregroundStyle(LinePayColor.textSecondary)
                             }
                         }
                         .foregroundStyle(LinePayColor.textPrimary)

@@ -36,8 +36,9 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var hourlyRate = ""
     var timeZoneIdentifier = TimeZone.current.identifier
     var preferredCadence: PayPeriodCadence = .weekly
-    var periodStartDate = Date()
-    var manualPeriodEndDate = Calendar.current.date(byAdding: .day, value: 6, to: Date()) ?? Date()
+    var periodStartDate = Self.startOfCurrentWeek()
+    var manualPeriodEndDate =
+        Calendar.current.date(byAdding: .day, value: 6, to: Self.startOfCurrentWeek()) ?? Date()
 
     var useRegularSchedule = false
     var regularWeekdays: Set<Weekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
@@ -178,6 +179,13 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
             sourceURL = source.url
             sourceSection = source.section ?? ""
         }
+    }
+
+    /// Payroll weeks usually begin on a fixed weekday. Defaulting to the start of this week, rather
+    /// than today, keeps the shifts a worker already did this week inside the first period instead
+    /// of rejecting yesterday's work as outside it.
+    static func startOfCurrentWeek(now: Date = Date(), calendar: Calendar = .current) -> Date {
+        calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? calendar.startOfDay(for: now)
     }
 
     private static func clockDate(

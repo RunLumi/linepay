@@ -27,7 +27,8 @@ struct AboutLinePayView: View {
                     .accessibilityIdentifier("settings.user-guide")
                     .frame(minHeight: 44)
             }
-        }.navigationTitle("About LinePaycheck").navigationBarTitleDisplayMode(.inline)
+        }.linePayCanvas().navigationTitle("About LinePaycheck").navigationBarTitleDisplayMode(
+            .inline)
     }
 }
 
@@ -56,7 +57,7 @@ struct LegalTextView: View {
                     Link("Open support website", destination: AppLinks.support).frame(minHeight: 44)
                 }
             }.padding(24).frame(maxWidth: .infinity, alignment: .leading)
-        }.navigationTitle(title).navigationBarTitleDisplayMode(.inline)
+        }.linePayCanvas().navigationTitle(title).navigationBarTitleDisplayMode(.inline)
     }
     private var title: String {
         switch kind {

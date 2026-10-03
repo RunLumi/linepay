@@ -11,16 +11,21 @@ struct FirstWorkIntroductionView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Start with work you actually performed.").font(.title2.bold())
-                    Text(
-                        "Enter one recent interval, review its dates and unpaid breaks, then see the calculation from your confirmed rules."
-                    )
-                    Button(model.workDraft == nil ? "Log my first work" : "Resume my work draft") {
+                    VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
+                        Text("Add a shift you worked.").font(.title2.bold())
+                        Text(
+                            "Pick one from this pay period\(periodText). You'll see what it should pay under the rules you just set, and every step of the math."
+                        )
+                        .foregroundStyle(LinePayColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 4)
+                    Button(model.workDraft == nil ? "Add a shift" : "Resume my work draft") {
                         addingWork = true
                     }
                     .buttonStyle(LinePayPrimaryButtonStyle())
                     .accessibilityIdentifier("activation.add-work")
-                    Button("I'll log work later") {
+                    Button("I'll add shifts later") {
                         // Onboarding ends here for this worker, so this is the one offer moment.
                         if subscriptionStore.canPresentOffer {
                             offeringPro = true
@@ -28,15 +33,15 @@ struct FirstWorkIntroductionView: View {
                             deferWork()
                         }
                     }
-                    .frame(minHeight: 48)
+                    .linePayRowAction()
                     .accessibilityIdentifier("activation.skip-work")
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
                 }
             }
-            .navigationTitle("Your first work")
-            .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .navigationTitle("Your first shift")
+            .linePayCanvas()
             .sheet(isPresented: $offeringPro, onDismiss: deferWork) {
                 ProPaywallView(store: subscriptionStore, context: .onboarding(expectedPay: nil)) {
                     offeringPro = false
@@ -44,6 +49,12 @@ struct FirstWorkIntroductionView: View {
             }
         }
         .sheet(isPresented: $addingWork) { AddWorkView(model: model) }
+    }
+
+    private var periodText: String {
+        guard let window = model.activePeriod?.window else { return "" }
+        return
+            " (\(LinePayFormat.payPeriod(window, timeZoneIdentifier: model.currentTimeZoneIdentifier)))"
     }
 
     private func deferWork() {
@@ -71,19 +82,13 @@ struct FirstPayResultView: View {
                                 money: calculation.expectedAllowances)
                         }
                         Text(
-                            LinePayFormat.payPeriod(
-                                context.window, timeZoneIdentifier: context.timeZoneIdentifier))
-                        Text(
-                            "\(LinePayFormat.hours(model.totalHours)) actual worked hours · \(context.timeZoneIdentifier)"
+                            "\(LinePayFormat.hours(model.totalHours)) h worked · pay period \(LinePayFormat.payPeriod(context.window, timeZoneIdentifier: context.timeZoneIdentifier))"
                         )
+                        .font(.subheadline).monospacedDigit()
                         Text(
-                            "Using the rules you confirmed. Add any missing premiums before treating this as a complete estimate."
+                            "Based only on the rules you entered and the work logged so far. Keep adding shifts; when the paycheck arrives, compare it with the full period."
                         )
-                        .font(.footnote)
-                        Text(
-                            "This is an estimate for the work recorded so far. A full paycheck needs the matching full work period."
-                        )
-                        .font(.footnote)
+                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                     }
                     Section {
                         Button("Continue") { continueAfterResult() }
@@ -96,14 +101,14 @@ struct FirstPayResultView: View {
                 } else {
                     CalculationProblemView(
                         message: model.calculationError ?? "Review your saved work and rules.")
-                    Button("Return to my work") { complete() }
+                    Button("Return to my work") { complete() }.linePayRowAction()
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
                 }
             }
             .navigationTitle("Your expected pay")
-            .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .linePayCanvas()
         }
         .sheet(isPresented: $showingPro, onDismiss: complete) {
             ProPaywallView(

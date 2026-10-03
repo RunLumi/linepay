@@ -109,6 +109,35 @@ struct PayAmount: View {
     }
 }
 
+/// The comparison a worker came for, readable without opening the audit. Only render it for a
+/// current assessment; a stale result must send the worker back to review instead.
+struct CheckSummaryRows: View {
+    let assessment: PaycheckAssessment
+    var body: some View {
+        if let expected = assessment.expectedGross {
+            LabeledContent("Expected gross") {
+                Text(LinePayFormat.money(expected)).monospacedDigit()
+            }
+        }
+        LabeledContent("Paystub gross") {
+            Text(LinePayFormat.money(assessment.paidGross)).monospacedDigit()
+        }
+        if let difference = assessment.difference, difference.amount != 0 {
+            LabeledContent(difference.amount > 0 ? "Paystub is lower by" : "Paystub is higher by") {
+                Text(
+                    LinePayFormat.money(
+                        Money(
+                            amount: difference.amount.magnitude,
+                            currencyCode: difference.currencyCode))
+                )
+                .monospacedDigit()
+            }
+            .font(.headline)
+            .accessibilityIdentifier("pay.check-difference")
+        }
+    }
+}
+
 struct ComparisonAmounts: View {
     let expected: Money?
     let paid: Money
@@ -154,10 +183,41 @@ func workKindTitle(_ kind: WorkKind) -> String {
 
 func componentTitle(_ component: PayComponent) -> String {
     switch component.category {
-    case .calloutGuarantee: "Callout guarantee"
-    case .perDiem: "Per diem"
+    case .calloutGuarantee: return "Callout minimum top-up"
+    case .perDiem: return "Per diem"
     case .workedHours:
-        (component.multiplier ?? 1) == 1 ? "Regular work" : "Premium work"
+        let multiplier = component.multiplier ?? 1
+        guard multiplier != 1 else { return "Regular hours" }
+        let keys = component.ruleKeys ?? []
+        let name =
+            if keys.contains(.dailyOvertime) {
+                "Overtime"
+            } else if keys.contains(.date) {
+                "Holiday or date premium"
+            } else if keys.contains(.weekday) {
+                "Weekday premium"
+            } else if keys.contains(.schedule) {
+                "Outside-schedule premium"
+            } else {
+                "Premium hours"
+            }
+        return "\(name) · \(LinePayFormat.decimal(multiplier))×"
+    }
+}
+
+/// The arithmetic behind one ledger amount, such as "2 h × $50.00 × 1.5". Returns nil when the
+/// saved component does not carry enough facts to show the formula honestly.
+func componentFormula(_ component: PayComponent, fallbackRate: Money) -> String? {
+    switch component.category {
+    case .perDiem: return nil
+    case .workedHours, .calloutGuarantee:
+        guard let hours = component.hours else { return nil }
+        let rate = LinePayFormat.money(component.baseRate ?? fallbackRate)
+        let multiplier = component.multiplier ?? 1
+        let prefix = component.category == .calloutGuarantee ? "Top-up " : ""
+        return multiplier == 1
+            ? "\(prefix)\(LinePayFormat.hours(hours)) h × \(rate)"
+            : "\(prefix)\(LinePayFormat.hours(hours)) h × \(rate) × \(LinePayFormat.decimal(multiplier))"
     }
 }
 

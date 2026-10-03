@@ -10,3 +10,4 @@ Research notes are scoped and dated, not a current implementation or legal-cover
 - [onboarding-trial-2026-09-05](onboarding-trial-2026-09-05.md)
 - [trial-conversion-2026-10-03](trial-conversion-2026-10-03.md)
 - [ui-layout-qa-2026-09-05](ui-layout-qa-2026-09-05.md)
+- [whole-app-review-2026-10-03](whole-app-review-2026-10-03.md)

@@ -31,10 +31,14 @@ struct PayProfileSetupView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text(["Pay basics", "Pay period", "Your rules", "Confirm rules"][step])
-                        .font(.title2.bold())
-                    Text("Step \(step + 1) of 4. Your unfinished setup is saved on this device.")
-                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(["Pay basics", "Pay period", "Your rules", "Confirm rules"][step])
+                            .font(.title2.bold())
+                        Text(stepPurpose)
+                            .font(.subheadline).foregroundStyle(LinePayColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 4)
                 }
                 switch step {
                 case 0: basics
@@ -42,26 +46,36 @@ struct PayProfileSetupView: View {
                 case 2: rules
                 default: review
                 }
-                if let errorMessage {
-                    Section {
+            }
+            // A new identity per step starts each step at its top instead of inheriting the
+            // previous step's scroll position.
+            .id(step)
+            .linePayKeyboardDismiss()
+            .linePayCanvas()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                LinePayBottomBar {
+                    if let errorMessage {
+                        // Beside the action that failed, never hidden under the keyboard.
                         Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline)
                             .foregroundStyle(LinePayColor.review)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("pay-profile.error")
                     }
-                }
-                if step == 3, !editing {
-                    Section {
-                        Button("Use these rules") {
-                            advance()
-                        }
-                        .buttonStyle(LinePayPrimaryButtonStyle())
-                        .accessibilityIdentifier("pay-profile.save")
-                        .accessibilityValue("step-\(step)")
+                    if step < 3 {
+                        Button("Continue") { advance() }
+                            .buttonStyle(LinePayPrimaryButtonStyle())
+                            .accessibilityIdentifier("pay-profile.continue")
+                            .accessibilityValue("step-\(step)")
+                    } else {
+                        Button(editing ? "Save reviewed rules" : "Use these rules") { advance() }
+                            .buttonStyle(LinePayPrimaryButtonStyle())
+                            .accessibilityIdentifier("pay-profile.save")
+                            .accessibilityValue("step-\(step)")
                     }
                 }
             }
-            .linePayKeyboardDismiss()
-            .scrollContentBackground(.hidden)
-            .background(LinePayColor.canvas)
             .navigationTitle(editing ? "Edit pay rules" : "Set up my pay")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -78,20 +92,6 @@ struct PayProfileSetupView: View {
                         Button("Back") { draft.setupStep -= 1 }
                     } else if editing {
                         Button("Cancel") { dismiss() }
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if step < 3 {
-                        Button("Continue") {
-                            advance()
-                        }
-                        .accessibilityIdentifier("pay-profile.continue")
-                        .accessibilityValue("step-\(step)")
-                    } else if editing {
-                        Button("Save reviewed rules") {
-                            advance()
-                        }
-                        .accessibilityIdentifier("pay-profile.save")
                     }
                 }
             }
@@ -138,6 +138,7 @@ struct PayProfileSetupView: View {
                         .font(.footnote)
                     }
                 }
+                .linePayCanvas()
                 .navigationTitle("Missing rule")
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
@@ -151,20 +152,27 @@ struct PayProfileSetupView: View {
     private var basics: some View {
         Section {
             LinePayTextField(
-                "Profile name", text: $draft.name, focus: $editingField,
-                identifier: "pay-profile.name")
-            LinePayTextField(
                 "Base hourly rate, USD", text: $draft.hourlyRate, focus: $editingField,
                 identifier: "pay-profile.hourly-rate"
             )
-            .keyboardType(.numbersAndPunctuation).monospacedDigit()
+            .linePayNumberEntry()
             Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
-                ForEach(timeZones, id: \.self) { Text($0).tag($0) }
+                ForEach(timeZones, id: \.self) { Text(LinePayFormat.timeZoneName($0)).tag($0) }
             }
+            LinePayTextField(
+                "Profile name", text: $draft.name, focus: $editingField,
+                identifier: "pay-profile.name")
         } footer: {
             Text(
-                "Use a decimal point for numbers, for example 58.40. Payroll timezone determines day and premium boundaries, not where your phone happens to be."
+                "Your straight-time rate before any premium, for example 58.40. The payroll timezone decides which day a shift counts on, not where your phone is."
             )
+        }
+        .task {
+            // The rate is the one required fact; put the cursor there on first setup once the
+            // form has finished its appearance transition and the field can take focus.
+            guard !editing, draft.hourlyRate.isEmpty else { return }
+            try? await Task.sleep(for: .milliseconds(450))
+            editingField = "pay-profile.hourly-rate"
         }
     }
 
@@ -175,14 +183,14 @@ struct PayProfileSetupView: View {
             }.accessibilityIdentifier("pay-profile.cadence")
             if !editing {
                 DatePicker(
-                    "Current period starts", selection: $draft.periodStartDate,
+                    "First day of this pay period", selection: $draft.periodStartDate,
                     displayedComponents: .date)
                 if draft.preferredCadence == .manual {
                     DatePicker(
                         "Current period ends", selection: $draft.manualPeriodEndDate,
                         displayedComponents: .date)
                 }
-                Text("Preview: \(periodPreview)").font(.callout)
+                LabeledContent("This period", value: periodPreview).monospacedDigit()
             } else {
                 Text(
                     "Cadence changes apply to future periods. Correct current dates separately in Settings; no entered date will be silently ignored."
@@ -190,21 +198,23 @@ struct PayProfileSetupView: View {
             }
         } footer: {
             Text(
-                "You can close a work period and keep logging the next one while its paycheck is pending. Audit the earlier paycheck from History when it arrives."
+                "Check a recent paystub for the dates it covers. Shifts must fall inside the period to count. When a period ends, you can keep logging the next one while its paycheck is pending."
             )
         }
     }
 
     @ViewBuilder private var rules: some View {
-        Section("Common rules; off unless confirmed") {
-            Toggle("Daily overtime", isOn: $draft.useDailyOvertime)
+        Section {
+            ruleToggle(
+                "Daily overtime", detail: "A higher rate after a set number of hours in one day.",
+                isOn: $draft.useDailyOvertime)
             if draft.useDailyOvertime {
-                number("After worked hours", $draft.overtimeAfterHours)
-                number("Multiplier", $draft.overtimeMultiplier)
+                number("After this many hours in a day", $draft.overtimeAfterHours)
+                number("Multiplier (1.5 = time and a half)", $draft.overtimeMultiplier)
                 ForEach($draft.additionalOvertimeTiers) { $tier in
                     VStack(alignment: .leading) {
-                        number("Additional threshold", $tier.afterHours)
-                        number("Additional multiplier", $tier.multiplier)
+                        number("Then after this many hours", $tier.afterHours)
+                        number("Multiplier (2 = double time)", $tier.multiplier)
                         Button("Remove tier", role: .destructive) {
                             draft.additionalOvertimeTiers.removeAll { $0.id == tier.id }
                         }
@@ -214,9 +224,13 @@ struct PayProfileSetupView: View {
                     draft.additionalOvertimeTiers.append(OvertimeTierDraft())
                 }
             }
-            Toggle("Sunday premium", isOn: $draft.useSundayPremium)
+            ruleToggle(
+                "Sunday premium", detail: "A multiplier for every hour worked on Sunday.",
+                isOn: $draft.useSundayPremium)
             if draft.useSundayPremium { number("Sunday multiplier", $draft.sundayMultiplier) }
-            Toggle("Callout minimum", isOn: $draft.useCalloutMinimum)
+            ruleToggle(
+                "Callout minimum", detail: "Guaranteed paid hours when you are called out.",
+                isOn: $draft.useCalloutMinimum)
             if draft.useCalloutMinimum {
                 number("Minimum paid hours", $draft.calloutMinimumHours)
                 Text(
@@ -225,21 +239,37 @@ struct PayProfileSetupView: View {
                 .font(.footnote)
                 .foregroundStyle(LinePayColor.textSecondary)
             }
-            Toggle("Flat per diem", isOn: $draft.usePerDiem)
+            ruleToggle(
+                "Flat per diem",
+                detail: "A fixed allowance for each day you work, kept apart from wages.",
+                isOn: $draft.usePerDiem)
             if draft.usePerDiem { number("USD per worked date", $draft.perDiemAmount) }
-        }
-        DisclosureGroup("Weekly overtime (restricted)", isExpanded: $draft.useWeeklyOvertime) {
-            Picker("Workweek starts", selection: $draft.weeklyWorkweekStart) {
-                ForEach(Weekday.allCases, id: \.self) { day in
-                    Text(weekdayName(day)).tag(day)
-                }
-            }
-            Toggle(
-                "Covered, nonexempt hourly work confirmed",
-                isOn: $draft.weeklyApplicabilityConfirmed)
+        } header: {
+            Text("Common rules")
+        } footer: {
             Text(
-                "This restricted layer requires a complete single-employer workweek. It does not establish state, public-agency, or CBA coverage, and unknown weeks remain needs review."
-            ).font(.footnote)
+                "Everything starts off. Turn on only what your agreement or employer actually pays; anything left off is not configured, not ruled out."
+            )
+        }
+        Section {
+            ruleToggle(
+                "Weekly overtime review",
+                detail:
+                    "Checks hours over 40 in a complete workweek, in a separate review on the Pay screen.",
+                isOn: $draft.useWeeklyOvertime)
+            if draft.useWeeklyOvertime {
+                Picker("Workweek starts", selection: $draft.weeklyWorkweekStart) {
+                    ForEach(Weekday.allCases, id: \.self) { day in
+                        Text(weekdayName(day)).tag(day)
+                    }
+                }
+                Toggle(
+                    "Covered, nonexempt hourly work confirmed",
+                    isOn: $draft.weeklyApplicabilityConfirmed)
+                Text(
+                    "This restricted layer requires a complete single-employer workweek. It does not establish state, public-agency, or CBA coverage, and unknown weeks remain needs review."
+                ).font(.footnote)
+            }
         }
         Section("Additional rules") {
             DisclosureGroup("Other weekdays") {
@@ -309,7 +339,24 @@ struct PayProfileSetupView: View {
                 }
             }
         }
-        Section("Source references, optional") {
+        Section {
+            DisclosureGroup("Where these rules come from (optional)") {
+                sourceFields
+            }
+        }
+        Section {
+            Button("I don't see my rule") { showingUnsupported = true }.accessibilityIdentifier(
+                "pay-profile.unsupported")
+            if !draft.unsupportedRuleNotes.isEmpty {
+                Label("Incomplete rule coverage", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(LinePayColor.review)
+                Text(draft.unsupportedRuleNotes)
+            }
+        }
+    }
+
+    @ViewBuilder private var sourceFields: some View {
+        Group {
             TextField("Source title", text: $draft.sourceTitle)
             TextField("Source URL", text: $draft.sourceURL).keyboardType(.URL)
                 .textInputAutocapitalization(.never).autocorrectionDisabled()
@@ -331,23 +378,16 @@ struct PayProfileSetupView: View {
             Text("A reference you enter is not independently verified by LinePaycheck.").font(
                 .footnote)
         }
-        Section {
-            Button("I don't see my rule") { showingUnsupported = true }.accessibilityIdentifier(
-                "pay-profile.unsupported")
-            if !draft.unsupportedRuleNotes.isEmpty {
-                Label("Incomplete rule coverage", systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(LinePayColor.review)
-                Text(draft.unsupportedRuleNotes)
-            }
-        }
     }
 
     @ViewBuilder private var review: some View {
         if let agreement = try? model.previewAgreement(draft) {
             Section("What LinePaycheck will calculate") {
                 AgreementSummaryView(agreement: agreement)
-                LabeledContent("Payroll timezone", value: draft.timeZoneIdentifier)
+                LabeledContent(
+                    "Payroll timezone", value: LinePayFormat.timeZoneName(draft.timeZoneIdentifier))
                 LabeledContent("Pay cadence", value: draft.preferredCadence.title)
+                if !editing { LabeledContent("First period", value: periodPreview) }
                 Text(
                     "Where premiums overlap, the highest applicable multiplier wins; premiums are not added together. A callout top-up uses the highest worked multiplier. Confirm these semantics match your agreement."
                 )
@@ -479,10 +519,31 @@ struct PayProfileSetupView: View {
         }
     }
 
+    private var stepPurpose: String {
+        switch step {
+        case 0: "Your base pay. Everything else builds on it."
+        case 1: "The dates your paycheck covers."
+        case 2: "Turn on only the extras your agreement or employer actually pays."
+        default:
+            editing
+                ? "Check the change and choose which work it applies to."
+                : "Check the summary. You can change these rules later in Settings."
+        }
+    }
+
+    private func ruleToggle(_ title: String, detail: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                Text(detail).font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+            }
+        }
+    }
+
     private func number(_ label: String, _ binding: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.subheadline)
-            TextField(label, text: binding).keyboardType(.numbersAndPunctuation).monospacedDigit()
+            TextField(label, text: binding).linePayNumberEntry()
         }
     }
     private func sourceRulePicker(_ selection: Binding<PayRuleKey?>) -> some View {
@@ -512,10 +573,11 @@ struct PayProfileSetupView: View {
             : calendar.date(
                 byAdding: .day, value: draft.preferredCadence == .weekly ? 6 : 13,
                 to: draft.periodStartDate) ?? draft.periodStartDate
-        let formatter = DateFormatter()
+        let formatter = DateIntervalFormatter()
         formatter.dateStyle = .medium
+        formatter.timeStyle = .none
         formatter.timeZone = zone
-        return "\(formatter.string(from: draft.periodStartDate)) to \(formatter.string(from: end))"
+        return formatter.string(from: draft.periodStartDate, to: end)
     }
     private func rebase(from old: String, to new: String) {
         guard let oldZone = TimeZone(identifier: old), let newZone = TimeZone(identifier: new)
@@ -547,17 +609,17 @@ struct AgreementSummaryView: View {
         LabeledContent("Base rate", value: "\(LinePayFormat.money(agreement.hourlyRate))/hr")
         ForEach(Array(agreement.dailyOvertimeTiers.enumerated()), id: \.offset) { _, tier in
             LabeledContent(
-                "After \(LinePayFormat.hours(tier.afterHours)) worked h",
+                "Daily overtime after \(LinePayFormat.hours(tier.afterHours)) h",
                 value: "\(LinePayFormat.decimal(tier.multiplier))×")
         }
         ForEach(Array(agreement.weekdayPremiums.enumerated()), id: \.offset) { _, premium in
             LabeledContent(
-                Calendar(identifier: .gregorian).weekdaySymbols[premium.weekday.rawValue - 1],
+                "\(Calendar(identifier: .gregorian).weekdaySymbols[premium.weekday.rawValue - 1]) premium",
                 value: "\(LinePayFormat.decimal(premium.multiplier))×")
         }
         ForEach(Array(agreement.datePremiums.enumerated()), id: \.offset) { _, premium in
             LabeledContent(
-                LinePayFormat.localDate(premium.date),
+                "Premium date \(LinePayFormat.localDate(premium.date))",
                 value: "\(LinePayFormat.decimal(premium.multiplier))×")
         }
         if let rule = agreement.calloutMinimum {
@@ -569,7 +631,8 @@ struct AgreementSummaryView: View {
             .font(.footnote)
         }
         if let rule = agreement.flatPerDiem {
-            LabeledContent("Per worked date", value: LinePayFormat.money(rule.amountPerWorkDate))
+            LabeledContent(
+                "Per diem per worked date", value: LinePayFormat.money(rule.amountPerWorkDate))
         }
         if let rule = agreement.weeklyOvertime {
             LabeledContent(

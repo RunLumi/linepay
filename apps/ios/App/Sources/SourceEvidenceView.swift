@@ -35,6 +35,7 @@ struct SourceEvidenceView: View {
                         }
                     }
                 }
+                .linePayCanvas()
                 .task(id: url) {
                     do { crop = try await SourceCrop.load(url: url, region: region) } catch {
                         cropError = true

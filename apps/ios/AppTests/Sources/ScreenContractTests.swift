@@ -32,10 +32,11 @@ struct ScreenContractTests {
         let model = AppModel()
         try model.saveProfile(UnitFixture.profile())
         let today = try text(TodayView(model: model))
-        #expect(today.contains("No work logged this period"))
-        #expect(today.contains(LinePayFormat.money(try #require(model.calculation).expectedWages)))
+        // DESIGN.md: an empty period says what is missing instead of showing "$0.00 earned".
+        #expect(today.contains("No work logged"))
+        #expect(!today.contains(LinePayFormat.money(try #require(model.calculation).expectedWages)))
         let pay = try text(PayLedgerView(model: model, subscriptionStore: commerce()))
-        #expect(pay.contains("No work to audit yet"))
+        #expect(pay.contains("No work to check yet"))
         #expect(!pay.contains("Check first paycheck free"))
         #expect(
             try text(HistoryView(model: model, subscriptionStore: commerce())).contains(
@@ -103,6 +104,32 @@ struct ScreenContractTests {
         #expect(
             try StartPayPeriodView(model: model).inspect().findAll(ViewType.DatePicker.self).count
                 == 2)
+    }
+
+    @Test func nextPeriodStartContinuesFromTheLastClosedPeriodWithoutOverlap() throws {
+        var chicago = Calendar(identifier: .gregorian)
+        chicago.timeZone = try #require(TimeZone(identifier: "America/Chicago"))
+        let start = try #require(
+            chicago.date(from: DateComponents(year: 2026, month: 3, day: 1)))
+        let end = try #require(chicago.date(byAdding: .day, value: 7, to: start))
+        let window = PayPeriodWindow(
+            startEpochSeconds: Int64(start.timeIntervalSince1970),
+            endEpochSeconds: Int64(end.timeIntervalSince1970), cadence: .manual)
+        let later = end.addingTimeInterval(30 * 86_400)
+        // Same zone: the exclusive end is already local midnight, so the next period starts there.
+        #expect(
+            StartPayPeriodView.proposedStart(afterHistory: [window], calendar: chicago, now: later)
+                == end)
+        // A zone where that instant is mid-day must move to the following midnight, not overlap.
+        var tokyo = Calendar(identifier: .gregorian)
+        tokyo.timeZone = try #require(TimeZone(identifier: "Asia/Tokyo"))
+        let proposed = StartPayPeriodView.proposedStart(
+            afterHistory: [window], calendar: tokyo, now: later)
+        #expect(proposed >= end && proposed == tokyo.startOfDay(for: proposed))
+        // No history: today, at local midnight.
+        #expect(
+            StartPayPeriodView.proposedStart(afterHistory: [], calendar: chicago, now: later)
+                == chicago.startOfDay(for: later))
     }
 
     @Test func addEditAndRepeatFormsRetainTheirWorkFacts() throws {
@@ -177,7 +204,7 @@ struct ScreenContractTests {
         let imported = try text(
             PaystubImportView(model: model, subscriptionStore: commerce(), periodID: id) {})
         #expect(
-            imported.contains("Enter manually") && imported.contains("Choose PDF or image")
+            imported.contains("Type in the gross pay") && imported.contains("Choose PDF or image")
                 && imported.contains("Choose photo"))
         let draft = UnitFixture.paystub(model)
         let review = try text(

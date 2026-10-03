@@ -22,7 +22,7 @@ struct SettingsView: View {
                                             LabeledContent(
                                                 LinePayFormat.localDate(change.effectiveDate),
                                                 value:
-                                                    "v\(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
+                                                    "Version \(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
                                             )
                                         }
                                         Text(
@@ -31,14 +31,19 @@ struct SettingsView: View {
                                     }
                                 }
                                 Section {
-                                    Text("Timezone: \(profile.timeZoneIdentifier)")
-                                    Button("Edit and review rules") { editor = true }.frame(
-                                        minHeight: 48)
+                                    Text(
+                                        "Payroll timezone: \(LinePayFormat.timeZoneName(profile.timeZoneIdentifier))"
+                                    )
+                                    Button("Edit and review rules") { editor = true }
+                                        .linePayRowAction()
                                     Text(
                                         "Editing defaults to future periods. Existing work changes only after an explicit current-period review."
                                     ).font(.footnote)
                                 }
-                            }.navigationTitle("Pay profile")
+                            }
+                            .labeledContentStyle(LinePayValueStyle())
+                            .linePayCanvas()
+                            .navigationTitle("Pay profile")
                         }
                         Button("Edit pay rules") { editor = true }.accessibilityIdentifier(
                             "settings.edit-rules")
@@ -55,7 +60,7 @@ struct SettingsView: View {
                         "Status",
                         value: subscriptionStore.isPro
                             ? (subscriptionStore.isTrial ? "Pro trial active" : "Pro active")
-                            : model.hasUsedFreeAudit ? "First audit used" : "First audit free")
+                            : model.hasUsedFreeAudit ? "Free check used" : "First check free")
                     if let notice = subscriptionStore.notice { Text(notice).font(.footnote) }
                     if let date = subscriptionStore.renewalDate {
                         LabeledContent(subscriptionStore.willAutoRenew == true ? "Renews" : "Ends")
@@ -86,7 +91,9 @@ struct SettingsView: View {
                     NavigationLink("Export data") { ExportDataView(model: model) }
                     if model.pendingDeletionCount > 0 {
                         Text(
-                            "\(model.pendingDeletionCount) original(s) awaiting deletion. Retry from Privacy and local data."
+                            model.pendingDeletionCount == 1
+                                ? "1 original is waiting to be deleted. Retry from Privacy and local data."
+                                : "\(model.pendingDeletionCount) originals are waiting to be deleted. Retry from Privacy and local data."
                         ).foregroundStyle(LinePayColor.review)
                     }
                 }
@@ -102,7 +109,7 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .labeledContentStyle(LinePayValueStyle())
-            .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .linePayCanvas()
         }
         .sheet(isPresented: $editor) { PayProfileSetupView(model: model) }
         .sheet(isPresented: $paywall) {
@@ -121,8 +128,10 @@ struct PayPeriodSettingsView: View {
                     Text(
                         LinePayFormat.payPeriod(
                             period.window, timeZoneIdentifier: model.currentTimeZoneIdentifier))
-                    Text("Timezone: \(model.currentTimeZoneIdentifier)")
-                    Button("Correct current dates") { correcting = true }.frame(minHeight: 48)
+                    Text(
+                        "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
+                    )
+                    Button("Correct current dates") { correcting = true }.linePayRowAction()
                         .accessibilityIdentifier("period.correct-dates")
                 }
                 Section("Next work period") {
@@ -137,6 +146,7 @@ struct PayPeriodSettingsView: View {
                 Text("Start a new manual work period from Today.")
             }
         }
+        .linePayCanvas()
         .navigationTitle("Pay period").navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $correcting) { CorrectPeriodDatesView(model: model) }
     }
@@ -169,6 +179,7 @@ struct CorrectPeriodDatesView: View {
                 }.buttonStyle(LinePayPrimaryButtonStyle())
                 if let errorMessage { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
+            .linePayCanvas()
             .navigationTitle("Correct current dates").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -222,6 +233,7 @@ struct PrivacyDataView: View {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
+        .linePayCanvas()
         .navigationTitle("Privacy and data").navigationBarTitleDisplayMode(.inline)
         .alert(
             "Delete all local pay data?", isPresented: $deleteAll
@@ -265,7 +277,7 @@ struct ExportDataView: View {
         List {
             Section("Choose the appropriate export") {
                 Text(
-                    "Audit PDF: open the required period in History or Pay, then Prepare audit report. Original pages are excluded."
+                    "Paycheck report (PDF): open the period in Pay or History, view its paycheck result, then Prepare a report to share. Original pages are excluded."
                 )
                 Text(
                     "Complete backup: includes saved work, rules, saved drafts, audit revisions and retained original files. It can be restored on another installation."
@@ -286,6 +298,8 @@ struct ExportDataView: View {
             if let errorMessage {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
-        }.navigationTitle("Export data").navigationBarTitleDisplayMode(.inline)
+        }
+        .linePayCanvas()
+        .navigationTitle("Export data").navigationBarTitleDisplayMode(.inline)
     }
 }

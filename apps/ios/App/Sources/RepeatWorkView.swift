@@ -5,7 +5,8 @@ import SwiftUI
 struct RepeatWorkView: View {
     let model: AppModel
     let source: WorkEntry?
-    let resumesPendingWork: Bool
+    /// Fixed when the sheet first appears; see `AddWorkView.resumesPendingWork`.
+    @State private var resumesPendingWork: Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
@@ -14,6 +15,10 @@ struct RepeatWorkView: View {
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
     @State private var isClosing = false
+    @State private var cancelConfirmation = false
+    /// The proposal as first shown. Leaving it untouched must not strand a draft that blocks
+    /// editing other shifts.
+    @State private var initialDraft: WorkDraft?
 
     init(model: AppModel, source: WorkEntry? = nil) {
         self.model = model
@@ -21,7 +26,7 @@ struct RepeatWorkView: View {
         let periodID = model.activePeriod?.id ?? UUID()
         let saved = model.workDraft
         let savedRepeat = saved?.periodID == periodID && saved?.templateSource != nil
-        resumesPendingWork = savedRepeat
+        _resumesPendingWork = State(initialValue: savedRepeat)
 
         if savedRepeat, let saved {
             _draft = State(initialValue: saved)
@@ -29,12 +34,8 @@ struct RepeatWorkView: View {
             _errorMessage = State(initialValue: nil)
         } else if let source {
             do {
-                let value = try RepeatWorkDraft.make(
-                    source: source,
-                    periodID: periodID,
-                    day: Date(),
-                    timeZoneIdentifier: model.currentTimeZoneIdentifier,
-                    window: model.activePeriod?.window)
+                let value = try Self.firstOpenRepeat(
+                    model: model, source: source, periodID: periodID, from: Date())
                 _draft = State(initialValue: value)
                 _quick = State(initialValue: true)
                 _errorMessage = State(initialValue: nil)
@@ -56,6 +57,39 @@ struct RepeatWorkView: View {
         }
     }
 
+    /// Repeats `source` on the first day, from `from` onward within the open period, where the
+    /// copy would not overlap logged work. Repeating today's shift therefore proposes tomorrow
+    /// instead of opening in conflict. Falls back to the clamped requested day.
+    static func firstOpenRepeat(
+        model: AppModel, source: WorkEntry, periodID: UUID, from: Date
+    ) throws -> WorkDraft {
+        let zoneID = model.currentTimeZoneIdentifier
+        let window = model.activePeriod?.window
+        let first = try RepeatWorkDraft.make(
+            source: source, periodID: periodID, day: from, timeZoneIdentifier: zoneID,
+            window: window)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: zoneID) ?? .current
+        var day = first.templateDay ?? calendar.startOfDay(for: from)
+        var candidate = first
+        for _ in 0..<31 {
+            let free =
+                model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                == nil
+            if free, window?.contains(start: candidate.start, end: candidate.end) ?? true {
+                return candidate
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day),
+                window.map({ next <= $0.displayEndDate }) ?? true
+            else { break }
+            day = next
+            candidate = try RepeatWorkDraft.make(
+                source: source, periodID: periodID, day: day, timeZoneIdentifier: zoneID,
+                window: window)
+        }
+        return first
+    }
+
     private var zone: TimeZone {
         TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
     }
@@ -74,7 +108,8 @@ struct RepeatWorkView: View {
     }
 
     private var conflict: WorkEntry? {
-        model.conflictingWork(start: draft.start, end: draft.end, excluding: nil)
+        guard !isClosing else { return nil }
+        return model.conflictingWork(start: draft.start, end: draft.end, excluding: nil)
     }
 
     private var withinCurrentPeriod: Bool {
@@ -198,7 +233,18 @@ struct RepeatWorkView: View {
                 Section("Preview") {
                     LabeledContent(
                         "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
-                    Text("Payroll timezone: \(model.currentTimeZoneIdentifier)").font(.footnote)
+                    if conflict == nil, withinCurrentPeriod, draft.templateUnresolved != true,
+                        draft.end > draft.start,
+                        let change = model.expectedWagesChange(saving: draft)
+                    {
+                        LabeledContent("Adds to expected wages") {
+                            Text(LinePayFormat.money(change)).font(.headline).monospacedDigit()
+                        }
+                        .accessibilityIdentifier("repeat.wages-preview")
+                    }
+                    Text(
+                        "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
+                    ).font(.footnote)
                     Text(
                         "Guaranteed paid time is calculated separately, never added to your clock record."
                     ).font(.footnote)
@@ -214,19 +260,34 @@ struct RepeatWorkView: View {
                 if let conflict {
                     Section {
                         Label(
-                            "Overlaps \(LinePayFormat.workDateRange(conflict.interval))",
+                            "Overlaps a logged shift: \(LinePayFormat.shiftTimes(conflict.interval)). Choose another date or time.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)
-                        Button("View conflicting entry") { viewingConflict = conflict }
+                        Button("View that shift") { viewingConflict = conflict }
                     }
                 }
 
-                if let errorMessage {
-                    Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
+                if resumesPendingWork {
+                    Section {
+                        Button("Discard this draft", role: .destructive) {
+                            discardConfirmation = true
+                        }
+                        .frame(minHeight: 44)
+                    }
                 }
-
-                Section {
+            }
+            .linePayCanvas()
+            .linePayKeyboardDismiss()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                LinePayBottomBar {
+                    if let errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline)
+                            .foregroundStyle(LinePayColor.review)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     Button(quick ? "Save same shift" : "Save work") { save() }
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .disabled(
@@ -234,20 +295,20 @@ struct RepeatWorkView: View {
                                 || draft.templateUnresolved == true
                         )
                         .accessibilityIdentifier("repeat.save")
-                    Button("Discard this draft", role: .destructive) {
-                        discardConfirmation = true
-                    }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(LinePayColor.canvas)
-            .linePayKeyboardDismiss()
             .navigationTitle(quick ? "Repeat shift" : "Review repeated shift")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep draft") { keepDraft() }
-                        .accessibilityIdentifier("repeat.keep-draft")
+                    Button("Cancel") {
+                        if let initialDraft, draft != initialDraft {
+                            cancelConfirmation = true
+                        } else {
+                            closeUnchanged()
+                        }
+                    }
+                    .accessibilityIdentifier("repeat.keep-draft")
                 }
             }
         }
@@ -255,7 +316,27 @@ struct RepeatWorkView: View {
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .interactiveDismissDisabled()
-        .onAppear { persistDraft() }
+        .onAppear {
+            if initialDraft == nil { initialDraft = draft }
+            persistDraft()
+        }
+        .confirmationDialog(
+            "Keep your changes?", isPresented: $cancelConfirmation, titleVisibility: .visible
+        ) {
+            Button("Keep as draft") { keepDraft() }
+            Button("Discard changes", role: .destructive) {
+                do {
+                    isClosing = true
+                    try model.saveWorkDraft(resumesPendingWork ? initialDraft : nil)
+                    dismiss()
+                } catch {
+                    isClosing = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        } message: {
+            Text("A draft stays on this iPhone so you can finish it later.")
+        }
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
             do { try model.saveWorkDraft(value) } catch {
@@ -268,6 +349,7 @@ struct RepeatWorkView: View {
                     Text(LinePayFormat.workDateRange(item.interval))
                     if !item.note.isEmpty { Text(item.note) }
                 }
+                .linePayCanvas()
                 .navigationTitle("Conflicting work")
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
@@ -477,6 +559,18 @@ struct RepeatWorkView: View {
         guard !isClosing else { return }
         do { try model.saveWorkDraft(draft) } catch {
             errorMessage = "Draft could not be saved. Your earlier records are unchanged."
+        }
+    }
+
+    private func closeUnchanged() {
+        do {
+            isClosing = true
+            // A resumed draft stays as it was saved; an untouched new proposal leaves nothing.
+            if !resumesPendingWork { try model.saveWorkDraft(nil) }
+            dismiss()
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
         }
     }
 

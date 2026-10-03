@@ -50,7 +50,7 @@ struct PendingRemovalView: View {
                     }
                 }.buttonStyle(LinePayPrimaryButtonStyle())
                 if let errorMessage { Text(errorMessage).foregroundStyle(LinePayColor.review) }
-            }.navigationTitle("Data cleanup")
+            }.linePayCanvas().navigationTitle("Data cleanup")
         }
     }
 }

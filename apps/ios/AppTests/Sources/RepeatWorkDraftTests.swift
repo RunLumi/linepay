@@ -326,4 +326,21 @@ struct RepeatWorkDraftTests {
         let components = calendar.dateComponents([.hour, .minute], from: date)
         return (components.hour ?? -1, components.minute ?? -1)
     }
+
+    @Test func repeatingTodaysShiftProposesTheNextOpenDay() throws {
+        let model = AppModel()
+        var profile = PayProfileDraft()
+        profile.hourlyRate = "50"
+        profile.timeZoneIdentifier = "UTC"
+        profile.periodStartDate = Date(timeIntervalSince1970: 1_786_089_600)
+        try model.saveProfile(profile)
+        let period = try #require(model.activePeriod)
+        let start = period.window.startDate + 7 * 3_600
+        try model.addWork(start: start, end: start + 8 * 3_600, kind: .regular)
+        let source = try #require(model.workEntries.first)
+        let draft = try RepeatWorkView.firstOpenRepeat(
+            model: model, source: source, periodID: period.id, from: start + 10 * 3_600)
+        #expect(draft.start == start + 86_400)
+        #expect(model.conflictingWork(start: draft.start, end: draft.end, excluding: nil) == nil)
+    }
 }
