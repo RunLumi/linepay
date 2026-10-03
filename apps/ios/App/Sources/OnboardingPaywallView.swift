@@ -110,14 +110,15 @@ struct ProPaywallView: View {
     private var benefits: some View {
         VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
             benefit(
-                "doc.text.viewfinder", title: "Check every paycheck",
-                detail: "Scan a paystub or enter it by hand, then compare it with your logged work."
+                "doc.text.viewfinder", title: "Every payday, not just the first",
+                detail:
+                    "Your first check is free. Pro checks each paycheck after that: scan the paystub or type in its gross pay."
             )
             benefit(
                 "list.bullet.rectangle", title: "Follow every possible difference",
                 detail: "Trace it back to the hours, rule and calculation behind it.")
             benefit(
-                "square.and.arrow.up", title: "Keep your audit record",
+                "square.and.arrow.up", title: "Keep a record of every check",
                 detail: "Save the evidence behind each check and share it when you choose.")
         }
     }

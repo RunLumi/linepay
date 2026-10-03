@@ -1589,7 +1589,7 @@ enum AppModelError: LocalizedError, Equatable {
         case .missingWorkInterval:
             "That work interval no longer exists."
         case .workOutsideCurrentPayPeriod:
-            "This shift falls outside the current pay period."
+            "This shift is outside the current pay period. Choose a date inside it, or correct the period dates in Settings."
         case .invalidPayPeriod:
             "Check the pay-period dates."
         case .calculationUnavailable:

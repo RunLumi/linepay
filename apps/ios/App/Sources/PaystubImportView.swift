@@ -34,8 +34,9 @@ struct PaystubImportView: View {
                                 context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                         ).font(.headline)
                         Text(
-                            "Choose the paycheck for this work period. Originals and unfinished reviews remain on this iPhone."
+                            "Add the paycheck for this work period. Paystubs are read on this iPhone, and you confirm every value before anything is compared."
                         )
+                        .foregroundStyle(LinePayColor.textSecondary)
                     }
                 }
                 if anotherDraft {
@@ -71,7 +72,7 @@ struct PaystubImportView: View {
                             showingFileImporter = true
                         }
                         .accessibilityIdentifier("paystub.choose-file")
-                        Button("Enter manually", systemImage: "keyboard") { manual() }
+                        Button("Type in the gross pay", systemImage: "keyboard") { manual() }
                             .accessibilityIdentifier("paystub.manual")
                     }.disabled(isProcessing)
                 }
@@ -93,14 +94,16 @@ struct PaystubImportView: View {
                 }
                 Section {
                     Text(
-                        "No account or paystub upload. Files stored in iCloud may require a connection to download before local processing."
-                    ).font(.footnote)
+                        "No account, and your paystub is not uploaded. A file stored in iCloud may need a connection to download first."
+                    ).font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                 }
             }
+            .linePayCanvas()
             .navigationTitle("Check paycheck").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep draft and close") {
+                    // Unfinished reviews are saved as they change, so closing never loses work.
+                    Button("Close") {
                         operation.cancel()
                         processingTask?.cancel()
                         dismiss()
@@ -333,55 +336,89 @@ struct PaystubReviewView: View {
             identifier: model.periodContext(id: draft.targetPeriodID)?.timeZoneIdentifier ?? "")
             ?? .current
     }
+    private var minimumConfirmed: Bool {
+        draft.reviewedFields.isSuperset(of: [.periodStart, .periodEnd, .grossPay])
+    }
+    private var readyToCompare: Bool {
+        draft.grossBasis != .unconfirmed && draft.workComplete == true
+    }
+
     var body: some View {
         Form {
             Section {
-                Text("Confirm the facts, then compare.").font(.title2.bold())
-                Text(
-                    "Check each value against the original. Unconfirmed optional lines are excluded and mark the audit as limited."
-                ).font(.footnote)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(draft.sourceEvidence == nil ? "Enter your paystub" : "Check what was read")
+                        .font(.title2.bold())
+                    Text(
+                        draft.sourceEvidence == nil
+                            ? "Three facts are enough to compare: the dates it covers and its gross pay."
+                            : "Compare each value with the original. Nothing counts until you confirm it."
+                    )
+                    .font(.subheadline).foregroundStyle(LinePayColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 4)
                 if let notice = draft.processingNotice {
                     Text(notice).foregroundStyle(LinePayColor.review)
                 }
             }
-            Section("Minimum facts") {
-                ForEach([PaystubField.periodStart, .periodEnd, .grossPay]) { field in
-                    fieldRow(field)
-                }
-            }
+            minimumFacts
             Section {
-                Toggle(
-                    "All work for this paycheck period is recorded",
+                ConfirmationCheckRow(
+                    "My work log covers this whole pay period",
                     isOn: Binding(
                         get: { draft.workComplete == true }, set: { draft.workComplete = $0 })
                 )
-                .toggleStyle(.button)
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .accessibilityValue(draft.workComplete == true ? "Confirmed" : "Not confirmed")
-                .accessibilityAddTraits(draft.workComplete == true ? .isSelected : [])
                 .accessibilityIdentifier("paystub.complete-work")
+            } footer: {
                 Text(
-                    "Check the full work period, including earlier shifts and any unpaid breaks. A partial work log cannot establish a full-paycheck difference."
+                    "Include every shift and unpaid break. A partial work log cannot show whether the paycheck for the full work period is short."
                 )
-                .font(.footnote)
-                VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                    Text("What does gross include?")
-                    Picker("Gross basis", selection: $draft.grossBasis) {
-                        ForEach(PaystubGrossBasis.allCases, id: \.self) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.navigationLink)
-                    .accessibilityIdentifier("paystub.gross-basis")
-                }
-                Text(
-                    "Compare wage gross with wages, not take-home pay. Confirm whether per diem is already inside this gross number; LinePaycheck does not infer tax treatment."
-                ).font(.footnote)
             }
-            Section("Optional confirmed lines") {
-                DisclosureGroup("Review optional line details") {
+            Section {
+                ForEach([PaystubGrossBasis.wagesOnly, .wagesAndPerDiem], id: \.self) { basis in
+                    Button {
+                        draft.grossBasis = basis
+                    } label: {
+                        HStack(spacing: LinePaySpacing.standard - 4) {
+                            Image(
+                                systemName: draft.grossBasis == basis
+                                    ? "checkmark.circle.fill" : "circle"
+                            )
+                            .foregroundStyle(
+                                draft.grossBasis == basis
+                                    ? LinePayColor.actionText : LinePayColor.lineStrong
+                            )
+                            .accessibilityHidden(true)
+                            Text(basis.title).foregroundStyle(LinePayColor.textPrimary)
+                            Spacer(minLength: 0)
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityAddTraits(draft.grossBasis == basis ? .isSelected : [])
+                    .accessibilityIdentifier("paystub.gross-basis.\(basis.rawValue)")
+                }
+            } header: {
+                Text("What does the gross pay include?")
+                    .accessibilityIdentifier("paystub.gross-basis")
+            } footer: {
+                Text(
+                    "Compare gross wages, not take-home pay. If your paystub shows no per diem, choose wages only. LinePaycheck does not infer tax treatment."
+                )
+            }
+            Section {
+                DisclosureGroup("Hours and earnings lines") {
                     ForEach(PaystubField.allCases.filter { !$0.isDate && $0 != .grossPay }) {
                         field in fieldRow(field)
                     }
                 }
+            } header: {
+                Text("Optional confirmed lines")
+            } footer: {
+                Text(
+                    "Unconfirmed optional lines are left out, and the check is marked as limited."
+                )
             }
             Section {
                 DisclosureGroup("How earnings lines are reported") {
@@ -410,29 +447,34 @@ struct PaystubReviewView: View {
                 TextField("What still needs checking?", text: $draft.notes, axis: .vertical)
                     .lineLimit(2...5)
             }
-            Section {
-                Button(
-                    draft.grossBasis == .unconfirmed || draft.workComplete != true
-                        ? "Save as not comparable" : "Audit confirmed facts"
-                ) { confirm() }
-                .buttonStyle(LinePayPrimaryButtonStyle())
-                .disabled(
-                    !draft.reviewedFields.isSuperset(of: [.periodStart, .periodEnd, .grossPay])
-                )
-                .accessibilityIdentifier("paystub.audit")
-                Text(
-                    "Your first comparable audit is free. Unconfirmed work or an unknown gross basis does not consume it."
-                ).font(.footnote)
-            }
-            if let errorMessage {
-                Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
-            }
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedField) { field in
             PaystubFieldReviewView(model: model, field: field, draft: $draft, timeZone: zone)
         }
-        .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+        .linePayCanvas()
+        .linePayKeyboardDismiss()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            LinePayBottomBar {
+                if let errorMessage {
+                    Label(errorMessage, systemImage: "exclamationmark.triangle")
+                        .font(.subheadline)
+                        .foregroundStyle(LinePayColor.review)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Button(readyToCompare ? "Compare with expected pay" : "Save without comparing") {
+                    confirm()
+                }
+                .buttonStyle(LinePayPrimaryButtonStyle())
+                .disabled(!minimumConfirmed)
+                .accessibilityIdentifier("paystub.audit")
+                Text(actionHint)
+                    .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
@@ -443,6 +485,133 @@ struct PaystubReviewView: View {
             }
         }
     }
+
+    private var actionHint: String {
+        if !minimumConfirmed {
+            return "Confirm the paystub dates and gross pay to continue."
+        }
+        if !readyToCompare {
+            return
+                "To compare, confirm your work log is complete and what the gross includes. Saving without comparing does not use your free check."
+        }
+        return model.hasUsedFreeAudit
+            ? "Compares these confirmed facts with the expected pay for this period."
+            : "Your first comparable paycheck check is free."
+    }
+
+    @ViewBuilder private var minimumFacts: some View {
+        Section {
+            DatePicker(
+                "Pay period starts", selection: dateBinding(.periodStart),
+                displayedComponents: .date
+            )
+            .accessibilityIdentifier("paystub.inline.periodStart")
+            DatePicker(
+                "Pay period ends", selection: dateBinding(.periodEnd), displayedComponents: .date
+            )
+            .accessibilityIdentifier("paystub.inline.periodEnd")
+            ConfirmationCheckRow(
+                "These dates match the paystub",
+                isOn: Binding(
+                    get: { draft.reviewedFields.isSuperset(of: [.periodStart, .periodEnd]) },
+                    set: { confirmed in
+                        if confirmed, draft.payPeriodStartDate != nil,
+                            draft.payPeriodEndDate != nil
+                        {
+                            draft.reviewedFields.formUnion([.periodStart, .periodEnd])
+                        } else {
+                            draft.reviewedFields.subtract([.periodStart, .periodEnd])
+                        }
+                    })
+            )
+            .accessibilityIdentifier("paystub.confirm-dates")
+            HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
+                Text("Gross pay")
+                TextField("Amount", text: grossBinding)
+                    .linePayNumberEntry()
+                    .multilineTextAlignment(.trailing)
+                    .font(.title3.weight(.semibold))
+                    .accessibilityLabel("Gross pay")
+                    .accessibilityIdentifier("paystub.inline.gross")
+            }
+            .frame(minHeight: 48)
+            grossStatus
+            if let evidence = draft.sourceEvidence, let url = model.evidenceURL(for: evidence) {
+                NavigationLink("View the original paystub") {
+                    SourceEvidenceView(url: url, region: draft.suggestions[.grossPay]?.region)
+                }
+                .accessibilityIdentifier("paystub.view-original")
+            }
+        } header: {
+            Text("From your paystub")
+        } footer: {
+            Text(
+                "Use this period's gross pay, before taxes and deductions. Not year-to-date, and not take-home pay."
+            )
+        }
+    }
+
+    @ViewBuilder private var grossStatus: some View {
+        let value = draft.grossPay
+        if draft.reviewedFields.contains(.grossPay) {
+            Label(
+                draft.suggestions[.grossPay]?.value == value
+                    ? "Read from the paystub and confirmed by you" : "Entered by you",
+                systemImage: "checkmark.circle"
+            )
+            .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+        } else if !value.isEmpty, Self.isValidAmount(value) {
+            // A machine-read value counts only after the worker checks it.
+            Button("Confirm \(value) matches the paystub") {
+                draft.reviewedFields.insert(.grossPay)
+            }
+            .linePayRowAction(minHeight: 44)
+            .accessibilityIdentifier("paystub.confirm-gross")
+            if let reason = draft.suggestions[.grossPay]?.reason {
+                Text(reason).font(.footnote)
+            }
+        } else if !value.isEmpty {
+            Text("Use a complete amount such as 1,250.00, with no other text.")
+                .font(.footnote).foregroundStyle(LinePayColor.review)
+        }
+    }
+
+    private var grossBinding: Binding<String> {
+        Binding(
+            get: { draft.grossPay },
+            set: { value in
+                draft.grossPay = value
+                // Typing the amount is the worker's own confirmation; an untouched OCR reading
+                // still needs an explicit check above.
+                if Self.isValidAmount(value), draft.suggestions[.grossPay]?.value != value {
+                    draft.reviewedFields.insert(.grossPay)
+                } else {
+                    draft.reviewedFields.remove(.grossPay)
+                }
+            })
+    }
+
+    private func dateBinding(_ field: PaystubField) -> Binding<Date> {
+        Binding(
+            get: {
+                (field == .periodStart ? draft.payPeriodStartDate : draft.payPeriodEndDate)
+                    ?? Date()
+            },
+            set: {
+                if field == .periodStart {
+                    draft.payPeriodStartDate = $0
+                } else {
+                    draft.payPeriodEndDate = $0
+                }
+                draft.reviewedFields.remove(field)
+            })
+    }
+
+    static func isValidAmount(_ text: String) -> Bool {
+        (try? StrictDecimal.parse(
+            text, maximum: 10_000_000, fractionDigits: 2, allowDollarSign: true)) != nil
+    }
+
     private func fieldRow(_ field: PaystubField) -> some View {
         Button {
             selectedField = field
@@ -519,8 +688,7 @@ struct PaystubFieldReviewView: View {
                 if field.isDate {
                     DatePicker(field.title, selection: dateBinding, displayedComponents: .date)
                 } else {
-                    TextField(field.title, text: numberBinding).keyboardType(.numbersAndPunctuation)
-                        .monospacedDigit()
+                    TextField(field.title, text: numberBinding).linePayNumberEntry()
                         .accessibilityIdentifier("paystub.value")
                 }
                 Text("Confirm current-period values, not year-to-date totals.").font(.footnote)
@@ -557,7 +725,7 @@ struct PaystubFieldReviewView: View {
         }
         .linePayKeyboardDismiss()
         .navigationTitle(field.title).navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden).background(LinePayColor.canvas)
+        .linePayCanvas()
         .environment(\.timeZone, timeZone)
     }
     private var numberBinding: Binding<String> {

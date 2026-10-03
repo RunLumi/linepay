@@ -14,6 +14,10 @@ struct RepeatWorkView: View {
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
     @State private var isClosing = false
+    @State private var cancelConfirmation = false
+    /// The proposal as first shown. Leaving it untouched must not strand a draft that blocks
+    /// editing other shifts.
+    @State private var initialDraft: WorkDraft?
 
     init(model: AppModel, source: WorkEntry? = nil) {
         self.model = model
@@ -74,7 +78,8 @@ struct RepeatWorkView: View {
     }
 
     private var conflict: WorkEntry? {
-        model.conflictingWork(start: draft.start, end: draft.end, excluding: nil)
+        guard !isClosing else { return nil }
+        return model.conflictingWork(start: draft.start, end: draft.end, excluding: nil)
     }
 
     private var withinCurrentPeriod: Bool {
@@ -198,7 +203,9 @@ struct RepeatWorkView: View {
                 Section("Preview") {
                     LabeledContent(
                         "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
-                    Text("Payroll timezone: \(model.currentTimeZoneIdentifier)").font(.footnote)
+                    Text(
+                        "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
+                    ).font(.footnote)
                     Text(
                         "Guaranteed paid time is calculated separately, never added to your clock record."
                     ).font(.footnote)
@@ -222,11 +229,26 @@ struct RepeatWorkView: View {
                     }
                 }
 
-                if let errorMessage {
-                    Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
+                if resumesPendingWork {
+                    Section {
+                        Button("Discard this draft", role: .destructive) {
+                            discardConfirmation = true
+                        }
+                        .frame(minHeight: 44)
+                    }
                 }
-
-                Section {
+            }
+            .linePayCanvas()
+            .linePayKeyboardDismiss()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                LinePayBottomBar {
+                    if let errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline)
+                            .foregroundStyle(LinePayColor.review)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     Button(quick ? "Save same shift" : "Save work") { save() }
                         .buttonStyle(LinePayPrimaryButtonStyle())
                         .disabled(
@@ -234,20 +256,20 @@ struct RepeatWorkView: View {
                                 || draft.templateUnresolved == true
                         )
                         .accessibilityIdentifier("repeat.save")
-                    Button("Discard this draft", role: .destructive) {
-                        discardConfirmation = true
-                    }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(LinePayColor.canvas)
-            .linePayKeyboardDismiss()
             .navigationTitle(quick ? "Repeat shift" : "Review repeated shift")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep draft") { keepDraft() }
-                        .accessibilityIdentifier("repeat.keep-draft")
+                    Button("Cancel") {
+                        if let initialDraft, draft != initialDraft {
+                            cancelConfirmation = true
+                        } else {
+                            closeUnchanged()
+                        }
+                    }
+                    .accessibilityIdentifier("repeat.keep-draft")
                 }
             }
         }
@@ -255,7 +277,27 @@ struct RepeatWorkView: View {
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .interactiveDismissDisabled()
-        .onAppear { persistDraft() }
+        .onAppear {
+            if initialDraft == nil { initialDraft = draft }
+            persistDraft()
+        }
+        .confirmationDialog(
+            "Keep your changes?", isPresented: $cancelConfirmation, titleVisibility: .visible
+        ) {
+            Button("Keep as draft") { keepDraft() }
+            Button("Discard changes", role: .destructive) {
+                do {
+                    isClosing = true
+                    try model.saveWorkDraft(resumesPendingWork ? initialDraft : nil)
+                    dismiss()
+                } catch {
+                    isClosing = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        } message: {
+            Text("A draft stays on this iPhone so you can finish it later.")
+        }
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
             do { try model.saveWorkDraft(value) } catch {
@@ -477,6 +519,18 @@ struct RepeatWorkView: View {
         guard !isClosing else { return }
         do { try model.saveWorkDraft(draft) } catch {
             errorMessage = "Draft could not be saved. Your earlier records are unchanged."
+        }
+    }
+
+    private func closeUnchanged() {
+        do {
+            isClosing = true
+            // A resumed draft stays as it was saved; an untouched new proposal leaves nothing.
+            if !resumesPendingWork { try model.saveWorkDraft(nil) }
+            dismiss()
+        } catch {
+            isClosing = false
+            errorMessage = error.localizedDescription
         }
     }
 

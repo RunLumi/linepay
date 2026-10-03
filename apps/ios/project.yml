@@ -79,8 +79,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay
         PRODUCT_NAME: LinePay
-        CURRENT_PROJECT_VERSION: 5
-        MARKETING_VERSION: 1.0.2
+        CURRENT_PROJECT_VERSION: 6
+        MARKETING_VERSION: 1.0.3
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: App/Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -90,6 +90,8 @@ targets:
         INFOPLIST_KEY_CFBundleIconName: AppIcon
         INFOPLIST_KEY_CFBundleName: LinePaycheck
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        # Only Apple-provided HTTPS/StoreKit; LinePaycheck adds no encryption of its own.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device for a paycheck audit."
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"

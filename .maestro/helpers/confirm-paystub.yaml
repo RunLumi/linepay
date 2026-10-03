@@ -18,69 +18,28 @@ appId: com.streamentry.linepay
     enabled: false
 - scrollUntilVisible:
     element:
-      id: paystub.field.periodStart
+      id: paystub.confirm-dates
     direction: UP
     timeout: 60000
     centerElement: true
 - waitForAnimationToEnd
 - tapOn:
-    id: paystub.field.periodStart
+    id: paystub.confirm-dates
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: paystub.confirm-field
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: paystub.confirm-field
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: paystub.field.periodEnd
+      id: paystub.inline.gross
     timeout: 60000
     centerElement: true
 - waitForAnimationToEnd
 - tapOn:
-    id: paystub.field.periodEnd
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: paystub.confirm-field
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: paystub.confirm-field
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: paystub.field.grossPay
-    timeout: 60000
-    centerElement: true
-- waitForAnimationToEnd
-- tapOn:
-    id: paystub.field.grossPay
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      id: paystub.value
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: paystub.value
+    id: paystub.inline.gross
 - waitForAnimationToEnd
 - inputText: ${GROSS}
 - tapOn:
     id: keyboard.done
 - waitForAnimationToEnd
 - takeScreenshot: manual-paystub-field
-- scrollUntilVisible:
-    element:
-      id: paystub.confirm-field
-    timeout: 60000
-- waitForAnimationToEnd
-- tapOn:
-    id: paystub.confirm-field
-- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: paystub.complete-work
@@ -91,16 +50,13 @@ appId: com.streamentry.linepay
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: paystub.gross-basis
+      id: paystub.gross-basis.wagesOnly
     visibilityPercentage: 100
     timeout: 60000
 - waitForAnimationToEnd
 - takeScreenshot: gross-basis-before-selection
 - tapOn:
-    id: paystub.gross-basis
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-- tapOn: ".*Wages only.*"
+    id: paystub.gross-basis.wagesOnly
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

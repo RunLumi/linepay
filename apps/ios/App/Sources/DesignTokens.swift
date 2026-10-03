@@ -74,6 +74,80 @@ struct LinePayValueStyle: LabeledContentStyle {
     }
 }
 
+extension View {
+    /// The opaque porcelain/graphite reading field behind a list or form. The color ignores every
+    /// safe area, including the keyboard's, so the canvas never stops halfway down a pushed form
+    /// after the keyboard has been shown.
+    func linePayCanvas() -> some View {
+        scrollContentBackground(.hidden).background(LinePayColor.canvas.ignoresSafeArea())
+    }
+
+    /// Exact numbers only: no predictive suggestions that one stray tap could append to a rate
+    /// or paycheck amount, and no autocapitalization.
+    func linePayNumberEntry() -> some View {
+        keyboardType(.numbersAndPunctuation)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+            .monospacedDigit()
+    }
+
+    /// Plain lists render buttons in the primary text color, which makes an action read as a
+    /// label. Textual actions on neutral surfaces use the action color and a comfortable target.
+    func linePayRowAction(minHeight: CGFloat = 48) -> some View {
+        foregroundStyle(LinePayColor.actionText)
+            .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
+            .contentShape(Rectangle())
+    }
+}
+
+/// A full-width bottom bar for the one commit action of a sheet or setup step. It stays reachable
+/// for one-handed use instead of sitting at the end of a long form.
+struct LinePayBottomBar<Content: View>: View {
+    @ViewBuilder let content: Content
+    var body: some View {
+        VStack(spacing: LinePaySpacing.compact) { content }
+            .padding(.horizontal, LinePaySpacing.standard + 4)
+            .padding(.top, LinePaySpacing.compact + 4)
+            .padding(.bottom, LinePaySpacing.compact)
+            .frame(maxWidth: .infinity)
+            .background(LinePayColor.canvas.ignoresSafeArea())
+            .overlay(alignment: .top) { Divider() }
+    }
+}
+
+/// A whole-row checkbox for a statement the worker confirms ("These dates match the paystub").
+/// The full row is the hit target, and the state is carried by symbol, text and trait, not color.
+struct ConfirmationCheckRow: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    init(_ title: String, isOn: Binding<Bool>) {
+        self.title = title
+        _isOn = isOn
+    }
+
+    var body: some View {
+        Button {
+            isOn.toggle()
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Image(systemName: isOn ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundStyle(isOn ? LinePayColor.actionText : LinePayColor.lineStrong)
+                    .accessibilityHidden(true)
+                Text(title)
+                    .foregroundStyle(LinePayColor.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
+        }
+        .accessibilityValue(isOn ? "Confirmed" : "Not confirmed")
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+}
+
 struct LinePayPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 

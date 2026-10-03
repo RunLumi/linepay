@@ -54,10 +54,10 @@ tags: [ios, regression, payroll-scope]
     id: paystub.correct-existing
 - waitForAnimationToEnd
 - scrollUntilVisible:
-    element: Review optional line details
+    element: Hours and earnings lines
     timeout: 60000
 - waitForAnimationToEnd
-- tapOn: Review optional line details
+- tapOn: Hours and earnings lines
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

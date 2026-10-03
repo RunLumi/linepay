@@ -18,7 +18,7 @@ struct LiveAuditView: View {
         .toolbar {
             if !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled {
                 ToolbarItem(placement: .bottomBar) {
-                    Button("Audit future paychecks with Pro") { paywall = true }
+                    Button("Check future paychecks with Pro") { paywall = true }
                 }
             }
         }
@@ -56,18 +56,32 @@ struct AuditDetailView: View {
                             "Work or rules changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
                         )
                     } else if let assessment = paid.assessment {
+                        // Verdict first, then the one number that answers "by how much?".
+                        AuditStatusView(status: .assessment(assessment))
+                        if let difference = assessment.difference, difference.amount != 0 {
+                            PayAmount(
+                                label: "Possible gross difference",
+                                money: Money(
+                                    amount: difference.amount.magnitude,
+                                    currencyCode: difference.currencyCode),
+                                prominent: true
+                            )
+                            .accessibilityIdentifier("audit.difference")
+                            Text(
+                                difference.amount > 0
+                                    ? "Your paystub shows less than the expected gross for the work and rules you confirmed."
+                                    : "Your paystub shows more than the expected gross. Check for work or pay lines that are not recorded here."
+                            )
+                            .font(.subheadline)
+                        }
                         ComparisonAmounts(
                             expected: assessment.expectedGross, paid: assessment.paidGross)
                         LineGapComparison(difference: assessment.difference)
-                        AuditStatusView(status: .assessment(assessment))
                         Text(
                             assessment.scope == .grossOnly
-                                ? "Gross total only" : "Only confirmed lines compared"
+                                ? "Compared: gross total" : "Compared: confirmed lines"
                         )
                         .font(.footnote).accessibilityIdentifier("audit.scope")
-                        if let difference = assessment.difference, difference.amount != 0 {
-                            PayAmount(label: "Expected minus confirmed paid", money: difference)
-                        }
                         Text(paid.confirmation?.grossBasis.title ?? "Gross basis not confirmed")
                             .font(.footnote)
                         ForEach(assessment.reviewReasons, id: \.self) {
@@ -83,16 +97,16 @@ struct AuditDetailView: View {
                         )
                     }
                     if let onCorrect {
-                        Button("Review or correct confirmed facts", action: onCorrect).frame(
-                            minHeight: 48
-                        ).accessibilityIdentifier("audit.correct")
+                        Button("Review or correct paycheck facts", action: onCorrect)
+                            .linePayRowAction()
+                            .accessibilityIdentifier("audit.correct")
                     }
                 }
                 Section { ComparisonScopeView() }
                 if let assessment = paid.assessment, presentation.isCurrent,
                     context.reconciliation != nil
                 {
-                    Section("Compared lines; positive difference means expected was higher") {
+                    Section {
                         ForEach(assessment.comparisons.sorted { $0.differs && !$1.differs }) {
                             comparison in
                             NavigationLink {
@@ -114,6 +128,10 @@ struct AuditDetailView: View {
                                 }.monospacedDigit().padding(.vertical, 6)
                             }
                         }
+                    } header: {
+                        Text("Line by line")
+                    } footer: {
+                        Text("A positive difference means the expected amount was higher.")
                     }
                 }
                 Section("Original evidence") {
@@ -131,15 +149,16 @@ struct AuditDetailView: View {
                     }
                 }
                 Section("Rule snapshot") {
-                    NavigationLink("Rules and sources v\(context.agreement.version)") {
+                    NavigationLink("Rules used · version \(context.agreement.version)") {
                         RuleSourcesView(agreement: context.agreement)
                     }
                 }
-                Section("Worker-owned report") {
-                    Button("Prepare audit report") { showingReport = true }
+                Section("Share with payroll") {
+                    Button("Prepare a report to share") { showingReport = true }
+                        .linePayRowAction()
                         .accessibilityIdentifier("audit.export")
                     Text(
-                        "Review a minimized PDF before sharing. It still contains sensitive pay data. Existing records and exports remain available without Pro."
+                        "Preview a short PDF of this comparison before you share it. It contains sensitive pay data. Your records and exports stay available without Pro."
                     ).font(.footnote)
                 }
             }
@@ -147,7 +166,8 @@ struct AuditDetailView: View {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
-        .navigationTitle("Paycheck audit").navigationBarTitleDisplayMode(.inline)
+        .linePayCanvas()
+        .navigationTitle("Paycheck result").navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingReport) { ReportSharingView(context: context) }
         .confirmationDialog(
             "Delete this original from the device?", isPresented: $showingRemove,
@@ -233,6 +253,7 @@ struct PaycheckComparisonDetail: View {
                 ).font(.footnote)
             }
         }
+        .linePayCanvas()
         .navigationTitle(comparison.field.title).navigationBarTitleDisplayMode(.inline)
     }
     private func formatted(_ value: Decimal) -> String {

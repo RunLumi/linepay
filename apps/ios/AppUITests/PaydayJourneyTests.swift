@@ -187,7 +187,7 @@ final class PaydayJourneyTests: XCTestCase {
         ] {
             launch(scenario: scenario)
             tab("Pay")
-            tap("Open paycheck audit")
+            tap("View paycheck result")
             XCTAssertTrue(app.staticTexts[verdict].firstMatch.waitForExistence(timeout: 10))
             capture("audit-\(scenario)")
             if scenario == "review" {
@@ -208,8 +208,8 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(correctExisting.waitForExistence(timeout: 10))
         capture("correction-source-chooser")
         tap("paystub.correct-existing")
-        let value = openPaystubValueField("paystub.field.grossPay")
-        XCTAssertTrue(value.exists)
+        let value = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
         XCTAssertEqual(value.value as? String, "550")
     }
 
@@ -240,7 +240,7 @@ final class PaydayJourneyTests: XCTestCase {
         launch(scenario: "review", largeText: true)
         capture("large-dark-today")
         tab("Pay")
-        tap("Open paycheck audit")
+        tap("View paycheck result")
         capture("large-dark-audit")
         tab("Settings")
         capture("37-settings")
@@ -292,11 +292,10 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        tap("paystub.field.grossPay")
-        tapContaining("View original")
+        tap("paystub.view-original")
         capture("29-original-before-correction")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let value = app.textFields["paystub.value"]
+        let value = app.textFields["paystub.inline.gross"]
         XCTAssertTrue(value.waitForExistence(timeout: 10))
         value.tap()
         value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "549.50")
@@ -306,13 +305,12 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("pay.check-paycheck")
         tap("paystub.resume")
-        let restoredValue = openPaystubValueField("paystub.field.grossPay")
-        XCTAssertTrue(restoredValue.exists)
+        let restoredValue = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(restoredValue.waitForExistence(timeout: 10))
         XCTAssertEqual(restoredValue.value as? String, "549.50")
-        tapContaining("View original")
+        tap("paystub.view-original")
         capture("29-original-after-interruption")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        tap("paystub.confirm-field")
         scrollTo(app.buttons["paystub.audit"])
         capture("23-partially-confirmed-review")
         XCTAssertFalse(
@@ -400,19 +398,6 @@ final class PaydayJourneyTests: XCTestCase {
             "Pay setup did not expose the review save control; current step: \(indicator.label)"
         )
     }
-    private func openPaystubValueField(_ id: String) -> XCUIElement {
-        let value = app.textFields["paystub.value"]
-        for attempt in 0..<2 {
-            if value.waitForExistence(timeout: 5) { return value }
-            let field = app.buttons[id].firstMatch
-            XCTAssertTrue(field.waitForExistence(timeout: 8), "Missing control \(id)")
-            scrollTo(field)
-            XCTAssertTrue(field.isHittable)
-            field.tap()
-            if attempt == 0 { _ = value.waitForExistence(timeout: 3) }
-        }
-        return value
-    }
     private func scrollTo(_ element: XCUIElement) {
         // Dense setup and review Forms can exceed fourteen viewport heights at supported
         // Dynamic Type sizes; keep the search bounded but long enough to reach the row.
@@ -430,26 +415,20 @@ final class PaydayJourneyTests: XCTestCase {
     private func confirmManualGross(_ amount: String) {
         tap("paystub.manual")
         capture("20-paystub-review")
-        for field in ["periodStart", "periodEnd", "grossPay"] {
-            tap("paystub.field.\(field)")
-            if field == "grossPay" {
-                let value = app.textFields["paystub.value"]
-                XCTAssertTrue(value.waitForExistence(timeout: 10))
-                value.tap()
-                value.typeText(amount)
-                dismissKeyboard()
-            }
-            capture("21-confirm-\(field)")
-            tap("paystub.confirm-field")
-        }
+        tap("paystub.confirm-dates")
+        let value = app.textFields["paystub.inline.gross"]
+        XCTAssertTrue(value.waitForExistence(timeout: 10))
+        value.tap()
+        value.typeText(amount)
+        dismissKeyboard()
+        capture("21-confirm-minimum-facts")
         let completeWork = app.descendants(matching: .any)
             .matching(identifier: "paystub.complete-work").firstMatch
         scrollTo(completeWork)
         completeWork.tap()
         capture("confirmed-period-work")
         XCTAssertTrue(completeWork.isSelected)
-        tap("paystub.gross-basis")
-        tapContaining("Wages only")
+        tap("paystub.gross-basis.wagesOnly")
         tap("paystub.audit")
     }
     private func capture(_ name: String) {

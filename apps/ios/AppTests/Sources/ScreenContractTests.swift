@@ -35,7 +35,7 @@ struct ScreenContractTests {
         #expect(today.contains("No work logged this period"))
         #expect(today.contains(LinePayFormat.money(try #require(model.calculation).expectedWages)))
         let pay = try text(PayLedgerView(model: model, subscriptionStore: commerce()))
-        #expect(pay.contains("No work to audit yet"))
+        #expect(pay.contains("No work to check yet"))
         #expect(!pay.contains("Check first paycheck free"))
         #expect(
             try text(HistoryView(model: model, subscriptionStore: commerce())).contains(
@@ -177,7 +177,7 @@ struct ScreenContractTests {
         let imported = try text(
             PaystubImportView(model: model, subscriptionStore: commerce(), periodID: id) {})
         #expect(
-            imported.contains("Enter manually") && imported.contains("Choose PDF or image")
+            imported.contains("Type in the gross pay") && imported.contains("Choose PDF or image")
                 && imported.contains("Choose photo"))
         let draft = UnitFixture.paystub(model)
         let review = try text(

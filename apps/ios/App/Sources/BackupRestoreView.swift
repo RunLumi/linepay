@@ -137,7 +137,7 @@ struct BackupRestoreView: View {
 
                 Section("What is included") {
                     Text(
-                        "Saved pay profiles, exact rule snapshots, work entries, notes, pay periods, confirmed paycheck facts, audit history, and retained original paystubs."
+                        "Saved pay profiles, exact rule snapshots, work entries, notes, pay periods, confirmed paycheck facts, saved paycheck checks, and retained original paystubs."
                     )
                     Text(
                         "Saved drafts and retained originals are included. Unsaved input, deleted originals, and App Store subscription entitlements are not included. Restore Purchases is separate."
@@ -157,6 +157,8 @@ struct BackupRestoreView: View {
                 }
                 .font(.footnote)
             }
+            .linePayCanvas()
+            .labeledContentStyle(LinePayValueStyle())
             .navigationTitle("Backup")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

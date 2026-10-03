@@ -70,7 +70,12 @@ struct PresentationValueTests {
         let amount = try UnitFixture.decimal("1234.50")
         #expect(LinePayFormat.decimal(amount) == "1234.5")
         #expect(LinePayFormat.hours(8) == "8")
-        #expect(LinePayFormat.localDate(LocalDate(year: 2026, month: 1, day: 2)) == "01/02/2026")
+        // Evidence leaves the app, so a calendar date must not read as either 1 Feb or 2 Jan.
+        let date = LinePayFormat.localDate(LocalDate(year: 2026, month: 1, day: 2))
+        #expect(date.contains("2026") && date.contains("2") && !date.contains("/"))
+        #expect(date != LinePayFormat.localDate(LocalDate(year: 2026, month: 2, day: 1)))
+        #expect(LinePayFormat.timeZoneName("America/Chicago").contains("Chicago"))
+        #expect(!LinePayFormat.timeZoneName("America/Los_Angeles").contains("_"))
         let positive = Money(amount: 10, currencyCode: "USD")
         #expect(LinePayFormat.signedMoney(positive) == "+" + LinePayFormat.money(positive))
         #expect(

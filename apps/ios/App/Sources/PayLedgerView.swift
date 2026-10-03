@@ -27,13 +27,28 @@ struct PayLedgerView: View {
                             PayAmount(label: "Expected per diem", money: value)
                         }
                         Text(
-                            "\(LinePayFormat.hours(model.totalHours)) actual worked hours · rules v\(context.agreement.version)"
-                        ).font(.footnote)
+                            "\(LinePayFormat.hours(model.totalHours)) h worked · rules version \(context.agreement.version)"
+                        ).font(.footnote).monospacedDigit()
                         if let error = model.calculationError {
                             CalculationProblemView(message: error)
                         }
-                        NavigationLink("Review rule snapshot") {
+                        NavigationLink("Rules used for this estimate") {
                             RuleSourcesView(agreement: context.agreement)
+                        }
+                        if context.agreement.weeklyOvertime != nil {
+                            Text(
+                                "Weekly overtime over 40 h is not included in this estimate. Check each complete workweek separately."
+                            )
+                            .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                        } else if model.totalHours > 40 {
+                            // GAP-01: the main estimate never adds weekly overtime. Say so where
+                            // it could matter instead of letting the total look complete.
+                            Label(
+                                "Over 40 h logged. Weekly overtime is not part of this estimate; turn on the weekly overtime review in your rules if it applies to you.",
+                                systemImage: "info.circle"
+                            )
+                            .font(.footnote).foregroundStyle(LinePayColor.information)
+                            .accessibilityIdentifier("pay.weekly-overtime-note")
                         }
                         if context.agreement.weeklyOvertime != nil {
                             NavigationLink("Review weekly overtime") {
@@ -45,7 +60,11 @@ struct PayLedgerView: View {
                     }
                     if context.workEntries.isEmpty {
                         Section {
-                            Text("No work to audit yet. Add an actual shift first.")
+                            Text("No work to check yet. Add a shift you worked first.")
+                            Text(
+                                "Log each shift as you work it. When the paycheck arrives, compare it with what this period should pay."
+                            )
+                            .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                             Button(workButtonTitle) { openWorkEntry() }.buttonStyle(
                                 LinePayPrimaryButtonStyle())
                         }
@@ -53,13 +72,19 @@ struct PayLedgerView: View {
                         Section("Paycheck") {
                             if let paystub = context.paystub {
                                 AuditStatusView(status: model.status(for: context))
-                                if let assessment = paystub.assessment {
+                                let presentation = AuditAssessment.evaluate(
+                                    calculation: context.calculation, paystub: paystub,
+                                    reconciliation: context.reconciliation)
+                                if !presentation.isCurrent {
+                                    Text(presentation.explanation).font(.footnote)
+                                } else if let assessment = paystub.assessment {
+                                    CheckSummaryRows(assessment: assessment)
                                     Text(
                                         assessment.scope == .grossOnly
                                             ? "Gross comparison only" : "Confirmed-line comparison"
                                     ).font(.footnote)
                                 }
-                                NavigationLink("Open paycheck audit") {
+                                NavigationLink("View paycheck result") {
                                     LiveAuditView(
                                         model: model, subscriptionStore: subscriptionStore,
                                         periodID: context.id)
@@ -77,6 +102,12 @@ struct PayLedgerView: View {
                             .buttonStyle(LinePayPrimaryButtonStyle())
                             .disabled(context.calculation == nil)
                             .accessibilityIdentifier("pay.check-paycheck")
+                            if context.paystub == nil {
+                                Text(
+                                    "When the paycheck arrives, enter its gross pay or scan the paystub to compare it with this estimate."
+                                )
+                                .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                            }
                         }
                     }
                     if let calculation = context.calculation {
@@ -86,10 +117,9 @@ struct PayLedgerView: View {
                     }
                     if !context.workEntries.isEmpty {
                         Section {
-                            Button("Finish work period") { showingFinish = true }.frame(
-                                minHeight: 48
-                            )
-                            .accessibilityIdentifier("pay.finish-period")
+                            Button("Finish work period") { showingFinish = true }
+                                .linePayRowAction()
+                                .accessibilityIdentifier("pay.finish-period")
                             Text(
                                 context.calculation == nil
                                     ? "This period needs calculation review. Closing preserves the work and lets you continue logging the next period."
@@ -105,7 +135,7 @@ struct PayLedgerView: View {
                     }
                 }
             }
-            .listStyle(.plain).scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .listStyle(.plain).linePayCanvas()
             .navigationTitle("Pay")
             .labeledContentStyle(LinePayValueStyle())
             .toolbar {
@@ -204,15 +234,15 @@ struct FinishPayPeriodView: View {
                             } catch { errorMessage = error.localizedDescription }
                         }
                         .buttonStyle(LinePayPrimaryButtonStyle())
-                        .disabled(false)
                         .accessibilityIdentifier("period.confirm-close")
-                        Button("Keep period open") { dismiss() }.frame(minHeight: 44)
+                        Button("Keep period open") { dismiss() }.linePayRowAction()
                     }
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
                 }
             }
+            .linePayCanvas()
             .navigationTitle("Finish work period").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

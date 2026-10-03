@@ -61,6 +61,7 @@ struct ReportSharingView: View {
                     }
                 }
             }
+            .linePayCanvas()
             .navigationTitle("Prepare report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

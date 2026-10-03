@@ -12,14 +12,15 @@ struct HistoryView: View {
                     Section {
                         Text("No finished work periods yet").font(.title2.bold())
                         Text(
-                            "Close a work period to keep it here. Its paycheck can be audited later."
+                            "When you finish a work period from Pay, it moves here. You can still check its paycheck when it arrives."
                         )
-                        Button("Go to current pay period") { onOpenCurrent() }.frame(minHeight: 48)
+                        .foregroundStyle(LinePayColor.textSecondary)
+                        Button("Go to current pay period") { onOpenCurrent() }.linePayRowAction()
                     }
                 } else {
                     let groups = Dictionary(grouping: model.history, by: monthKey)
                     ForEach(groups.keys.sorted().reversed(), id: \.self) { key in
-                        Section(key) {
+                        Section(monthTitle(key)) {
                             ForEach(
                                 (groups[key] ?? []).sorted {
                                     $0.window.startEpochSeconds > $1.window.startEpochSeconds
@@ -39,7 +40,7 @@ struct HistoryView: View {
                                         Text(periodLabel).font(.headline)
                                         if let calculation = period.calculation {
                                             Text(
-                                                "Expected wages \(LinePayFormat.money(calculation.expectedWages))"
+                                                "Expected \(LinePayFormat.money(calculation.expectedWages))"
                                             ).monospacedDigit()
                                         } else {
                                             Label(
@@ -50,9 +51,11 @@ struct HistoryView: View {
                                         if let paid = period.paystub {
                                             Text("Paid gross \(LinePayFormat.money(paid.grossPay))")
                                                 .monospacedDigit()
-                                            if let difference = paid.assessment?.difference {
+                                            if let difference = paid.assessment?.difference,
+                                                difference.amount != 0
+                                            {
                                                 Text(
-                                                    "Difference \(LinePayFormat.money(difference))"
+                                                    "\(difference.amount > 0 ? "Paystub lower by" : "Paystub higher by") \(LinePayFormat.money(Money(amount: difference.amount.magnitude, currencyCode: difference.currencyCode)))"
                                                 ).monospacedDigit()
                                             }
                                             AuditStatusView(status: model.auditStatus(for: period))
@@ -68,10 +71,25 @@ struct HistoryView: View {
                     }
                 }
             }
-            .listStyle(.plain).scrollContentBackground(.hidden).background(LinePayColor.canvas)
+            .listStyle(.plain).linePayCanvas()
             .navigationTitle("History")
         }
     }
+    /// Sorts by the stable "yyyy-MM" key but shows a readable month such as "October 2026".
+    private func monthTitle(_ key: String) -> String {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
+        guard parts.count == 2,
+            let date = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: 1))
+        else { return key }
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.setLocalizedDateFormatFromTemplate("MMMMyyyy")
+        return formatter.string(from: date)
+    }
+
     private func monthKey(_ period: CompletedPayPeriod) -> String {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: model.timeZoneIdentifier(for: period))
@@ -100,13 +118,13 @@ struct HistoricalPeriodView: View {
                     ).font(.headline)
                     PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
                     Text(
-                        "Timezone: \(context.timeZoneIdentifier) · rules v\(context.agreement.version)"
+                        "\(LinePayFormat.timeZoneName(context.timeZoneIdentifier)) · rules version \(context.agreement.version)"
                     ).font(.footnote)
                     if context.paystub == nil {
                         Label("Awaiting paycheck", systemImage: "clock")
                     } else {
                         AuditStatusView(status: model.status(for: context))
-                        NavigationLink("Open paycheck audit") {
+                        NavigationLink("View paycheck result") {
                             LiveAuditView(
                                 model: model, subscriptionStore: subscriptionStore,
                                 periodID: periodID)
@@ -117,7 +135,7 @@ struct HistoricalPeriodView: View {
                     .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
                         "history.audit")
                     Text(
-                        "Corrections append a new audit revision. Frozen work, rules and earlier audit revisions remain available."
+                        "A correction is saved as a new check. The work, rules and earlier checks stay available."
                     ).font(.footnote)
                 }
                 if let calculation = context.calculation {
@@ -125,11 +143,11 @@ struct HistoricalPeriodView: View {
                         calculation: calculation, agreement: context.agreement,
                         work: context.workEntries)
                 }
-                Section("Audit revisions") {
-                    if context.revisions.isEmpty { Text("No saved audit revisions yet.") }
+                Section("Saved paycheck checks") {
+                    if context.revisions.isEmpty { Text("No saved paycheck checks yet.") }
                     ForEach(context.revisions.reversed()) { revision in
                         NavigationLink(
-                            "Audit \(Date(timeIntervalSince1970: TimeInterval(revision.paystub.confirmedEpochSeconds)).formatted(date: .abbreviated, time: .shortened))"
+                            "Checked \(Date(timeIntervalSince1970: TimeInterval(revision.paystub.confirmedEpochSeconds)).formatted(date: .abbreviated, time: .shortened))"
                         ) {
                             AuditDetailView(
                                 model: model, context: revision.context(periodID: periodID))
@@ -145,7 +163,7 @@ struct HistoricalPeriodView: View {
                 }
                 Section {
                     NavigationLink("Rule sources") { RuleSourcesView(agreement: context.agreement) }
-                    Button("Delete work period and its audits", role: .destructive) {
+                    Button("Delete work period and its checks", role: .destructive) {
                         showingDelete = true
                     }
                 }
@@ -154,6 +172,7 @@ struct HistoricalPeriodView: View {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }
         }
+        .linePayCanvas()
         .navigationTitle("Pay period").navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showingResult) {
             LiveAuditView(model: model, subscriptionStore: subscriptionStore, periodID: periodID)
