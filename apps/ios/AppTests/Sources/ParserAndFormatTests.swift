@@ -103,6 +103,49 @@ struct PresentationValueTests {
         #expect(!utc.isEmpty && utc != west)
     }
 
+    @Test func workPreviewPricesTheDraftExactlyAsSavingWouldWithoutSaving() throws {
+        let model = AppModel()
+        var profile = UnitFixture.profile()
+        profile.useDailyOvertime = true
+        profile.overtimeAfterHours = "8"
+        profile.overtimeMultiplier = "1.5"
+        try model.saveProfile(profile)
+        let period = try #require(model.activePeriod)
+        // 07:00 on the period's first (UTC) day, so a 10 h shift stays on one workday.
+        let start = period.window.startDate + 7 * 3_600
+        var draft = WorkDraft(
+            periodID: period.id, editingEntryID: nil, start: start,
+            end: start.addingTimeInterval(10 * 3_600), kind: .regular, note: "",
+            hasUnpaidBreak: false, breakStart: start, breakEnd: start, copiedFrom: nil)
+        // 8 h x $50 + 2 h x $50 x 1.5 = $550.00, and nothing was persisted.
+        #expect(model.expectedWagesChange(saving: draft)?.amount == 550)
+        #expect(model.workEntries.isEmpty)
+
+        try model.addWork(start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular)
+        let saved = try #require(model.workEntries.first)
+        draft.editingEntryID = saved.id
+        // Editing the saved 8 h shift to 10 h adds only the two overtime hours.
+        #expect(model.expectedWagesChange(saving: draft)?.amount == 150)
+        // Outside the period there is no estimate rather than a guess.
+        draft.start = period.window.startDate - 86_400
+        draft.end = draft.start + 3_600
+        #expect(model.expectedWagesChange(saving: draft) == nil)
+    }
+
+    @Test func newWorkSuggestionSkipsADayAlreadyLogged() throws {
+        let model = AppModel()
+        try model.saveProfile(UnitFixture.profile())
+        let period = try #require(model.activePeriod)
+        let now = period.window.startDate + 12 * 3_600
+        let first = AddWorkView.suggestedInterval(model: model, now: now)
+        #expect(model.conflictingWork(start: first.start, end: first.end, excluding: nil) == nil)
+        try model.addWork(start: first.start, end: first.end, kind: .regular)
+        let second = AddWorkView.suggestedInterval(model: model, now: now)
+        #expect(second.start >= first.end)
+        #expect(model.conflictingWork(start: second.start, end: second.end, excluding: nil) == nil)
+        #expect(period.window.contains(start: second.start, end: second.end))
+    }
+
     @Test func firstPeriodDefaultsToTheStartOfThisWeekSoRecentShiftsFit() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "America/Chicago"))

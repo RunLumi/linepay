@@ -25,20 +25,26 @@ struct TodayView: View {
                                     timeZoneIdentifier: model.currentTimeZoneIdentifier)
                         )
                         .font(.subheadline).foregroundStyle(LinePayColor.textSecondary)
-                        PayAmount(
-                            label: "Expected wages so far", money: model.calculation?.expectedWages,
-                            prominent: true
-                        )
-                        .accessibilityIdentifier("today.expected-wages")
-                        if let allowance = model.calculation?.expectedAllowances,
-                            allowance.amount > 0
-                        {
-                            PayAmount(label: "Separate expected per diem", money: allowance)
+                        if model.workEntries.isEmpty {
+                            // An empty period is not "$0.00 earned"; say what is missing instead.
+                            Text("No work logged yet").font(.title2.bold())
+                                .accessibilityIdentifier("today.no-work")
+                        } else {
+                            PayAmount(
+                                label: "Expected wages so far",
+                                money: model.calculation?.expectedWages, prominent: true
+                            )
+                            .accessibilityIdentifier("today.expected-wages")
+                            if let allowance = model.calculation?.expectedAllowances,
+                                allowance.amount > 0
+                            {
+                                PayAmount(label: "Separate expected per diem", money: allowance)
+                            }
+                            Text(
+                                "\(LinePayFormat.hours(model.totalHours)) h worked · \(model.workEntries.count) \(model.workEntries.count == 1 ? "shift" : "shifts")"
+                            )
+                            .font(.footnote).monospacedDigit()
                         }
-                        Text(
-                            "\(LinePayFormat.hours(model.totalHours)) h worked · \(model.workEntries.count) \(model.workEntries.count == 1 ? "shift" : "shifts")"
-                        )
-                        .font(.footnote).monospacedDigit()
                         if let problem = model.calculationError {
                             CalculationProblemView(message: problem)
                         }
@@ -81,11 +87,21 @@ struct TodayView: View {
                             .font(.footnote)
                             .foregroundStyle(LinePayColor.textSecondary)
                         }
-                        Button(active.paystub == nil ? "Check paycheck" : "View paycheck result") {
-                            onOpenPay()
+                        if let awaiting = awaitingPaycheck {
+                            // The period just closed is usually the paycheck the worker came for.
+                            Button(awaiting) { onOpenHistory() }
+                                .linePayRowAction()
+                                .accessibilityIdentifier("today.awaiting-paycheck")
                         }
-                        .linePayRowAction()
-                        .accessibilityIdentifier("today.open-pay")
+                        if !model.workEntries.isEmpty {
+                            Button(
+                                active.paystub == nil ? "Check paycheck" : "View paycheck result"
+                            ) {
+                                onOpenPay()
+                            }
+                            .linePayRowAction()
+                            .accessibilityIdentifier("today.open-pay")
+                        }
                         if active.paystub != nil, let context = model.periodContext() {
                             AuditStatusView(status: model.status(for: context))
                         }
@@ -93,8 +109,9 @@ struct TodayView: View {
                     Section("Work log") {
                         if model.workEntries.isEmpty {
                             Text(
-                                "No work logged this period yet. Add each shift after you work it; the estimate updates as you go."
+                                "Add each shift after you work it. The estimate updates as you go."
                             )
+                            .foregroundStyle(LinePayColor.textSecondary)
                         }
                         ForEach(model.workEntries.reversed()) { entry in
                             Button {
@@ -154,17 +171,11 @@ struct TodayView: View {
                     }
                 }
 
-                let pending = model.history.filter { $0.paystub == nil }.count
-                if pending > 0 {
+                if model.activePeriod == nil, let awaiting = awaitingPaycheck {
                     Section {
-                        Button(
-                            pending == 1
-                                ? "1 closed period is waiting for its paycheck"
-                                : "\(pending) closed periods are waiting for their paychecks"
-                        ) {
-                            onOpenHistory()
-                        }
-                        .linePayRowAction()
+                        Button(awaiting) { onOpenHistory() }
+                            .linePayRowAction()
+                            .accessibilityIdentifier("today.awaiting-paycheck")
                     }
                 }
 
@@ -208,6 +219,17 @@ struct TodayView: View {
         .onChange(of: model.currentWorkRevision) { _, revision in
             if let undo, undo.expectedRevision != revision { self.undo = nil }
         }
+    }
+
+    /// "Add the paycheck for Sep 27 – Oct 3" for one closed period still waiting for its paycheck.
+    private var awaitingPaycheck: String? {
+        let pending = model.history.filter { $0.paystub == nil }
+        guard let first = pending.first else { return nil }
+        guard pending.count == 1 else {
+            return "\(pending.count) closed periods are waiting for their paychecks"
+        }
+        return
+            "Add the paycheck for \(LinePayFormat.payPeriod(first.window, timeZoneIdentifier: model.timeZoneIdentifier(for: first)))"
     }
 
     private var workButtonTitle: String {

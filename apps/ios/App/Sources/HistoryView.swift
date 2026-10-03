@@ -134,9 +134,15 @@ struct HistoricalPeriodView: View {
                     { beginAudit() }
                     .buttonStyle(LinePayPrimaryButtonStyle()).accessibilityIdentifier(
                         "history.audit")
-                    Text(
-                        "A correction is saved as a new check. The work, rules and earlier checks stay available."
-                    ).font(.footnote)
+                    if context.paystub == nil {
+                        Text(
+                            "This period's work and rules are frozen. Add its paycheck whenever it arrives."
+                        ).font(.footnote)
+                    } else {
+                        Text(
+                            "A correction is saved as a new check. The work, rules and earlier checks stay available."
+                        ).font(.footnote)
+                    }
                 }
                 if let calculation = context.calculation {
                     PayLedgerRows(

@@ -6,7 +6,9 @@ struct AddWorkView: View {
     let model: AppModel
     let existingEntry: WorkEntry?
     let onDeleted: ((DeletedWorkUndo) -> Void)?
-    let resumesPendingWork: Bool
+    /// Fixed when the sheet first appears. SwiftUI re-creates this view after the draft autosaves,
+    /// so recomputing these from the store would misread a brand-new entry as a resumed draft.
+    @State private var resumesPendingWork: Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
@@ -18,7 +20,7 @@ struct AddWorkView: View {
     @State private var cancelConfirmation = false
     /// What the sheet opened with. Closing an untouched sheet must not leave a draft behind that
     /// would block repeating, editing, or deleting other shifts.
-    private let initialDraft: WorkDraft
+    @State private var initialDraft: WorkDraft
 
     init(
         model: AppModel,
@@ -33,7 +35,7 @@ struct AddWorkView: View {
         let saved = model.workDraft
         let canResumeSavedDraft =
             existingEntry == nil && saved?.periodID == periodID && saved?.templateSource == nil
-        resumesPendingWork = canResumeSavedDraft
+        _resumesPendingWork = State(initialValue: canResumeSavedDraft)
 
         let initial: WorkDraft
         if canResumeSavedDraft, let saved {
@@ -67,18 +69,7 @@ struct AddWorkView: View {
                         end: Date(timeIntervalSince1970: TimeInterval($0.endEpochSeconds)))
                 })
         } else {
-            let zone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = zone
-            let today = calendar.startOfDay(for: Date())
-            let periodStart = model.activePeriod?.window.startDate ?? today
-            let periodEnd = model.activePeriod?.window.displayEndDate ?? today
-            let day = min(max(today, periodStart), periodEnd)
-            let hour = model.activePeriod?.agreement.regularSchedule.first?.start.hour ?? 7
-            let minute = model.activePeriod?.agreement.regularSchedule.first?.start.minute ?? 0
-            let start =
-                calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
-            let end = start.addingTimeInterval(8 * 3_600)
+            let (start, end) = Self.suggestedInterval(model: model, now: Date())
             initial = WorkDraft(
                 periodID: periodID,
                 editingEntryID: nil,
@@ -92,11 +83,42 @@ struct AddWorkView: View {
                 copiedFrom: nil)
         }
         _draft = State(initialValue: initial)
-        initialDraft = initial
+        _initialDraft = State(initialValue: initial)
     }
 
     private var zone: TimeZone {
         TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
+    }
+
+    /// The usual start time today, inside the period. When that would overlap a shift already
+    /// logged that day, suggest the next day instead, so a new entry never opens in conflict.
+    static func suggestedInterval(model: AppModel, now: Date) -> (start: Date, end: Date) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
+        let today = calendar.startOfDay(for: now)
+        let periodStart = model.activePeriod?.window.startDate ?? today
+        let periodEnd = model.activePeriod?.window.displayEndDate ?? today
+        let hour = model.activePeriod?.agreement.regularSchedule.first?.start.hour ?? 7
+        let minute = model.activePeriod?.agreement.regularSchedule.first?.start.minute ?? 0
+        func interval(on day: Date) -> (start: Date, end: Date) {
+            let start =
+                calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+            return (start, start.addingTimeInterval(8 * 3_600))
+        }
+        var day = calendar.startOfDay(for: min(max(today, periodStart), periodEnd))
+        for _ in 0..<31 {
+            let candidate = interval(on: day)
+            guard
+                model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                    != nil
+            else { return candidate }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day),
+                next <= periodEnd
+            else { break }
+            day = next
+        }
+        // Every day is taken: keep today's suggestion and let the overlap warning explain it.
+        return interval(on: calendar.startOfDay(for: min(max(today, periodStart), periodEnd)))
     }
 
     private var conflict: WorkEntry? {
@@ -107,6 +129,15 @@ struct AddWorkView: View {
     }
 
     private var isDirty: Bool { draft != initialDraft }
+
+    /// Shown only for a draft that could be saved as-is; overlapping or undecided callout drafts
+    /// would otherwise preview a total the saved record will never have.
+    private var wagesChange: Money? {
+        guard conflict == nil, draft.end > draft.start, !newCalloutNeedsDecision,
+            !legacyCalloutNeedsReview
+        else { return nil }
+        return model.expectedWagesChange(saving: draft)
+    }
 
     private var periodRange: ClosedRange<Date>? {
         guard let window = model.activePeriod?.window else { return nil }
@@ -225,6 +256,20 @@ struct AddWorkView: View {
                 Section("Preview") {
                     LabeledContent(
                         "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
+                    if let change = wagesChange {
+                        LabeledContent(
+                            draft.editingEntryID == nil
+                                ? "Adds to expected wages" : "Changes expected wages by"
+                        ) {
+                            Text(
+                                draft.editingEntryID == nil
+                                    ? LinePayFormat.money(change)
+                                    : LinePayFormat.signedMoney(change)
+                            )
+                            .font(.headline).monospacedDigit()
+                        }
+                        .accessibilityIdentifier("work.wages-preview")
+                    }
                     Text(
                         "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
                     ).font(.footnote)
@@ -236,11 +281,11 @@ struct AddWorkView: View {
                 if let conflict {
                     Section {
                         Label(
-                            "Overlaps \(LinePayFormat.workDateRange(conflict.interval))",
+                            "Overlaps a logged shift: \(LinePayFormat.shiftTimes(conflict.interval)). Change the start or end time.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)
-                        Button("View conflicting entry") { viewingConflict = conflict }
+                        Button("View that shift") { viewingConflict = conflict }
                     }
                 }
 

@@ -32,8 +32,9 @@ struct ScreenContractTests {
         let model = AppModel()
         try model.saveProfile(UnitFixture.profile())
         let today = try text(TodayView(model: model))
-        #expect(today.contains("No work logged this period"))
-        #expect(today.contains(LinePayFormat.money(try #require(model.calculation).expectedWages)))
+        // DESIGN.md: an empty period says what is missing instead of showing "$0.00 earned".
+        #expect(today.contains("No work logged"))
+        #expect(!today.contains(LinePayFormat.money(try #require(model.calculation).expectedWages)))
         let pay = try text(PayLedgerView(model: model, subscriptionStore: commerce()))
         #expect(pay.contains("No work to check yet"))
         #expect(!pay.contains("Check first paycheck free"))

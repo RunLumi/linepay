@@ -212,6 +212,44 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(value.value as? String, "550")
     }
 
+    func testCancellingWorkSheetsNeverLeavesABlockingDraft() {
+        launch(scenario: "work")
+        // Untouched repeat: Cancel leaves nothing behind.
+        tap("today.repeat-shift")
+        XCTAssertTrue(app.buttons["repeat.save"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.buttons["repeat.save"].firstMatch.isEnabled,
+            "Repeating today's shift must propose a free day, not open in conflict")
+        tap("repeat.keep-draft")
+        XCTAssertEqual(app.buttons["today.add-work"].firstMatch.label, "Add work")
+        XCTAssertTrue(app.buttons["today.edit-work"].firstMatch.isEnabled)
+
+        // Edited new entry: Cancel, then Discard changes, also leaves nothing behind.
+        tap("today.add-work")
+        XCTAssertTrue(
+            app.buttons["work.save"].firstMatch.isEnabled,
+            "A new entry must not open overlapping an already logged shift")
+        let note = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
+        scrollTo(note)
+        note.tap()
+        note.typeText("SAMPLE abandoned entry")
+        dismissKeyboard()
+        tap("work.cancel")
+        let discard = app.buttons["Discard changes"].firstMatch
+        XCTAssertTrue(discard.waitForExistence(timeout: 10))
+        capture("cancel-edited-work")
+        discard.tap()
+        // iOS runs a dialog's action after its dismissal animation; wait for the sheet to close.
+        let closed = expectation(
+            for: NSPredicate(format: "exists == false"), evaluatedWith: app.buttons["work.save"])
+        wait(for: [closed], timeout: 10)
+        let addWork = app.buttons["today.add-work"].firstMatch
+        let reset = expectation(
+            for: NSPredicate(format: "label == %@", "Add work"), evaluatedWith: addWork)
+        wait(for: [reset], timeout: 10)
+        XCTAssertTrue(app.buttons["today.repeat-shift"].firstMatch.isEnabled)
+    }
+
     func testDraftRecoveryAndUnsupportedRulePresentation() {
         launch(scenario: "work")
         tap("today.add-work")

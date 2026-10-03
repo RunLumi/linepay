@@ -1144,6 +1144,48 @@ final class AppModel {
         return try WeeklyRegularRateCalculator().calculate(input)
     }
 
+    /// How much saving `draft` would change the open period's expected wages, priced by the same
+    /// pure calculation a saved entry receives. Nothing is persisted. Returns nil when the draft is
+    /// not a valid in-period interval or either side cannot be priced (for example a callout
+    /// guarantee that needs review), so no estimate is ever invented.
+    func expectedWagesChange(saving draft: WorkDraft) -> Money? {
+        guard let active = state.activePeriod, draft.periodID == active.id,
+            active.window.contains(start: draft.start, end: draft.end),
+            let before = calculate(period: active)
+        else { return nil }
+        let existing = draft.editingEntryID.flatMap { id in
+            active.workEntries.first { $0.id == id }
+        }
+        guard
+            let breaks = try? draft.additionalBreaks.map({
+                try WorkBreak(
+                    id: $0.id, startEpochSeconds: epochSeconds($0.start),
+                    endEpochSeconds: epochSeconds($0.end))
+            }),
+            let interval = try? makeWorkInterval(
+                id: draft.editingEntryID ?? UUID(),
+                start: draft.start,
+                end: draft.end,
+                kind: draft.kind,
+                calloutEventID: draft.kind == .callout
+                    ? (draft.calloutEventID ?? existing?.interval.calloutEventID ?? UUID()) : nil,
+                timeZoneIdentifier: active.agreementTimeZone(fallback: profile?.timeZoneIdentifier),
+                unpaidBreakStart: draft.hasUnpaidBreak ? draft.breakStart : nil,
+                unpaidBreakEnd: draft.hasUnpaidBreak ? draft.breakEnd : nil,
+                additionalBreaks: breaks)
+        else { return nil }
+        var candidate = active
+        candidate.workEntries = sorted(
+            active.workEntries.filter { $0.id != draft.editingEntryID }
+                + [WorkEntry(interval: interval, note: draft.note)])
+        guard let after = calculate(period: candidate),
+            after.expectedWages.currencyCode == before.expectedWages.currencyCode
+        else { return nil }
+        return Money(
+            amount: after.expectedWages.amount - before.expectedWages.amount,
+            currencyCode: after.expectedWages.currencyCode)
+    }
+
     private func calculate(period: ActivePayPeriod) -> CalculationResult? {
         try? PayCalculator().calculate(
             work: period.workEntries.map(\.interval),

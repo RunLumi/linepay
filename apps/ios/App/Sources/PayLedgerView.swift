@@ -20,15 +20,21 @@ struct PayLedgerView: View {
                             LinePayFormat.payPeriod(
                                 context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                         ).font(.subheadline)
-                        PayAmount(
-                            label: "Expected wages", money: context.calculation?.expectedWages,
-                            prominent: true)
-                        if let value = context.calculation?.expectedAllowances, value.amount > 0 {
-                            PayAmount(label: "Expected per diem", money: value)
+                        if context.workEntries.isEmpty {
+                            Text("No work logged yet").font(.title2.bold())
+                        } else {
+                            PayAmount(
+                                label: "Expected wages", money: context.calculation?.expectedWages,
+                                prominent: true)
+                            if let value = context.calculation?.expectedAllowances,
+                                value.amount > 0
+                            {
+                                PayAmount(label: "Expected per diem", money: value)
+                            }
+                            Text(
+                                "\(LinePayFormat.hours(model.totalHours)) h worked · rules version \(context.agreement.version)"
+                            ).font(.footnote).monospacedDigit()
                         }
-                        Text(
-                            "\(LinePayFormat.hours(model.totalHours)) h worked · rules version \(context.agreement.version)"
-                        ).font(.footnote).monospacedDigit()
                         if let error = model.calculationError {
                             CalculationProblemView(message: error)
                         }

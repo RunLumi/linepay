@@ -5,7 +5,8 @@ import SwiftUI
 struct RepeatWorkView: View {
     let model: AppModel
     let source: WorkEntry?
-    let resumesPendingWork: Bool
+    /// Fixed when the sheet first appears; see `AddWorkView.resumesPendingWork`.
+    @State private var resumesPendingWork: Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
@@ -25,7 +26,7 @@ struct RepeatWorkView: View {
         let periodID = model.activePeriod?.id ?? UUID()
         let saved = model.workDraft
         let savedRepeat = saved?.periodID == periodID && saved?.templateSource != nil
-        resumesPendingWork = savedRepeat
+        _resumesPendingWork = State(initialValue: savedRepeat)
 
         if savedRepeat, let saved {
             _draft = State(initialValue: saved)
@@ -33,12 +34,8 @@ struct RepeatWorkView: View {
             _errorMessage = State(initialValue: nil)
         } else if let source {
             do {
-                let value = try RepeatWorkDraft.make(
-                    source: source,
-                    periodID: periodID,
-                    day: Date(),
-                    timeZoneIdentifier: model.currentTimeZoneIdentifier,
-                    window: model.activePeriod?.window)
+                let value = try Self.firstOpenRepeat(
+                    model: model, source: source, periodID: periodID, from: Date())
                 _draft = State(initialValue: value)
                 _quick = State(initialValue: true)
                 _errorMessage = State(initialValue: nil)
@@ -58,6 +55,39 @@ struct RepeatWorkView: View {
                     "The repeated-shift draft is unavailable. Return to Today and choose Repeat last shift again."
             )
         }
+    }
+
+    /// Repeats `source` on the first day, from `from` onward within the open period, where the
+    /// copy would not overlap logged work. Repeating today's shift therefore proposes tomorrow
+    /// instead of opening in conflict. Falls back to the clamped requested day.
+    static func firstOpenRepeat(
+        model: AppModel, source: WorkEntry, periodID: UUID, from: Date
+    ) throws -> WorkDraft {
+        let zoneID = model.currentTimeZoneIdentifier
+        let window = model.activePeriod?.window
+        let first = try RepeatWorkDraft.make(
+            source: source, periodID: periodID, day: from, timeZoneIdentifier: zoneID,
+            window: window)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: zoneID) ?? .current
+        var day = first.templateDay ?? calendar.startOfDay(for: from)
+        var candidate = first
+        for _ in 0..<31 {
+            let free =
+                model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                == nil
+            if free, window?.contains(start: candidate.start, end: candidate.end) ?? true {
+                return candidate
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day),
+                window.map({ next <= $0.displayEndDate }) ?? true
+            else { break }
+            day = next
+            candidate = try RepeatWorkDraft.make(
+                source: source, periodID: periodID, day: day, timeZoneIdentifier: zoneID,
+                window: window)
+        }
+        return first
     }
 
     private var zone: TimeZone {
@@ -203,6 +233,15 @@ struct RepeatWorkView: View {
                 Section("Preview") {
                     LabeledContent(
                         "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
+                    if conflict == nil, withinCurrentPeriod, draft.templateUnresolved != true,
+                        draft.end > draft.start,
+                        let change = model.expectedWagesChange(saving: draft)
+                    {
+                        LabeledContent("Adds to expected wages") {
+                            Text(LinePayFormat.money(change)).font(.headline).monospacedDigit()
+                        }
+                        .accessibilityIdentifier("repeat.wages-preview")
+                    }
                     Text(
                         "Payroll timezone: \(LinePayFormat.timeZoneName(model.currentTimeZoneIdentifier))"
                     ).font(.footnote)
@@ -221,11 +260,11 @@ struct RepeatWorkView: View {
                 if let conflict {
                     Section {
                         Label(
-                            "Overlaps \(LinePayFormat.workDateRange(conflict.interval))",
+                            "Overlaps a logged shift: \(LinePayFormat.shiftTimes(conflict.interval)). Choose another date or time.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)
-                        Button("View conflicting entry") { viewingConflict = conflict }
+                        Button("View that shift") { viewingConflict = conflict }
                     }
                 }
 
