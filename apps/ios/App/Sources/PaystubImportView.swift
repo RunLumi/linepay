@@ -583,7 +583,10 @@ struct PaystubReviewView: View {
                 Text(reason).font(.footnote)
             }
         } else if !value.isEmpty {
-            let example = NumberEntry.decimalSeparator == "," ? "1.250,00" : "1,250.00"
+            let comma = NumberEntry.decimalSeparator == ","
+            let example =
+                NumberEntry.amountFractionDigits(currencyCode: currency) == 0
+                ? (comma ? "15.000.000" : "15,000,000") : (comma ? "1.250,00" : "1,250.00")
             Text("Use a complete amount such as \(example), with no other text.")
                 .font(.footnote).foregroundStyle(LinePayColor.review)
         }

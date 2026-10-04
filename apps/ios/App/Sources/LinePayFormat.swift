@@ -146,11 +146,18 @@ enum NumberEntry {
         LinePayFormat.fractionDigits(currencyCode: currencyCode) == 0 ? 100_000_000_000 : 10_000_000
     }
 
+    /// Decimals a typed money amount may carry: the currency's minor units, at most two. VND has
+    /// none, so "45.00" is rejected instead of being read as 45 đồng when 45,000 was meant.
+    static func amountFractionDigits(currencyCode: String) -> Int {
+        min(2, LinePayFormat.fractionDigits(currencyCode: currencyCode))
+    }
+
     static func amount(_ text: String, currencyCode: String, allowZero: Bool = true) throws
         -> Decimal
     {
         try StrictDecimal.parse(
-            text, maximum: amountMaximum(currencyCode: currencyCode), fractionDigits: 2,
+            text, maximum: amountMaximum(currencyCode: currencyCode),
+            fractionDigits: amountFractionDigits(currencyCode: currencyCode),
             allowZero: allowZero, allowDollarSign: true, decimalSeparator: decimalSeparator)
     }
 

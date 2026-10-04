@@ -28,6 +28,24 @@ struct CurrencyEntryTests {
         }
     }
 
+    @Test func wholeDongAmountsRejectDecimalsInsteadOfMisreadingThem() throws {
+        #expect(NumberEntry.amountFractionDigits(currencyCode: "VND") == 0)
+        #expect(NumberEntry.amountFractionDigits(currencyCode: "CAD") == 2)
+        // "45.00" or "45,5" đồng is a typo for a whole amount; it must not become 45 đồng.
+        for typo in ["45.00", "45.5", "15000000.50"] {
+            #expect(throws: (any Error).self) { try NumberEntry.amount(typo, currencyCode: "VND") }
+        }
+        #expect(try NumberEntry.amount("45000", currencyCode: "VND") == 45_000)
+        #expect(try NumberEntry.amount("45.50", currencyCode: "USD") == Decimal(string: "45.50"))
+
+        let model = AppModel()
+        var draft = PayProfileDraft()
+        draft.currencyCode = "VND"
+        draft.hourlyRate = "45.00"
+        #expect(throws: (any Error).self) { try model.saveProfile(draft) }
+        #expect(model.profile == nil)
+    }
+
     @Test func newProfileUsesTheChosenCurrencyEverywhere() throws {
         let model = AppModel()
         var draft = PayProfileDraft()

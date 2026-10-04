@@ -1525,7 +1525,8 @@ final class AppModel {
                 text,
                 maximum: currencyCode.map(NumberEntry.amountMaximum(currencyCode:)) ?? 10_000_000,
                 fractionDigits: field.lowercased().contains("hours")
-                    || field.lowercased().contains("threshold") ? 4 : 2,
+                    || field.lowercased().contains("threshold")
+                    ? 4 : currencyCode.map(NumberEntry.amountFractionDigits(currencyCode:)) ?? 2,
                 allowZero: allowZero, allowDollarSign: true,
                 decimalSeparator: NumberEntry.decimalSeparator)
         } catch { throw AppModelError.invalidField(field) }
