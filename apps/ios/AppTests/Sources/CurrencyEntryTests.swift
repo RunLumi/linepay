@@ -11,8 +11,11 @@ struct CurrencyEntryTests {
         #expect(LinePayFormat.fractionDigits(currencyCode: "USD") == 2)
         #expect(LinePayFormat.fractionDigits(currencyCode: "CAD") == 2)
         #expect(LinePayFormat.fractionDigits(currencyCode: "VND") == 0)
+        // No decimal separator at all: grouping marks differ by region ("2,499,000" or
+        // "2.499.000"), but a whole-đồng amount never shows minor units.
         let dong = LinePayFormat.money(Money(amount: 2_499_000, currencyCode: "VND"))
-        #expect(dong.contains("499") && !dong.hasSuffix("00,00") && !dong.contains(".00"))
+        let separator = Locale.current.decimalSeparator ?? "."
+        #expect(dong.contains("499") && !dong.contains(separator))
     }
 
     @Test func zeroDecimalCurrenciesAcceptOrdinaryPaychecks() throws {

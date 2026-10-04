@@ -52,6 +52,11 @@ schemes:
       config: Debug
     test:
       config: Debug
+      # Tests assert U.S. entry and formatting; pin them so a host or simulator region (such
+      # as Vietnam's comma decimals) cannot change the expected values. Region-specific entry
+      # is covered by explicit-separator tests instead.
+      language: en
+      region: US
       gatherCoverageData: true
       coverageTargets:
         - LinePay
