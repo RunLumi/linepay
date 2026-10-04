@@ -1,0 +1,15 @@
+{{- /* Real app capture with recorded provenance (data/screenshots.json). Missing metadata fails the build. */ -}}
+{{- $name := .Get 0 -}}
+{{- $meta := index hugo.Data.screenshots $name -}}
+{{- if not $meta }}{{ errorf "screenshot %q has no entry in data/screenshots.json" $name }}{{ end -}}
+{{- range slice "alt" "caption" "appVersion" "appCommit" "ios" "device" "fixture" "source" "capturedOn" -}}
+  {{- if not (index $meta .) }}{{ errorf "screenshot %q is missing %q" $name . }}{{ end -}}
+{{- end -}}
+{{- $image := resources.Get (printf "screenshots/%s.png" $name) -}}
+{{- if not $image }}{{ errorf "screenshot %q has no assets/screenshots/%s.png" $name $name }}{{ end -}}
+{{- $small := $image.Resize "300x webp q82" -}}
+{{- $large := $image.Resize "600x webp q82" -}}
+<figure class="screenshot">
+  <img src="{{ $small.RelPermalink }}" srcset="{{ $small.RelPermalink }} 1x, {{ $large.RelPermalink }} 2x" width="{{ $small.Width }}" height="{{ $small.Height }}" alt="{{ $meta.alt }}" loading="lazy" decoding="async">
+  <figcaption>{{ $meta.caption }} <span class="quiet">LinePaycheck {{ $meta.appVersion }}, synthetic data.</span></figcaption>
+</figure>

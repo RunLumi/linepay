@@ -27,6 +27,9 @@ A manually entered audit or one whose original was removed can retain confirmed 
 1. Open the required audit from Pay or History. For an older revision, select that revision first.
 2. Under **Share with payroll**, choose **Prepare a report to share**.
 3. Keep the default minimized report, or explicitly choose **Include optional source details** after reading its sensitive-content warning.
+
+   {{< screenshot "prepare-report" >}}
+
 4. Choose **Preview this report** and inspect the exact generated PDF. **Share report** becomes available only after this preview.
 5. Review the period, comparison scope, limitations, and sensitive amounts before selecting a destination in the system share sheet.
 

@@ -12,6 +12,8 @@ Open **Pay → View paycheck result**, or choose **View paycheck result** for th
 
 **Compared: gross total** means the confirmed gross was compared with the expected amount on the selected basis. **Compared: confirmed lines** covers the specific lines you reviewed and that the app could map. Blank fields, unsupported rules, and unreviewed source details are not silently verified.
 
+{{< screenshot "paycheck-result" >}}
+
 ## What each status means
 
 | Status | How to read it |

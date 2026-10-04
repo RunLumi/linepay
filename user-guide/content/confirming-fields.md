@@ -10,6 +10,8 @@ keywords: [confirm, gross pay, current period, year to date, YTD, not comparable
 
 In **Review paystub**, check **Pay period starts** and **Pay period ends** against the paystub and turn on **These dates match the paystub**. Then enter **Gross pay**: typing it yourself counts as your confirmation, while a value read from a scan or file needs **Confirm … matches the paystub**.
 
+{{< screenshot "paystub-review" >}}
+
 The period dates must match the selected work period. Use the paycheck’s **current-period gross**, not year-to-date earnings, net pay, an hourly rate, or a bank deposit.
 
 The compare action stays unavailable until the dates and gross pay are confirmed. Editing a previously confirmed value removes its confirmation; confirm it again after correcting it.

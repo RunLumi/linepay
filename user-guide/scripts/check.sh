@@ -10,3 +10,4 @@ hugo --source "$ROOT" --destination "$ROOT/.qa/project/linepay" --baseURL https:
 python3 "$ROOT/scripts/check-site.py" "$ROOT/.qa/project/linepay" https://guide.example.test/linepay/
 node "$ROOT/scripts/test-search.mjs"
 python3 "$ROOT/scripts/check-freshness.py"
+python3 "$ROOT/scripts/check-screenshots.py"

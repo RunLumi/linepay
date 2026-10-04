@@ -26,6 +26,8 @@ Use **Back** to correct a step. Unfinished setup is saved on the device; a save-
 
 After **Use these rules**, the first-run flow opens **Your first shift**. Choose **Add a shift** to enter a real shift, or **I'll add shifts later** if you are not ready. After the first saved shift, **Your expected pay** shows the result; choose **Continue** when you have read it. LinePaycheck then shows the optional Pro offer once, where **Continue free** keeps every free feature, and the normal tabs appear. Choosing **I'll add shifts later** shows the same optional offer before the tabs. For later entries, use **Today → Add work**.
 
+{{< screenshot "first-shift" >}}
+
 Select the work type, start and end dates and times, and any unpaid breaks. Check **Actual worked time** and the payroll timezone, then choose **Save work**.
 
 For example, eight actual hours at an explicitly entered $50 rate, with no other configured rules, produce $400 in expected wages. This is a synthetic example, not a recommended rate or overtime policy. Only log a shift you actually worked in your own records.
