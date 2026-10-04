@@ -4,17 +4,17 @@ linkTitle: Your pay profile
 weight: 20
 group: Start here
 description: Choose the right rate, timezone, cadence, and source references before calculating pay.
-keywords: [hourly rate, USD, currency, timezone, agreement, setup]
+keywords: [hourly rate, USD, CAD, VND, currency, decimal comma, timezone, agreement, setup]
 ---
 ## What a profile represents
 
-A pay profile is the set of rules you entered for your work. Its name is for your reference; naming it after an employer or union does not verify its contents. The current setup supports one active profile and a base hourly rate in U.S. dollars. It is not a multi-employer payroll system or a currency converter.
+A pay profile is the set of rules you entered for your work. Its name is for your reference; naming it after an employer or union does not verify its contents. The current setup supports one active profile. Choose its **Pay currency** (US dollar, Canadian dollar, or Vietnamese đồng) when you first set it up; the currency then stays fixed for that profile so saved calculations never change denomination. LinePaycheck is not a multi-employer payroll system or a currency converter.
 
 Review the latest entered profile in **Settings → Pay profile**. To change it, choose **Settings → Edit pay rules** and follow the four setup steps.
 
 ## Enter the base rate and timezone
 
-Use the straight-time hourly rate, not an overtime rate, take-home amount, or estimated rate with allowances included. Use a decimal point, such as `58.40`. Follow the field’s number-format instructions; do not assume a comma represents a decimal separator.
+Use the straight-time hourly rate, not an overtime rate, take-home amount, or estimated rate with allowances included. Type amounts the way your iPhone region writes numbers: `58.40` or `1,250.50` in the United States and English Canada, `58,40` or `1.250,50` where the comma is the decimal mark (for example Vietnam or French Canada). A lone `58.40` is also accepted in comma regions. Vietnamese đồng have no decimals, so enter whole amounts such as `45000`; `45.00` is rejected rather than read as 45 đồng.
 
 Select the payroll timezone that defines your work dates and premium boundaries. Your phone’s current travel location is not a substitute. An overnight shift can cross a payroll-local date even when the phone shows a different date.
 

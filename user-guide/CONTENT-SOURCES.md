@@ -14,6 +14,8 @@ For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance 
 
 For issue #44, the **Pay periods**, **History**, and **Troubleshooting** guidance was re-reviewed on **2026-09-09** against the merged #82/#81 implementation on main `a0479466e8f0c0b27f84535ce52162dd374ad8c3`. This targeted review covers unresolved-period closure, frozen-history review, later paycheck facts, retry, backup wording, and next-period independence; it is not a release-wide freshness attestation.
 
+For LinePaycheck **1.0.4–1.0.5**, the **Getting started**, **Pay profile**, **Pay rules**, **Supported rules**, **Pro and billing**, **Troubleshooting** and **Glossary** guidance was re-reviewed on **2026-10-04** against main `3cc0093` plus the issue-#67 change: pay currency (USD/CAD/VND) chosen at setup and fixed per profile, region decimal entry (`58,40`, whole-đồng amounts), U.S./Canada/Vietnam storefronts with local prices, the dated trial timeline and opt-in reminder, and the weekly review staying separate from Expected wages and keeping the audit open past 40 hours. The footer review date was updated to match. This is a targeted review, not a release-wide attestation.
+
 ## Source map
 
 Paths below are relative to the repository root. These notes are outside `content/` and are not published.

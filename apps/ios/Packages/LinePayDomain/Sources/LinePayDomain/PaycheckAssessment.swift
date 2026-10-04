@@ -190,6 +190,19 @@ public struct PaycheckAssessor: Sendable {
             reasons.append(
                 "An agreement rule is not represented. The expected amount may be incomplete.")
         }
+        // The restricted weekly layer is a separate review (issue #67, review-only contract): it
+        // is never added to this expected amount. Once more than 40 hours are logged a workweek
+        // can carry additional weekly premium, so the result cannot read as a clean match.
+        if calculation.weeklyRegularRate == nil,
+            (calculation.agreementSnapshots ?? [agreement]).contains(where: {
+                $0.weeklyOvertime != nil
+            }),
+            wageComponents.compactMap(\.hours).reduce(0, +) > 40
+        {
+            reasons.append(
+                "Weekly overtime is turned on but is not included in this expected amount. Review each complete workweek before relying on this result."
+            )
+        }
         if facts.hasUnreviewedFields {
             reasons.append(
                 "Some source fields are still unconfirmed; they were not used as paid facts.")

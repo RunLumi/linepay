@@ -15,7 +15,7 @@ These guides cover the iPhone app. No LinePaycheck username, password, or employ
 ## Set up your pay
 
 1. Open LinePaycheck and choose **Calculate my pay**.
-2. In **Pay basics**, enter a profile name and your **Base hourly rate, USD**. Select the **Payroll timezone** used to interpret your work dates.
+2. In **Pay basics**, choose your **Pay currency** (US dollar, Canadian dollar, or Vietnamese đồng), enter your **Base hourly rate**, and give the profile a name. Select the **Payroll timezone** used to interpret your work dates.
 3. In **Pay period**, choose weekly, every two weeks, or manual dates. Check the preview against the period you actually want to track—not the date money reaches your bank.
 4. In **Your rules**, enable only the rules you have confirmed. Leave the rest off. Use **I don’t see my rule** to record missing coverage rather than approximating it.
 5. In **Confirm rules**, read the summary and choose **Use these rules**.

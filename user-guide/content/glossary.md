@@ -10,7 +10,7 @@ keywords: [definitions, terms, OT, CBA, per diem, gross, net, daylight saving, c
 
 **Actual worked time:** elapsed time in the recorded shift after its recorded unpaid breaks. It is not increased to represent guaranteed pay.
 
-**Base hourly rate:** the entered straight-time rate before configured multipliers. The current setup labels this rate in USD.
+**Base hourly rate:** the entered straight-time rate before configured multipliers. The rate is in the pay currency chosen for the profile (USD, CAD, or VND).
 
 **Multiplier:** the factor applied to a base rate, such as 1.5× or 2×. Only enter an applicable, confirmed rule.
 

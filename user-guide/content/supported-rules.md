@@ -10,7 +10,7 @@ keywords: [limitations, unsupported, weekly overtime, union, agreement, CBA, tax
 
 LinePaycheck estimates and compares pay from your recorded work and confirmed rules. It is not payroll software, a tax calculator, legal advice, an employer portal, or an autonomous interpreter of a collective bargaining agreement.
 
-The iPhone setup currently uses a U.S.-dollar base rate and one active pay profile. Android parity, web access to your wage history, multiple-employer management, automatic employer imports, and live cross-device synchronization are not features these guides promise.
+The iPhone setup supports one active pay profile in US dollars, Canadian dollars, or Vietnamese đồng. Pay rules, wording and examples are written for U.S. lineworkers; currency support is not payroll or legal localization for Canada or Vietnam. Android parity, web access to your wage history, multiple-employer management, automatic employer imports, and live cross-device synchronization are not features these guides promise.
 
 ## What the current setup represents
 

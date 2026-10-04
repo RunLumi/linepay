@@ -14,7 +14,7 @@ A free audit is not an Apple subscription trial. Continuing free does not itself
 
 ## Choose a billing option
 
-Open **Settings → View Pro options**. The launch U.S. pricing is $9.99 monthly or $79.99 yearly. Prices, currency, eligibility, and applicable terms shown in the app and Apple’s purchase sheet are authoritative for your storefront and purchase.
+Open **Settings → View Pro options**. Pro is sold in the United States, Canada, and Vietnam. In the U.S. it is $9.99 monthly or $79.99 yearly; other storefronts show local prices. Prices, currency, eligibility, and applicable terms shown in the app and Apple’s purchase sheet are authoritative for your storefront and purchase.
 
 The yearly amount is billed yearly; any monthly equivalent is explanatory, not a separate monthly charge. There is one Pro entitlement with two billing durations, not a credit balance or payment per scan.
 
@@ -26,7 +26,7 @@ An audit performed while Pro or its verified trial is active does not consume an
 
 Settings can show **Pro trial active**, **Pro active**, and a **Renews** or **Ends** date. Use **Manage subscription** to inspect the subscription in your Apple account and follow Apple’s cancellation controls.
 
-For a trial you do not want to renew, follow the cancellation timing displayed with the offer; the app’s annual-trial notice asks you to cancel at least 24 hours before trial end. Verify cancellation and the displayed access-end date in Apple’s subscription screen. Deleting the LinePaycheck app or its local data does not cancel an Apple subscription.
+The trial offer shows the exact date the annual plan starts. Leave **Remind me before I’m charged** on to get one notification two days before; LinePaycheck asks for notification permission only after you start the trial, keeps the reminder on this iPhone, and removes it if you cancel. For a trial you do not want to renew, follow the cancellation timing displayed with the offer; the app’s annual-trial notice asks you to cancel at least 24 hours before trial end. Verify cancellation and the displayed access-end date in Apple’s subscription screen. Deleting the LinePaycheck app or its local data does not cancel an Apple subscription.
 
 A report of a pay difference is not a promise that the app will recover its purchase price.
 

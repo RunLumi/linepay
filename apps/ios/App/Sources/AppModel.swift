@@ -1630,7 +1630,7 @@ enum AppModelError: LocalizedError, Equatable {
             default:
                 field.lowercased().contains("timezone")
                     ? "\(field). Choose future work periods for a timezone change."
-                    : "Check \(field). Use a complete number with a decimal point, such as 1,250.00; no trailing text."
+                    : "Check \(field). Use a complete number such as \(NumberEntry.decimalSeparator == "," ? "1.250,50" : "1,250.50") or 1250, with no other text."
             }
         case .prospectiveChangeTouchesRecordedWork:
             "New rules must start after the last recorded work date. Use an explicit correction to reprice earlier open-period work."
