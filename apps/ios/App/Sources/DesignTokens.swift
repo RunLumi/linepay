@@ -80,6 +80,18 @@ extension View {
     /// after the keyboard has been shown.
     func linePayCanvas() -> some View {
         scrollContentBackground(.hidden).background(LinePayColor.canvas.ignoresSafeArea())
+            .linePayHardTopEdge()
+    }
+
+    /// On iOS 26 and later the navigation bar floats over content with a soft fade, which lets a
+    /// scrolled row of pay facts collide with the title and Back button. A hard edge keeps both
+    /// legible while the bar's controls stay in the system glass layer.
+    @ViewBuilder func linePayHardTopEdge() -> some View {
+        if #available(iOS 26.0, *) {
+            scrollEdgeEffectStyle(.hard, for: .top)
+        } else {
+            self
+        }
     }
 
     /// Exact numbers only: no predictive suggestions that one stray tap could append to a rate
@@ -163,6 +175,9 @@ struct LinePayPrimaryButtonStyle: ButtonStyle {
             .background(isEnabled ? LinePayColor.brandPrimary : LinePayColor.surfaceSecondary)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .opacity(configuration.isPressed ? 0.85 : 1)
+            // In a list row the separator would otherwise start under the centered title,
+            // leaving a stray half-width line below a full-width button.
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
     }
 }
 
@@ -186,6 +201,9 @@ struct LinePaySecondaryButtonStyle: ButtonStyle {
             }
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .opacity(configuration.isPressed ? 0.85 : 1)
+            // In a list row the separator would otherwise start under the centered title,
+            // leaving a stray half-width line below a full-width button.
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
     }
 }
 

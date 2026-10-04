@@ -139,7 +139,7 @@ Continue free
 Restore Purchases · Manage Subscription · Privacy · Terms
 ```
 
-The trial timeline appears only for a selected plan with an eligible day-based free offer, below the plan rows so that changing the selection never moves the rows being tapped; its day numbers come from the offer duration. It states when billing happens; it must not promise a reminder while iOS 1.0 schedules none. The purchase button, terms, and **Continue free** stay pinned and visible without scrolling; at accessibility text sizes they flow inline so they never cover the content.
+The trial timeline appears only for a selected plan with an eligible day-based free offer, below the plan rows so that changing the selection never moves the rows being tapped; its calendar dates (today, the reminder day, the billing day) come from the offer duration. It states when billing happens. Since 1.0.4 it shows a **Remind me before I'm charged** switch (on by default); the reminder step is promised only while that switch is on, and the confirmation states whether a reminder was actually scheduled. The purchase button, terms, and **Continue free** stay pinned and visible without scrolling; at accessibility text sizes they flow inline so they never cover the content.
 
 The displayed prices above are U.S. examples. Render the complete annual charge prominently. Calculate any savings using the loaded annual and monthly products in the same currency with Decimal, rounded down to a whole percent so it is never overstated; hide savings if products or comparison validity are unavailable. Do not make the monthly equivalent look like the billing schedule.
 
@@ -265,7 +265,9 @@ Predefine enrollment, minimum effect, readout date, confidence method, and stop 
 
 ### iOS 1.0 scope decision
 
-Optional work-log and renewal reminders are deliberately deferred from iOS 1.0. The product keeps the existing first-work proof, StoreKit status, and Manage Subscription paths; it does not request notification permission or imply that a reminder is scheduled. A later release may admit a local-only reminder only with explicit permission, verified scheduling/cancellation state, timezone handling, and lock-screen-safe copy.
+**1.0.4 update:** the trial reminder is implemented as specified below. `TrialReminder` asks for notification permission only after the worker starts a trial with the switch on, schedules one local notification two days before the trial ends, reports success only when iOS accepted the request, and is removed when Apple's signed status shows the trial cancelled or converted. The notification text names the plan price and date, never pay data. Work-log reminders remain deferred.
+
+Optional work-log and renewal reminders were deliberately deferred from iOS 1.0. The product keeps the existing first-work proof, StoreKit status, and Manage Subscription paths; it does not request notification permission or imply that a reminder is scheduled. A later release may admit a local-only reminder only with explicit permission, verified scheduling/cancellation state, timezone handling, and lock-screen-safe copy.
 
 Inspection at source commit `03dedaa` found:
 
@@ -289,7 +291,7 @@ A saved App Store offer alone does not close these gaps. Build the flow without 
 | Trial start / paid renewal / expiry / revoke / restore | Verified state transitions and no local timer-based Pro |
 | Active Pro skip; restored purchase skip | No duplicate trial invitation |
 | Trial/free-audit interaction | Focused tests for unused, used, active-trial, expired-trial, and same-period recheck cases |
-| Renewal reminder | Deferred from iOS 1.0; retain as a later requirement with verified date, permission, scheduling, cancellation, and cancelled-renewal handling |
+| Renewal reminder | Trial reminder shipped in 1.0.4 (opt-in switch, permission after purchase, verified scheduling, removal on cancel or conversion); `ScreenContractTests` guard that no reminder is mentioned without a trial. Paid-renewal reminders remain deferred |
 | Accessibility | Small/large iPhone, large text, dark mode, VoiceOver reading of price and selected plan, reachable Free/terms |
 | Retention | End-to-end repeat-work and second-paycheck journey; history remains accessible after cancellation |
 | Release | Full native gate, relevant Maestro flows, StoreKit sandbox/TestFlight evidence; no readiness claim from docs or configuration alone |

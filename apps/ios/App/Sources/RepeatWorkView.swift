@@ -87,6 +87,25 @@ struct RepeatWorkView: View {
                 source: source, periodID: periodID, day: day, timeZoneIdentifier: zoneID,
                 window: window)
         }
+        // At the end of a period there is no later day. The most recent earlier free day in the
+        // same period is the likeliest shift still missing from this paycheck.
+        if let window {
+            var earlier = first.templateDay ?? calendar.startOfDay(for: from)
+            for _ in 0..<31 {
+                guard let previous = calendar.date(byAdding: .day, value: -1, to: earlier),
+                    previous >= calendar.startOfDay(for: window.startDate)
+                else { break }
+                earlier = previous
+                let candidate = try RepeatWorkDraft.make(
+                    source: source, periodID: periodID, day: earlier, timeZoneIdentifier: zoneID,
+                    window: window)
+                if model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                    == nil, window.contains(start: candidate.start, end: candidate.end)
+                {
+                    return candidate
+                }
+            }
+        }
         return first
     }
 

@@ -13,7 +13,7 @@ struct MainTabView: View {
             )
             .tabItem { Label("Today", systemImage: "clock") }.tag(Destination.today)
             PayLedgerView(model: model, subscriptionStore: subscriptionStore)
-                .tabItem { Label("Pay", systemImage: "dollarsign") }.tag(Destination.pay)
+                .tabItem { Label("Pay", systemImage: "banknote") }.tag(Destination.pay)
             HistoryView(
                 model: model, subscriptionStore: subscriptionStore,
                 onOpenCurrent: { selection = .pay }

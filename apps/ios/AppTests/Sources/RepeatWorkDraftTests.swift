@@ -343,4 +343,22 @@ struct RepeatWorkDraftTests {
         #expect(draft.start == start + 86_400)
         #expect(model.conflictingWork(start: draft.start, end: draft.end, excluding: nil) == nil)
     }
+
+    @Test func repeatingThePeriodsLastDayProposesTheLatestEarlierOpenDay() throws {
+        let model = AppModel()
+        var profile = PayProfileDraft()
+        profile.hourlyRate = "50"
+        profile.timeZoneIdentifier = "UTC"
+        profile.periodStartDate = Date(timeIntervalSince1970: 1_786_089_600)
+        try model.saveProfile(profile)
+        let period = try #require(model.activePeriod)
+        let lastDay = period.window.startDate + 6 * 86_400 + 7 * 3_600
+        try model.addWork(start: lastDay, end: lastDay + 8 * 3_600, kind: .regular)
+        let source = try #require(model.workEntries.first)
+        let draft = try RepeatWorkView.firstOpenRepeat(
+            model: model, source: source, periodID: period.id, from: lastDay + 10 * 3_600)
+        // No later day exists in the period, so the copy lands on the day before, not in conflict.
+        #expect(draft.start == lastDay - 86_400)
+        #expect(model.conflictingWork(start: draft.start, end: draft.end, excluding: nil) == nil)
+    }
 }

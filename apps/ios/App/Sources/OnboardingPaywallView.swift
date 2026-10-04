@@ -9,12 +9,16 @@ struct ProPaywallView: View {
 
     let store: SubscriptionStore
     var context: Context = .contextual
+    /// The moment the offer is shown; the trial timeline's dates count from here.
+    var referenceDate = Date()
     let onPurchaseCompleted: () -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var selectedProductID = SubscriptionStore.yearlyProductID
     @State private var isPurchasing = false
     @State private var purchaseConfirmed = false
+    @State private var remindBeforeTrialEnds = true
+    @State private var reminderDate: Date?
 
     var body: some View {
         NavigationStack {
@@ -34,10 +38,25 @@ struct ProPaywallView: View {
                         planRow(SubscriptionStore.monthlyProductID)
                     }
                     // Below the plans, so choosing a plan never moves the rows being tapped.
-                    if let trial = selectedTrial, let days = trial.days, days >= 2,
-                        let plan = selectedPlan
+                    if let trial = selectedTrial, let days = trial.days,
+                        days > TrialReminder.leadDays, let plan = selectedPlan
                     {
                         trialTimeline(days: days, plan: plan)
+                        if store.purchasingEnabled {
+                            Toggle(isOn: $remindBeforeTrialEnds) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Remind me before I'm charged").font(.headline)
+                                    Text(
+                                        "A notification \(TrialReminder.leadDays) days before the trial ends. Asked once, kept on this iPhone."
+                                    )
+                                    .font(.subheadline)
+                                    .foregroundStyle(LinePayColor.textSecondary)
+                                }
+                                .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .tint(LinePayColor.brandPrimary)
+                            .accessibilityIdentifier("paywall.trial-reminder")
+                        }
                     }
                     storeStatus
                     if typeSize.isAccessibilitySize { purchaseControls }
@@ -48,6 +67,7 @@ struct ProPaywallView: View {
             // Identify only the scrolling content: an identifier applied outside the inset would
             // replace the purchase controls' own identifiers.
             .accessibilityIdentifier("paywall.screen")
+            .linePayHardTopEdge()
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 // Keep the purchase terms and the free escape route reachable without scrolling.
                 // At accessibility sizes they flow inline instead of covering the content.
@@ -139,9 +159,13 @@ struct ProPaywallView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// States exactly when billing happens. It does not promise a reminder: iOS 1.0 schedules none.
+    /// States exactly when billing happens, on real calendar dates. The reminder step is promised
+    /// only while the reminder switch is on, and the app schedules it after the trial starts.
     private func trialTimeline(days: Int, plan: ProPlan) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let ends = Self.timelineDate(daysFromNow: days, from: referenceDate)
+        let remind = Self.timelineDate(
+            daysFromNow: days - TrialReminder.leadDays, from: referenceDate)
+        return VStack(alignment: .leading, spacing: 0) {
             Text("How the free trial works")
                 .font(.headline)
                 .padding(.bottom, LinePaySpacing.compact)
@@ -149,12 +173,14 @@ struct ProPaywallView: View {
                 "lock.open", when: "Today",
                 detail: "Pro unlocks. Nothing is charged today.", isLast: false)
             timelineStep(
-                "calendar", when: "Day \(days - 1)",
-                detail:
-                    "Cancel at least 24 hours before the trial ends in Apple subscription settings and you pay nothing.",
+                remindBeforeTrialEnds && store.purchasingEnabled ? "bell" : "calendar",
+                when: remind,
+                detail: remindBeforeTrialEnds && store.purchasingEnabled
+                    ? "We remind you the trial ends in \(TrialReminder.leadDays) days. Cancel at least 24 hours before it ends in Apple subscription settings and you pay nothing."
+                    : "Cancel at least 24 hours before the trial ends in Apple subscription settings and you pay nothing.",
                 isLast: false)
             timelineStep(
-                "creditcard", when: "Day \(days)",
+                "creditcard", when: ends,
                 detail: "Your annual plan starts: \(plan.displayPrice) for the \(plan.periodName).",
                 isLast: true)
         }
@@ -163,6 +189,12 @@ struct ProPaywallView: View {
         .background(LinePayColor.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityIdentifier("paywall.trial-timeline")
+    }
+
+    /// "Oct 11": a date the worker can put in a calendar, not a day count to work out.
+    static func timelineDate(daysFromNow days: Int, from start: Date) -> String {
+        let date = Calendar.current.date(byAdding: .day, value: days, to: start) ?? start
+        return date.formatted(.dateTime.month(.abbreviated).day())
     }
 
     private func timelineStep(_ icon: String, when: String, detail: String, isLast: Bool)
@@ -358,14 +390,28 @@ struct ProPaywallView: View {
         }
         let action = store.willAutoRenew == true ? "Renews" : "Ends"
         let prefix = store.isTrial ? "Your free trial is active. " : "Your subscription is active. "
+        var reminder = ""
+        if store.isTrial, remindBeforeTrialEnds {
+            reminder =
+                reminderDate.map {
+                    " We'll remind you on \($0.formatted(date: .abbreviated, time: .omitted))."
+                }
+                ?? " No reminder was set: notifications for LinePaycheck are off or unavailable."
+        }
         return prefix
-            + "\(action) on \(date.formatted(date: .abbreviated, time: .shortened)). Manage billing in Apple subscription settings."
+            + "\(action) on \(date.formatted(date: .abbreviated, time: .shortened)).\(reminder) Manage billing in Apple subscription settings."
     }
     private func purchase() {
         guard canPurchase else { return }
         isPurchasing = true
+        let renewalPrice = selectedPlan.map { "\($0.displayPrice) per \($0.periodName)" } ?? ""
         Task {
-            purchaseConfirmed = await store.purchase(productID: selectedProductID)
+            let purchased = await store.purchase(productID: selectedProductID)
+            if purchased, store.isTrial, remindBeforeTrialEnds, let ends = store.renewalDate {
+                reminderDate = await TrialReminder.schedule(
+                    trialEnds: ends, renewalPrice: renewalPrice)
+            }
+            purchaseConfirmed = purchased
             isPurchasing = false
         }
     }

@@ -258,21 +258,25 @@ struct ScreenContractTests {
     @Test func trialOfferStatesTheFullChargeTimelineAndFreeExit() async throws {
         let store = SubscriptionStore.fixture(plans: UITestFixtures.samplePlans(trial: true))
         await store.load()
-        let paywall = ProPaywallView(store: store, context: .onboarding(expectedPay: "$400.00")) {}
+        let shown = Date(timeIntervalSince1970: 1_791_000_000)
+        let paywall = ProPaywallView(
+            store: store, context: .onboarding(expectedPay: "$400.00"), referenceDate: shown
+        ) {}
         let content = try text(paywall)
         for expected in [
             "Try Pro free for 7 days with the annual plan.", "Nothing is charged today.",
             "$79.99 / year",
             "7 days free, then billed yearly. Works out to $6.67/month.", "Save 33%",
-            "Day 6", "Day 7", "Your annual plan starts: $79.99 for the year.",
+            ProPaywallView.timelineDate(daysFromNow: 5, from: shown),
+            ProPaywallView.timelineDate(daysFromNow: 7, from: shown),
+            "Your annual plan starts: $79.99 for the year.",
+            "Remind me before I'm charged", "We remind you the trial ends in 2 days.",
             "$9.99 / month", "Billed monthly, starting today. No free trial.",
             "7 days free, then $79.99 per year, renewing automatically.",
             "Continue free", "$400.00",
         ] {
             #expect(content.contains(expected), "Missing offer content: \(expected)")
         }
-        #expect(
-            !content.localizedCaseInsensitiveContains("remind"), "iOS 1.0 schedules no reminder")
         let purchase = try paywall.inspect().find(
             viewWithAccessibilityIdentifier: "paywall.purchase"
         )
@@ -288,6 +292,9 @@ struct ScreenContractTests {
         let content = try text(paywall)
         #expect(!content.contains("days free") && !content.contains("Try Pro free"))
         #expect(!content.contains("Nothing is charged today"))
+        #expect(
+            !content.localizedCaseInsensitiveContains("remind"),
+            "A reminder is offered only with a free trial")
         #expect(content.contains("$79.99 billed today and every year until you cancel"))
         let purchase = try paywall.inspect().find(
             viewWithAccessibilityIdentifier: "paywall.purchase"

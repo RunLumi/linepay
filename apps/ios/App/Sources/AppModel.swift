@@ -478,10 +478,9 @@ final class AppModel {
                 == localDate(from: context.window.displayEndDate, timeZoneIdentifier: zone)
         else { throw AppModelError.invalidPayPeriod }
         let currency = context.agreement.hourlyRate.currencyCode
-        let gross = Money(
-            amount: try positiveDecimal(
-                draft.grossPay,
-                field: "Gross pay", allowZero: true), currencyCode: currency)
+        let grossAmount = try positiveDecimal(
+            draft.grossPay, field: "Gross pay", allowZero: true, currencyCode: currency)
+        let gross = Money(amount: grossAmount, currencyCode: currency)
         var amounts: [PaystubField: Money] = [:]
         var hours: [PaystubField: Decimal] = [:]
         var hasUnreviewed =
@@ -498,9 +497,9 @@ final class AppModel {
             }
             let number: Decimal
             do {
-                number = try StrictDecimal.parse(
-                    raw, maximum: field.isHours ? 10_000 : 10_000_000,
-                    fractionDigits: field.isHours ? 4 : 2, allowDollarSign: !field.isHours)
+                number =
+                    try field.isHours
+                    ? NumberEntry.hours(raw) : NumberEntry.amount(raw, currencyCode: currency)
             } catch { throw AppModelError.invalidField(field.rawValue) }
             if field.isHours {
                 hours[field] = number
@@ -910,15 +909,15 @@ final class AppModel {
         draft.payPeriodStartDate = context.window.startDate
         draft.payPeriodEndDate = context.window.displayEndDate
         guard correcting, let paid = context.paystub else { return draft }
-        draft.grossPay = LinePayFormat.decimal(paid.grossPay.amount)
-        draft.regularHours = paid.regularHours.map(LinePayFormat.decimal) ?? ""
-        draft.regularPay = paid.regularPay.map { LinePayFormat.decimal($0.amount) } ?? ""
-        draft.overtimeHours = paid.overtimeHours.map(LinePayFormat.decimal) ?? ""
-        draft.overtimePay = paid.overtimePay.map { LinePayFormat.decimal($0.amount) } ?? ""
-        draft.doubleTimeHours = paid.doubleTimeHours.map(LinePayFormat.decimal) ?? ""
-        draft.doubleTimePay = paid.doubleTimePay.map { LinePayFormat.decimal($0.amount) } ?? ""
-        draft.calloutPay = paid.calloutPay.map { LinePayFormat.decimal($0.amount) } ?? ""
-        draft.perDiemPay = paid.perDiemPay.map { LinePayFormat.decimal($0.amount) } ?? ""
+        draft.grossPay = LinePayFormat.entry(paid.grossPay.amount)
+        draft.regularHours = paid.regularHours.map(LinePayFormat.entry) ?? ""
+        draft.regularPay = paid.regularPay.map { LinePayFormat.entry($0.amount) } ?? ""
+        draft.overtimeHours = paid.overtimeHours.map(LinePayFormat.entry) ?? ""
+        draft.overtimePay = paid.overtimePay.map { LinePayFormat.entry($0.amount) } ?? ""
+        draft.doubleTimeHours = paid.doubleTimeHours.map(LinePayFormat.entry) ?? ""
+        draft.doubleTimePay = paid.doubleTimePay.map { LinePayFormat.entry($0.amount) } ?? ""
+        draft.calloutPay = paid.calloutPay.map { LinePayFormat.entry($0.amount) } ?? ""
+        draft.perDiemPay = paid.perDiemPay.map { LinePayFormat.entry($0.amount) } ?? ""
         draft.notes = paid.notes
         draft.sourceEvidence = paid.evidence
         if let confirmation = paid.confirmation {
@@ -1265,8 +1264,12 @@ final class AppModel {
             throw AppModelError.invalidField("Time zone")
         }
 
-        let rate = try positiveDecimal(draft.hourlyRate, field: "Hourly rate")
         let existingAgreement = state.profile?.agreement
+        // A profile's currency is fixed once it exists: every saved calculation and paystub
+        // comparison is denominated in it.
+        let currency = existingAgreement?.hourlyRate.currencyCode ?? draft.resolvedCurrencyCode
+        let rate = try positiveDecimal(
+            draft.hourlyRate, field: "Hourly rate", currencyCode: currency)
         let agreementID = existingAgreement?.id ?? UUID().uuidString
         let priorVersions =
             [existingAgreement?.version].compactMap { $0 }
@@ -1371,8 +1374,9 @@ final class AppModel {
             if draft.usePerDiem {
                 FlatPerDiemRule(
                     amountPerWorkDate: Money(
-                        amount: try positiveDecimal(draft.perDiemAmount, field: "Per diem"),
-                        currencyCode: "USD"
+                        amount: try positiveDecimal(
+                            draft.perDiemAmount, field: "Per diem", currencyCode: currency),
+                        currencyCode: currency
                     )
                 )
             } else {
@@ -1440,7 +1444,7 @@ final class AppModel {
             displayName: profileName,
             effectiveStart: effectiveStart,
             effectiveEnd: effectiveEnd,
-            hourlyRate: Money(amount: rate, currencyCode: "USD"),
+            hourlyRate: Money(amount: rate, currencyCode: currency),
             regularSchedule: regularSchedule,
             outsideScheduleMultiplier: outsideMultiplier,
             weekdayPremiums: weekdayPremiums,
@@ -1449,6 +1453,11 @@ final class AppModel {
             calloutMinimum: calloutMinimum,
             flatPerDiem: perDiem,
             weeklyOvertime: weeklyOvertime,
+            // Only the scale follows the currency (none for VND); mode and scope stay the current
+            // defaults, exactly as every new rule version received before currencies varied.
+            rounding: MoneyRoundingRule(
+                scale: existingAgreement?.rounding.scale
+                    ?? min(2, LinePayFormat.fractionDigits(currencyCode: currency))),
             sources: sources,
             unsupportedRuleNotes: draft.unsupportedRuleNotes.trimmingCharacters(
                 in: .whitespacesAndNewlines),
@@ -1508,15 +1517,17 @@ final class AppModel {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func positiveDecimal(_ text: String, field: String, allowZero: Bool = false) throws
-        -> Decimal
-    {
+    private func positiveDecimal(
+        _ text: String, field: String, allowZero: Bool = false, currencyCode: String? = nil
+    ) throws -> Decimal {
         do {
             return try StrictDecimal.parse(
                 text,
+                maximum: currencyCode.map(NumberEntry.amountMaximum(currencyCode:)) ?? 10_000_000,
                 fractionDigits: field.lowercased().contains("hours")
                     || field.lowercased().contains("threshold") ? 4 : 2,
-                allowZero: allowZero, allowDollarSign: true)
+                allowZero: allowZero, allowDollarSign: true,
+                decimalSeparator: NumberEntry.decimalSeparator)
         } catch { throw AppModelError.invalidField(field) }
     }
 
