@@ -14,7 +14,7 @@ For launch, keep pricing deliberately simple:
 
 **No weekly plan. No lifetime plan. No multiple paid tiers. No credit system. No introductory pricing maze.**
 
-**September 5, 2026 decision:** eligible new subscribers in configured storefronts (initially U.S.) can start a **seven-day free trial on Annual**, then renew at the localized yearly price. Monthly is an immediate paid alternative with no introductory trial. This deliberately supersedes the earlier no-calendar-trial policy and aligns with `docs/growth/marketing.md`.
+**September 5, 2026 decision:** eligible new subscribers in configured storefronts (U.S., Canada, and Vietnam since October 3, 2026; see §11) can start a **seven-day free trial on Annual**, then renew at the localized yearly price. Monthly is an immediate paid alternative with no introductory trial. This deliberately supersedes the earlier no-calendar-trial policy and aligns with `docs/growth/marketing.md`.
 
 Free sampling remains available separately:
 
@@ -279,6 +279,18 @@ The initial commercial market is U.S. workers, so optimize the launch decision f
 For other storefronts initially, prefer App Store Connect's automatic comparable pricing rather than manually maintaining dozens of regional price tables.
 
 Only introduce deliberate regional pricing when a market has enough real installs and purchase intent to justify the operational complexity.
+
+### Storefronts on sale
+
+On October 3, 2026 the owner extended sales from the U.S. to Canada and Vietnam. Canada and Vietnam prices are Apple's automatic equalizations of the U.S. price points; no manual regional price was set.
+
+| Storefront | Monthly | Annual | Annual 7-day free trial |
+|---|---:|---:|---|
+| United States | $9.99 | $79.99 | Yes (since 2026-09-05) |
+| Canada | CA$12.99 | CA$99.99 | Yes (since 2026-10-03) |
+| Vietnam | ₫299,000 | ₫2,499,000 | Yes (since 2026-10-03) |
+
+Open questions before promoting outside the U.S.: Vietnam's equalized annual price (about US$95) is high for that market; pay-rule wording and examples are U.S.-centric; the app is English-only, and Quebec has French-language requirements for commercial software. Treat these as unvalidated markets, not launch targets.
 
 Do not let international pricing work delay U.S. validation.
 

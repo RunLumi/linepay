@@ -35,3 +35,9 @@ Each state below was read back through the App Store Connect API after submissio
 
 - After approval, confirm the U.S. product page shows the Terms of Use link and **In-App Purchases** with both prices.
 - Release manually, then install from the App Store and confirm the trial offer shows real prices.
+
+## Follow-up: approval, release, and storefronts (October 3–4, 2026)
+
+- App Review approved 1.0.3 (8) and both subscriptions. The owner released 1.0.3 manually; on 2026-10-04 00:23 UTC the version read back as `READY_FOR_SALE` and both subscriptions as `APPROVED`. The public U.S. product page listed In-App Purchases with both prices and the Terms of Use link.
+- At the owner's request, Canada (`CAN`) and Vietnam (`VNM`) were made available for the app and both subscriptions, and the annual 7-day free trial was added for both territories. All three territories read back as `AVAILABLE`. Prices were Apple's existing equalized price points (creating them again returns `409` after approval). See [pricing §11](../../product/pricing.md).
+- No real or sandbox trial purchase has been made yet; production trial behavior remains unverified.

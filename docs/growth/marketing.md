@@ -20,7 +20,7 @@ This is *not* the same as total company profitability, and it is not the same as
 
 | Variable | Base assumption | Why |
 |---|---:|---|
-| Launch geography | United States only | Highest product-market relevance for initial lineman positioning; avoids mixing purchasing-power and payroll-rule contexts |
+| Launch geography | United States for paid acquisition (the app is also sold in Canada and Vietnam; see [pricing §11](../product/pricing.md)) | Highest product-market relevance for initial lineman positioning; avoids mixing purchasing-power and payroll-rule contexts |
 | Initial media cap | **$4,000** | Enough to discover whether the funnel is economically viable without buying an expensive lesson |
 | Annual product | `linepay.pro.yearly` — **$79.99/year** | Annual upfront revenue is critical to month-one payback |
 | Monthly product | `linepay.pro.monthly` — **$9.99/month** | Lower-commitment alternative |
