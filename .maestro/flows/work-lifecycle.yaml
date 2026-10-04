@@ -1,5 +1,5 @@
 appId: com.streamentry.linepay
-name: Work correction, overlap review, and period-bound Undo
+name: Work correction, conflict-free defaults, and period-bound Undo
 tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
@@ -12,25 +12,41 @@ tags: [smoke, ios, regression]
 - tapOn:
     id: today.repeat-shift
 - waitForAnimationToEnd
-- scrollUntilVisible:
-    element: ".*Overlaps.*"
-    centerElement: true
-- waitForAnimationToEnd
-- assertVisible: ".*Overlaps.*"
+# Repeat last shift proposes a free day in the open period (forward, else the latest earlier
+# day) instead of opening on the logged day in conflict.
 - scrollUntilVisible:
     element:
       id: repeat.save
 - waitForAnimationToEnd
 - assertVisible:
     id: repeat.save
-    enabled: false
-- takeScreenshot: overlap-error
+    enabled: true
+- assertNotVisible: ".*Overlaps.*"
+- takeScreenshot: repeat-proposes-free-day
+- tapOn:
+    id: repeat.keep-draft
+- waitForAnimationToEnd
+# A new entry also opens on a free slot rather than over the logged shift. Rejecting an
+# actual overlap is covered by AppModelTests.overlapFailureIsAtomic.
 - scrollUntilVisible:
-    element: Discard this draft
+    element:
+      id: today.add-work
+    timeout: 60000
 - waitForAnimationToEnd
-- tapOn: Discard this draft
+- tapOn:
+    id: today.add-work
 - waitForAnimationToEnd
-- tapOn: Discard draft
+- scrollUntilVisible:
+    element:
+      id: work.save
+- waitForAnimationToEnd
+- assertVisible:
+    id: work.save
+    enabled: true
+- assertNotVisible: ".*Overlaps.*"
+- takeScreenshot: add-work-free-slot
+- tapOn:
+    id: work.cancel
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

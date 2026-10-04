@@ -238,19 +238,44 @@ struct CalculationProblemView: View {
     }
 }
 
+/// A Done control that closes the keyboard. It is an owned row above the screen's own bottom bar,
+/// not `ToolbarItemGroup(placement: .keyboard)`: on iOS 26 that system toolbar intermittently
+/// fails to appear (issue #106) and, when it does, floats over hint text. The row exists only
+/// while a keyboard is on screen, so it never costs space otherwise.
 struct KeyboardDismissModifier: ViewModifier {
+    @State private var keyboardVisible = false
+
     func body(content: Content) -> some View {
         content.scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil,
-                            for: nil)
-                    }.accessibilityIdentifier("keyboard.done")
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if keyboardVisible {
+                    HStack {
+                        Spacer()
+                        Button("Done") {
+                            UIApplication.shared.sendAction(
+                                #selector(UIResponder.resignFirstResponder), to: nil, from: nil,
+                                for: nil)
+                        }
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(LinePayColor.actionText)
+                        .frame(minWidth: 64, minHeight: 44)
+                        .contentShape(Rectangle())
+                        .accessibilityIdentifier("keyboard.done")
+                        .accessibilityHint("Closes the keyboard")
+                    }
+                    .padding(.horizontal, LinePaySpacing.standard)
+                    .background(LinePayColor.canvas.ignoresSafeArea(edges: .horizontal))
+                    .overlay(alignment: .top) { Divider() }
                 }
             }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UIResponder.keyboardWillShowNotification)
+            ) { _ in keyboardVisible = true }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UIResponder.keyboardWillHideNotification)
+            ) { _ in keyboardVisible = false }
     }
 }
 extension View {
