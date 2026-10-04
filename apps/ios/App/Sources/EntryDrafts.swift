@@ -34,6 +34,8 @@ enum RuleChangeScope: String, CaseIterable, Identifiable, Codable, Sendable {
 struct PayProfileDraft: Codable, Hashable, Sendable {
     var name = "My current pay"
     var hourlyRate = ""
+    /// Optional so drafts saved before currencies varied still decode; nil means the suggestion.
+    var currencyCode: String?
     var timeZoneIdentifier = TimeZone.current.identifier
     var preferredCadence: PayPeriodCadence = .weekly
     var periodStartDate = Self.startOfCurrentWeek()
@@ -84,23 +86,35 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
 
     init() {}
 
+    var resolvedCurrencyCode: String { currencyCode ?? Self.suggestedCurrencyCode }
+
+    /// The region's currency when LinePaycheck can price in it, otherwise US dollars.
+    static var suggestedCurrencyCode: String {
+        let code = Locale.current.currency?.identifier.uppercased() ?? "USD"
+        return supportedCurrencyCodes.contains(code) ? code : "USD"
+    }
+
+    /// The storefronts LinePaycheck is sold in. Amounts are exact decimals in any of them.
+    static let supportedCurrencyCodes = ["USD", "CAD", "VND"]
+
     init(profile: PayProfile, activePeriod: ActivePayPeriod? = nil) {
         let agreement = profile.agreement
         roundingRule = agreement.rounding
         unsupportedRuleNotes = agreement.unsupportedRuleNotes ?? ""
         additionalOvertimeTiers = agreement.dailyOvertimeTiers.dropFirst().map {
             OvertimeTierDraft(
-                afterHours: LinePayFormat.decimal($0.afterHours),
-                multiplier: LinePayFormat.decimal($0.multiplier))
+                afterHours: LinePayFormat.entry($0.afterHours),
+                multiplier: LinePayFormat.entry($0.multiplier))
         }
         additionalWeekdayPremiums = agreement.weekdayPremiums.filter { $0.weekday != .sunday }.map {
             WeekdayPremiumDraft(
-                weekday: $0.weekday, multiplier: LinePayFormat.decimal($0.multiplier))
+                weekday: $0.weekday, multiplier: LinePayFormat.entry($0.multiplier))
         }
         additionalSources = agreement.sources.dropFirst().map { RuleSourceDraft(source: $0) }
         sourceRuleKey = agreement.sources.first?.ruleKey
         name = profile.name
-        hourlyRate = LinePayFormat.decimal(agreement.hourlyRate.amount)
+        hourlyRate = LinePayFormat.entry(agreement.hourlyRate.amount)
+        currencyCode = agreement.hourlyRate.currencyCode
         timeZoneIdentifier = profile.timeZoneIdentifier
         preferredCadence = profile.preferredCadence
 
@@ -122,35 +136,35 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
                 minute: firstWindow.end.minute,
                 timeZoneIdentifier: profile.timeZoneIdentifier
             )
-            outsideScheduleMultiplier = LinePayFormat.decimal(agreement.outsideScheduleMultiplier)
+            outsideScheduleMultiplier = LinePayFormat.entry(agreement.outsideScheduleMultiplier)
         }
 
         if let tier = agreement.dailyOvertimeTiers.first {
             useDailyOvertime = true
-            overtimeAfterHours = LinePayFormat.decimal(tier.afterHours)
-            overtimeMultiplier = LinePayFormat.decimal(tier.multiplier)
+            overtimeAfterHours = LinePayFormat.entry(tier.afterHours)
+            overtimeMultiplier = LinePayFormat.entry(tier.multiplier)
         }
 
         if let sunday = agreement.weekdayPremiums.first(where: { $0.weekday == .sunday }) {
             useSundayPremium = true
-            sundayMultiplier = LinePayFormat.decimal(sunday.multiplier)
+            sundayMultiplier = LinePayFormat.entry(sunday.multiplier)
         }
 
         datePremiums = agreement.datePremiums.map {
             DatePremiumDraft(
                 date: Self.date(from: $0.date, timeZoneIdentifier: profile.timeZoneIdentifier),
-                multiplier: LinePayFormat.decimal($0.multiplier)
+                multiplier: LinePayFormat.entry($0.multiplier)
             )
         }
 
         if let callout = agreement.calloutMinimum {
             useCalloutMinimum = true
-            calloutMinimumHours = LinePayFormat.decimal(callout.minimumHours)
+            calloutMinimumHours = LinePayFormat.entry(callout.minimumHours)
         }
 
         if let perDiem = agreement.flatPerDiem {
             usePerDiem = true
-            perDiemAmount = LinePayFormat.decimal(perDiem.amountPerWorkDate.amount)
+            perDiemAmount = LinePayFormat.entry(perDiem.amountPerWorkDate.amount)
         }
 
         if let weekly = agreement.weeklyOvertime {

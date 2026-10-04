@@ -24,6 +24,18 @@ struct PayProfileSetupView: View {
             } ?? PayProfileDraft())
     }
     private var editing: Bool { model.profile != nil }
+    private var currencySelection: Binding<String> {
+        Binding(get: { draft.resolvedCurrencyCode }, set: { draft.currencyCode = $0 })
+    }
+    private var rateExample: String {
+        draft.resolvedCurrencyCode == "VND"
+            ? "45000" : "58\(NumberEntry.decimalSeparator)40"
+    }
+    /// "Canadian dollar (CAD)": the name a worker recognises, with the code printed on paystubs.
+    static func currencyName(_ code: String) -> String {
+        let name = Locale.current.localizedString(forCurrencyCode: code) ?? code
+        return name == code ? code : "\(name.prefix(1).uppercased() + name.dropFirst()) (\(code))"
+    }
     private var zone: TimeZone { TimeZone(identifier: draft.timeZoneIdentifier) ?? .current }
     private var step: Int { min(3, max(0, draft.setupStep)) }
 
@@ -151,9 +163,20 @@ struct PayProfileSetupView: View {
 
     private var basics: some View {
         Section {
+            if editing {
+                LabeledContent("Pay currency", value: draft.resolvedCurrencyCode)
+                    .accessibilityIdentifier("pay-profile.currency")
+            } else {
+                Picker("Pay currency", selection: currencySelection) {
+                    ForEach(PayProfileDraft.supportedCurrencyCodes, id: \.self) { code in
+                        Text(Self.currencyName(code)).tag(code)
+                    }
+                }
+                .accessibilityIdentifier("pay-profile.currency")
+            }
             LinePayTextField(
-                "Base hourly rate, USD", text: $draft.hourlyRate, focus: $editingField,
-                identifier: "pay-profile.hourly-rate"
+                "Base hourly rate, \(draft.resolvedCurrencyCode)", text: $draft.hourlyRate,
+                focus: $editingField, identifier: "pay-profile.hourly-rate"
             )
             .linePayNumberEntry()
             Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
@@ -164,7 +187,7 @@ struct PayProfileSetupView: View {
                 identifier: "pay-profile.name")
         } footer: {
             Text(
-                "Your straight-time rate before any premium, for example 58.40. The payroll timezone decides which day a shift counts on, not where your phone is."
+                "Your straight-time rate before any premium, for example \(rateExample). The payroll timezone decides which day a shift counts on, not where your phone is."
             )
         }
         .task {
@@ -243,7 +266,9 @@ struct PayProfileSetupView: View {
                 "Flat per diem",
                 detail: "A fixed allowance for each day you work, kept apart from wages.",
                 isOn: $draft.usePerDiem)
-            if draft.usePerDiem { number("USD per worked date", $draft.perDiemAmount) }
+            if draft.usePerDiem {
+                number("\(draft.resolvedCurrencyCode) per worked date", $draft.perDiemAmount)
+            }
         } header: {
             Text("Common rules")
         } footer: {
@@ -555,12 +580,16 @@ struct PayProfileSetupView: View {
     private func weekdayName(_ day: Weekday) -> String {
         Calendar(identifier: .gregorian).weekdaySymbols[day.rawValue - 1]
     }
+    /// The payroll zones of the storefronts LinePaycheck is sold in (U.S., Canada, Vietnam), plus
+    /// whatever zone is already chosen.
     private var timeZones: [String] {
         Array(
             Set([
                 draft.timeZoneIdentifier, "America/Los_Angeles", "America/Denver",
                 "America/Phoenix", "America/Chicago", "America/New_York", "America/Anchorage",
-                "Pacific/Honolulu",
+                "Pacific/Honolulu", "America/St_Johns", "America/Halifax", "America/Toronto",
+                "America/Winnipeg", "America/Regina", "America/Edmonton", "America/Vancouver",
+                "Asia/Ho_Chi_Minh",
             ])
         ).sorted()
     }

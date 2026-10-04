@@ -498,8 +498,13 @@ struct PaystubReviewView: View {
             return "Confirm the paystub dates and gross pay to continue."
         }
         if !readyToCompare {
+            // Name exactly what is left; the questions sit above this bar, in the form.
+            let remaining = [
+                draft.workComplete == true ? nil : "confirm your work log covers the period",
+                draft.grossBasis == .unconfirmed ? "choose what the gross pay includes" : nil,
+            ].compactMap { $0 }.joined(separator: " and ")
             return
-                "Answer the two questions below to compare. Saving without comparing does not use your free check."
+                "To compare, \(remaining). Saving without comparing does not use your free check."
         }
         return model.hasUsedFreeAudit
             ? "Compares these confirmed facts with the expected pay for this period."
@@ -567,7 +572,7 @@ struct PaystubReviewView: View {
                 systemImage: "checkmark.circle"
             )
             .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
-        } else if !value.isEmpty, Self.isValidAmount(value) {
+        } else if !value.isEmpty, Self.isValidAmount(value, currencyCode: currency) {
             // A machine-read value counts only after the worker checks it.
             Button("Confirm \(value) matches the paystub") {
                 draft.reviewedFields.insert(.grossPay)
@@ -578,7 +583,8 @@ struct PaystubReviewView: View {
                 Text(reason).font(.footnote)
             }
         } else if !value.isEmpty {
-            Text("Use a complete amount such as 1,250.00, with no other text.")
+            let example = NumberEntry.decimalSeparator == "," ? "1.250,00" : "1,250.00"
+            Text("Use a complete amount such as \(example), with no other text.")
                 .font(.footnote).foregroundStyle(LinePayColor.review)
         }
     }
@@ -590,7 +596,9 @@ struct PaystubReviewView: View {
                 draft.grossPay = value
                 // Typing the amount is the worker's own confirmation; an untouched OCR reading
                 // still needs an explicit check above.
-                if Self.isValidAmount(value), draft.suggestions[.grossPay]?.value != value {
+                if Self.isValidAmount(value, currencyCode: currency),
+                    draft.suggestions[.grossPay]?.value != value
+                {
                     draft.reviewedFields.insert(.grossPay)
                 } else {
                     draft.reviewedFields.remove(.grossPay)
@@ -614,10 +622,12 @@ struct PaystubReviewView: View {
             })
     }
 
-    static func isValidAmount(_ text: String) -> Bool {
-        (try? StrictDecimal.parse(
-            text, maximum: 10_000_000, fractionDigits: 2, allowDollarSign: true)) != nil
+    static func isValidAmount(_ text: String, currencyCode: String) -> Bool {
+        (try? NumberEntry.amount(text, currencyCode: currencyCode)) != nil
     }
+
+    /// Paystub amounts are in the pay profile's currency.
+    private var currency: String { model.profile?.agreement.hourlyRate.currencyCode ?? "USD" }
 
     private func fieldRow(_ field: PaystubField) -> some View {
         Button {
@@ -626,17 +636,24 @@ struct PaystubReviewView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(field.title).font(.headline)
+                        .foregroundStyle(LinePayColor.textPrimary)
                     Spacer()
+                    // An empty optional line is not a problem to resolve; only a value that has
+                    // not been checked against the paystub asks for review.
+                    let reviewed = draft.reviewedFields.contains(field)
+                    let empty = !field.isDate && draft[field].isEmpty
                     Label(
-                        draft.reviewedFields.contains(field) ? "Confirmed" : "Check",
-                        systemImage: draft.reviewedFields.contains(field)
-                            ? "checkmark.circle" : "questionmark.circle"
+                        reviewed ? "Confirmed" : empty ? "Optional" : "Review",
+                        systemImage: reviewed
+                            ? "checkmark.circle" : empty ? "plus.circle" : "questionmark.circle"
                     )
                     .font(.caption).foregroundStyle(
-                        draft.reviewedFields.contains(field)
-                            ? LinePayColor.textSecondary : LinePayColor.review)
+                        reviewed || empty ? LinePayColor.textSecondary : LinePayColor.review)
                 }
                 Text(fieldValue(field)).monospacedDigit()
+                    .foregroundStyle(
+                        !field.isDate && draft[field].isEmpty
+                            ? LinePayColor.textSecondary : LinePayColor.textPrimary)
                 if let reason = draft.suggestions[field]?.reason { Text(reason).font(.footnote) }
             }.padding(.vertical, 4)
         }.accessibilityIdentifier("paystub.field.\(field.rawValue)")
@@ -704,10 +721,13 @@ struct PaystubFieldReviewView: View {
                 Button("Confirm this field") {
                     do {
                         if !field.isDate {
-                            _ = try StrictDecimal.parse(
-                                draft[field], maximum: field.isHours ? 10_000 : 10_000_000,
-                                fractionDigits: field.isHours ? 4 : 2,
-                                allowDollarSign: !field.isHours)
+                            _ =
+                                try field.isHours
+                                ? NumberEntry.hours(draft[field])
+                                : NumberEntry.amount(
+                                    draft[field],
+                                    currencyCode: model.profile?.agreement.hourlyRate.currencyCode
+                                        ?? "USD")
                         }
                         draft.reviewedFields.insert(field)
                         if persistDraft() { dismiss() }

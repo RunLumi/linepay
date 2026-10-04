@@ -6,10 +6,28 @@ enum LinePayFormat {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = money.currencyCode
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
+        // The currency's own minor units: two for USD and CAD, none for VND.
+        let digits = fractionDigits(currencyCode: money.currencyCode)
+        formatter.minimumFractionDigits = digits
+        formatter.maximumFractionDigits = digits
         return formatter.string(from: NSDecimalNumber(decimal: money.amount))
             ?? "\(money.currencyCode) \(decimal(money.amount))"
+    }
+
+    /// ISO 4217 minor units as Foundation reports them for the currency.
+    static func fractionDigits(currencyCode: String) -> Int {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return min(max(formatter.maximumFractionDigits, 0), 4)
+    }
+
+    /// A value placed back into an editable field, written with the decimal separator the worker
+    /// types, so editing a saved rate never changes its meaning.
+    static func entry(_ value: Decimal) -> String {
+        let text = decimal(value)
+        return NumberEntry.decimalSeparator == ","
+            ? text.replacingOccurrences(of: ".", with: ",") : text
     }
 
     static func hours(_ value: Decimal) -> String {
@@ -111,5 +129,33 @@ enum LinePayFormat {
             return "+\(self.money(money))"
         }
         return self.money(money)
+    }
+}
+
+/// The one place the app decides how typed numbers are read. The domain parser stays explicit:
+/// it is handed the separator instead of reading the device locale.
+enum NumberEntry {
+    /// `,` where the region writes `58,40` (Vietnam, French Canada), otherwise `.`.
+    static var decimalSeparator: Character {
+        Locale.current.decimalSeparator == "," ? "," : "."
+    }
+
+    /// Currencies without minor units, such as VND, carry far larger nominal amounts: an ordinary
+    /// paycheck is tens of millions of đồng.
+    static func amountMaximum(currencyCode: String) -> Decimal {
+        LinePayFormat.fractionDigits(currencyCode: currencyCode) == 0 ? 100_000_000_000 : 10_000_000
+    }
+
+    static func amount(_ text: String, currencyCode: String, allowZero: Bool = true) throws
+        -> Decimal
+    {
+        try StrictDecimal.parse(
+            text, maximum: amountMaximum(currencyCode: currencyCode), fractionDigits: 2,
+            allowZero: allowZero, allowDollarSign: true, decimalSeparator: decimalSeparator)
+    }
+
+    static func hours(_ text: String, maximum: Decimal = 10_000) throws -> Decimal {
+        try StrictDecimal.parse(
+            text, maximum: maximum, fractionDigits: 4, decimalSeparator: decimalSeparator)
     }
 }

@@ -201,6 +201,11 @@ final class SubscriptionStore {
                 }
             }
         }
+        // Only once Apple's signed status is known: a reminder about a trial that will no longer
+        // bill (cancelled, or already converted) is noise.
+        if observesStoreKit, renewalDate != nil, willAutoRenew == false || !isTrial {
+            TrialReminder.cancel()
+        }
     }
 
     func purchase(_ product: Product) async -> Bool {

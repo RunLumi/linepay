@@ -18,11 +18,20 @@ struct LiveAuditView: View {
         // An inset, not a bottom toolbar: a toolbar renders beneath the floating tab bar.
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled {
+                // The moment a worker has seen what one check shows is when Pro's value is
+                // clearest; offer it plainly, with the free trial when Apple reports one.
                 LinePayBottomBar {
-                    Button("Check future paychecks with Pro") { paywall = true }
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .accessibilityIdentifier("audit.view-pro")
+                    Button(
+                        subscriptionStore.annualTrialDuration.map { "Try Pro free for \($0)" }
+                            ?? "Check every paycheck with Pro"
+                    ) { paywall = true }
+                    .buttonStyle(LinePayPrimaryButtonStyle())
+                    .accessibilityIdentifier("audit.view-pro")
+                    Text(offerNote)
+                        .font(.footnote)
+                        .foregroundStyle(LinePayColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
@@ -34,6 +43,22 @@ struct LiveAuditView: View {
         .sheet(isPresented: $paywall) {
             ProPaywallView(store: subscriptionStore) { paywall = false }
         }
+    }
+
+    /// Names what the free check found, only while that result is current and only as a possible
+    /// shortfall; otherwise states plainly what Pro adds.
+    private var offerNote: String {
+        if let context = model.periodContext(id: periodID), let paid = context.paystub,
+            let calculation = context.calculation,
+            AuditAssessment.evaluate(
+                calculation: calculation, paystub: paid, reconciliation: context.reconciliation
+            ).isCurrent,
+            let difference = paid.assessment?.difference, difference.amount > 0
+        {
+            return
+                "This check found a possible shortfall of \(LinePayFormat.money(difference)). Pro checks every paycheck after this one."
+        }
+        return "Your free check is used. Pro checks every paycheck after this one."
     }
 }
 

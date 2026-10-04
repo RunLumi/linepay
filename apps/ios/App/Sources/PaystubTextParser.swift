@@ -98,7 +98,7 @@ enum PaystubTextParser {
                 "The hours, rate, current and year-to-date columns cannot be distinguished safely.")
         }
         return suggestion(
-            LinePayFormat.decimal(number), source,
+            LinePayFormat.entry(number), source,
             source.confidence < 0.85
                 ? "Text is unclear. Check the original before confirming." : nil)
     }

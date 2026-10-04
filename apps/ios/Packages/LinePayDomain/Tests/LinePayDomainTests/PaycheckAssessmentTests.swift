@@ -16,6 +16,32 @@ struct StrictDecimalTests {
     func rejectsPrefixesAndAmbiguousFormatting(_ input: String) {
         #expect(throws: (any Error).self) { try StrictDecimal.parse(input) }
     }
+    @Test(arguments: [
+        ("58,40", Decimal(string: "58.40")!), ("1.234,56", Decimal(string: "1234.56")!),
+        ("1 234,56", Decimal(string: "1234.56")!), ("1\u{00A0}234,5", Decimal(string: "1234.5")!),
+        ("15.000.000", Decimal(15_000_000)), ("15.000.000 ₫", Decimal(15_000_000)),
+        ("45000đ", Decimal(45_000)), ("58.40", Decimal(string: "58.40")!),
+        ("1.5", Decimal(string: "1.5")!), ("1.500", Decimal(1500)),
+    ])
+    func commaDecimalEntry(_ input: String, _ expected: Decimal) throws {
+        #expect(
+            try StrictDecimal.parse(
+                input, maximum: 100_000_000_000, allowDollarSign: true, decimalSeparator: ",")
+                == expected)
+    }
+    @Test(arguments: [
+        "1.000.00", "1.00,5", "12.34.567", "1.000 000", "1,", ",5", "1,234,5", "58,400", "1..000",
+    ])
+    func commaDecimalRejectsAmbiguousFormatting(_ input: String) {
+        #expect(throws: (any Error).self) {
+            try StrictDecimal.parse(input, decimalSeparator: ",")
+        }
+    }
+    @Test func pointDecimalStaysUSOnly() {
+        // The default grammar is unchanged: a comma is never a decimal point.
+        #expect(throws: (any Error).self) { try StrictDecimal.parse("58,40") }
+        #expect(throws: (any Error).self) { try StrictDecimal.parse("15.000.000") }
+    }
     @Test func precisionAndRange() throws {
         #expect(try StrictDecimal.parse("12.1234", fractionDigits: 4) == Decimal(string: "12.1234"))
         #expect(throws: DecimalInputError.outOfRange) { try StrictDecimal.parse("10000001") }
