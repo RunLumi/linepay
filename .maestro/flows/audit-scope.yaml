@@ -62,10 +62,13 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: paystub.field.regularPay
+    visibilityPercentage: 100
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.regularPay
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
@@ -90,10 +93,13 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: paystub.field.overtimePay
+    visibilityPercentage: 100
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
     id: paystub.field.overtimePay
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

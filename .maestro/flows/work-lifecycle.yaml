@@ -1,5 +1,5 @@
 appId: com.streamentry.linepay
-name: Work correction, overlap review, and period-bound Undo
+name: Work correction, conflict-free defaults, and period-bound Undo
 tags: [smoke, ios, regression]
 ---
 - runFlow: ../helpers/onboard.yaml
@@ -26,7 +26,8 @@ tags: [smoke, ios, regression]
 - tapOn:
     id: repeat.keep-draft
 - waitForAnimationToEnd
-# The overlap guard: a new entry at the same default times as the logged shift.
+# A new entry also opens on a free slot rather than over the logged shift. Rejecting an
+# actual overlap is covered by AppModelTests.overlapFailureIsAtomic.
 - scrollUntilVisible:
     element:
       id: today.add-work
@@ -36,18 +37,14 @@ tags: [smoke, ios, regression]
     id: today.add-work
 - waitForAnimationToEnd
 - scrollUntilVisible:
-    element: ".*Overlaps.*"
-    centerElement: true
-- waitForAnimationToEnd
-- assertVisible: ".*Overlaps.*"
-- scrollUntilVisible:
     element:
       id: work.save
 - waitForAnimationToEnd
 - assertVisible:
     id: work.save
-    enabled: false
-- takeScreenshot: overlap-error
+    enabled: true
+- assertNotVisible: ".*Overlaps.*"
+- takeScreenshot: add-work-free-slot
 - tapOn:
     id: work.cancel
 - waitForAnimationToEnd
