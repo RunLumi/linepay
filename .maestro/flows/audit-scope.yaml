@@ -155,11 +155,16 @@ tags: [ios, regression, payroll-scope]
 - assertVisible:
     id: audit.scope
 - takeScreenshot: offsetting-components-needs-review
+# Fully visible and centred: a partly scrolled row can sit under the floating tab bar,
+# where a tap reaches the tab instead of the row.
 - scrollUntilVisible:
     element:
       id: audit.export
     direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
     timeout: 60000
+- waitForAnimationToEnd
 - tapOn:
     id: audit.export
 - waitForAnimationToEnd
