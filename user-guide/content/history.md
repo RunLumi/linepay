@@ -20,7 +20,7 @@ The closed period’s work and rules stay frozen. A late audit or later rule cor
 
 ## Correct paycheck facts
 
-Open the period and choose **Correct paycheck facts**, or open its live audit and choose **Review or correct confirmed facts**. To keep the same source, choose **Correct existing facts, keep original** where offered.
+Open the period and choose **Correct paycheck facts**, or open its live audit and choose **Review or correct paycheck facts**. To keep the same source, choose **Correct existing facts, keep original** where offered.
 
 Correct the erroneous field, reconfirm it, and review the comparison basis and scope before saving. A correction appends an audit revision rather than silently replacing all prior evidence.
 
@@ -36,7 +36,7 @@ Original files can be shared by several revisions. Removing a shared original re
 
 ## Delete only with a backup plan
 
-**Delete work period and its audits → Delete period** removes that period’s local work and confirmed facts. Originals that are not shared elsewhere are deleted or queued for cleanup. This is not the same as closing a period, and the guide does not assume a historical recycle bin exists.
+**Delete work period and its checks → Delete period** removes that period’s local work and confirmed facts. Originals that are not shared elsewhere are deleted or queued for cleanup. This is not the same as closing a period, and the guide does not assume a historical recycle bin exists.
 
 Export a complete backup first when those records may be needed later. Local deletion does not delete copies already exported to Files, iCloud Drive, email, or another destination. It also does not cancel a subscription.
 

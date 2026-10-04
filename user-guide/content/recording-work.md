@@ -46,7 +46,7 @@ Elapsed time can differ from wall-clock subtraction during a daylight-saving tra
 
 Choose **Repeat last shift** on Today. LinePaycheck copies the work type, start/end wall-clock times, and each recorded break into the selected **New date** in the payroll timezone. Review the result before choosing **Save same shift**. Use **Edit details** whenever the actual shift differed.
 
-Repeating is a shortcut to a new reviewed entry, not permission to log a shift twice. An overlap warning offers **View conflicting entry** so you can inspect the existing record.
+Repeating is a shortcut to a new reviewed entry, not permission to log a shift twice. An overlap warning offers **View that shift** so you can inspect the existing record.
 
 ### If the copied clock time is affected by daylight saving
 
@@ -60,7 +60,7 @@ The same rule applies to copied unpaid breaks, including multiple breaks and ove
 
 ## Keep a draft or fix an entry
 
-Use **Keep draft** to leave an unfinished entry. A normal draft returns as **Resume work draft**; an unfinished repeated shift returns as **Resume repeated shift**. Finish or explicitly discard the pending draft before starting a different entry. **Discard this draft → Discard draft** removes the unfinished input, not an already saved shift.
+Use **Keep as draft** to leave an unfinished entry. A normal draft returns as **Resume work draft**; an unfinished repeated shift returns as **Resume repeated shift**. Finish or explicitly discard the pending draft before starting a different entry. **Discard this draft → Discard draft** removes the unfinished input, not an already saved shift.
 
 Tap a saved work entry to edit it. Save the corrected facts and re-review any audit that becomes stale. The app keeps previous audit revisions rather than presenting the old comparison as current.
 

@@ -10,7 +10,7 @@ keywords: [net, gross, per diem, premium only, base plus premium, full rate, pai
 
 A net payment is what remains after the paystub’s deductions and adjustments. LinePaycheck’s expected wages are not a prediction of that take-home amount. Use the current-period gross figure, and confirm what it includes.
 
-In **Review paystub → What does gross include?**, select wages only when that gross excludes per diem. Select wages and per diem only when the displayed gross actually includes the allowance represented in your ledger. Do not add per diem to a figure that already includes it.
+In **Review paystub → What does the gross pay include?**, select wages only when that gross excludes per diem. Select wages and per diem only when the displayed gross actually includes the allowance represented in your ledger. Do not add per diem to a figure that already includes it.
 
 If you cannot establish the basis, leave it unconfirmed and save a not-comparable record. The app does not decide the tax treatment of your allowance.
 

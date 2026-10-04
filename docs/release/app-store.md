@@ -992,6 +992,7 @@ Lead with the customer-visible improvement. Mention meaningful fixes when they i
 
 - [ ] App Store name set to `LinePaycheck: Lineman Pay`
 - [ ] Home-screen display name remains `LinePay`; public product branding remains `LinePaycheck`
+  - Decision (October 4, 2026, issue #63): `LinePay` is a deliberate truncation exception, not an inherited technical name. Measured in the 12 pt system font, `LinePaycheck` is 77.6 pt wide, past the roughly 60 to 65 pt Home Screen label width, so iOS would show `LinePaych…`; `LinePay` is 43.9 pt and fits on every supported iPhone. The App Store name, App Store search, onboarding, help and support all say `LinePaycheck`, and `CFBundleName` stays `LinePaycheck`. Revisit only if Apple widens Home Screen labels.
 - [ ] Subtitle set to `Overtime, Callout & Per Diem`
 - [ ] Keyword field verified at <=100 bytes
 - [ ] Promotional text pasted exactly and proofread

@@ -16,7 +16,7 @@ Expected wages are not take-home pay, a guaranteed deposit, or proof of every co
 
 Open **Pay** and review the ledger. Open a component to inspect the work facts, quantity, rate, multiplier, and rule/source information available for it. A callout guarantee is a separate entitlement from worked clock time.
 
-Use the applied snapshot for the particular component, especially after a dated rule change. **Review rule snapshot** provides agreement context, while component evidence explains that particular amount. A source reference you entered is not independent certification.
+Use the applied snapshot for the particular component, especially after a dated rule change. **Rules used for this estimate** provides agreement context, while component evidence explains that particular amount. A source reference you entered is not independent certification.
 
 ## A worked example
 

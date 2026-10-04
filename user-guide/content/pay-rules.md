@@ -14,7 +14,7 @@ A calculation can only cover what the app represents and you confirm. Keep a mis
 
 ## Daily overtime and additional tiers
 
-Enable **Daily overtime**, then enter **After worked hours** and the applicable **Multiplier**. Use **Add another overtime tier** when your confirmed daily rule has additional thresholds.
+Enable **Daily overtime**, then enter **After this many hours in a day** and **Multiplier (1.5 = time and a half)**. Use **Add another overtime tier** when your confirmed daily rule has additional thresholds.
 
 A synthetic example: after eight worked hours at 1.5×, ten hours at a $50 base rate produce eight hours at $50 and two at $75: $550 before any other applicable rule. This is an illustration, not a default policy.
 
@@ -22,9 +22,9 @@ Multiple entries on the same payroll-local date share the daily overtime calcula
 
 ## Restricted weekly overtime review
 
-For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime (restricted)** and choose the payroll workweek start. Open **Pay → Review weekly overtime**, select the workweek, and confirm that the week is complete before calculating. The review can include recorded work from more than one stored pay period.
+For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime review** and choose the payroll workweek start. Open **Pay → Review weekly overtime**, select the workweek, and confirm that the week is complete before calculating. The review can include recorded work from more than one stored pay period.
 
-This is a restricted estimate for one complete workweek. It does not determine state, local, public-agency, union, CBA, exemption, or alternative-method coverage. If the week is incomplete, historical weekly rules differ, or the inputs cannot be combined safely, the review stays **Needs review**; keep the actual work and clarify the rule instead of adding hours or treating the result as a legal conclusion.
+The weekly review is separate: it is **never added to Expected wages**. When weekly overtime is on and more than 40 hours are logged, a paycheck check stays **Needs review** until you review each complete workweek, so an equal gross cannot look like a clean match. This is a restricted estimate for one complete workweek. It does not determine state, local, public-agency, union, CBA, exemption, or alternative-method coverage. If the week is incomplete, historical weekly rules differ, or the inputs cannot be combined safely, the review stays **Needs review**; keep the actual work and clarify the rule instead of adding hours or treating the result as a legal conclusion.
 
 ## Weekdays, dates, and outside-schedule pay
 
@@ -48,7 +48,7 @@ Regular-shift overlap, discontinuous duty, effective-rate boundaries, canceled c
 
 ## Flat per diem
 
-Enable **Flat per diem** and enter **USD per worked date**. This is a flat amount for a local worked date, not one payment per work entry. More than one shift on the same date does not automatically earn another daily allowance; work across local dates can affect the dates included.
+Enable **Flat per diem** and enter the amount per worked date (labelled with the profile’s currency, for example **USD per worked date**). This is a flat amount for a local worked date, not one payment per work entry. More than one shift on the same date does not automatically earn another daily allowance; work across local dates can affect the dates included.
 
 Expected per diem is displayed separately from expected wages. When checking a paystub, you explicitly confirm whether its gross figure includes that allowance. LinePaycheck does not infer tax treatment.
 

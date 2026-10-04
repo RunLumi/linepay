@@ -8,11 +8,13 @@ keywords: [confirm, gross pay, current period, year to date, YTD, not comparable
 ---
 ## Confirm the three minimum fields
 
-In **Review paystub**, open each item under **Minimum facts**: period start, period end, and gross pay. Check the value against the paystub, correct it if necessary, and choose **Confirm this field**.
+In **Review paystub**, check **Pay period starts** and **Pay period ends** against the paystub and turn on **These dates match the paystub**. Then enter **Gross pay**: typing it yourself counts as your confirmation, while a value read from a scan or file needs **Confirm … matches the paystub**.
+
+{{< screenshot "paystub-review" >}}
 
 The period dates must match the selected work period. Use the paycheck’s **current-period gross**, not year-to-date earnings, net pay, an hourly rate, or a bank deposit.
 
-The audit action remains unavailable until the minimum fields are reviewed. Editing a previously confirmed value removes its confirmation; confirm it again after correcting it.
+The compare action stays unavailable until the dates and gross pay are confirmed. Editing a previously confirmed value removes its confirmation; confirm it again after correcting it.
 
 ## Inspect the original when available
 
@@ -22,15 +24,15 @@ A source highlight helps you find evidence. It does not prove that OCR selected 
 
 ## Confirm what is being compared
 
-Turn on **All work for this paycheck period is recorded** only after checking the complete work log, including earlier shifts and unpaid breaks.
+Turn on **My work log covers this whole pay period** only after checking the complete work log, including earlier shifts and unpaid breaks.
 
-Under **What does gross include?**, choose the confirmed **Gross basis**: wages only, or wages including the per diem represented in the ledger. Leave it unconfirmed when you do not know. See [gross and earnings layouts]({{< relref "/paystub-layouts" >}}) before guessing.
+Under **What does the gross pay include?**, choose the confirmed **Gross basis**: wages only, or wages including the per diem represented in the ledger. Leave it unconfirmed when you do not know. See [gross and earnings layouts]({{< relref "/paystub-layouts" >}}) before guessing.
 
-Without complete work or a known gross basis, the action becomes **Save as not comparable**. This preserves a limited record instead of presenting an unsupported full-paycheck difference. It does not consume the first comparable Free audit.
+Without complete work or a known gross basis, the action becomes **Save without comparing**, and the bar above it names exactly what is still missing. This preserves a limited record instead of presenting an unsupported full-paycheck difference. It does not consume the first comparable Free audit.
 
 ## Review optional lines
 
-Expand **Review optional line details** for regular, overtime, and double-time hours/pay, callout pay, and per diem. Open and confirm only values you can identify on the source.
+Expand **Hours and earnings lines** for regular, overtime, and double-time hours/pay, callout pay, and per diem. Open and confirm only values you can identify on the source.
 
 A blank field is unverified, not zero. Enter and confirm zero only when it genuinely represents the source. **Exclude this unconfirmed line** removes an uncertain optional value from the comparison and marks the remaining coverage as limited.
 
@@ -38,7 +40,7 @@ When entering hourly line details, review **How earnings lines are reported**: f
 
 ## Save and review the outcome
 
-Choose **Audit confirmed facts** once the minimum facts and comparison prerequisites are ready. Read the resulting verdict together with its scope and review reasons. A successful save is not a declaration that every earnings obligation was checked.
+Choose **Compare with expected pay** once the dates, gross pay and comparison questions are answered. Read the resulting verdict together with its scope and review reasons. A successful save is not a declaration that every earnings obligation was checked.
 
 Draft changes are saved locally. If a field or review cannot be saved, keep it open, address storage or the stated problem, and retry rather than assuming the latest values survived.
 

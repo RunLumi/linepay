@@ -1,0 +1,245 @@
+{
+  "reviewedOn": "2026-10-04",
+  "appVersion": "1.0.5",
+  "note": "Targeted 1.0.4-1.0.5 review; see CONTENT-SOURCES.md. Update blobs with --record only after re-reviewing the mapped guides.",
+  "sources": [
+    {
+      "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
+      "guides": [
+        "getting-started"
+      ],
+      "disposition": "reviewed",
+      "blob": "0e9da2e6d9045317b2a01e8d8668456559568d06"
+    },
+    {
+      "path": "apps/ios/App/Sources/OnboardingWelcomeView.swift",
+      "guides": [
+        "getting-started"
+      ],
+      "disposition": "reviewed",
+      "blob": "6428be7533db4fedd34b105831e43ec05ae970e1"
+    },
+    {
+      "path": "apps/ios/App/Sources/FirstPayResultView.swift",
+      "guides": [
+        "getting-started",
+        "expected-pay"
+      ],
+      "disposition": "reviewed",
+      "blob": "6f625f8620bd8db141448c6cfc72dbf476ab7f77"
+    },
+    {
+      "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
+      "guides": [
+        "getting-started",
+        "pay-profile",
+        "pay-rules",
+        "changing-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "c1cbdea37dd132c11ab1dc7153a27a6e711663af"
+    },
+    {
+      "path": "apps/ios/App/Sources/EntryDrafts.swift",
+      "guides": [
+        "pay-profile",
+        "recording-work"
+      ],
+      "disposition": "reviewed",
+      "blob": "7dcad3dff8140a469038889a4029eadabee51dea"
+    },
+    {
+      "path": "apps/ios/App/Sources/LinePayFormat.swift",
+      "guides": [
+        "pay-profile",
+        "troubleshooting"
+      ],
+      "disposition": "reviewed",
+      "blob": "47e224779bc983adbfde4470013a0434dd22778c"
+    },
+    {
+      "path": "apps/ios/App/Sources/TodayView.swift",
+      "guides": [
+        "getting-started",
+        "recording-work"
+      ],
+      "disposition": "reviewed",
+      "blob": "d0b51e0fc43c725ea67ba9daf44d3202889b2ea6"
+    },
+    {
+      "path": "apps/ios/App/Sources/AddWorkView.swift",
+      "guides": [
+        "recording-work"
+      ],
+      "disposition": "reviewed",
+      "blob": "0a919655439ed2581ba1d37c1827934f41e37a61"
+    },
+    {
+      "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",
+      "guides": [
+        "recording-work",
+        "pay-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "d28858a4d3d21a3fbf969f696ae0144a03c55ba5"
+    },
+    {
+      "path": "apps/ios/App/Sources/RepeatWorkView.swift",
+      "guides": [
+        "recording-work"
+      ],
+      "disposition": "reviewed",
+      "blob": "649805fe794f1d9a028281aab3e267de281fe494"
+    },
+    {
+      "path": "apps/ios/App/Sources/PayLedgerView.swift",
+      "guides": [
+        "expected-pay",
+        "pay-periods",
+        "pay-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "ad18d72562dd270412e2390b251bb8b97238734e"
+    },
+    {
+      "path": "apps/ios/App/Sources/WeeklyOvertimeReviewView.swift",
+      "guides": [
+        "pay-rules",
+        "supported-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "96bda954ea04dbfb135c60750180e1f550fe45bb"
+    },
+    {
+      "path": "apps/ios/App/Sources/HistoryView.swift",
+      "guides": [
+        "history",
+        "pay-periods"
+      ],
+      "disposition": "reviewed",
+      "blob": "3530bdd95ef5a220b2880037d6dbebf951e39057"
+    },
+    {
+      "path": "apps/ios/App/Sources/PaystubImportView.swift",
+      "guides": [
+        "importing-paychecks",
+        "confirming-fields",
+        "paystub-layouts"
+      ],
+      "disposition": "reviewed",
+      "blob": "f60db100d18b082059a7b6097449b1f0eae2bf9f"
+    },
+    {
+      "path": "apps/ios/App/Sources/AuditDetailView.swift",
+      "guides": [
+        "audit-results",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "5d55337b5a5d2acda26193e41c03cf2d1a372045"
+    },
+    {
+      "path": "apps/ios/App/Sources/AuditStatusView.swift",
+      "guides": [
+        "audit-results"
+      ],
+      "disposition": "reviewed",
+      "blob": "6ee86eacdf5d9ac3d359e23fda025d580e7f319a"
+    },
+    {
+      "path": "apps/ios/App/Sources/ReportSharingView.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "e7d426ddb454bf025a79d62c62886a313c8d1081"
+    },
+    {
+      "path": "apps/ios/App/Sources/BackupRestoreView.swift",
+      "guides": [
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "9515bb9d2659b9ebbbe07f673c507fd54f12aa4b"
+    },
+    {
+      "path": "apps/ios/App/Sources/SettingsView.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "pro-and-billing",
+        "support"
+      ],
+      "disposition": "reviewed",
+      "blob": "2c5e40bda111f74a885ad6a248cb94260db540b3"
+    },
+    {
+      "path": "apps/ios/App/Sources/AboutLinePayView.swift",
+      "guides": [
+        "support"
+      ],
+      "disposition": "reviewed",
+      "blob": "05dafa3d226cda237a8830d254cda5b94ca89ca7"
+    },
+    {
+      "path": "apps/ios/App/Sources/AppLinks.swift",
+      "guides": [
+        "support",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "77b1b679b546bb68425f8421128ef93829694ede"
+    },
+    {
+      "path": "apps/ios/App/Sources/OnboardingPaywallView.swift",
+      "guides": [
+        "pro-and-billing"
+      ],
+      "disposition": "reviewed",
+      "blob": "12e9a5e9c8fc53b8aeec638816c8d17c4a3c503b"
+    },
+    {
+      "path": "apps/ios/App/Sources/SubscriptionStore.swift",
+      "guides": [
+        "pro-and-billing"
+      ],
+      "disposition": "reviewed",
+      "blob": "13984ca25868cda0a58dd556259d1a37a2b72aa9"
+    },
+    {
+      "path": "apps/ios/App/Sources/TrialReminder.swift",
+      "guides": [
+        "pro-and-billing"
+      ],
+      "disposition": "reviewed",
+      "blob": "185a7300eb9e7f09dce752b46403664c423255a9"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/PaycheckAssessment.swift",
+      "guides": [
+        "audit-results",
+        "paystub-layouts",
+        "pay-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "0025ec9fe7d8295ce9313b5d9f77c70101b422fa"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/StrictDecimal.swift",
+      "guides": [
+        "pay-profile",
+        "troubleshooting"
+      ],
+      "disposition": "reviewed",
+      "blob": "cc8c05d1dfcbe4694656c8a0daaa59a285f4d4a8"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WeeklyRegularRate.swift",
+      "guides": [
+        "pay-rules",
+        "supported-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "211d4f73a704bf6efe44b20855fa67e08f1a63dc"
+    }
+  ]
+}

@@ -14,6 +14,8 @@ For issue #69, the **Pay rules** and **Supported rules** weekly-review guidance 
 
 For issue #44, the **Pay periods**, **History**, and **Troubleshooting** guidance was re-reviewed on **2026-09-09** against the merged #82/#81 implementation on main `a0479466e8f0c0b27f84535ce52162dd374ad8c3`. This targeted review covers unresolved-period closure, frozen-history review, later paycheck facts, retry, backup wording, and next-period independence; it is not a release-wide freshness attestation.
 
+For LinePaycheck **1.0.4–1.0.5**, the **Getting started**, **Pay profile**, **Pay rules**, **Supported rules**, **Pro and billing**, **Troubleshooting** and **Glossary** guidance was re-reviewed on **2026-10-04** against main `3cc0093` plus the issue-#67 change: pay currency (USD/CAD/VND) chosen at setup and fixed per profile, region decimal entry (`58,40`, whole-đồng amounts), U.S./Canada/Vietnam storefronts with local prices, the dated trial timeline and opt-in reminder, and the weekly review staying separate from Expected wages and keeping the audit open past 40 hours. The footer review date was updated to match. A full label sweep followed on the same date: every bolded UI label in all 20 guides was checked against the app and domain sources, and 26 labels renamed by the September 30 whole-app review were corrected (for example **Your first shift**, **Add a shift**, **Compare with expected pay**, **Save without comparing**, **My work log covers this whole pay period**, **Paycheck result**, **Line by line**, **Prepare a report to share**, **View that shift**, **Weekly overtime review**). With the content changes above, this is the full-site review #60 asked for at LinePaycheck 1.0.5; [`source-review.json`](source-review.json) records the reviewed sources.
+
 ## Source map
 
 Paths below are relative to the repository root. These notes are outside `content/` and are not published.
@@ -29,6 +31,8 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
 | Pro and billing | `SubscriptionStore.swift`, `SettingsView.swift`, `AuditDetailView.swift`, `docs/pricing.md` |
 | Support addresses | `apps/ios/App/Sources/AppLinks.swift` |
+
+The machine-readable form of this map is [`source-review.json`](source-review.json). `scripts/check-freshness.py` fails when a tracked source changes without updating that record; see #64.
 | Visual language | `DESIGN.md` revision 2.0; semantic implementation must be rechecked on the exact release candidate |
 
 ## Important reconciliation decisions
@@ -42,7 +46,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 - The weekly regular-rate review is a restricted complete-workweek estimate. It requires explicit profile applicability and complete-week confirmation; it does not establish state, CBA, public-agency, exemption, or universal statutory coverage.
 - Late-arriving paychecks and audit revisions exist in current History. They are not described as missing features.
 - Current statuses are `Compared values match`, `Gross total matches`, `Not ready to compare`, `Possible shortfall`, `Possible overpayment`, `Needs review`, and `Not audited`, with `Awaiting paycheck` as a history/workflow state.
-- Numeric guidance follows the current field UI and strict decimal-point format, not the older decimal-comma examples.
+- Numeric guidance follows the field UI: amounts use the iPhone region's decimal separator (`58.40` or `58,40`), a lone `58.40` is accepted in comma regions, and whole-đồng amounts take no decimals. Money is in the profile's fixed pay currency (USD, CAD or VND).
 - `New rules from a date` is described using the explicit dated-timeline contract. The complete rule-change UX is tracked separately and must be re-reviewed under #15/#60.
 - Backup is manual, not live sync; it replaces rather than merges; it is not password-encrypted by the app. Restore Purchases is separate. JSON/PDF exports are not the complete backup format.
 - Repeat Shift copies payroll-local wall-clock facts for the shift and every recorded break. A repeated DST fold requires an explicit occurrence choice; a nonexistent local time requires manual fact review; unresolved copies cannot be saved. The ordinary Add Work editor no longer owns a template-copy API.
@@ -51,6 +55,8 @@ Paths below are relative to the repository root. These notes are outside `conten
 
 ## Maintenance gate
 
-For each release, review changed visible labels, rule shapes, audit prerequisites, scope language, data-deletion/restore behavior, billing copy, Repeat Shift time semantics, weekly review behavior, and callout event/guarantee semantics against these guides. Update the full-site reviewed date/commit only after that complete review. Add real screenshots only from a verified build and synthetic fixtures, with build/device provenance; do not publish generated app mockups as product captures.
+`scripts/check-freshness.py` enforces the first step mechanically: it runs in `scripts/check.sh` and in the repository script tests (so in the iOS gate and `agent-verify.sh quick`). When it reports a tracked source as changed, re-review the mapped guides, then run `python3 user-guide/scripts/check-freshness.py --record`; for a change that alters no public instruction, set that entry's `disposition` to `reviewed-no-guide-change` with a `reason` instead. Bump `reviewedOn`, `appVersion` and the `reviewed` footer in `hugo.toml` together.
+
+For each release, review changed visible labels, rule shapes, audit prerequisites, scope language, data-deletion/restore behavior, billing copy, Repeat Shift time semantics, weekly review behavior, and callout event/guarantee semantics against these guides. Update the full-site reviewed date/commit only after that complete review. Add real screenshots only from a verified build and synthetic fixtures, with build/device provenance; do not publish generated app mockups as product captures. Help screenshots live in `assets/screenshots/`, are placed with the `screenshot` shortcode, and need a complete provenance entry in `data/screenshots.json` (app commit and version, iOS, device, appearance, text size, locale, synthetic fixture, source test and attachment, alt text); `scripts/check-screenshots.py` and the build enforce this. They are taken from the UI journeys' named `capture(...)` attachments, never from `assets/app-stores/concepts/`. When the freshness check flags a source mapped to a guide that shows a screenshot, re-capture it from the same journey.
 
 No public guide exports this source map, root AGENTS.md, internal docs, private repository links, or code snapshots. Hosting URLs and screenshots in QA artifacts are website test data only.

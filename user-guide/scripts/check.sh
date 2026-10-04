@@ -9,3 +9,5 @@ python3 "$ROOT/scripts/check-site.py" "$ROOT/.qa/root" https://guide.example.tes
 hugo --source "$ROOT" --destination "$ROOT/.qa/project/linepay" --baseURL https://guide.example.test/linepay/ --environment production --cleanDestinationDir --panicOnWarning
 python3 "$ROOT/scripts/check-site.py" "$ROOT/.qa/project/linepay" https://guide.example.test/linepay/
 node "$ROOT/scripts/test-search.mjs"
+python3 "$ROOT/scripts/check-freshness.py"
+python3 "$ROOT/scripts/check-screenshots.py"

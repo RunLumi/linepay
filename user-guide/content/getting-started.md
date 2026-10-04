@@ -15,7 +15,7 @@ These guides cover the iPhone app. No LinePaycheck username, password, or employ
 ## Set up your pay
 
 1. Open LinePaycheck and choose **Calculate my pay**.
-2. In **Pay basics**, enter a profile name and your **Base hourly rate, USD**. Select the **Payroll timezone** used to interpret your work dates.
+2. In **Pay basics**, choose your **Pay currency** (US dollar, Canadian dollar, or Vietnamese đồng), enter your **Base hourly rate**, and give the profile a name. Select the **Payroll timezone** used to interpret your work dates.
 3. In **Pay period**, choose weekly, every two weeks, or manual dates. Check the preview against the period you actually want to track—not the date money reaches your bank.
 4. In **Your rules**, enable only the rules you have confirmed. Leave the rest off. Use **I don’t see my rule** to record missing coverage rather than approximating it.
 5. In **Confirm rules**, read the summary and choose **Use these rules**.
@@ -24,7 +24,9 @@ Use **Back** to correct a step. Unfinished setup is saved on the device; a save-
 
 ## Record one actual shift
 
-After **Use these rules**, the first-run flow opens **Your first work**. Choose **Log my first work** to enter a real shift, or **I'll log work later** if you are not ready. After the first saved shift, **Your expected pay** shows the result; choose **Continue** when you have read it. LinePaycheck then shows the optional Pro offer once, where **Continue free** keeps every free feature, and the normal tabs appear. Choosing **I'll log work later** shows the same optional offer before the tabs. For later entries, use **Today → Add work**.
+After **Use these rules**, the first-run flow opens **Your first shift**. Choose **Add a shift** to enter a real shift, or **I'll add shifts later** if you are not ready. After the first saved shift, **Your expected pay** shows the result; choose **Continue** when you have read it. LinePaycheck then shows the optional Pro offer once, where **Continue free** keeps every free feature, and the normal tabs appear. Choosing **I'll add shifts later** shows the same optional offer before the tabs. For later entries, use **Today → Add work**.
+
+{{< screenshot "first-shift" >}}
 
 Select the work type, start and end dates and times, and any unpaid breaks. Check **Actual worked time** and the payroll timezone, then choose **Save work**.
 
