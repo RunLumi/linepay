@@ -23,7 +23,8 @@ jobs:
     runs-on: linepay-ios
     timeout-minutes: 25
     env:
-      IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=0A8C774B-C1D3-4A43-816C-81D3D3D849D8
+      # Found by name: a UDID does not survive a host restore or simulator rebuild.
+      IOS_SIMULATOR_NAME: QC iPhone 17 Pro v2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -42,7 +43,13 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Reset synthetic app data on the pinned simulator
         run: |
-          UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          UDID=$(xcrun simctl list devices available | grep -F "$IOS_SIMULATOR_NAME (" | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          if [[ -z "$UDID" ]]; then
+            echo "error: CI simulator is unavailable: $IOS_SIMULATOR_NAME" >&2
+            xcrun simctl list devices available >&2
+            exit 1
+          fi
+          echo "IOS_SIMULATOR_DESTINATION=platform=iOS Simulator,id=$UDID" >> "$GITHUB_ENV"
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
       - name: Run legal behavior and interaction regressions

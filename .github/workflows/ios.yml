@@ -31,8 +31,9 @@ jobs:
     runs-on: linepay-ios
     timeout-minutes: 20
     env:
-      # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime.
-      IOS_SIMULATOR_DESTINATION: platform=iOS Simulator,id=6CB95D1F-BC8E-4C06-B8C4-606F58AA02A9
+      # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime. The device is
+      # found by name: a UDID does not survive a host restore or simulator rebuild.
+      IOS_SIMULATOR_NAME: LinePay Release iPhone 18
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,7 +55,13 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Reset synthetic app data on the pinned simulator
         run: |
-          UDID="${IOS_SIMULATOR_DESTINATION##*id=}"
+          UDID=$(xcrun simctl list devices available | grep -F "$IOS_SIMULATOR_NAME (" | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          if [[ -z "$UDID" ]]; then
+            echo "error: CI simulator is unavailable: $IOS_SIMULATOR_NAME" >&2
+            xcrun simctl list devices available >&2
+            exit 1
+          fi
+          echo "IOS_SIMULATOR_DESTINATION=platform=iOS Simulator,id=$UDID" >> "$GITHUB_ENV"
           # Reboot the dedicated full-gate simulator so StoreKit starts from a
           # clean daemon session without erasing the device or other data.
           xcrun simctl shutdown "$UDID" 2>/dev/null || true
