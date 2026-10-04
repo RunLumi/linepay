@@ -24,7 +24,7 @@ Use **Back** to correct a step. Unfinished setup is saved on the device; a save-
 
 ## Record one actual shift
 
-After **Use these rules**, the first-run flow opens **Your first work**. Choose **Log my first work** to enter a real shift, or **I'll log work later** if you are not ready. After the first saved shift, **Your expected pay** shows the result; choose **Continue** when you have read it. LinePaycheck then shows the optional Pro offer once, where **Continue free** keeps every free feature, and the normal tabs appear. Choosing **I'll log work later** shows the same optional offer before the tabs. For later entries, use **Today → Add work**.
+After **Use these rules**, the first-run flow opens **Your first shift**. Choose **Add a shift** to enter a real shift, or **I'll add shifts later** if you are not ready. After the first saved shift, **Your expected pay** shows the result; choose **Continue** when you have read it. LinePaycheck then shows the optional Pro offer once, where **Continue free** keeps every free feature, and the normal tabs appear. Choosing **I'll add shifts later** shows the same optional offer before the tabs. For later entries, use **Today → Add work**.
 
 Select the work type, start and end dates and times, and any unpaid breaks. Check **Actual worked time** and the payroll timezone, then choose **Save work**.
 

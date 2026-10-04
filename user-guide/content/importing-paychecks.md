@@ -33,7 +33,7 @@ For a file that cannot be read, keep your source file and try a readable PDF or 
 
 ## Resume instead of starting over
 
-If the same period has an unfinished review, choose **Resume saved review**. **Keep draft and close** leaves the saved review available while closing the import flow; unfinished processing is cancelled.
+If the same period has an unfinished review, choose **Resume saved review**. Unfinished reviews are saved as you go, so **Close** keeps the review available; unfinished processing is cancelled.
 
 Only one paycheck review draft is active at a time. When it belongs to another period, resume it from that period, or explicitly choose **Discard the other unfinished review**. Confirmed audits remain; an original used only by the discarded draft can be removed or queued for cleanup.
 

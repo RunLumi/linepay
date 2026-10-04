@@ -17,7 +17,7 @@ Never change real work facts just to make a comparison green. An error or incomp
 | Problem | Check next |
 | --- | --- |
 | The rate or a number is rejected | Type the number the way your iPhone region writes it (`58.40` or `58,40`), with no other text. Đồng amounts take no decimals. Hours and money have different precision limits. |
-| Save work is unavailable | Verify End is after Start, the dates are inside the open period, and no existing entry overlaps. Use **View conflicting entry**. |
+| Save work is unavailable | Verify End is after Start, the dates are inside the open period, and no existing entry overlaps. Use **View that shift**. |
 | **Save same shift** is unavailable after Repeat | Look for **Clock-time review** or an outside-period message. Resolve every repeated-time choice, edit a nonexistent local time, or choose another **New date** before saving. |
 | A repeated local time occurs twice | Under **Occurrence**, compare the displayed UTC offsets and choose **First occurrence** or **Second occurrence** based on the instant you actually worked. Do not choose whichever produces the preferred pay result. |
 | A copied local time does not exist | Choose **Edit details**, enter the actual date/time and breaks you worked, then choose **Confirm reviewed manual times**. LinePaycheck does not silently move a nonexistent clock time forward. |

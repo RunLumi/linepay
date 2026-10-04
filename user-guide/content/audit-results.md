@@ -8,9 +8,9 @@ keywords: [match, shortfall, overpayment, needs review, discrepancy, not ready]
 ---
 ## Read the scope with the result
 
-Open **Pay → Open paycheck audit**, or select the period in History. Check the period dates and gross basis, then read both the verdict and scope.
+Open **Pay → View paycheck result**, or choose **View paycheck result** for the period in History. Check the period dates and gross basis, then read both the verdict and scope.
 
-**Gross total only** compares the confirmed gross with the expected amount on the selected basis. **Only confirmed lines compared** covers the specific lines you reviewed and that the app could map. Blank fields, unsupported rules, and unreviewed source details are not silently verified.
+**Compared: gross total** means the confirmed gross was compared with the expected amount on the selected basis. **Compared: confirmed lines** covers the specific lines you reviewed and that the app could map. Blank fields, unsupported rules, and unreviewed source details are not silently verified.
 
 ## What each status means
 
@@ -40,7 +40,7 @@ Likewise, differing confirmed hours can require review even when money matches. 
 
 ## When work or rules change
 
-An earlier audit is no longer current after relevant input changes. Use **Review or correct confirmed facts** to review it again. Previous audit revisions preserve what was compared earlier; do not use an old screenshot as proof of the new state.
+An earlier audit is no longer current after relevant input changes. Use **Review or correct paycheck facts** to review it again. Previous audit revisions preserve what was compared earlier; do not use an old screenshot as proof of the new state.
 
 ## Before contacting payroll
 
