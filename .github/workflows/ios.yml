@@ -29,7 +29,9 @@ concurrency:
 jobs:
   check:
     runs-on: linepay-ios
-    timeout-minutes: 20
+    # All tests finish in ~13 minutes on the current Mac mini, but coverage export and the
+    # Release build add ~8 more; 20 minutes cancelled an otherwise green gate.
+    timeout-minutes: 35
     env:
       # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime. The device is
       # found by name: a UDID does not survive a host restore or simulator rebuild.
