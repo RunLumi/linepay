@@ -39,6 +39,12 @@ and advanced audit tools"; the eight concept screenshots (fake UI, logo and empl
 | Pricing card | In-app paywall and `canRunAudit` | Pro is recurring checks only; history and reports stay free (website PR #12) |
 | Guides (storm, overtime, per diem, callout) | Cited public sources on each page | "General information, not legal, tax, payroll or employment advice"; all figures fictional |
 
+## Other channels
+
+- **Other App Store surfaces:** none. The App Store Connect API on October 5, 2026 showed 0 custom product pages, 0 in-app events and 0 product page tests.
+- **Advertising:** no ad creative exists in this repository or the store account. Any future ad, social or press copy follows this register before it runs.
+- **In-app and support copy:** repository copy is checked by `scripts/legal_guardrails.py` (absolute privacy and recovery claims fail the check). The support templates ask for synthetic or redacted examples only.
+
 ## Rules for new claims
 
 - **Possible, not recovered.** Say "possible difference" for a calculated gap. Never state or imply

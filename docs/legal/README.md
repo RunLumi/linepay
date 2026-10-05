@@ -178,6 +178,8 @@ Trademark clearance covers LinePaycheck/LinePay variants, icon and related uses 
 
 Before a named agreement pack ships, require rights/legal basis, employer/local/classification applicability, effective dates/amendments, covered/excluded provisions, reviewer and version-change process. Public availability is not permission to copy all protected expression. A no-pack launch can use a reasoned reviewed non-applicability record. Synthetic tests must never silently become official rates.
 
+**Non-applicability record, 1.0.x (October 5, 2026, #26).** No named agreement pack, preset or rate table ships. Shipped resources are only `Assets.xcassets`, `Localizable.xcstrings` and `PrivacyInfo.xcprivacy`. The app and domain sources name no union, local, employer or agreement. Every rule value is entered by the worker, and the store and test fixtures are labelled synthetic. `inventory.json` hashes `apps/ios/App/Resources/**/*`, so any added resource fails `legal_guardrails.py check` until reviewed. Adding a pack reopens LEGAL-14 and needs the rights, scope and reviewer fields above first.
+
 ## 8. Change triggers and external approval
 
 Re-evaluate the corresponding issues before adding territories, payroll-law coverage, named packs, accounts/cloud sync, analytics/ad-tech, support vendors, new runtime SDKs/encryption, employer processing, credit/fund movement, legal representation or child-directed marketing. Currency conversion alone does not localize payroll law. Never send wage/union/paystub/discrepancy data as advertising events.
