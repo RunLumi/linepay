@@ -57,6 +57,10 @@
                             baseDirectory: base.appendingPathComponent("originals")))
                 }
                 let model = session.model
+                if scenario.hasPrefix("store-week") {
+                    try seedStoreWeek(model, scenario: scenario)
+                    return session
+                }
                 var profile = PayProfileDraft()
                 profile.name = "SAMPLE - synthetic work"
                 profile.hourlyRate = "50"
@@ -134,6 +138,57 @@
                 session.restoreNotice = "Synthetic UI fixture failed: \(error.localizedDescription)"
             }
             return session
+        }
+
+        /// The App Store sample paycheck `store-week-2026-08-v1` from
+        /// docs/design/app-stores/screenshots.md §4: $58.00/h, 2× after 8 paid hours in a work date,
+        /// 46 hours (40 regular, 6 double time) expecting $3,016.00, against a synthetic paystub of
+        /// 40 + 5 hours and $2,900.00 gross. `store-week` stops before the paycheck,
+        /// `store-week-checked` confirms it, and `store-week-archived` also closes the period.
+        private static func seedStoreWeek(_ model: AppModel, scenario: String) throws {
+            var profile = PayProfileDraft()
+            profile.hourlyRate = "58"
+            profile.currencyCode = "USD"
+            profile.timeZoneIdentifier = "America/Chicago"
+            profile.preferredCadence = .weekly
+            profile.useDailyOvertime = true
+            profile.overtimeAfterHours = "8"
+            profile.overtimeMultiplier = "2"
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: "America/Chicago")!
+            let day = { (date: Int, hour: Int) in
+                calendar.date(from: DateComponents(year: 2026, month: 8, day: date, hour: hour))!
+            }
+            profile.periodStartDate = day(24, 0)
+            try model.saveProfile(profile)
+            for (date, start, end) in [
+                (24, 7, 15), (25, 7, 15), (26, 7, 15), (27, 6, 20), (28, 7, 15),
+            ] {
+                try model.addWork(
+                    start: day(date, start), end: day(date, end), kind: .regular, note: "")
+            }
+            try model.completeFirstResult()
+            guard scenario != "store-week" else { return }
+            guard let id = model.activePeriod?.id else {
+                throw AppModelError.missingActivePayPeriod
+            }
+            var stub = try model.paycheckDraft(for: id)
+            stub.grossPay = "2900"
+            stub.regularHours = "40"
+            stub.regularPay = "2320"
+            stub.doubleTimeHours = "5"
+            stub.doubleTimePay = "580"
+            stub.workComplete = true
+            stub.earningsLinesComplete = true
+            stub.grossBasis = .wagesOnly
+            stub.lineLayout = .fullRateBuckets
+            stub.hoursBasis = .actualWork
+            stub.reviewedFields = [
+                .periodStart, .periodEnd, .grossPay, .regularHours, .regularPay, .doubleTimeHours,
+                .doubleTimePay,
+            ]
+            try model.confirmPaystub(stub)
+            if scenario == "store-week-archived" { try model.archiveCurrentPeriod() }
         }
     }
 #endif

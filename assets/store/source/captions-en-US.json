@@ -1,0 +1,78 @@
+{
+  "fixtureID": "store-week-2026-08-v1",
+  "frames": [
+    {
+      "id": "01-expected-pay",
+      "raw": "store-01-expected-pay.png",
+      "headline": "Know what your work\nshould pay.",
+      "caption": "For linemen. Based on the rules you confirm.",
+      "qualifier": "Illustrative data",
+      "lineGap": true,
+      "productState": "pay-ledger-before-paycheck",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "02-pay-rules",
+      "raw": "store-02-pay-rules.png",
+      "headline": "Built around\nyour pay rules.",
+      "caption": "Your rate. Your confirmed rules.",
+      "qualifier": "Illustrative data",
+      "productState": "rule-editor-daily-overtime-on-others-off",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "03-possible-difference",
+      "raw": "store-03-possible-difference.png",
+      "headline": "Spot possible\npay differences.",
+      "caption": "Compare expected gross with your paystub.",
+      "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
+      "productState": "confirmed-line-comparison-possible-shortfall",
+      "accessRequirement": "First check free; Pro for later periods"
+    },
+    {
+      "id": "04-line-evidence",
+      "raw": "store-04-line-evidence.png",
+      "headline": "See the math behind\nevery hour.",
+      "caption": "Each difference traced to the work behind it.",
+      "qualifier": "Illustrative data",
+      "productState": "double-time-line-evidence",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "05-log-work",
+      "raw": "store-05-log-work.png",
+      "headline": "Log the shift.\nKeep the evidence.",
+      "caption": "Start, end, unpaid breaks, and its pay period.",
+      "qualifier": "Illustrative data",
+      "productState": "edit-aug-27-shift",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "06-paystub",
+      "raw": "store-06-paystub.png",
+      "headline": "Check it against\nyour paystub.",
+      "caption": "Dates and gross pay are enough to compare.",
+      "qualifier": "Illustrative data",
+      "productState": "paystub-review-confirmed-dates-and-gross",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "07-privacy",
+      "raw": "store-07-privacy.png",
+      "headline": "No account.\nNo uploads to us.",
+      "caption": "Pay details are processed on your device.",
+      "qualifier": null,
+      "productState": "settings-privacy-and-data",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "08-history",
+      "raw": "store-08-history.png",
+      "headline": "Keep every pay\nperiod straight.",
+      "caption": "Closed periods keep their work, rules, and checks.",
+      "qualifier": "Illustrative data",
+      "productState": "closed-period-with-possible-shortfall",
+      "accessRequirement": "Free to keep and view"
+    }
+  ]
+}

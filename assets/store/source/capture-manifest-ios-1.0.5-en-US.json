@@ -1,0 +1,184 @@
+{
+  "platform": "ios",
+  "locale": "en-US",
+  "displayType": "APP_IPHONE_65",
+  "fixtureID": "store-week-2026-08-v1",
+  "captureTest": "LinePayUITests/PaydayJourneyTests/testStoreScreenshotsFromSamplePaycheck",
+  "sourceCommit": "192d9ea",
+  "appVersion": "1.0.5",
+  "buildNumber": "11",
+  "device": "iPhone 11 Pro Max (Simulator)",
+  "osVersion": "iOS 26.5 (23F77)",
+  "appearance": "light",
+  "payrollTimeZone": "America/Chicago",
+  "images": [
+    {
+      "id": "01-expected-pay",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/01-expected-pay.png",
+      "exportSHA256": "b066eafcd78b60fca30cad89bf7306732934c0c08f0424cf681d59cc5d20c1f0",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-01-expected-pay.png",
+      "rawSHA256": "32c979e403ad6c46aa484e785ebc2dbd93f000ff7ba00c7b08563a9dc7964264",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        957,
+        2071
+      ],
+      "headline": "Know what your work should pay.",
+      "caption": "For linemen. Based on the rules you confirm.",
+      "qualifier": "Illustrative data",
+      "productState": "pay-ledger-before-paycheck",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "02-pay-rules",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/02-pay-rules.png",
+      "exportSHA256": "d3bfc4aa2ed6d9245dc0dae02964785e24ca4297aef9f08fb035b9784907f590",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-02-pay-rules.png",
+      "rawSHA256": "775209bf685f386c23b4ddb57fc885ad7389b0586bbb204ceca08f22d134779d",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "Built around your pay rules.",
+      "caption": "Your rate. Your confirmed rules.",
+      "qualifier": "Illustrative data",
+      "productState": "rule-editor-daily-overtime-on-others-off",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "03-possible-difference",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/03-possible-difference.png",
+      "exportSHA256": "7ebdf95cde492d98d373e4e2773cdd5ec4d4f91da6fa5b3cb50d5cf23465f23a",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-03-possible-difference.png",
+      "rawSHA256": "0d283a619fa8ef4df4bffcc6155e763d2378c6fab584257541afdba676dc1707",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2120
+      ],
+      "headline": "Spot possible pay differences.",
+      "caption": "Compare expected gross with your paystub.",
+      "qualifier": "Illustrative data \u00b7 First paycheck check free. Pro for ongoing checks.",
+      "productState": "confirmed-line-comparison-possible-shortfall",
+      "accessRequirement": "First check free; Pro for later periods"
+    },
+    {
+      "id": "04-line-evidence",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/04-line-evidence.png",
+      "exportSHA256": "ec6bc29f0145c81f75dd1620e93ba766a4e4c10ccd070559582b181c9a675c71",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-04-line-evidence.png",
+      "rawSHA256": "df393a7b826f61a9b2d3d584db1119880e6d37323b06b4a6c2da78488272c3cf",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "See the math behind every hour.",
+      "caption": "Each difference traced to the work behind it.",
+      "qualifier": "Illustrative data",
+      "productState": "double-time-line-evidence",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "05-log-work",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/05-log-work.png",
+      "exportSHA256": "e35613c84b2f3501e791ef8c560eb70ea906f93ef24bbe142e39aa85c9ea3a79",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-05-log-work.png",
+      "rawSHA256": "26a47b9eed58809d13ff44bed55195e67f43824b622b183eef246f02b4b4a443",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "Log the shift. Keep the evidence.",
+      "caption": "Start, end, unpaid breaks, and its pay period.",
+      "qualifier": "Illustrative data",
+      "productState": "edit-aug-27-shift",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "06-paystub",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/06-paystub.png",
+      "exportSHA256": "cdea192e48c86d46531caeaac0581a7962197a307f0be695bf5f577c0b38ecf8",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-06-paystub.png",
+      "rawSHA256": "4b456befb557731994a2b3d0344f97e89b8cd54c37edf4325f0accd2ad01ef0a",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "Check it against your paystub.",
+      "caption": "Dates and gross pay are enough to compare.",
+      "qualifier": "Illustrative data",
+      "productState": "paystub-review-confirmed-dates-and-gross",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "07-privacy",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/07-privacy.png",
+      "exportSHA256": "f926623c818924cd880e3d8c72966ca890f49637ca6bc10d1b84957d15b88fba",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-07-privacy.png",
+      "rawSHA256": "e3580d672fada7bf9484e8d816f83dd7b9f8e8fa19b40e87a8f847dc005c8dda",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "No account. No uploads to us.",
+      "caption": "Pay details are processed on your device.",
+      "qualifier": null,
+      "productState": "settings-privacy-and-data",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "08-history",
+      "export": "assets/store/exports/ios/1.0.5/en-US/6.5/08-history.png",
+      "exportSHA256": "9eed49071d865ab6d5bb9a01c6a34e4e14e539e26956e480a240d67b3faa4666",
+      "exportPixels": [
+        1284,
+        2778
+      ],
+      "rawCapture": "assets/store/raw/ios/1.0.5-11/en-US/iPhone-11-Pro-Max/light/store-08-history.png",
+      "rawSHA256": "59b4abc6d971a66242ddc320ec3f20da161bc86f40f1dd19846afd8dcbbcaaa7",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2121
+      ],
+      "headline": "Keep every pay period straight.",
+      "caption": "Closed periods keep their work, rules, and checks.",
+      "qualifier": "Illustrative data",
+      "productState": "closed-period-with-possible-shortfall",
+      "accessRequirement": "Free to keep and view"
+    }
+  ]
+}

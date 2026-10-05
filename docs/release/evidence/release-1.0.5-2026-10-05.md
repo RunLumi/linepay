@@ -28,9 +28,20 @@ Build 10 of 1.0.5 (TestFlight only, October 4) predates two fixes, so it was not
 |---|---|
 | Build `11` (`1.0.5`), delivery `4d5db312-726f-44da-8a4e-10429fb3a126` | `VALID`; `altool --validate-app` reported no errors |
 | App Store version `1.0.5` | `WAITING_FOR_REVIEW`, `releaseType: AFTER_APPROVAL`, submitted 2026-10-05 01:13 UTC |
-| Description and review notes | Carried over from 1.0.4 (Standard EULA and privacy links, no prices) |
+| Description and review notes | Carried over from 1.0.4 (Standard EULA and privacy links, no prices), then corrected on resubmission (below) |
 
 Archived from commit `192d9ea` in a clean worktree; IPA SHA-256 `b98b25612dd99708a3033e56fd9df2ac32871cde8e7b820d0fe06edf25e6d1ca`.
+
+## Store page correction and resubmission (October 5, issue #27)
+
+The 6.5-inch screenshots carried over from 1.0.0 were generated concept art: an invented UI, the superseded logo and a fictional employer. 1.0.5 would have shipped them again, so the submission was withdrawn (developer reject) before review, corrected, and resubmitted:
+
+- **Screenshots.** Replaced all eight with unedited captures of the `store-week-2026-08-v1` sample paycheck, taken from build 11's app sources plus the DEBUG-only `store-week` fixture by `PaydayJourneyTests.testStoreScreenshotsFromSamplePaycheck`. Files, checksums and captions are in `assets/store/`. Each frame is labelled "Illustrative data", and the possible-difference frame says "First paycheck check free. Pro for ongoing checks." Apple processed all eight (`COMPLETE`), and they are ordered 01–08 in set `4e65ff6b-0dd3-431e-b7c9-fe51c7ba118b`.
+- **Description.** "Track … storm work" became "Log regular shifts, callouts, overnight work, and unpaid breaks", because the app does not model storm rules. The Pro line now says only what Pro unlocks: "LinePaycheck Pro adds a paycheck check for every pay period after your free first check." It no longer says "paystub scanning, reconciliation history, and advanced audit tools".
+- **Promotional text** set to the canonical default in `docs/release/app-store.md` §4.
+- Resubmitted 2026-10-05 01:43 UTC (review submission `acb6da17-da57-4a1d-9500-2908ea6bc47c`); state `WAITING_FOR_REVIEW`, build `11`, `AFTER_APPROVAL`. The same binary as the first submission.
+
+1.0.4's live page keeps the concept screenshots until 1.0.5 is released; a live version's media cannot be edited.
 
 ## Owner decisions
 
