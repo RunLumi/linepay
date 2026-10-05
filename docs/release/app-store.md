@@ -216,8 +216,8 @@ Set up your real pay rules, log the work you actually performed, and let LinePay
 
 BUILT FOR LINEWORK PAY
 
-• Track regular shifts, callouts, storm work, and overnight work
-• Configure overtime rules and pay multipliers
+• Log regular shifts, callouts, overnight work, and unpaid breaks
+• Set daily overtime, weekday and date premiums, and their multipliers
 • Account for callout minimums and per diem
 • Keep the work timezone tied to the pay rules
 • See expected pay broken down line by line
@@ -240,7 +240,7 @@ FREE TO START
 
 Use LinePaycheck Free to set up a pay profile, log work, calculate expected pay, review the Pay Ledger, and complete your first paycheck audit.
 
-LinePaycheck Pro is for workers who want recurring paycheck checks, paystub scanning, reconciliation history, and advanced audit tools.
+LinePaycheck Pro adds a paycheck check for every pay period after your free first check.
 
 LinePaycheck Pro is an optional auto-renewing monthly or yearly subscription, charged to your Apple ID and managed in your App Store account settings. Eligible new subscribers can try the yearly plan free for 7 days; local prices are shown before you buy.
 

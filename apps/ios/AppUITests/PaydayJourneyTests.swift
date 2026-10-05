@@ -197,6 +197,56 @@ final class PaydayJourneyTests: XCTestCase {
         }
     }
 
+    /// Captures the App Store set from the `store-week` sample paycheck
+    /// (docs/design/app-stores/screenshots.md). Opt-in so CI time stays unchanged:
+    /// `TEST_RUNNER_LINEPAY_STORE_CAPTURE=1 TEST_RUNNER_TZ=America/Chicago xcodebuild test ...`
+    func testStoreScreenshotsFromSamplePaycheck() throws {
+        try XCTSkipUnless(
+            ProcessInfo.processInfo.environment["LINEPAY_STORE_CAPTURE"] == "1",
+            "Store captures run only on request")
+        launch(scenario: "store-week")
+        tab("Pay")
+        XCTAssertTrue(app.staticTexts["$3,016.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("store-01-expected-pay")
+        tab("Settings")
+        tapContaining("Pay profile")
+        tapContaining("Edit and review rules")
+        advanceSetupStep(to: "Step 3 of 4")
+        capture("store-02-pay-rules")
+        app.terminate()
+
+        launch(scenario: "store-week")
+        tapContaining("Aug 27")
+        XCTAssertTrue(app.buttons["work.save"].waitForExistence(timeout: 10))
+        capture("store-05-log-work")
+        app.terminate()
+
+        launch(scenario: "store-week-checked")
+        tab("Pay")
+        tap("View paycheck result")
+        XCTAssertTrue(
+            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["$116.00"].firstMatch.exists)
+        capture("store-03-possible-difference")
+        tapContaining("Double-time pay")
+        capture("store-04-line-evidence")
+        app.navigationBars.buttons.firstMatch.tap()
+        tap("audit.correct")
+        tap("paystub.correct-existing")
+        XCTAssertTrue(app.textFields["paystub.inline.gross"].waitForExistence(timeout: 10))
+        capture("store-06-paystub")
+        app.terminate()
+
+        launch(scenario: "store-week-archived")
+        tab("Settings")
+        tapContaining("Privacy and local data")
+        capture("store-07-privacy")
+        tab("History")
+        capture("store-08-history-list")
+        tapContaining("Aug 24")
+        capture("store-08-history")
+    }
+
     func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() {
         launch(scenario: "matches")
         tab("Pay")
@@ -371,6 +421,11 @@ final class PaydayJourneyTests: XCTestCase {
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = commerce ? "1" : "0"
         if let store { app.launchEnvironment["LINEPAY_UI_STORE"] = store }
+        // Store captures pin the payroll timezone the storefront expects (run xcodebuild with
+        // TEST_RUNNER_TZ=America/Chicago); otherwise the app keeps the host's timezone.
+        if let timeZone = ProcessInfo.processInfo.environment["TZ"] {
+            app.launchEnvironment["TZ"] = timeZone
+        }
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
         app.launch()

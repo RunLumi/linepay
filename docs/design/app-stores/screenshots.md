@@ -7,6 +7,8 @@
 **Version:** 1.0 · **Platform references checked:** September 5, 2026  
 **Status:** Production specification and release-gated storyboard. This document does not create screenshots, verify rendering, or establish conversion lift.
 
+**Current set (October 5, 2026):** the first production set follows this specification and is live on App Store version 1.0.5. The §4 fixture is the DEBUG-only `store-week` scenario in `apps/ios/App/Sources/UITestFixtures.swift`. `PaydayJourneyTests.testStoreScreenshotsFromSamplePaycheck` captures the eight frames; it is opt-in, so run it with `TEST_RUNNER_LINEPAY_STORE_CAPTURE=1 TEST_RUNNER_TZ=America/Chicago`. `scripts/compose-store-screenshots.py` builds the exports from `assets/store/source/captions-en-US.json` and writes the provenance manifest. `scripts/tests/test_store_screenshots.py` guards checksums, captures and the paid-access qualifier. Frame 06 shows manual paystub entry rather than OCR review, and frame 04 is light mode. Both are deliberate simplifications for this set.
+
 ## 1. The decision in one minute
 
 | Decision | Default |

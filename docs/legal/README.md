@@ -4,6 +4,15 @@ This is the implementation companion to the dated [legal review](../legal.md), n
 
 The shipping architecture remains local-first, no LinePaycheck account/backend, manual user-directed Files/iCloud backup, and native Apple commerce. Bundle ID remains `com.streamentry.linepay`. The release-control policy was written for US-only, manual release; since October 3, 2026 the app is sold in the U.S., Canada and Vietnam (see the October 4 status below); neither policy is a statement that all US wage laws are implemented.
 
+**Status (October 5, 2026): owner decisions.** The owner confirmed the following in the working session on October 5, 2026. Each issue is closed with a comment that quotes the decision; any listed trigger reopens it.
+
+- **#13, release path.** The **per-release waiver is the standing path**. Each release gets a receipt in `docs/release/evidence/` with the source commit, build, IPA SHA-256 and App Store Connect readbacks, and the owner's go-ahead in the session is the authorization. The `asc-api.py` preflight remains available and unchanged. Switching back to the preflight, or a release without a receipt, reopens #13.
+- **#16, publisher and contact.** Cloudjet Solutions Pte. Ltd. is the publisher; it matches the App Store seller name read through the API. `lineman-privacy@runlumi.app` is monitored, and a test message reached it. A change of entity or inbox reopens #16.
+- **#26, agreement packs.** No pack ships in 1.0.x; see the §7 non-applicability record. Adding a pack reopens #26.
+- **#27, store assets and claims.** The owner approved the 1.0.5 screenshot set: real captures, `assets/store/`. Claims are mapped in [`claim-register.md`](claim-register.md). New screenshots or claims follow that register and its tests.
+- **#30, audience.** The app is for adult working lineworkers and is not directed to children. The 4+ rating with no content descriptors, the Finance category and US/CA/VN distribution are correct (API readback, October 5). Child-directed marketing or a new audience reopens #30.
+- **#17, privacy copy.** Closed on the evidence in the claim register. Store description, promotional text, screenshots, website and in-app copy were reviewed; no other store surfaces or ads exist.
+
 **Status (October 4, 2026):** LinePaycheck 1.0.1 and 1.0.3 shipped to the U.S. App Store; 1.0.4 (9) is in App Review and 1.0.5 (10) is in TestFlight. Release receipts with commit, IPA SHA-256 and App Store Connect readbacks are in [`docs/release/evidence/`](../release/evidence/). Three owner decisions changed the baseline this ledger assumed:
 
 - **Markets (#33).** On October 3, 2026 the owner extended sales from the U.S. to **Canada and Vietnam**, with equalized prices and the annual seven-day trial in all three storefronts (see [pricing §11](../product/pricing.md)). This is the "new territory" trigger #33 describes; the market review it requires (privacy, consumer, tax, language and support for Canada and Vietnam) has **not** been done and is now a live owner action, not a hypothetical.
@@ -50,11 +59,11 @@ This is the durable issue-to-evidence register. `Pending` means the original iss
 
 | Issue | Remaining acceptance | Responsible role | Regression / fix evidence | Native / UI evidence | Merge state | External blocker |
 |---|---|---|---|---|---|---|
-| #13 | Exact binary/storefront/release authorization | Release owner | PR #35 release guards | Local tooling only | PR #35 merged | Apple readback and owner authorization |
+| #13 | **Closed Oct 5, 2026**: per-release waiver with receipt is the standing path (owner decision) | Release owner | PR #35 release guards | Local tooling only | PR #35 merged | Apple readback and owner authorization |
 | #14 | Native disclosure and comprehension | Product + qualified reviewer | `LegalRegressionTests`; PR #34/#57 and current `main` | Exact-head native receipt `34263817878` covers legal regressions; comprehension remains unverified | PR #57 and follow-ups merged | Worker and expert review |
 | #15 | Three scopes, dates, cancellation, large text | iOS owner | `LegalConsentAndReportTests`, `NoOpenPeriodRuleTests`; PR #34/#57 | Exact-head targeted-native receipt `34263817878`; broad iOS receipt still separate | PR #57 and follow-ups merged | Rendered/user acceptance |
-| #16 | Live pages, entity and monitored contact | Publisher | Release snapshot guards | Not applicable | Controls merged | Publisher facts and live support test |
-| #17 | Audit all public copy | Publisher | Copy scanner | Not applicable | Controls merged | Actual store/ads/support inventory |
+| #16 | **Closed Oct 5, 2026**: live pages verified; owner confirmed entity and monitored inbox | Publisher | Release snapshot guards | Not applicable | Controls merged | Publisher facts and live support test |
+| #17 | **Closed Oct 5, 2026**: store, website, in-app and support copy reviewed (`claim-register.md`) | Publisher | Copy scanner | Not applicable | Controls merged | Actual store/ads/support inventory |
 | #18 | Live purchase lifecycle and saved-record access | Commerce owner | StoreKit lifecycle tests | Simulator is not storefront proof | Controls merged | App Store products and sandbox transactions |
 | #19 | Applicable consumer obligations | Publisher + counsel | Responsibility matrix | Not applicable | Controls merged | Attributable legal review |
 | #20 | PDF, preview, native share and receiver handoff | iOS owner | `LegalRegressionTests`, `ReportShareSessionTests`, `ReportTransferTests`; PR #34/#57 | Exact-head targeted-native receipt `34263817878`; receiver/provider behavior remains unverified | PR #57 and follow-ups merged | Receiver/provider acceptance |
@@ -63,11 +72,11 @@ This is the durable issue-to-evidence register. `Pending` means the original iss
 | #23 | Adopted incident/support operations | Support owner | Support procedure checks | Not applicable | Controls merged | Monitored channel, access and retention settings |
 | #24 | Trademark clearance and residual-risk decision | Founder + qualified counsel | Brand evidence gate | Not applicable | Controls merged | Search, recommendation and founder decision |
 | #25 | Chain of title and distribution licenses | Publisher | Provenance/dependency inventory | Not applicable | Controls merged | Agreements, asset ownership and license review |
-| #26 | Rights/scope for each shipped pack | Content owner | Pack gate | Not applicable | Controls merged | Per-pack evidence or reviewed non-applicability |
-| #27 | Exact release screenshots and public claims | Marketing + release owner | Screenshot/claims gate | No selected release captures | Controls merged | Store-selected captures and permissions |
+| #26 | **Closed Oct 5, 2026**: no packs ship in 1.0.x (§7 record, owner confirmed) | Content owner | Pack gate | Not applicable | Controls merged | Per-pack evidence or reviewed non-applicability |
+| #27 | **Closed Oct 5, 2026**: real 1.0.5 captures owner-approved; claims registered | Marketing + release owner | Screenshot/claims gate; `test_store_screenshots.py` | `testStoreScreenshotsFromSamplePaycheck` captures (PR #109) | Controls merged | Store-selected captures and permissions |
 | #28 | Publisher/consumer terms approval | Publisher + counsel | Terms evidence gate | Not applicable | Controls merged | Attributable approval |
 | #29 | Native wording plus adopted support/marketing practice | Product + support owner | Legal report/UI regressions; PR #34/#57 | Exact-head targeted-native receipt `34263817878`; operational adoption remains unverified | Controls merged | Operational adoption |
-| #30 | Rendered audience/safe-use alignment | Product owner | Legal UI regressions; PR #34/#57 | Exact-head targeted-native receipt `34263817878`; store/marketing alignment remains unverified | Controls merged | Store rating and marketing alignment |
+| #30 | **Closed Oct 5, 2026**: owner confirmed adult-worker audience and 4+ rating | Product owner | Legal UI regressions; PR #34/#57 | Exact-head targeted-native receipt `34263817878`; store/marketing alignment remains unverified | Controls merged | Store rating and marketing alignment |
 | #31 | Focus, VoiceOver, text sizes and device evidence | Accessibility QA | `LegalJourneyTests`; PR #34/#57/#84/#86 | iOS 18.5 full two-test legal UI sequence passes after PR #86; physical VoiceOver/device acceptance remains open | Controls merged through PR #86 | Physical VoiceOver/device acceptance |
 | #32 | Exact declarations and credential custody | Release owner | Authenticated-write guards | Not applicable | Controls merged | Binary-specific declarations and owner review |
 | #33 | Approved market/processing baseline | Founder + qualified advisers | Scope-change guards | Not applicable | Controls merged | Entity, location, tax/privacy/commercial decisions |
@@ -177,6 +186,8 @@ The founder must retain a private chain of title for code contributors, current 
 Trademark clearance covers LinePaycheck/LinePay variants, icon and related uses in actual territories. It needs a real professional recommendation and founder decision, not domain availability or this document. Preserve the installed bundle ID unless its migration is explicitly authorized.
 
 Before a named agreement pack ships, require rights/legal basis, employer/local/classification applicability, effective dates/amendments, covered/excluded provisions, reviewer and version-change process. Public availability is not permission to copy all protected expression. A no-pack launch can use a reasoned reviewed non-applicability record. Synthetic tests must never silently become official rates.
+
+**Non-applicability record, 1.0.x (October 5, 2026, #26).** No named agreement pack, preset or rate table ships. Shipped resources are only `Assets.xcassets`, `Localizable.xcstrings` and `PrivacyInfo.xcprivacy`. The app and domain sources name no union, local, employer or agreement. Every rule value is entered by the worker, and the store and test fixtures are labelled synthetic. `inventory.json` hashes `apps/ios/App/Resources/**/*`, so any added resource fails `legal_guardrails.py check` until reviewed. Adding a pack reopens LEGAL-14 and needs the rights, scope and reviewer fields above first.
 
 ## 8. Change triggers and external approval
 
