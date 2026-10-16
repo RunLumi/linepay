@@ -135,3 +135,39 @@ complete from a subset of the roadmap or from a submitted-but-unapproved build.
   this task's idle iOS 26.5 device. Serial command selects only `StoreKitLifecycleTests`, with
   explicit timeouts. Log: `/private/tmp/linepay-v2-storekit-ios18.log`; bundle:
   `.build/v2-storekit-ios18-20261016.xcresult`. Outcome still pending.
+
+## Recoverable source checkpoint
+
+- Committed Foundation code and documentation as `2e2cac65c856f337fd869adc1357139575551e8e`
+  on `codex/v2-e2e`. Working tree was clean after the commit. No push, PR or release yet.
+- StoreKit fallback **passed**: all 7 lifecycle tests on existing iOS 18.5, completed result bundle
+  `.build/v2-storekit-ios18-20261016.xcresult`, `TEST SUCCEEDED` in
+  `/private/tmp/linepay-v2-storekit-ios18.log`. Purchase/renewal/cancellation/expiration,
+  refund, billing grace, annual trial, native cancellation, pending approval and interrupted
+  purchase are covered by those tests. This is local StoreKit Test evidence, not TestFlight or
+  production storefront purchase proof.
+- Release-configuration generic Simulator build started against this checkpoint. Log:
+  `/private/tmp/linepay-v2-release-build.log`; shared derived data `.build/v2-derived`.
+- Next implementation work: evaluate/finish OCR confidence and source UX using the existing
+  multi-page parser, then local funnel measurement/activation and agreement/benefits slices.
+  Keep all remaining roadmap rows pending until each actual vertical slice is verified.
+
+- Release generic Simulator build **passed** (`BUILD SUCCEEDED`) at source checkpoint `2e2cac6`;
+  `/private/tmp/linepay-v2-release-build.log`. This is unsigned Release compilation, not an
+  archive/upload/TestFlight/public release receipt.
+- Final follow-up screenshots were exported to `.build/v2-follow-up-current-attachments/`
+  and visually inspected: normal and accessibility XXXL show the saved note without the keyboard
+  obscuring history. No dark-mode or VoiceOver certification is claimed from these two images.
+- Resolving the missing Hugo tool through the official pinned release, verified SHA-256,
+  workspace-local package extraction only. No system installation or user-wide tool change.
+
+- Documentation build prerequisite resolved: official Hugo 0.165.0 macOS package SHA-256
+  `10ea75335975a13d0e73ac298402179335c55fa4e99d1687452d9cfa70b30d16` verified against the
+  official GitHub release asset digest; extracted under `.build/tools/hugo-0.165.0/`.
+  `PATH="$PWD/.build/tools/hugo-0.165.0/Payload:$PATH" bash user-guide/scripts/check.sh`
+  **passed**: root and `/linepay/` builds, internal links/assets, deterministic search,
+  source freshness and 4 screenshot provenance records. Log `/private/tmp/linepay-v2-guide-current.log`.
+- All current command sessions completed. The source checkpoint remains local; remaining roadmap
+  implementation, complete final native/UI gates, signed archive, Apple submission and manual
+  release remain outstanding. Goal stays active. The cloud/account/analytics preference question
+  is still unanswered; no network data flow has been introduced.
