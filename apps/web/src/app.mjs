@@ -1,6 +1,7 @@
 import { calculate, localCandidates, localDate } from "./payroll.mjs";
 import { assess } from "./assessment.mjs";
 import { renderBenefitUI } from "./benefits-ui.mjs";
+import { renderRuleTemplateUI } from "./rule-template-ui.mjs";
 import {
   openStore,
   emptyState,
@@ -134,7 +135,23 @@ function renderProfiles() {
   main.innerHTML = `<h1>Confirmed pay rules</h1><p>Each saved profile is a new version. Existing periods keep their exact saved rules.</p>${latest ? `<p class="rule-note">Latest profile: ${money(latest.hourlyRate, latest.currency)}/hour. ${latest.dailyOvertimeTiers.length ? "Daily premium configured." : "No daily premium configured."}</p>` : ""}<form id="profile-form"><div class="fields">${label("Hourly rate", "rate", 'inputmode="decimal" required maxlength="42"')}
   <label>Currency<select name="currency"><option>USD</option><option>CAD</option></select></label></div>
   <fieldset><legend>Optional configured rules</legend><div class="fields">${label("Daily overtime after hours", "threshold", 'inputmode="decimal" placeholder="Not configured"')}${label("Overtime multiplier", "multiplier", 'inputmode="decimal" value="1.5"')}${label("Isolated callout minimum hours", "minimum", 'inputmode="decimal" placeholder="Not configured"')}${label("Per diem per worked local date", "perdiem", 'inputmode="decimal" placeholder="Not configured"')}</div></fieldset>
-  <p class="note">Weekly overtime, travel, rest/meal rules, effective-date transitions, benefits and taxes need separate review. An empty optional field means unconfigured, not waived.</p>${check("I confirmed these inputs against my pay rules.", "confirmed", true)}<button class="primary">Save a new profile</button></form>`;
+  <p class="note">Weekly overtime, travel, rest/meal rules, effective-date transitions, benefits and taxes need separate review. An empty optional field means unconfigured, not waived.</p>${check("I confirmed these inputs against my pay rules.", "confirmed", true)}<button class="primary">Save a new profile</button></form><section id="rule-template-tools"></section>`;
+  renderRuleTemplateUI({
+    container: main.querySelector("#rule-template-tools"),
+    state,
+    run,
+    uid,
+    message,
+    onAdopt: async (profile, origin) => {
+      await commit((s) => {
+        s.profiles.push(profile);
+        s.templateOrigins.push(origin);
+      });
+      message(
+        "Confirmed rule draft saved as a new profile for future periods.",
+      );
+    },
+  });
 }
 function renderPay() {
   const period = current();
@@ -142,11 +159,14 @@ function renderPay() {
     main.innerHTML = `<h1>Your work. Your expected pay.</h1><p>Start with the rules you explicitly confirmed. Record actual work, then compare a paycheck in the same period.</p>${state.profiles.length ? periodForm() : `<p>No pay profile is saved yet.</p><button class="primary" data-action="profile">Confirm pay rules</button>`}`;
     return;
   }
+  const templateOrigin = state.templateOrigins.find(
+    (o) => o.profileID === period.rule.id,
+  );
   const result = period.closed
     ? period.closedCalculation
     : calculate(period.work, period.rule);
   main.innerHTML = `<p class="context">${esc(period.start)} → ${esc(period.end)} · ${esc(period.zone)} · ${period.closed ? "Closed record" : "Open period"}</p><h1>Expected cash wages</h1><div class="answer">${money(result.wages, result.currency)}</div><ul class="ledger"><li><span>Separate per diem</span><span class="money">${money(result.allowances, result.currency)}</span></li><li><span>Wages + configured allowance</span><strong class="money">${money(result.total, result.currency)}</strong></li></ul><p class="rule-note">Configured estimate from ${esc(period.rule.currency)} ${esc(period.rule.hourlyRate)}/hour and the saved rule version. Weekly/legal coverage and unconfigured rules remain unchecked.</p>
-  <details><summary>Calculation and saved rules</summary><ul class="ledger">${result.components.map((c) => `<li><span>${esc(c.date)} · ${esc(c.category)}<small>${esc(c.explanation)}${c.workedSeconds !== null ? " · " + esc(c.workedSeconds.replace(/\.0+$/, "")) + " seconds at " + esc(c.multiplier) + "×" : ""}</small></span><span class="money">${money(c.amount, c.currency)}</span></li>`).join("")}</ul><p>Rule snapshot ${esc(period.rule.id)}, version ${esc(period.rule.version)}. Engine ${esc(result.engine)}.</p></details>
+  <details><summary>Calculation and saved rules</summary><ul class="ledger">${result.components.map((c) => `<li><span>${esc(c.date)} · ${esc(c.category)}<small>${esc(c.explanation)}${c.workedSeconds !== null ? " · " + esc(c.workedSeconds.replace(/\.0+$/, "")) + " seconds at " + esc(c.multiplier) + "×" : ""}</small></span><span class="money">${money(c.amount, c.currency)}</span></li>`).join("")}</ul><p>Rule snapshot ${esc(period.rule.id)}, version ${esc(period.rule.version)}. Engine ${esc(result.engine)}.</p>${templateOrigin ? `<p>Worker-provided rule draft: ${esc(templateOrigin.packet.title)}, revision ${esc(templateOrigin.packet.revision)}, ID ${esc(templateOrigin.packet.templateID)}. This reference is not source approval.</p>` : ""}</details>
   <h2>Recorded work</h2><ul class="ledger">${period.work.map((w) => `<li><span>${esc(workClock(w.startUTC, w.timeZone))} → ${esc(workClock(w.endUTC, w.timeZone))}<small>${esc(w.kind)} · ${esc(w.timeZone)}${w.unpaidBreaks.length ? " · unpaid break recorded" : ""}</small></span>${period.closed ? "" : `<button class="danger" data-remove="${esc(w.id)}">Remove entry</button>`}</li>`).join("") || "<li>No work recorded.</li>"}</ul>
   ${period.closed ? "<p>This closed period keeps its saved work, rules and calculation.</p>" : workForm()}
   ${
@@ -206,12 +226,14 @@ function resolveClock(text, zone, occurrence = "") {
   return utc(choices.length === 1 ? choices[0] : choices[Number(occurrence)]);
 }
 function bind() {
-  main.querySelectorAll("form:not(#fund-form)").forEach((form) =>
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      run(() => submit(form));
-    }),
-  );
+  main
+    .querySelectorAll("form:not(#fund-form):not([data-rule-template])")
+    .forEach((form) =>
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        run(() => submit(form));
+      }),
+    );
   main
     .querySelectorAll("[data-action]")
     .forEach((b) =>

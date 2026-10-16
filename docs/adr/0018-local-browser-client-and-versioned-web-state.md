@@ -66,3 +66,5 @@ Primary platform references checked October 17, 2026:
 - [Persistent-storage request](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist)
 - [Service-worker activation](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/skipWaiting)
 - [Playwright WebKit offline-emulation limitation](https://github.com/microsoft/playwright/issues/42775)
+
+Web state v3 adds separately retained portable-rule origins and recipient choices, with explicit v1/v2 migration. [ADR 0019](0019-portable-rule-drafts-and-recipient-provenance.md) owns this continuation; prior wage/fund receipts are preserved.

@@ -1,0 +1,240 @@
+{
+  "format": "com.streamentry.linepay.rule-template-fixtures",
+  "version": 1,
+  "purpose": "Synthetic selected rule drafts, not verified agreements or worker records.",
+  "cases": [
+    {
+      "id": "omitted-amounts",
+      "packet": {
+        "format": "com.streamentry.linepay.rule-template",
+        "version": 1,
+        "templateID": "7c7f329e-a686-5dc0-98b9-2f49b8ed35d0",
+        "revision": "1",
+        "title": "SYNTHETIC omitted-amounts",
+        "scope": "workerConfirmedConfiguredRulesOnly",
+        "rules": {
+          "currency": "USD",
+          "hourlyRate": null,
+          "dailyOvertimeTiers": [
+            {
+              "afterHours": "8",
+              "multiplier": "1.5"
+            }
+          ],
+          "weekdayPremiums": [],
+          "calloutMinimumHours": null,
+          "perDiem": {
+            "configured": true,
+            "amount": null
+          },
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          }
+        },
+        "premiumCombination": "highestApplicable"
+      },
+      "recipient": {
+        "profileID": "7193277e-3727-5004-b964-b0ea01c24bd5",
+        "hourlyRate": "50",
+        "perDiemDecision": "confirmedAmount",
+        "perDiemAmount": "80"
+      },
+      "expected": {
+        "hourlyRateRequired": true,
+        "allowanceReviewRequired": true,
+        "dailyTierCount": 1,
+        "weekdayPremiumCount": 0
+      }
+    },
+    {
+      "id": "explicitly-included-amounts",
+      "packet": {
+        "format": "com.streamentry.linepay.rule-template",
+        "version": 1,
+        "templateID": "c843479d-0c85-5eb5-be87-db45b69ade8e",
+        "revision": "1",
+        "title": "SYNTHETIC explicitly-included-amounts",
+        "scope": "workerConfirmedConfiguredRulesOnly",
+        "rules": {
+          "currency": "USD",
+          "hourlyRate": "58.40",
+          "dailyOvertimeTiers": [
+            {
+              "afterHours": "8",
+              "multiplier": "1.5"
+            }
+          ],
+          "weekdayPremiums": [],
+          "calloutMinimumHours": null,
+          "perDiem": {
+            "configured": true,
+            "amount": "140"
+          },
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          }
+        },
+        "premiumCombination": "highestApplicable"
+      },
+      "recipient": {
+        "profileID": "4d7d7ead-bab8-5350-930a-e91fa5f37774",
+        "hourlyRate": "60",
+        "perDiemDecision": "confirmedAmount",
+        "perDiemAmount": "150"
+      },
+      "expected": {
+        "hourlyRateRequired": false,
+        "allowanceReviewRequired": true,
+        "dailyTierCount": 1,
+        "weekdayPremiumCount": 0
+      }
+    },
+    {
+      "id": "unconfigured-is-not-zero",
+      "packet": {
+        "format": "com.streamentry.linepay.rule-template",
+        "version": 1,
+        "templateID": "b9eb3536-5017-59a1-a6dc-17d3b6767f34",
+        "revision": "1",
+        "title": "SYNTHETIC unconfigured-is-not-zero",
+        "scope": "workerConfirmedConfiguredRulesOnly",
+        "rules": {
+          "currency": "USD",
+          "hourlyRate": null,
+          "dailyOvertimeTiers": [],
+          "weekdayPremiums": [],
+          "calloutMinimumHours": null,
+          "perDiem": {
+            "configured": false,
+            "amount": null
+          },
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          }
+        },
+        "premiumCombination": "highestApplicable"
+      },
+      "recipient": {
+        "profileID": "6e94f5f6-fee7-5b84-8b61-ef0c45e9947f",
+        "hourlyRate": "20",
+        "perDiemDecision": "notConfigured",
+        "perDiemAmount": null
+      },
+      "expected": {
+        "hourlyRateRequired": true,
+        "allowanceReviewRequired": false,
+        "dailyTierCount": 0,
+        "weekdayPremiumCount": 0
+      }
+    },
+    {
+      "id": "multiple-premiums",
+      "packet": {
+        "format": "com.streamentry.linepay.rule-template",
+        "version": 1,
+        "templateID": "a1c818a9-2598-51b6-9b11-9a02928f5b49",
+        "revision": "1",
+        "title": "SYNTHETIC — reglas compartidas",
+        "scope": "workerConfirmedConfiguredRulesOnly",
+        "rules": {
+          "currency": "USD",
+          "hourlyRate": null,
+          "dailyOvertimeTiers": [
+            {
+              "afterHours": "8",
+              "multiplier": "1.5"
+            },
+            {
+              "afterHours": "12",
+              "multiplier": "2"
+            }
+          ],
+          "weekdayPremiums": [
+            {
+              "weekday": "monday",
+              "multiplier": "1.5"
+            },
+            {
+              "weekday": "saturday",
+              "multiplier": "2"
+            }
+          ],
+          "calloutMinimumHours": null,
+          "perDiem": {
+            "configured": true,
+            "amount": null
+          },
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          }
+        },
+        "premiumCombination": "highestApplicable"
+      },
+      "recipient": {
+        "profileID": "7dbeb644-6613-550f-9032-44681afbdf8e",
+        "hourlyRate": "50",
+        "perDiemDecision": "notApplicable",
+        "perDiemAmount": null
+      },
+      "expected": {
+        "hourlyRateRequired": true,
+        "allowanceReviewRequired": true,
+        "dailyTierCount": 2,
+        "weekdayPremiumCount": 2
+      }
+    },
+    {
+      "id": "exact-currency-callout",
+      "packet": {
+        "format": "com.streamentry.linepay.rule-template",
+        "version": 1,
+        "templateID": "5f7adfb5-2d0b-5aba-bd89-866a016c5424",
+        "revision": "1",
+        "title": "SYNTHETIC exact-currency-callout",
+        "scope": "workerConfirmedConfiguredRulesOnly",
+        "rules": {
+          "currency": "CAD",
+          "hourlyRate": "42.125",
+          "dailyOvertimeTiers": [
+            {
+              "afterHours": "8",
+              "multiplier": "1.5"
+            }
+          ],
+          "weekdayPremiums": [],
+          "calloutMinimumHours": "4",
+          "perDiem": {
+            "configured": false,
+            "amount": null
+          },
+          "rounding": {
+            "scale": 2,
+            "mode": "bankers",
+            "scope": "payCategory"
+          }
+        },
+        "premiumCombination": "highestApplicable"
+      },
+      "recipient": {
+        "profileID": "99df92f1-8712-5b4d-80fb-cfe9bfadf971",
+        "hourlyRate": "42.125",
+        "perDiemDecision": "notConfigured",
+        "perDiemAmount": null
+      },
+      "expected": {
+        "hourlyRateRequired": false,
+        "allowanceReviewRequired": false,
+        "dailyTierCount": 1,
+        "weekdayPremiumCount": 0
+      }
+    }
+  ]
+}

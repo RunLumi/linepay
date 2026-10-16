@@ -5,14 +5,20 @@ import {
   contributionRuleDefinition,
   validateContributionPeriod,
 } from "./benefits.mjs";
+import {
+  validateRuleTemplate,
+  adoptRuleTemplate,
+  ruleTemplateIdentity,
+} from "./rule-template.mjs";
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 2,
+  version: 3,
   revision: 0,
   profiles: [],
   periods: [],
   benefitChecks: [],
+  templateOrigins: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -109,9 +115,10 @@ export function validateState(state) {
     "profiles",
     "periods",
     "benefitChecks",
+    "templateOrigins",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 2,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 3,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -349,23 +356,88 @@ export function validateState(state) {
     fundRevisions <= 1000 && eligibilitySegments <= 10000,
     "Fund history exceeds supported limits.",
   );
+  need(
+    Array.isArray(state.templateOrigins) && state.templateOrigins.length <= 100,
+    "Too many retained rule-draft origins.",
+  );
+  const importedProfiles = new Set(),
+    templateDefinitions = new Map();
+  for (const origin of state.templateOrigins) {
+    keys(origin, [
+      "profileID",
+      "packet",
+      "perDiemDecision",
+      "recipientHourlyRate",
+      "recipientPerDiemAmount",
+      "applicabilityConfirmed",
+      "valuesConfirmed",
+    ]);
+    need(
+      !importedProfiles.has(origin.profileID),
+      "Duplicate imported profile provenance.",
+    );
+    importedProfiles.add(origin.profileID);
+    const profile = state.profiles.find((p) => p.id === origin.profileID);
+    need(profile, "Imported rule provenance has no saved profile.");
+    validateRuleTemplate(origin.packet);
+    const definition = ruleTemplateIdentity(origin.packet),
+      identity =
+        origin.packet.templateID.toLowerCase() + "|" + origin.packet.revision;
+    need(
+      !templateDefinitions.has(identity) ||
+        templateDefinitions.get(identity) === definition,
+      "One rule-draft identity/revision has conflicting contents.",
+    );
+    templateDefinitions.set(identity, definition);
+    const adopted = adoptRuleTemplate(origin.packet, {
+      profileID: profile.id,
+      hourlyRate: origin.recipientHourlyRate,
+      perDiemDecision: origin.perDiemDecision,
+      perDiemAmount: origin.recipientPerDiemAmount,
+      applicabilityConfirmed: origin.applicabilityConfirmed,
+      valuesConfirmed: origin.valuesConfirmed,
+    });
+    need(
+      JSON.stringify(adopted) === JSON.stringify(profile),
+      "Imported profile no longer matches its confirmed draft and recipient choices.",
+    );
+  }
   return state;
 }
 // Known v1 had no fund records. Validate every existing record after adding only an empty field.
 // Reading does not write back, change revision or reprice any saved wage calculation/check.
 export function decodeState(state) {
+  let candidate = state;
   if (
-    state?.format === "com.streamentry.linepay.web.state" &&
-    state.version === 1
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 1
   ) {
-    keys(state, ["format", "version", "revision", "profiles", "periods"]);
-    return validateState({
-      ...structuredClone(state),
+    keys(candidate, ["format", "version", "revision", "profiles", "periods"]);
+    candidate = {
+      ...structuredClone(candidate),
       version: 2,
       benefitChecks: [],
-    });
+    };
   }
-  return validateState(state);
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 2
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 3,
+      templateOrigins: [],
+    };
+  }
+  return validateState(candidate);
 }
 export function snapshot(state) {
   validateState(state);

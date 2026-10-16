@@ -21,3 +21,5 @@
 - [0017-native-android-calculation-and-backup-boundaries](0017-native-android-calculation-and-backup-boundaries.md)
 
 - [0018-local-browser-client-and-versioned-web-state](0018-local-browser-client-and-versioned-web-state.md)
+
+- [0019-portable-rule-drafts-and-recipient-provenance](0019-portable-rule-drafts-and-recipient-provenance.md)

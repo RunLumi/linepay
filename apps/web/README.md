@@ -71,9 +71,9 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 2. Known web state v1 migrates explicitly
-by adding empty fund history after validating all existing records; unknown fields/versions are
-rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
+version 1 with `com.streamentry.linepay.web.state` version 3. Known v1/v2 schemas migrate explicitly
+by adding only empty fund/origin metadata after validating all existing records; unknown fields/
+versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
 commit `192cab9` source. Actual encrypted old-version recovery is tested in both browsers.
 **Native snapshots are rejected** until
@@ -95,7 +95,8 @@ BROWSER=webkit python3 apps/web/tests/browser_e2e.py
 It covers actual wage/fund forms, immutable revisions, material-edit confirmation invalidation,
 downloaded encrypted recovery, old-version migration, wrong-password refusal,
 inspection-before-replacement, stale-tab conflict, narrow/dark/enlarged text and offline reload with
-the real origin stopped plus a fresh no-worker negative control. There is no response interception.
+the real origin stopped plus a fresh no-worker negative control. Positive/offline proof uses real responses. One separate negative test aborts a module request, then
+removes the route and requires a real reload with stored records unchanged.
 [Playwright WebKit issue 42775](https://github.com/microsoft/playwright/issues/42775) explains why its
 offline-emulation flag cannot establish this; the harness uses real server unavailability for both
 engines. Installed/home-screen PWA behavior and physical browser/device behavior remain unverified.
@@ -106,10 +107,38 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 65 Node checks include the same nineteen pay, sixteen gross and thirteen fund fixtures consumed
-by the independent native clients, plus bounded-input, history/migration and cipher checks. Shared
+The 77 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+fixtures, plus bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
+Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
 hours or overtime; optional source notes remain worker-provided, without original-file or third-party
 verification. Fund differences never change cash wages or the wage verdict. Fund arithmetic refuses more than 38 significant digits rather than silently rounding inputs;
 large exact internal totals are not reparsed through the bounded entry parser. Statement differences
 retain actual decimal precision rather than using the wage-comparison cent rounding policy.
+
+
+## Crew rule drafts
+
+Pay rules includes a [rules-only draft workflow](../../shared/contracts/templates/README.md).
+Preview exact JSON and choose whether to include monetary values; the default omits hourly/per-diem
+amounts and never copies work/paycheck/fund/evidence records or private profile IDs. This is an
+unencrypted, potentially identifying file, not a verified agreement or anonymous export. Review
+rights/title/conditions before choosing a recipient yourself. The app sends nothing to a recipient.
+
+Import inspection creates no profile. Confirm your own rate, allowance decision, rule applicability,
+currency and rounding before saving a fresh profile. Old periods retain their snapshots. Web state
+v3 retains the complete admitted draft plus the recipient's actual monetary choices and confirmation
+flags atomically with that profile. Recover them through protected manual backups. The synthetic
+v2 migration fixture was generated/validated with actual `3edf4bd` code; both old schemas are also
+opened through actual encrypted browser recovery. Source and recipient histories remain separate.
+
+This browser workflow and shared Swift codec do not establish native iOS Files/UI/persistence,
+Android support, physical-device transfer, source rights or actual crew adoption. Those remain
+separate acceptance work in the original v2 goal. No official preset or agreement library is added.
+
+
+Startup uses a guarded bootstrap. A failed app-module load shows a reload action and preserves
+stored records; it does not pretend storage is still opening or silently reset it. The test origin
+uses a larger connection queue for parallel modules. Source-bound browser reports are fresh per
+run, record explicit pass/fail and a runtime SHA-256, and retain per-context/network diagnostics on
+failure. A stale prior green report is never retained as the current result.

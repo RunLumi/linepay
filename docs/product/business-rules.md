@@ -97,3 +97,17 @@ These requirements do not establish end-to-end implementation or legal/project c
 ## Change protocol
 
 A behavioral change cites the affected BR ID and [example](payroll/worked-examples.md), updates scope/evidence when needed, and receives the narrowest meaningful regression test. A new legal rule additionally passes [source approval](payroll/sources.md). Changes to money, history, migration, or subscription boundaries require tests on the candidate code; documentation is not a substitute.
+
+
+## Manual worker-provided rule drafts (v2)
+
+[Portable contract](../../shared/contracts/templates/README.md) owns the v1 wire shape and limits.
+These are worker-provided selected parameters, not verified agreement packs or complete pay coverage.
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-070 | Export sharing is explicit and minimizes personal pay data. | Work/paycheck/fund/evidence records and private ledger IDs are never copied; wage/allowance amounts are omitted unless explicitly included and reviewed. Titles/conditions may still identify a group. |
+| BR-071 | Inspection is not adoption or source verification. | Unknown/incompatible/ambiguous files refuse; inspected drafts create no profiles and confer no official/union/professional approval. |
+| BR-072 | Recipient monetary values and applicability require confirmation. | Omitted values never become zero. Configured allowance needs an own-amount/not-applicable decision. Unconfigured remains unconfigured, not waived. |
+| BR-073 | Sharing never rewrites historical rules. | Confirmed import creates a fresh profile for future periods; old work/rules/calculations/checks remain unchanged. |
+| BR-074 | Retain reproducible import provenance. | Original admitted packet, identity/revision and recipient choices/confirmation survive backup/recovery; changed profile values require a new profile/choice. |

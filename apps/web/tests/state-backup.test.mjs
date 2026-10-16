@@ -134,7 +134,7 @@ test("state and closed/history receipts round-trip without mutable rewriting", (
   assert.throws(() => validateState(altered));
   assert.equal(state.periods[0].audits[0].assessment.verdict, "matches");
   const future = structuredClone(state);
-  future.version = 3;
+  future.version = 4;
   assert.throws(() => validateState(future));
   const unknown = structuredClone(state);
   unknown.periods[0].unrecognizedPayRecords = [];

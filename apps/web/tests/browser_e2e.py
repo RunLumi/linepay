@@ -1,5 +1,6 @@
 """Real browser local-only journeys, using synthetic work and the public fixture password."""
 import functools
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -14,11 +15,23 @@ if ENGINE not in {'chromium', 'webkit'}:
     raise SystemExit('BROWSER must be chromium or webkit')
 OUTPUT = ROOT / '.build/web-e2e' / ENGINE
 OUTPUT.mkdir(parents=True, exist_ok=True)
+(OUTPUT / 'report.json').unlink(missing_ok=True)
+def runtime_hash():
+    digest = hashlib.sha256()
+    for file in sorted(WEB.rglob('*')):
+        if file.is_file() and 'tests' not in file.relative_to(WEB).parts and file.suffix in {'.mjs','.js','.html','.css','.png','.svg','.webmanifest'}:
+            digest.update(str(file.relative_to(WEB)).encode())
+            digest.update(hashlib.sha256(file.read_bytes()).digest())
+    return digest.hexdigest()
+source_hash = runtime_hash()
 PASSWORD = json.loads((ROOT / 'shared/contracts/backup/encryption-v1.json').read_text())['uiPhraseASCII']
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_args):
         pass
-server = ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(QuietHandler, directory=str(WEB)))
+class LocalServer(ThreadingHTTPServer):
+    # Allow concurrent module/caching requests above the default five-slot queue.
+    request_queue_size = 64
+server = LocalServer(('127.0.0.1', 0), functools.partial(QuietHandler, directory=str(WEB)))
 thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
 origin = f'http://127.0.0.1:{server.server_port}'
@@ -40,8 +53,13 @@ with sync_playwright() as pw:
         options['executable_path'] = os.environ['CHROMIUM_EXECUTABLE']
     browser = getattr(pw, ENGINE).launch(**options)
     context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
-    errors, requests = [], []
+    errors, requests, responses, failed_requests, console_errors = [], [], [], [], []
     context.on('request', lambda r: requests.append((r.url, r.method)))
+    def observe_context(active_context):
+        active_context.on('response', lambda r: responses.append({'url': r.url, 'status': r.status, 'mime': r.headers.get('content-type')}))
+        active_context.on('requestfailed', lambda r: failed_requests.append({'url': r.url, 'failure': r.failure}))
+        active_context.on('page', lambda active_page: active_page.on('console', lambda item: console_errors.append(item.text) if item.type == 'error' else None))
+    observe_context(context)
     page = context.new_page()
     page.on('pageerror', lambda e: errors.append(str(e)))
     try:
@@ -132,6 +150,112 @@ with sync_playwright() as pw:
         assert read_state(page)['periods'] == wage_records
         assert page.locator('main section').count() == 0, 'Escaped reference note became markup'
         checks.append('later confirmed 350.001 statement appends exact -0.001 revision and preserves original unknown check/source text')
+        sender_before = read_state(page)
+        source_profile = sender_before['profiles'][-1]
+        page.get_by_role('button', name='Pay rules', exact=True).click()
+        page.get_by_label('Rule draft title', exact=True).fill('SYNTHETIC crew rules')
+        page.get_by_label('I have the right to share these rule parameters.', exact=True).check()
+        page.get_by_role('button', name='Review rule file', exact=True).click()
+        expect(page.locator('#template-export-preview')).to_contain_text('Omitted — enter your own')
+        page.locator('#template-export-preview').scroll_into_view_if_needed()
+        page.screenshot(path=str(OUTPUT / 'crew-export-preview.png'))
+        with page.expect_download() as transfer_event:
+            page.get_by_role('button', name='Download reviewed rule draft', exact=True).click()
+        transfer = OUTPUT / 'synthetic-crew.linepayrules'
+        transfer_event.value.save_as(transfer)
+        draft = json.loads(transfer.read_text())
+        assert draft['rules']['hourlyRate'] is None and draft['rules']['perDiem'] == {'configured': True, 'amount': None}
+        assert source_profile['id'] not in transfer.read_text() and sender_before['periods'][0]['id'] not in transfer.read_text()
+        assert read_state(page) == sender_before
+        checks.append('actual reviewed crew-file download omits wage/allowance amounts and private profile/period identity by default')
+        page.get_by_label('Include hourly wage and per-diem amounts in this file.', exact=True).check()
+        expect(page.get_by_role('button', name='Download reviewed rule draft', exact=True)).to_have_count(0)
+        assert not page.get_by_label('I have the right to share these rule parameters.', exact=True).is_checked()
+        page.get_by_label('I have the right to share these rule parameters.', exact=True).check()
+        page.get_by_role('button', name='Review rule file', exact=True).click()
+        with page.expect_download() as explicit_event:
+            page.get_by_role('button', name='Download reviewed rule draft', exact=True).click()
+        explicit = OUTPUT / 'synthetic-crew-explicit-amounts.linepayrules'
+        explicit_event.value.save_as(explicit)
+        included = json.loads(explicit.read_text())
+        assert included['rules']['hourlyRate'] == source_profile['hourlyRate'] and included['rules']['perDiem']['amount'] == source_profile['perDiemPerWorkDate']
+        assert read_state(page) == sender_before
+        checks.append('amount inclusion invalidates the previous file/rights preview and requires explicit re-review before another actual download')
+        recipient_context = browser.new_context(accept_downloads=True)
+        observe_context(recipient_context)
+        recipient_context.on('request', lambda r: requests.append((r.url, r.method)))
+        recipient = recipient_context.new_page()
+        recipient.on('pageerror', lambda e: errors.append(str(e)))
+        recipient.goto(origin + '/')
+        expect(recipient.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        recipient.get_by_role('button', name='Pay rules', exact=True).click()
+        ambiguous = OUTPUT / 'synthetic-ambiguous.linepayrules'
+        ambiguous.write_text(transfer.read_text().replace('"hourlyRate": null','"hourlyRate": null, "hourly\\u0052ate": "99"'))
+        assert r'\u0052' in ambiguous.read_text()
+        recipient.get_by_label('Selected rule draft', exact=True).set_input_files(ambiguous)
+        recipient.get_by_role('button', name='Inspect rule draft', exact=True).click()
+        expect(recipient.locator('#status')).to_contain_text('Duplicate rule-draft fields')
+        assert read_state(recipient)['profiles'] == [] and read_state(recipient)['templateOrigins'] == []
+        checks.append('escaped duplicate monetary fields are refused before an ambiguous rule draft reaches adoption')
+        recipient.get_by_label('Selected rule draft', exact=True).set_input_files(transfer)
+        recipient.get_by_role('button', name='Inspect rule draft', exact=True).click()
+        expect(recipient.locator('#template-import-preview')).to_contain_text('Inspected; no profile created')
+        expect(recipient.get_by_label('Your confirmed hourly rate', exact=True)).to_have_value('')
+        recipient.locator('#template-import-preview').scroll_into_view_if_needed()
+        recipient.screenshot(path=str(OUTPUT / 'crew-recipient-review.png'))
+        assert read_state(recipient)['profiles'] == [] and read_state(recipient)['templateOrigins'] == []
+        recipient.get_by_label('Your confirmed hourly rate', exact=True).fill('75')
+        recipient.get_by_label('I checked every listed rule and its applicability to my work, dates and classification.', exact=True).check()
+        recipient.get_by_label('I confirmed the rate, currency, allowance choice and rounding policy.', exact=True).check()
+        recipient.get_by_role('button', name='Save confirmed new profile', exact=True).click()
+        expect(recipient.locator('#status')).to_contain_text('Review whether the configured allowance applies')
+        assert read_state(recipient)['profiles'] == []
+        checks.append('a second isolated browser inspects the actual file without creating a profile; omitted amounts/unknown allowance cannot silently become zero')
+        recipient.get_by_label('Does this per-diem rule apply to your new profile?', exact=True).select_option('confirmedAmount')
+        recipient.get_by_label('Your confirmed per-diem amount', exact=True).fill('120')
+        recipient.get_by_label('I checked every listed rule and its applicability to my work, dates and classification.', exact=True).check()
+        recipient.get_by_label('I confirmed the rate, currency, allowance choice and rounding policy.', exact=True).check()
+        recipient.get_by_role('button', name='Save confirmed new profile', exact=True).click()
+        accepted = read_state(recipient)
+        assert len(accepted['profiles']) == 1 and len(accepted['templateOrigins']) == 1
+        assert accepted['profiles'][0]['hourlyRate'] == '75' and accepted['profiles'][0]['perDiemPerWorkDate'] == '120'
+        assert accepted['templateOrigins'][0]['packet'] == draft and accepted['templateOrigins'][0]['recipientHourlyRate'] == '75'
+        assert accepted['periods'] == [] and accepted['benefitChecks'] == []
+        recipient.get_by_role('button', name='Pay', exact=True).click()
+        recipient.get_by_label('First work date', exact=True).fill('2026-10-01')
+        recipient.get_by_label('Last work date (included)', exact=True).fill('2026-10-14')
+        recipient.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        recipient.get_by_role('button', name='Start period', exact=True).click()
+        recipient.get_by_label('Start', exact=True).fill('2026-10-01T08:00')
+        recipient.get_by_label('End', exact=True).fill('2026-10-01T09:00')
+        recipient.get_by_role('button', name='Save work', exact=True).click()
+        expect(recipient.locator('.answer')).to_have_text('USD 75.00')
+        recipient.get_by_text('Calculation and saved rules', exact=True).click()
+        expect(recipient.locator('main')).to_contain_text('Worker-provided rule draft: SYNTHETIC crew rules')
+        assert read_state(page) == sender_before
+        checks.append('recipient confirms own values into a new profile/period with retained draft provenance; sender histories never change or copy')
+        recipient_before = read_state(recipient)
+        recipient.get_by_role('button', name='Backup', exact=True).click()
+        recipient.get_by_label('New backup password', exact=True).fill(PASSWORD)
+        recipient.get_by_label('Repeat password', exact=True).fill(PASSWORD)
+        with recipient.expect_download() as own_backup_event:
+            recipient.get_by_role('button', name='Download encrypted backup', exact=True).click()
+        own_backup = OUTPUT / 'synthetic-recipient.linepaybackup'
+        own_backup_event.value.save_as(own_backup)
+        recipient.get_by_role('button', name='Review removal', exact=True).click()
+        recipient.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        assert read_state(recipient)['templateOrigins'] == []
+        recipient.get_by_label('Protected web backup', exact=True).set_input_files(own_backup)
+        recipient.get_by_label('Backup password', exact=True).fill(PASSWORD)
+        recipient.get_by_role('button', name='Unlock and inspect', exact=True).click()
+        expect(recipient.locator('#restore-preview')).to_contain_text('records unchanged')
+        assert read_state(recipient)['profiles'] == []
+        recipient.get_by_role('button', name='Replace with inspected backup', exact=True).click()
+        recovered = read_state(recipient)
+        for key in ['profiles', 'periods', 'benefitChecks', 'templateOrigins']:
+            assert recovered[key] == recipient_before[key]
+        recipient_context.close()
+        checks.append('actual recipient encrypted backup/reset/inspect/replace preserves confirmed rule provenance and own monetary choices exactly')
         page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_label('New backup password', exact=True).fill(PASSWORD)
         page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
@@ -186,34 +310,49 @@ with sync_playwright() as pw:
         assert saved['profiles'][-1]['hourlyRate'] == '30' and len(saved['profiles']) == 3
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
-        # An actual prior-version payload is encrypted and restored in an isolated browser context.
-        legacy_context = browser.new_context(accept_downloads=True)
-        legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
-        legacy_page = legacy_context.new_page()
-        legacy_page.on('pageerror', lambda e: errors.append(str(e)))
-        legacy_page.goto(origin + '/')
-        expect(legacy_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
-        prior = json.loads((WEB / 'tests/fixtures/web-state-v1.json').read_text())
-        protected = legacy_page.evaluate("""async ({state,password}) => {
-          const {encryptBackup}=await import('./src/backup.mjs');
-          return Array.from(await encryptBackup(new TextEncoder().encode(JSON.stringify({format:'com.streamentry.linepay.web.snapshot',version:1,state})),password));
-        }""", {'state': prior, 'password': PASSWORD})
-        prior_file = OUTPUT / 'synthetic-prior-v1.linepaybackup'
-        prior_file.write_bytes(bytes(protected))
-        legacy_page.get_by_role('button', name='Backup', exact=True).click()
-        legacy_page.get_by_label('Protected web backup', exact=True).set_input_files(prior_file)
-        legacy_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
-        legacy_page.get_by_role('button', name='Unlock and inspect', exact=True).click()
-        expect(legacy_page.locator('#restore-preview')).to_contain_text('records unchanged')
-        assert read_state(legacy_page)['periods'] == []
-        legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
-        migrated = read_state(legacy_page)
-        assert migrated['version'] == 2 and migrated['benefitChecks'] == []
-        assert migrated['periods'] == prior['periods'] and migrated['profiles'] == prior['profiles']
-        legacy_page.get_by_role('button', name='Pay', exact=True).click()
-        expect(legacy_page.locator('.answer')).to_have_text('USD 400.00')
-        legacy_context.close()
-        checks.append('actual encrypted schema-v1 backup inspects without mutation then migrates through explicit browser restore with wages/history unchanged')
+        # Both actual old schemas migrate only through explicit authenticated replacement.
+        for old_version in [1, 2]:
+            legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
+            observe_context(legacy_context)
+            legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
+            legacy_page = legacy_context.new_page()
+            legacy_page.on('pageerror', lambda e: errors.append(str(e)))
+            legacy_page.goto(origin + '/')
+            expect(legacy_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+            prior = json.loads((WEB / f'tests/fixtures/web-state-v{old_version}.json').read_text())
+            protected = legacy_page.evaluate("""async ({state,password}) => {
+              const {encryptBackup}=await import('./src/backup.mjs');
+              return Array.from(await encryptBackup(new TextEncoder().encode(JSON.stringify({format:'com.streamentry.linepay.web.snapshot',version:1,state})),password));
+            }""", {'state': prior, 'password': PASSWORD})
+            prior_file = OUTPUT / f'synthetic-prior-v{old_version}.linepaybackup'
+            prior_file.write_bytes(bytes(protected))
+            legacy_page.get_by_role('button', name='Backup', exact=True).click()
+            legacy_page.get_by_label('Protected web backup', exact=True).set_input_files(prior_file)
+            legacy_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
+            legacy_page.get_by_role('button', name='Unlock and inspect', exact=True).click()
+            expect(legacy_page.locator('#restore-preview')).to_contain_text('records unchanged')
+            assert read_state(legacy_page)['periods'] == []
+            legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
+            migrated = read_state(legacy_page)
+            assert migrated['version'] == 3 and migrated['templateOrigins'] == []
+            assert migrated['benefitChecks'] == prior.get('benefitChecks', [])
+            assert migrated['periods'] == prior['periods'] and migrated['profiles'] == prior['profiles']
+            legacy_page.get_by_role('button', name='Pay', exact=True).click()
+            expect(legacy_page.locator('.answer')).to_have_text('USD 400.00')
+            if old_version == 2:
+                retained = read_state(legacy_page)
+                legacy_context.route('**/src/assessment.mjs', lambda route: route.abort('connectionreset'))
+                legacy_page.reload()
+                expect(legacy_page.get_by_role('heading', name='App code could not load', exact=True)).to_be_visible()
+                expect(legacy_page.locator('#status')).to_contain_text('Stored records were not reset or replaced')
+                legacy_page.screenshot(path=str(OUTPUT / 'asset-load-error.png'))
+                legacy_context.unroute('**/src/assessment.mjs')
+                legacy_page.get_by_role('button', name='Reload app', exact=True).click()
+                expect(legacy_page.locator('.answer')).to_have_text('USD 400.00')
+                assert read_state(legacy_page) == retained
+                checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
+            legacy_context.close()
+        checks.append('actual encrypted schema-v1/v2 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')
@@ -270,13 +409,25 @@ with sync_playwright() as pw:
         assert not errors, errors
         assert all(url.startswith(origin + '/') and method == 'GET' for url, method in requests), requests
         checks.append('all observed network traffic is same-origin app-shell GETs; no pay-data requests')
-        report = {'passed': True, 'browser': ENGINE, 'browserVersion': browser.version, 'checks': checks,
+        assert runtime_hash() == source_hash, 'Runtime source changed during browser verification'
+        report = {'passed': True, 'runtimeSHA256': source_hash, 'browser': ENGINE, 'browserVersion': browser.version, 'checks': checks,
                   'scope': 'Synthetic local browser workflow. No deployment, actual OS Files delivery, native snapshot migration, installed-PWA/physical-device or App Store release proof.'}
         (OUTPUT / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps(report))
-    except Exception:
-        page.screenshot(path=str(OUTPUT / 'failure.png'), full_page=True)
-        (OUTPUT / 'failure.txt').write_text(page.locator('body').inner_text())
+    except Exception as failure:
+        captured = []
+        for ci, active_context in enumerate(browser.contexts):
+            for pi, active_page in enumerate(active_context.pages):
+                label = f'failure-c{ci}-p{pi}'
+                try:
+                    active_page.screenshot(path=str(OUTPUT / (label + '.png')), full_page=True)
+                    body = active_page.locator('body').inner_text()
+                    (OUTPUT / (label + '.txt')).write_text(body)
+                    captured.append({'context': ci, 'page': pi, 'url': active_page.url, 'body': body, 'readiness': active_page.evaluate('({document:document.readyState, resources:performance.getEntriesByType("resource").map(r=>({name:r.name,duration:r.duration,transferSize:r.transferSize}))})')})
+                except Exception as capture_error:
+                    captured.append({'context': ci, 'page': pi, 'captureError': str(capture_error)})
+        (OUTPUT / 'failure.txt').write_text(json.dumps({'failure': str(failure), 'pageErrors': errors, 'consoleErrors': console_errors, 'responses': responses, 'failedRequests': failed_requests, 'contexts': captured}, indent=2))
+        (OUTPUT / 'report.json').write_text(json.dumps({'passed': False, 'browser': ENGINE, 'browserVersion': browser.version, 'runtimeSHA256': source_hash, 'checks': checks, 'failure': str(failure)}, indent=2))
         raise
     finally:
         browser.close()

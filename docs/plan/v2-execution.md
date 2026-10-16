@@ -37,7 +37,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 70 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
-| Crew templates | Pending | Explicit template export/import without personal pay records |
+| Crew templates | Browser file exchange/recovery implemented; shared Swift codec verified | Native iOS Files/UI/persistence, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
 
 ## Initial verified state
@@ -1067,3 +1067,91 @@ created; describe and verify each property separately.
   resolution and commerce work remain. No runtime/SDK install, new device, remote push/deploy,
   archive/upload/submission or public release occurred. Full v2/release completion remains unproven;
   the original goal stays active while independent implementation can continue.
+
+
+## Portable rule drafts and independent recipient confirmation
+
+- Previous goal turn was concrete progress (`3edf4bd`), and this turn entered a clean checkout.
+  Added the actual browser crew-template workflow plus a shared native codec; kept the original
+  all-stage/release objective intact. Native UI/Android and release remain pending, not replaced
+  by this bounded browser/native-domain delivery.
+- New UTF-8 `.linepayrules` contract v1 is **selected worker-provided parameters**, not an agreement,
+  source approval or financial backup. Header records independent template UUID/revision, title,
+  exact scope and **highestApplicable** precedence. Rules carry explicit currency, exact decimal
+  strings, ordered daily/weekday premiums, guarded isolated minimum, distinct configured/omitted
+  allowance and explicit aggregation rounding. Unsupported schedules/date/effective/weekly/legacy
+  policies refuse rather than disappear. Bounds are mechanical representation limits, not wage law.
+- Export defaults omit hourly wage/per-diem amounts and never copy private profile/period IDs,
+  work/paycheck/fund/evidence records, identities or source annotations. Including amounts clears
+  the previous exact-file/rights preview; the user explicitly re-reviews before downloading.
+  Title/conditions can identify a group; no anonymous/official/verified-pack claim is made.
+- Import inspection creates no profile. Omitted rate is blank, not zero. Configured allowance
+  needs the recipient's own-amount/not-applicable choice; absent configuration is not waived.
+  Two explicit applicability/value confirmations precede a new profile for future periods. Exact
+  source packet and recipient choices/flags are retained atomically. Existing wage/fund histories
+  never change or copy to the recipient. A new rate needs a new profile/confirmed choice.
+- Web state **v3** adds `templateOrigins`, validates profile/packet/choice consistency, rejects
+  orphaned/duplicate origins or conflicting contents under one source ID/revision, and retains
+  provenance through encrypted recovery. Known v1/v2 migrate only by adding empty missing
+  metadata. Frozen synthetic v2 fixture was generated/validated through actual `3edf4bd` modules,
+  complementing v1 (`192cab9`). The container/encryption version stays 1; native financial-state
+  admission is still unsupported. ADR 0019 and BR-070–074 define this new data/ownership boundary.
+- Pure Swift `CrewRuleTemplate` and independent browser codec consume all **five shared fixtures**,
+  covering omitted/included values, unconfigured allowance, multiple premia, UTF-8 title and exact
+  CAD/callout/rounding. Native codec reads Data and explicit caller arguments only; no random ID,
+  clock, locale, file/UI/storage/network or new runtime library. It exposes the required calculation
+  policy and requires explicit own monetary values/confirmation. It does not wire native Files UI.
+- Both byte decoders reject unknown/private fields, numeric money, invalid bounds/precision,
+  unreviewed adoption and escaped duplicate monetary keys. Foundation/JSON.parse validate syntax;
+  a bounded object-key pass rejects duplicate aliases before typed admission. Native UTF-16/raw-NUL
+  files refuse the explicit UTF-8 contract. Amount strings are exported canonically without loss;
+  omitted values remain null. Sender identity/display name/source rule IDs are not serialized.
+- Final **77 Node tests passed**, no failures/skips, log
+  `/private/tmp/linepay-v2-crew-domain-final.log`. Required quick gate passed **74 repository tests,
+  strict Swift format and 134 domain tests in 20 suites**, log
+  `/private/tmp/linepay-v2-crew-quick-final2.log`. Native codec's three tests include all five shared
+  wire cases plus privacy/refusal regressions; no native Simulator or release-gate pass is claimed.
+- Actual Chromium **155.0.8059.85** and WebKit **26.0** each passed **22 browser checks**, including
+  reviewed file download, default amount/identity omission, explicit inclusion invalidation,
+  escaped duplicate refusal, actual file input in a separate recipient context, no profile on
+  inspection/unknown allowance, own 75 hourly/120 allowance adoption with source provenance,
+  new-period expected wages 75, exact sender-history preservation, and actual recipient encrypted
+  export → destructive synthetic reset → inspect (still empty) → confirmed provenance recovery.
+- The same journeys also recover actual encrypted v1 **and v2** payloads with wage/fund histories
+  unchanged, test stale-tab refusal, and reopen offline against a truly stopped origin with a
+  failing fresh no-worker control. All observed app requests are same-origin asset GETs; no pay
+  data was sent. Logs `/private/tmp/linepay-v2-crew-{chromium,webkit}-bootstrap.log`; reports/captures
+  `.build/web-e2e/{chromium,webkit}/`. Inspected actual export/recipient review screens: omitted
+  amounts and unreviewed allowance are visibly distinct; human-readable precedence/rounding are
+  shown. Synthetic transfer is engineering evidence, not observed real-crew adoption or OS delivery.
+- No third-party runtime, backend, telemetry, account, SDK/device install, external message,
+  website/remote push/deploy, signed archive, App Store upload/submission or public release occurred.
+  Native iOS profile-origin storage/Files/UI and Android support still need implementation/runtime
+  proof. Official source rights/library, broader PWA parity, localization/device gates and all
+  final native/store evidence remain part of the active goal. Existing pending owner inputs are
+  unchanged; do not repeat or bypass the Xcode/SDK/site authorization boundaries.
+
+- Startup follow-up (same slice): the final2 Chromium rerun failed opening a fresh legacy context.
+  The original failure handler captured the main page, and an older green report remained present;
+  those were inadequate evidence. Updated the harness to clear its prior report at start, write
+  explicit failed receipts, bind receipts to the runtime source SHA-256, reject mid-run source
+  changes, and capture every context plus console/resource failures. Do not count stale reports as
+  passes. No startup assertion was weakened or timeout relaxed to obtain a green receipt.
+- A separate 12-context probe reproduced one persistent missing-entry screen even after 15 seconds;
+  eleven opened in 39–72 ms. The failing context recorded **ERR_CONNECTION_RESET** fetching
+  `assessment.mjs`, a failed dynamic module import and no databases. This proves an asset delivery
+  failure, not a stored-record validation failure. Current Python's default server queue was 5;
+  increased the actual loopback test server to 64. With that queue and guarded bootstrap,
+  **40/40 cold contexts opened normally, maximum 278 ms**. This bounded result supports the queue
+  change; it is not a universal browser/network reliability claim or proof of a storage repair.
+- Added real app bootstrap error/reload UI and a static reload fallback. A controlled negative
+  test aborts one module in an isolated no-worker recovery context, requires the visible error,
+  removes the route, and verifies real reload preserves the previously restored wage/fund state
+  exactly. Positive/offline tests still use actual responses and a stopped origin, without mocked
+  success. Final Chromium/WebKit bootstrap logs each passed **22 checks** with identical runtime
+  SHA-256 `a9a2dc89a7d87bc11a391360b797befa7d95375149ea001fb74930a7af5b7003`.
+  Logs: `/private/tmp/linepay-v2-crew-{chromium,webkit}-bootstrap.log`. Cold diagnostics are ignored
+  `.build/web-startup-{diagnostic,queue64}.json`; original startup failures remain in their distinct
+  `/private/tmp/linepay-v2-crew-chromium-{final2,observed,network-observed}.log` receipts.
+
+- Final checkpoint: 1,032 local Markdown links, 5 documentation-tool tests, legal active-copy/inventory checks, agent-harness checks and diff whitespace checks passed. Inspected the actual asset-load error/reload screen and its preserved-record recovery. Latest WebKit capture rerun also passed 22 checks at the same runtime hash; no further client source changed. Hosted CI, native UI/device and store gates remain unproven.
