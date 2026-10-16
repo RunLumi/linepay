@@ -19,7 +19,7 @@ An implementation, test result, upload, review submission and public release are
 
 | Workstream | State | Acceptance still required |
 |---|---|---|
-| Foundation: funnel measurement | Implemented; focused unit/StoreKit/native UI passed | Full native gate running; no production cohort/completeness claim |
+| Foundation: funnel measurement | Implemented; full native gate passed | Final release-candidate/device checks; no production cohort/completeness claim |
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
@@ -569,3 +569,22 @@ created; describe and verify each property separately.
   `.build/v2-local-activity-final-gate-20261016`. Do not claim its final pass before completion.
 - Website publication approval remains pending; native branch is local, public version unchanged,
   and no archive, App Store upload/submission or new public release has occurred.
+
+## Completed local-activity native gate
+
+- Source checkpoint `d7c0ddd` completed the canonical `agent-verify.sh ios` gate (exec `20102`,
+  exit 0). Final result `.build/v2-local-activity-final-gate-20261016/AppTests.xcresult`: **334
+  total, 333 passed, 0 failed, 1 skipped**. The only skip is the opt-in store-screenshot fixture;
+  all 309 app tests and critical native UI cases actually ran. Release Simulator build, privacy,
+  coverage and dependency-lockfile preservation passed. This is simulator/build evidence, not
+  signed-device, App Store or production-conversion evidence.
+- Documentation checks now cover 989 links and five doc tests; guide build/search, 50 source
+  freshness mappings and four screenshot-provenance entries passed. Architecture documentation
+  now names the actual atomic versioned-file adapter, and links the separate local ledger.
+- Native working tree was clean after implementation commit. No native test job remains. Website
+  source `0ddbb02` is still local with publication approval pending. No archive, App Store upload,
+  submission or new public release has occurred. The overall goal remains active; remaining
+  roadmap stages retain their actual pending states above. Next independent native slice: private
+  on-device voice capture into an editable work draft with explicit confirmation, never direct
+  payroll writes or remote transcription. Re-read platform availability and nearest work-draft
+  contracts before implementation.

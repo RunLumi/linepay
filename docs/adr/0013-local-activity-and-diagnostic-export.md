@@ -1,6 +1,6 @@
 # ADR 0013: device-local activity and manual diagnostic export
 
-Status: accepted for owner-authorized v2 implementation, October 16, 2026; native verification is in progress.
+Status: accepted for owner-authorized v2 implementation, October 16, 2026; implemented in `d7c0ddd`; the complete native iOS gate passed (334 cases: 333 passed, one intentional store-screenshot skip). Release-candidate/device and store evidence remain separate.
 
 The owner explicitly chose local-only data flow and manual diagnostics/backups. Implement a small
 closed milestone vocabulary without an analytics SDK, collector, account, remote processing or
