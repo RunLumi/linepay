@@ -23,10 +23,10 @@ An implementation, test result, upload, review submission and public release are
 | Website/store consistency | Pending | Inspect real website/listing and update only supported claims |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
-| OCR reliability | Pending | Multi-page source/confidence and explicit confirmation; evaluated synthetic corpus |
-| Resolution workflow | Implemented; initial UI journeys passed; final verification running | Saved finding/status/notes/history and shareable evidence packet |
+| OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
+| Resolution workflow | Implemented; native/UI/storage/privacy checks passed | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
-| Free web calculators | Pending | Exact arithmetic, stated assumptions, browser flow and app CTA |
+| Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Pending | Document/page citations, confirmation, effective dates, conflict abstention and corpus |
 | Benefits audit | Pending | Benefits separate from wages; confirmed rates/units; unavailable-statement handling |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
@@ -171,3 +171,72 @@ complete from a subset of the roadmap or from a submitted-but-unapproved build.
   implementation, complete final native/UI gates, signed archive, Apple submission and manual
   release remain outstanding. Goal stays active. The cloud/account/analytics preference question
   is still unanswered; no network data flow has been introduced.
+
+## OCR confidence/source slice (after `5f0c3b8`)
+
+- Added `OCRFieldProvenanceView`: original OCR reading, one-based source page, recognition
+  confidence and explicit non-verification wording. Main gross review and optional-field review
+  show it; a disclosure exposes date provenance. Confirmation requirements are unchanged.
+- Low-confidence dates now carry an explicit warning, matching the existing numeric warning.
+- The first selected test run exercised only 5 existing parser tests because app test sources are
+  an explicit XcodeGen group. Regenerated the disposable project without changing Package.resolved;
+  the actual corpus was then discovered: **10 tests in 2 suites passed**, including 27 positive
+  text cases and 7 ambiguous-row cases. Bundle `.build/v2-ocr-corpus-current-20261016.xcresult`.
+- Added 8 strict PDF/Vision cases: four independently specified literal gross amounts, each on a
+  one-page and two-page PDF. All 8 passed in the currently running native batch; remaining
+  document/UI checks are not yet reported complete. Log `/private/tmp/linepay-v2-ocr-native.log`,
+  bundle `.build/v2-ocr-native-20261016.xcresult`; active exec session was `44735`.
+- Wrote [OCR evaluation scope](../testing/ocr-evaluation.md). No 98% real-world precision or
+  independent-holdout claim is made. The UI confidence fixture is explicitly synthetic.
+- Swift lint, legal active-copy/inventory and the Hugo guide checks passed for this slice.
+  User guide now explains recognition confidence separately from confirmation and correctness.
+
+- Rendered PDF batch: **14 tests in 3 app suites passed**, including all 8 strict PDF/Vision
+  cases and the original page-limit/report checks. Its UI assertion initially failed because
+  the test queried the percentage as a standalone accessibility text; the combined row's
+  stable identifier now exposes and tests the actual 72% label.
+- A second UI attempt passed the score check but failed its literal source-section header query.
+  Strengthened the check to require the evidence navigation screen, a loaded original field crop,
+  and the complete-original action, while scrolling the source link clear of the pinned audit
+  action. The resulting isolated UI test **passed** in 24.146 seconds; bundle
+  `.build/v2-ocr-source-ui-20261016.xcresult`.
+- Visual review confirmed the loaded original crop and an uppercase system section header.
+  It also showed the confidence row at the screen's bottom edge, so the screenshot test now
+  scrolls the full score row above the pinned action. Removed a duplicate OCR warning and
+  supplied the recognized source excerpt to the main original-view route.
+- Current final check runs the source journey at both normal and accessibility XXXL text,
+  plus the receipt corpus: `.build/v2-ocr-final-ui-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-ocr-final-ui.log`, exec session `11367`. Do not claim it passed yet.
+- Failed-run logs and artifacts remain available. One failed Xcode driver stalled in result
+  finalization after its test host exited; it was explicitly terminated before rerunning.
+  A post-test simctl screenshot timed out without an active surface; the actual XCTest PNG
+  attachments were used for visual inspection. A separate AVFoundation video-frame helper
+  could not decode the failed-run recording; no app code or source artifact depended on it.
+
+- Final normal + accessibility XXXL OCR journeys both **passed**, including the percentage row,
+  a real loaded source crop, recognized source text, and an unconfirmed comparison remaining
+  disabled. Bundle `.build/v2-ocr-final-ui-20261016.xcresult`; log
+  `/private/tmp/linepay-v2-ocr-final-ui.log` (46.856s / 23.722s for the UI cases).
+- Review found a draft-validation gap: confirmed audits checked OCR regions/confidence, but
+  saved drafts did not. Shared the existing checks with drafts, added rejection regressions for
+  invalid page IDs and nonfinite/out-of-range confidence, and guarded the display's page increment.
+  Invalid draft save must leave prior state unchanged. Native check is running in
+  `.build/v2-ocr-validation-20261016.xcresult`, log `/private/tmp/linepay-v2-ocr-validation.log`,
+  exec session `52753`.
+
+- Draft-validation batch **passed**: 18 tests in 3 suites (OCR corpus, backup validation,
+  document pipeline), including invalid page IDs/confidence and unchanged prior state after
+  rejected draft saves. `TEST SUCCEEDED` in `/private/tmp/linepay-v2-ocr-validation.log`.
+- Final normal/largest-text screenshots were exported under
+  `.build/v2-ocr-final-ui-attachments/` and inspected. Both show the actual 72% row above the
+  pinned action; the source screenshot shows the retained PDF crop and recognized-text excerpt.
+- Lint, all 74 script tests, 5 docs-tool tests, legal active-copy/inventory, local links and guide
+  builds passed. Current OCR Release build is running in the active xcodebuild process (check its
+  log/handle on resume); log `/private/tmp/linepay-v2-ocr-release.log`.
+- Next: complete local agreement PDF → cited candidate rules → explicit review/apply, with
+  effective-date/conflict/unsupported handling and immutable source retention. Keep calculations
+  deterministic. Analytics/cloud preference remains unanswered; no upload path has been added.
+
+- OCR slice Release generic Simulator build **passed** (`BUILD SUCCEEDED`), log
+  `/private/tmp/linepay-v2-ocr-release.log`. All OCR check sessions are now terminal.
+  This checkpoint has not been pushed, merged, uploaded or submitted for review.

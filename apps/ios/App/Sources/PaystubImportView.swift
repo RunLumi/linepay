@@ -522,6 +522,17 @@ struct PaystubReviewView: View {
                 "Pay period ends", selection: dateBinding(.periodEnd), displayedComponents: .date
             )
             .accessibilityIdentifier("paystub.inline.periodEnd")
+            if draft.suggestions[.periodStart] != nil || draft.suggestions[.periodEnd] != nil {
+                DisclosureGroup("How the dates were read") {
+                    ForEach([PaystubField.periodStart, .periodEnd], id: \.self) { field in
+                        if let suggestion = draft.suggestions[field] {
+                            Text(field.title).font(.headline)
+                            OCRFieldProvenanceView(suggestion: suggestion)
+                        }
+                    }
+                }
+                .accessibilityIdentifier("paystub.date-provenance")
+            }
             ConfirmationCheckRow(
                 "These dates match the paystub",
                 isOn: Binding(
@@ -548,9 +559,14 @@ struct PaystubReviewView: View {
             }
             .frame(minHeight: 48)
             grossStatus
+            if let suggestion = draft.suggestions[.grossPay] {
+                OCRFieldProvenanceView(suggestion: suggestion)
+            }
             if let evidence = draft.sourceEvidence, let url = model.evidenceURL(for: evidence) {
                 NavigationLink("View the original paystub") {
-                    SourceEvidenceView(url: url, region: draft.suggestions[.grossPay]?.region)
+                    SourceEvidenceView(
+                        url: url, region: draft.suggestions[.grossPay]?.region,
+                        sourceText: draft.suggestions[.grossPay]?.sourceText)
                 }
                 .accessibilityIdentifier("paystub.view-original")
             }
@@ -579,9 +595,6 @@ struct PaystubReviewView: View {
             }
             .linePayRowAction(minHeight: 44)
             .accessibilityIdentifier("paystub.confirm-gross")
-            if let reason = draft.suggestions[.grossPay]?.reason {
-                Text(reason).font(.footnote)
-            }
         } else if !value.isEmpty {
             let comma = NumberEntry.decimalSeparator == ","
             let example =
@@ -698,6 +711,7 @@ struct PaystubFieldReviewView: View {
             if let evidence = draft.sourceEvidence, let url = model.evidenceURL(for: evidence) {
                 Section("Source") {
                     if let suggestion = draft.suggestions[field] {
+                        OCRFieldProvenanceView(suggestion: suggestion)
                         Text(suggestion.sourceText).font(.body.monospaced()).textSelection(.enabled)
                         NavigationLink("View original field, page \(suggestion.region.page + 1)") {
                             SourceEvidenceView(

@@ -127,7 +127,7 @@
         "paystub-layouts"
       ],
       "disposition": "reviewed",
-      "blob": "f60db100d18b082059a7b6097449b1f0eae2bf9f"
+      "blob": "a96b22a085c344077c269a6856586648ff4ff8f0"
     },
     {
       "path": "apps/ios/App/Sources/AuditDetailView.swift",

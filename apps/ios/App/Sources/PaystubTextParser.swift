@@ -45,7 +45,11 @@ enum PaystubTextParser {
                     selected = nil
                 }
                 result[field] = suggestion(
-                    selected, source, selected == nil ? "Confirm the exact period dates." : nil)
+                    selected, source,
+                    selected == nil
+                        ? "Confirm the exact period dates."
+                        : source.confidence < 0.85
+                            ? "Text is unclear. Check the original before confirming." : nil)
                 continue
             }
             if lower.contains("ytd") || lower.contains("year to date")

@@ -17,6 +17,7 @@ struct SourceEvidenceView: View {
                     Section("Original source, page \(region.page + 1)") {
                         if let crop, let image = UIImage(data: crop) {
                             Image(uiImage: image).resizable().scaledToFit()
+                                .accessibilityIdentifier("evidence.source-crop")
                                 .accessibilityLabel(
                                     "Paystub field crop. \(sourceText ?? "Read the original to confirm the value.")"
                                 )
@@ -28,11 +29,13 @@ struct SourceEvidenceView: View {
                             ProgressView("Loading source")
                         }
                         if let sourceText {
+                            Text("Recognized source text").font(.caption.weight(.semibold))
                             Text(sourceText).font(.body.monospaced()).textSelection(.enabled)
                         }
                         NavigationLink("Open complete original") {
                             OriginalPreview(url: url).ignoresSafeArea(edges: .bottom)
                         }
+                        .accessibilityIdentifier("evidence.open-original")
                     }
                 }
                 .linePayCanvas()

@@ -64,3 +64,5 @@ No public guide exports this source map, root AGENTS.md, internal docs, private 
 V2 paycycle review (2026-10-16, release pending): `PayPeriodSchedule.swift` and `PayProfileSetupView.swift` add explicit twice-monthly calendar periods. Updated pay-profile and getting-started; reviewed pay-rules and changing-rules without further changes.
 
 V2 follow-up review (2026-10-16, release pending): `AuditDetailView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift` and `ReportSharingView.swift` inform audit-results and evidence-and-reports. Follow-up notes are local, revision-bound, and excluded from reports unless opted in.
+
+V2 OCR evidence review (2026-10-16, release pending): `OCRFieldProvenanceView.swift`, `PaystubImportView.swift`, and `PaystubTextParser.swift` inform confirming-fields. Re-reviewed importing-paychecks and paystub-layouts; their steps and scope remain unchanged. Recognition scores do not establish correctness.

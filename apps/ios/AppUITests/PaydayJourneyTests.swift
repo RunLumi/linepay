@@ -413,6 +413,43 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(app.buttons["today.add-work"].label, "Add work")
     }
 
+    func testOCRConfidenceStaysAnUnconfirmedReadingWithSourceEvidence() {
+        ocrConfidenceJourney(largeText: false)
+    }
+
+    func testOCRConfidenceAtLargestText() {
+        ocrConfidenceJourney(largeText: true)
+    }
+
+    private func ocrConfidenceJourney(largeText: Bool) {
+        launch(scenario: "ocr-confidence", largeText: largeText)
+        tab("Pay")
+        tap("pay.check-paycheck")
+        tap("paystub.resume")
+        let receipt = app.descendants(matching: .any)["paystub.ocr-provenance"].firstMatch
+        scrollTo(receipt)
+        XCTAssertTrue(receipt.waitForExistence(timeout: 10))
+        let score = app.descendants(matching: .any)["paystub.ocr-confidence"].firstMatch
+        scrollTo(score)
+        XCTAssertTrue(score.waitForExistence(timeout: 10))
+        scrollClearOfPinnedAction(score, pinned: app.buttons["paystub.audit"])
+        XCTAssertTrue(score.label.contains("72%"), "Recognition score label: \(score.label)")
+        capture("v2-ocr-confidence")
+        tapAbovePinnedAction("paystub.view-original", pinned: "paystub.audit")
+        XCTAssertTrue(app.navigationBars["Paystub evidence"].waitForExistence(timeout: 10))
+        let crop = app.descendants(matching: .any)["evidence.source-crop"].firstMatch
+        XCTAssertTrue(
+            crop.waitForExistence(timeout: 15), "The original field crop must actually load")
+        XCTAssertTrue(app.buttons["evidence.open-original"].exists)
+        XCTAssertTrue(app.staticTexts["Recognized source text"].exists)
+        capture("v2-ocr-original-field")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let audit = app.buttons["paystub.audit"].firstMatch
+        scrollTo(audit)
+        XCTAssertTrue(audit.waitForExistence(timeout: 10))
+        XCTAssertFalse(audit.isEnabled, "An OCR score cannot confirm the dates or gross value")
+    }
+
     func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {
         launch(scenario: "intake")
         tab("Pay")

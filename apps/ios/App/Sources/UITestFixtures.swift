@@ -100,7 +100,7 @@
                 guard let id = model.activePeriod?.id else {
                     throw AppModelError.missingActivePayPeriod
                 }
-                if scenario == "intake" {
+                if scenario == "intake" || scenario == "ocr-confidence" {
                     let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
                     let bytes = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
                         context.beginPage()
@@ -113,6 +113,16 @@
                         mediaType: "application/pdf", kind: .file, periodID: id)
                     draft.grossPay = "550"
                     draft.notes = "Synthetic staged source; no OCR confirmation is assumed."
+                    if scenario == "ocr-confidence" {
+                        let source = RecognizedPaystubLine(
+                            text: "Gross pay $550.00",
+                            region: SourceRegion(
+                                page: 0, x: 0.07, y: 0.82, width: 0.8, height: 0.1),
+                            confidence: 0.72)
+                        draft.suggestions = PaystubTextParser.parse([source])
+                        draft.recognizedText = source.text
+                        draft.sourcePageCount = 1
+                    }
                     try model.savePaystubDraft(draft)
                     return session
                 }

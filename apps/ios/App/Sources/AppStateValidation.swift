@@ -67,8 +67,9 @@ enum AppStateValidation {
                 state.history.contains(where: { $0.id == draft.periodID && $0.calculation == nil })
             else { throw invalid() }
         }
-        if let draft = state.paystubDraft, !ids.contains(draft.targetPeriodID ?? UUID()) {
-            throw invalid()
+        if let draft = state.paystubDraft {
+            guard ids.contains(draft.targetPeriodID ?? UUID()) else { throw invalid() }
+            try validate(suggestions: draft.suggestions)
         }
         let revisions =
             (state.activePeriod?.auditRevisions ?? [])
@@ -129,6 +130,19 @@ enum AppStateValidation {
             && value != "." && value.unicodeScalars.allSatisfy { allowed.contains($0) }
     }
 
+    private static func validate(suggestions: [PaystubField: OCRFieldSuggestion]) throws {
+        for suggestion in suggestions.values {
+            let region = suggestion.region
+            guard suggestion.confidence.isFinite, (0...1).contains(suggestion.confidence),
+                region.page >= 0, region.page < 10_000,
+                [region.x, region.y, region.width, region.height].allSatisfy({
+                    $0.isFinite && (0...1).contains($0)
+                }),
+                region.x + region.width <= 1.000001, region.y + region.height <= 1.000001
+            else { throw invalid() }
+        }
+    }
+
     private static func validate(calculation: CalculationResult, agreement: AgreementSnapshot)
         throws
     {
@@ -183,17 +197,9 @@ enum AppStateValidation {
             throw invalid()
         }
         if let confirmation = paystub.confirmation {
-            for suggestion in confirmation.suggestions.values {
-                let region = suggestion.region
-                guard suggestion.confidence.isFinite, (0...1).contains(suggestion.confidence),
-                    region.page >= 0, region.page < 10_000,
-                    [region.x, region.y, region.width, region.height].allSatisfy({
-                        $0.isFinite && (0...1).contains($0)
-                    }),
-                    region.x + region.width <= 1.000001, region.y + region.height <= 1.000001
-                else { throw invalid() }
-            }
+            try validate(suggestions: confirmation.suggestions)
         }
+
         // Legacy audits remain review-only.
         guard let assessment = paystub.assessment else { return }
         guard (1...3).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,

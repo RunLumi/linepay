@@ -1,5 +1,7 @@
 # LinePaycheck test contract
 
+[OCR extraction and review evaluation](ocr-evaluation.md) records the synthetic corpus and its limits.
+
 ## What this suite proves
 
 The unit and adapter suites exercise the code currently in this repository. They do not certify that the entire iOS 1.0 plan is implemented, that an agreement is legally authoritative, or that a rendered screen is accessible. A green test run is not a product-release sign-off.
