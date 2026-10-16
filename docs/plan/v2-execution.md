@@ -724,3 +724,42 @@ created; describe and verify each property separately.
   The focused follow-up verifies those changes and the added adaptive method. All native jobs are
   terminal. The total v2 goal, physical-device gates, external approvals and public release remain
   open. Next: complete shared parity coverage/native clients while retaining every pending stage.
+
+## Exact-time precision defect found by shared fixtures (October 17)
+
+- After the fourteen-case treaty passed, added fixed independent half-cent cases. The real version-2
+  engine failed nine assertions across three cases: USD 18/hour × one second returned 0.00 instead
+  of 0.01; USD 58.50/hour × one minute returned 0.97 instead of 0.98, including partitioned work.
+  Reproduction: `/private/tmp/linepay-v2-half-cent-reproduction.log`. Expectations were not weakened.
+- Corrected arithmetic to retain exact second-based daily positions/slices and exact rate-times-
+  seconds-times-multiplier numerators until the declared rounding boundary. Category targets sum
+  numerators before division; largest remainders use numerator units. Callout worked/minimum time
+  uses exact seconds without inserting guarantees into work. No rate/premium policy changed.
+- New provenance is calculation `/3`, rounding `exact-seconds-snapshot-rounding/2`; old `/2` plus
+  `explicit-snapshot-rounding/1` remains admitted as its exact pair. Unknown pairs still fail.
+  No new persisted field/schema. ADR 0016 records algorithm/version and history boundaries.
+- Affected active saved checks require re-review; unchanged ledger prices keep their recorded
+  provenance. New explicit reviews use current precision. Closed-period reads remain frozen;
+  explicit closed review appends a new audit calculation while preserving the original period
+  estimate and prior revisions. Display/validation follows the current paystub's recorded revision,
+  not an unrelated original estimate. History and intake disclose the distinction.
+- Shared treaty now contains **19 cases**, adding exact single-second/minute and aggregate-before-
+  division half-hour partition boundaries. All 129 domain tests passed; quick repository checks and
+  final guide build/search/freshness (58 mappings), 1008 docs links and legal checks passed.
+- App precision/audit/report regression bundle passed 13 cases, then final precision/legacy-backup/
+  encrypted-backup bundle passed **21 cases** in
+  `.build/v2-exact-seconds-final-policy-20261017.xcresult`. It proves old estimates/provenance and
+  revisions survive load/archive/backup, affected checks require review, and explicit current/closed
+  review records `/3` without rewriting `/2`. Earlier failed admission was an unextended provenance
+  allowlist, fixed by adding only the exact new pair, not removing validation.
+- Native one-minute review/save journey passed (21.319s),
+  `.build/v2-exact-seconds-ui-20261017.xcresult`: synthetic USD 58.50/hour, 07:00–07:01 with no
+  unpaid break → explicit review/apply/save → visible USD 0.98. Typed input does not prove speech.
+- Comprehensive native gate is now live as exec `69702`, log
+  `/private/tmp/linepay-v2-exact-seconds-gate.log`, results `.build/v2-exact-seconds-gate-20261017`.
+  Earlier 350-case passing gate did not contain these new boundaries; do not use it as proof of
+  this correction. Inspect the current handle/outcome and final captures before claiming completion.
+- No App Store/archive/website write. Full v2 remains active, with native Android/PWA, further
+  parity/independent-corpus/accessibility/source-rights/crew/localization and release evidence still
+  pending. Website publication and physical-phone questions remain unanswered. Do not bypass the
+  earlier rejected remote publication or infer external approvals.

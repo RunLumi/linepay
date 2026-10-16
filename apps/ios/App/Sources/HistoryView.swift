@@ -38,9 +38,9 @@ struct HistoryView: View {
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(periodLabel).font(.headline)
-                                        if let calculation = period.calculation {
+                                        if let calculation = period.comparisonCalculation {
                                             Text(
-                                                "Expected \(LinePayFormat.money(calculation.expectedWages))"
+                                                "Saved expected \(LinePayFormat.money(calculation.expectedWages))"
                                             ).monospacedDigit()
                                         } else {
                                             Label(
@@ -117,6 +117,12 @@ struct HistoricalPeriodView: View {
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.headline)
                     PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
+                    if context.calculation?.provenance?.engine != "linepay.configured-pay/3" {
+                        Text(
+                            "This is a saved calculation. A new paycheck review uses current precision; earlier records are kept."
+                        )
+                        .font(.footnote)
+                    }
                     Text(
                         "\(LinePayFormat.timeZoneName(context.timeZoneIdentifier)) · rules version \(context.agreement.version)"
                     ).font(.footnote)

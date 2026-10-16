@@ -18,6 +18,8 @@ Select the pending period and choose **Add this paycheck**. Import or enter its 
 
 The closed period’s work and rules stay frozen. A late audit or later rule correction does not recalculate old work using the latest profile rate unless you explicitly review and confirm it.
 
+In the v2 development build, an explicit new paycheck review uses current calculation precision with the closed period’s saved rules and clock facts. The original estimate and earlier audit revisions remain intact. The period’s **Saved expected** amount follows its current recorded paycheck comparison; open an earlier revision to inspect the earlier answer.
+
 ## Correct paycheck facts
 
 Open the period and choose **Correct paycheck facts**, or open its live audit and choose **Review or correct paycheck facts**. To keep the same source, choose **Correct existing facts, keep original** where offered.

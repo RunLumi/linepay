@@ -10,12 +10,17 @@ struct AuditAssessment {
 
     static func evaluate(
         calculation: CalculationResult?, paystub: ConfirmedPaystub?,
-        reconciliation: ReconciliationResult?
+        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false
     ) -> AuditAssessment {
         guard let paystub else {
             return AuditAssessment(
                 status: .notAudited, explanation: "No paycheck confirmed.", hours: [],
                 isCurrent: false)
+        }
+        if requiresCalculationReview {
+            return review(
+                "Calculation precision changed. Re-run this check; earlier audit revisions are retained."
+            )
         }
         let amounts = [
             paystub.regularPay, paystub.overtimePay, paystub.doubleTimePay,
@@ -47,7 +52,8 @@ struct AuditAssessment {
             assessment.difference == reconciliation.difference
         else {
             return review(
-                "Work or rules changed. Re-run the audit before relying on this comparison.")
+                "Work, rules or calculation changed. Re-run the audit before relying on this comparison."
+            )
         }
         return AuditAssessment(
             status: .assessment(assessment),

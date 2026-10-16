@@ -30,6 +30,12 @@ The following numbers are synthetic. Assume the confirmed rules classify 40 hour
 
 The categories must come from the rules applied to actual work. Do not manually label all overtime as double time unless the configured agreement supports that result.
 
+## Calculation precision in the v2 development build
+
+New estimates keep recorded time precise through money rounding. For a synthetic example, one minute at USD 58.50/hour is USD 0.975 before the stated half-up cent rounding, giving USD 0.98. Displayed fractional hours can be rounded; use the actual start/end times and unpaid breaks when checking the calculation.
+
+Earlier saved estimates and audit revisions retain their recorded values and calculation version. If updated precision changes an active check’s ledger, the app requires a new review instead of relabelling the old result as current. An explicit review of a closed period uses current precision and appends a new audit revision while keeping the original estimate and earlier checks. This is a calculation correction, not evidence that money has been recovered or that every pay obligation was checked.
+
 ## An unavailable result is not zero
 
 A missing or unsafe calculation can show a problem requiring review instead of an amount. Examples include work outside agreement effective dates or an ambiguous guarantee across a rule change. Read the message and correct the underlying facts or rule coverage.

@@ -82,7 +82,8 @@ struct PayLedgerView: View {
                                 AuditStatusView(status: model.status(for: context))
                                 let presentation = AuditAssessment.evaluate(
                                     calculation: context.calculation, paystub: paystub,
-                                    reconciliation: context.reconciliation)
+                                    reconciliation: context.reconciliation,
+                                    requiresCalculationReview: context.requiresCalculationReview)
                                 if !presentation.isCurrent {
                                     Text(presentation.explanation).font(.footnote)
                                 } else if let assessment = paystub.assessment {

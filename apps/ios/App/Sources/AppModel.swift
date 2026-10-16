@@ -87,19 +87,17 @@ final class AppModel {
     }
 
     var currentAuditStatus: AuditDisplayStatus {
-        guard let activePeriod = state.activePeriod else { return .notAudited }
-        return auditStatus(
-            calculation: calculation, paystub: activePeriod.paystub,
-            reconciliation: activePeriod.reconciliation
-        )
+        guard let context = periodContext() else { return .notAudited }
+        return status(for: context)
     }
 
     private func auditStatus(
         calculation: CalculationResult?, paystub: ConfirmedPaystub?,
-        reconciliation: ReconciliationResult?
+        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false
     ) -> AuditDisplayStatus {
         AuditAssessment.evaluate(
-            calculation: calculation, paystub: paystub, reconciliation: reconciliation
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation,
+            requiresCalculationReview: requiresCalculationReview
         ).status
     }
 
@@ -480,6 +478,16 @@ final class AppModel {
             localDate(from: end, timeZoneIdentifier: zone)
                 == localDate(from: context.window.displayEndDate, timeZoneIdentifier: zone)
         else { throw AppModelError.invalidPayPeriod }
+        // Confirming a new review is explicit; closed records themselves are never recalculated on read.
+        let reviewedCalculation: CalculationResult?
+        if context.isClosed {
+            reviewedCalculation = try? PayCalculator().calculate(
+                work: context.workEntries.map(\.interval),
+                agreement: context.agreement, changes: context.agreementChanges ?? [],
+                policy: .highestApplicable)
+        } else {
+            reviewedCalculation = self.calculation
+        }
         let currency = context.agreement.hourlyRate.currencyCode
         let grossAmount = try positiveDecimal(
             draft.grossPay, field: "Gross pay", allowZero: true, currencyCode: currency)
@@ -516,11 +524,11 @@ final class AppModel {
             grossBasis: draft.grossBasis, lineLayout: draft.lineLayout,
             hoursBasis: draft.hoursBasis, guaranteeLayout: draft.guaranteeLayout,
             hasUnreviewedFields: hasUnreviewed,
-            hasUnsupportedRules: (context.calculation?.agreementSnapshots ?? [context.agreement])
+            hasUnsupportedRules: (reviewedCalculation?.agreementSnapshots ?? [context.agreement])
                 .contains { !($0.unsupportedRuleNotes ?? "").isEmpty })
         let assessment: PaycheckAssessment
-        let calculation = context.calculation
-        if let calculation = context.calculation {
+        let calculation = reviewedCalculation
+        if let calculation {
             assessment = try PaycheckAssessor().assess(
                 calculation: calculation, agreement: context.agreement, facts: facts)
         } else {
@@ -571,7 +579,7 @@ final class AppModel {
                 AuditRevision(
                     id: prior.id, window: context.window,
                     agreement: context.agreement, timeZoneIdentifier: zone,
-                    workEntries: context.workEntries, calculation: calculation,
+                    workEntries: context.workEntries, calculation: context.calculation,
                     paystub: prior, reconciliation: context.reconciliation,
                     agreementChanges: context.agreementChanges))
         }
@@ -1012,23 +1020,29 @@ final class AppModel {
 
     func periodContext(id: UUID? = nil) -> PayPeriodContext? {
         if let active = state.activePeriod, id == nil || active.id == id {
+            let needsReview =
+                active.auditCompletedEpochSeconds != nil
+                && CalculationRevisionPolicy.requiresReview(
+                    saved: active.auditRevisions?.last?.calculation,
+                    current: calculation)
             return PayPeriodContext(
                 id: active.id, window: active.window, agreement: active.agreement,
                 timeZoneIdentifier: currentTimeZoneIdentifier, workEntries: active.workEntries,
-                calculation: active.auditCompletedEpochSeconds == nil
+                calculation: active.auditCompletedEpochSeconds == nil || needsReview
                     ? calculation
                     : (active.auditRevisions?.last?.calculation ?? calculation),
                 paystub: active.paystub, reconciliation: active.reconciliation,
                 revisions: active.auditRevisions ?? [], isClosed: false,
                 agreementChanges: active.agreementChanges,
                 calculationIssue: calculation == nil ? calculationError : nil,
-                resolutionEvents: state.resolutionEvents?.filter { $0.periodID == active.id } ?? [])
+                resolutionEvents: state.resolutionEvents?.filter { $0.periodID == active.id } ?? [],
+                requiresCalculationReview: needsReview)
         }
         guard let period = state.history.first(where: { $0.id == id }) else { return nil }
         return PayPeriodContext(
             id: period.id, window: period.window, agreement: period.agreement,
             timeZoneIdentifier: timeZoneIdentifier(for: period), workEntries: period.workEntries,
-            calculation: period.calculation, paystub: period.paystub,
+            calculation: period.comparisonCalculation, paystub: period.paystub,
             reconciliation: period.reconciliation,
             revisions: period.auditRevisions ?? [], isClosed: true,
             agreementChanges: period.agreementChanges,
@@ -1039,7 +1053,8 @@ final class AppModel {
     func status(for context: PayPeriodContext) -> AuditDisplayStatus {
         auditStatus(
             calculation: context.calculation, paystub: context.paystub,
-            reconciliation: context.reconciliation)
+            reconciliation: context.reconciliation,
+            requiresCalculationReview: context.requiresCalculationReview)
     }
 
     func saveSetupDraft(_ draft: PayProfileDraft?) throws {
@@ -1689,7 +1704,7 @@ final class AppModel {
 
     func auditStatus(for period: CompletedPayPeriod) -> AuditDisplayStatus {
         auditStatus(
-            calculation: period.calculation, paystub: period.paystub,
+            calculation: period.comparisonCalculation, paystub: period.paystub,
             reconciliation: period.reconciliation)
     }
 

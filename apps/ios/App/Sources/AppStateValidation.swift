@@ -101,7 +101,7 @@ enum AppStateValidation {
                 try validate(calculation: calculation, agreement: period.agreement)
             } else {
                 guard let issue = period.calculationIssue, !issue.isEmpty,
-                    period.reconciliation == nil
+                    period.comparisonCalculation != nil || period.reconciliation == nil
                 else { throw invalid() }
             }
             for revision in period.workCorrections ?? [] {
@@ -113,7 +113,7 @@ enum AppStateValidation {
             if let paystub = period.paystub {
                 try validate(
                     paystub: paystub,
-                    calculation: period.reconciliation == nil ? nil : period.calculation,
+                    calculation: period.reconciliation == nil ? nil : period.comparisonCalculation,
                     agreement: period.agreement)
             }
         }
@@ -172,8 +172,12 @@ enum AppStateValidation {
             }
         }
         if let provenance = calculation.provenance {
-            guard provenance.engine == "linepay.configured-pay/2",
-                provenance.rounding == "explicit-snapshot-rounding/1",
+            let supportedPrecision =
+                (provenance.engine == "linepay.configured-pay/2"
+                    && provenance.rounding == "explicit-snapshot-rounding/1")
+                || (provenance.engine == "linepay.configured-pay/3"
+                    && provenance.rounding == "exact-seconds-snapshot-rounding/2")
+            guard supportedPrecision,
                 provenance.callout == "confirmed-event-isolated-minimum/1"
             else { throw invalid() }
         }

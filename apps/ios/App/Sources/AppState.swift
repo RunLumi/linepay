@@ -244,6 +244,16 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let auditRevisions: [AuditRevision]?
     let hasConsumedAuditAccess: Bool?
 
+    /// The original period estimate stays frozen; an explicit newer audit owns its own calculation.
+    var comparisonCalculation: CalculationResult? {
+        if let paid = paystub,
+            let revision = auditRevisions?.last(where: { $0.paystub.id == paid.id })
+        {
+            return revision.calculation
+        }
+        return calculation
+    }
+
     init(
         id: UUID,
         window: PayPeriodWindow,
@@ -382,6 +392,7 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     var agreementChanges: [AgreementChange]?
     var calculationIssue: String? = nil
     var resolutionEvents: [ResolutionEvent] = []
+    var requiresCalculationReview = false
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {

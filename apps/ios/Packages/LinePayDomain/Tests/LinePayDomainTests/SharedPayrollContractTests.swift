@@ -76,7 +76,7 @@ struct SharedPayrollContractTests {
         let corpus = try JSONDecoder().decode(Corpus.self, from: Data(contentsOf: url))
         try #require(corpus.format == "com.streamentry.linepay.configured-pay-fixtures")
         try #require(corpus.version == 1 && corpus.premiumCombination == "highestApplicable")
-        try #require(corpus.cases.count == 14)
+        try #require(corpus.cases.count == 19)
         try #require(Set(corpus.cases.map(\.id)).count == corpus.cases.count)
         let weekdays: [String: Weekday] = [
             "sunday": .sunday, "monday": .monday,

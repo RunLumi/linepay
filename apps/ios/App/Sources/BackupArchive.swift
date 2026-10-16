@@ -176,7 +176,7 @@ struct BackupArchive: Sendable {
                 else { throw BackupError.invalidArchive }
             } else {
                 guard let issue = period.calculationIssue, !issue.isEmpty,
-                    period.reconciliation == nil
+                    period.comparisonCalculation != nil || period.reconciliation == nil
                 else { throw BackupError.invalidArchive }
             }
             try validate(

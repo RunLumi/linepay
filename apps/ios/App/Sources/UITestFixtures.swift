@@ -66,7 +66,7 @@
                 }
                 var profile = PayProfileDraft()
                 profile.name = "SAMPLE - synthetic work"
-                profile.hourlyRate = "50"
+                profile.hourlyRate = scenario == "precision-profile" ? "58.50" : "50"
                 profile.timeZoneIdentifier = "America/Chicago"
                 profile.useDailyOvertime = true
                 profile.overtimeAfterHours = "8"
@@ -80,7 +80,7 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
-                if scenario == "profile" { return session }
+                if scenario == "profile" || scenario == "precision-profile" { return session }
                 if scenario == "unresolved" {
                     let boundary = profile.periodStartDate.addingTimeInterval(86_400)
                     var changed = profile

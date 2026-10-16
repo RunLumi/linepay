@@ -2,7 +2,7 @@
 
 [Shared contracts](../README.md)
 
-`configured-pay-v1.json` contains fourteen synthetic cases with independently calculated arithmetic.
+`configured-pay-v1.json` contains nineteen synthetic cases with independently calculated arithmetic.
 It is the first shared native-client conformance subset, **not** the complete iOS regression suite,
 a statutory-pay audit, a verified agreement pack or evidence that Android/PWA clients work.
 
@@ -36,11 +36,11 @@ Component IDs can be client-local; source work and snapshot identities must be p
 
 Cases cover straight time, daily tiers, explicit double time, unpaid breaks, local-midnight reset,
 DST spring/fall elapsed time, isolated and split physical callout minima, separate events, separate
-per diem, highest-premium precedence, fractional-hour cent rounding and currency context.
+per diem, highest-premium precedence, fractional-hour cent rounding, exact half-cent boundaries/partition invariance and currency context.
 
 Weekly regular-rate obligations, jurisdiction/applicability, effective-dated interactions, source
 rights/review, negative/refusal cases and benefits are **not covered by this first subset**. Porting
-these fourteen examples alone is insufficient to claim full parity or legal completeness. Existing
+these nineteen examples alone is insufficient to claim full parity or legal completeness. Existing
 native coverage and source/applicability boundaries remain binding.
 
 ```bash

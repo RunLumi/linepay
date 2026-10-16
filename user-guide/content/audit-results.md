@@ -40,9 +40,9 @@ Suppose expected regular pay is $400, while confirmed gross is also $400 but the
 
 Likewise, differing confirmed hours can require review even when money matches. Tap a compared line to inspect the work and evidence behind it.
 
-## When work or rules change
+## When work, rules or calculation change
 
-An earlier audit is no longer current after relevant input changes. Use **Review or correct paycheck facts** to review it again. Previous audit revisions preserve what was compared earlier; do not use an old screenshot as proof of the new state.
+An earlier audit is no longer current after relevant input changes or a calculation-precision update that changes its ledger. Use **Review or correct paycheck facts** to review it again. Previous audit revisions preserve what was compared earlier; do not use an old screenshot as proof of the new state.
 
 ## Before contacting payroll
 

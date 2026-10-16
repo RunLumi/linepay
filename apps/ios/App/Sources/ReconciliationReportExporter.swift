@@ -15,7 +15,8 @@ struct ReconciliationReportExporter {
         reconciliation: ReconciliationResult?,
         findings: [AuditFinding],
         resolutionEvents: [ResolutionEvent] = [],
-        privacy: ReportPrivacyOptions = ReportPrivacyOptions()
+        privacy: ReportPrivacyOptions = ReportPrivacyOptions(),
+        requiresCalculationReview: Bool = false
     ) throws -> URL {
         let created = Date()
         let url = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
@@ -23,7 +24,8 @@ struct ReconciliationReportExporter {
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)
         let assessment = paystub?.assessment
         let isCurrent = AuditAssessment.evaluate(
-            calculation: calculation, paystub: paystub, reconciliation: reconciliation
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation,
+            requiresCalculationReview: requiresCalculationReview
         ).isCurrent
 
         let data = renderer.pdfData { context in

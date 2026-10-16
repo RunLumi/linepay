@@ -21,7 +21,8 @@ struct ReportSharingView: View {
                     window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
                     agreement: context.agreement, calculation: calculation,
                     paystub: context.paystub, reconciliation: context.reconciliation,
-                    findings: [], resolutionEvents: context.resolutionEvents, privacy: privacy)
+                    findings: [], resolutionEvents: context.resolutionEvents, privacy: privacy,
+                    requiresCalculationReview: context.requiresCalculationReview)
             })
     }
 

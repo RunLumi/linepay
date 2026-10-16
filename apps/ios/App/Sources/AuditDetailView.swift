@@ -51,7 +51,8 @@ struct LiveAuditView: View {
         if let context = model.periodContext(id: periodID), let paid = context.paystub,
             let calculation = context.calculation,
             AuditAssessment.evaluate(
-                calculation: calculation, paystub: paid, reconciliation: context.reconciliation
+                calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
+                requiresCalculationReview: context.requiresCalculationReview
             ).isCurrent,
             let difference = paid.assessment?.difference, difference.amount > 0
         {
@@ -73,7 +74,8 @@ struct AuditDetailView: View {
         List {
             if let paid = context.paystub, let calculation = context.calculation {
                 let presentation = AuditAssessment.evaluate(
-                    calculation: calculation, paystub: paid, reconciliation: context.reconciliation)
+                    calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
+                    requiresCalculationReview: context.requiresCalculationReview)
                 Section {
                     Text(
                         LinePayFormat.payPeriod(
@@ -82,7 +84,7 @@ struct AuditDetailView: View {
                     if !presentation.isCurrent {
                         AuditStatusView(status: .needsReview)
                         Text(
-                            "Work or rules changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
+                            "Work, rules or calculation changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
                         )
                     } else if let assessment = paid.assessment {
                         // Verdict first, then the one number that answers "by how much?".
