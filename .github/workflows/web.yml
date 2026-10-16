@@ -52,6 +52,8 @@ jobs:
             .build/web-e2e/**/report.json
             .build/web-e2e/**/*.png
             .build/web-e2e/**/failure.txt
+            .build/web-e2e/**/synthetic-*-report.html
+            .build/web-e2e/**/synthetic-*-report.pdf
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn

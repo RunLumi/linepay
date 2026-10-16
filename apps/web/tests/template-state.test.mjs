@@ -49,13 +49,14 @@ function adoptedState() {
   return state;
 }
 test("v1/v2 recovery adds only empty origin metadata and preserves original wage/fund history", () => {
-  for (const version of [1, 2]) {
+  for (const version of [1, 2, 3]) {
     const original = prior(version),
       before = structuredClone(original),
       state = decodeState(original);
-    assert.equal(state.version, 3);
+    assert.equal(state.version, 4);
     assert.equal(state.revision, original.revision);
-    assert.deepEqual(state.templateOrigins, []);
+    assert.deepEqual(state.templateOrigins, original.templateOrigins ?? []);
+    assert.deepEqual(state.resolutionEvents, []);
     assert.deepEqual(state.profiles, original.profiles);
     assert.deepEqual(state.periods, original.periods);
     assert.deepEqual(state.benefitChecks, original.benefitChecks ?? []);

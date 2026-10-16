@@ -321,3 +321,22 @@ hr {
     display: block;
   }
 }
+
+.report-frame {
+  display: block;
+  width: 100%;
+  height: 600px;
+  border: 1px solid var(--line);
+  background: white;
+}
+.resolution-history {
+  padding-left: 24px;
+}
+.resolution-history li {
+  padding-block: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.resolution-history .note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

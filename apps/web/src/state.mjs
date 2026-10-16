@@ -10,15 +10,17 @@ import {
   adoptRuleTemplate,
   ruleTemplateIdentity,
 } from "./rule-template.mjs";
+import { validateResolutionEvent } from "./resolution.mjs";
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 3,
+  version: 4,
   revision: 0,
   profiles: [],
   periods: [],
   benefitChecks: [],
   templateOrigins: [],
+  resolutionEvents: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -116,9 +118,10 @@ export function validateState(state) {
     "periods",
     "benefitChecks",
     "templateOrigins",
+    "resolutionEvents",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 3,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 4,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -402,9 +405,18 @@ export function validateState(state) {
       "Imported profile no longer matches its confirmed draft and recipient choices.",
     );
   }
+  need(
+    Array.isArray(state.resolutionEvents) &&
+      state.resolutionEvents.length <= 10000,
+    "Follow-up history exceeds its supported limit.",
+  );
+  for (const event of state.resolutionEvents) {
+    validateResolutionEvent(event, state);
+    unique(event.id);
+  }
   return state;
 }
-// Known v1 had no fund records. Validate every existing record after adding only an empty field.
+// Known prior schemas add only empty missing metadata; retain every existing record.
 // Reading does not write back, change revision or reprice any saved wage calculation/check.
 export function decodeState(state) {
   let candidate = state;
@@ -435,6 +447,25 @@ export function decodeState(state) {
       ...structuredClone(candidate),
       version: 3,
       templateOrigins: [],
+    };
+  }
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 3
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+      "templateOrigins",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 4,
+      resolutionEvents: [],
     };
   }
   return validateState(candidate);

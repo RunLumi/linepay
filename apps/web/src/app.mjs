@@ -1,5 +1,6 @@
 import { calculate, localCandidates, localDate } from "./payroll.mjs";
 import { assess } from "./assessment.mjs";
+import { renderAuditTools } from "./resolution-report-ui.mjs";
 import { renderBenefitUI } from "./benefits-ui.mjs";
 import { renderRuleTemplateUI } from "./rule-template-ui.mjs";
 import {
@@ -10,6 +11,8 @@ import {
   inspectSnapshot,
 } from "./state.mjs";
 import { encryptBackup, decryptBackup } from "./backup.mjs";
+let openAuditID = null,
+  disposeReports = () => {};
 let fundSelection = null,
   fundEditing = false;
 let state,
@@ -77,6 +80,8 @@ function resultView(result, currency) {
 }
 function render() {
   if (!state) return;
+  disposeReports();
+  disposeReports = () => {};
   pendingAudit = null;
   pendingRestore = null;
   document
@@ -175,12 +180,37 @@ function renderPay() {
           .toReversed()
           .map(
             (a) =>
-              `<details><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${JSON.stringify(a.work) !== JSON.stringify(period.work) ? '<p class="rule-note">This check retains an earlier work snapshot. Later entries did not change it.</p>' : ""}${resultView(a.assessment, period.rule.currency)}</details>`,
+              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${JSON.stringify(a.work) !== JSON.stringify(period.work) ? '<p class="rule-note">This check retains an earlier work snapshot. Later entries did not change it.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
           )
           .join("")}`
       : ""
   }
   ${period.work.length ? auditForm() : ""}${!period.closed && (period.work.length || period.audits.length) ? '<button data-action="close">Close this period</button>' : !period.closed ? '<button data-action="discard">Discard empty period</button>' : ""}${period.closed ? periodForm() : ""}`;
+  const cleanup = period.audits.map((a) =>
+    renderAuditTools({
+      container: main.querySelector(`[data-audit-tools="${a.id}"]`),
+      state,
+      period,
+      audit: a,
+      run,
+      uid,
+      now,
+      message,
+      onSave: async (event) => {
+        openAuditID = a.id;
+        await commit((s) => s.resolutionEvents.push(event));
+        message(
+          "Worker-reported follow-up saved. The original comparison remains as recorded.",
+        );
+      },
+    }),
+  );
+  disposeReports = () => cleanup.forEach((dispose) => dispose());
+  main.querySelectorAll("[data-paycheck-audit]").forEach((detail) =>
+    detail.addEventListener("toggle", () => {
+      if (detail.open) openAuditID = detail.dataset.paycheckAudit;
+    }),
+  );
 }
 function periodForm() {
   return `<h2>Start a pay period</h2><form id="period-form"><div class="fields">${label("First work date", "start", 'type="date" required')}${label("Last work date (included)", "end", 'type="date" required')}${label("Payroll timezone", "zone", `required value="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)}"`)}</div><p class="note">Confirm the payroll timezone. Device timezone changes will not reinterpret saved work. The newest profile will be copied into this period.</p><button class="primary">Start period</button></form>`;
@@ -227,7 +257,9 @@ function resolveClock(text, zone, occurrence = "") {
 }
 function bind() {
   main
-    .querySelectorAll("form:not(#fund-form):not([data-rule-template])")
+    .querySelectorAll(
+      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned])",
+    )
     .forEach((form) =>
       form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -384,6 +416,7 @@ async function submit(form) {
     document.querySelector("#confirm-audit").onclick = () =>
       run(async () => {
         if (!pendingAudit) throw Error("Review the current facts again.");
+        openAuditID = pendingAudit.id;
         await commit((s) =>
           s.periods.find((x) => x.id === p.id).audits.push(pendingAudit),
         );

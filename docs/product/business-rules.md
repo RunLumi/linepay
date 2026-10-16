@@ -111,3 +111,14 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-072 | Recipient monetary values and applicability require confirmation. | Omitted values never become zero. Configured allowance needs an own-amount/not-applicable decision. Unconfigured remains unconfigured, not waived. |
 | BR-073 | Sharing never rewrites historical rules. | Confirmed import creates a fresh profile for future periods; old work/rules/calculations/checks remain unchanged. |
 | BR-074 | Retain reproducible import provenance. | Original admitted packet, identity/revision and recipient choices/confirmation survive backup/recovery; changed profile values require a new profile/choice. |
+
+
+## Worker follow-up and reviewed report copies
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-075 | A resolution status is the worker's report, separate from payroll arithmetic. | Corrected/explained/shared does not rewrite an audit verdict, prove payment/recovery or send a message. Corrections append events. |
+| BR-076 | Follow-up belongs to a specific saved comparison. | Unknown/orphaned references refuse; another paycheck revision's notes never appear in a selected report. |
+| BR-077 | A report uses the selected saved snapshot and explicit privacy choices. | New profiles do not reprice it. Notes, detailed clocks and draft text are omitted by default; unknown gross is never zero. |
+| BR-078 | Export follows exact-copy review. | Changing privacy options invalidates preview/actions. Downloaded HTML uses the reviewed bytes; oversized reports refuse without truncating a tail. |
+| BR-079 | Printing/exporting is not delivery or external verification. | Local Blob review, browser PDF rendering, OS/provider save, recipient transfer and release remain separate evidence claims. |

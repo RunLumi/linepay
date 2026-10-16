@@ -54,7 +54,7 @@ test("actual v1 source fixture migrates without writes, repricing or invented fu
   const original = old(),
     before = structuredClone(original),
     migrated = decodeState(original);
-  assert.equal(migrated.version, 3);
+  assert.equal(migrated.version, 4);
   assert.equal(migrated.revision, 8);
   assert.deepEqual(migrated.benefitChecks, []);
   assert.deepEqual(migrated.periods, original.periods);
@@ -72,7 +72,7 @@ test("actual v1 source fixture migrates without writes, repricing or invented fu
   unknown.benefitChecks = [{ hiddenFinancialData: "must not drop" }];
   assert.throws(() => decodeState(unknown));
   const future = old();
-  future.version = 4;
+  future.version = 5;
   assert.throws(() => decodeState(future));
 });
 test("fund revisions preserve missing observations and exact later statement differences", () => {

@@ -68,3 +68,5 @@ Primary platform references checked October 17, 2026:
 - [Playwright WebKit offline-emulation limitation](https://github.com/microsoft/playwright/issues/42775)
 
 Web state v3 adds separately retained portable-rule origins and recipient choices, with explicit v1/v2 migration. [ADR 0019](0019-portable-rule-drafts-and-recipient-provenance.md) owns this continuation; prior wage/fund receipts are preserved.
+
+Web state v4 adds append-only saved-check follow-up and reviewed report copies. [ADR 0020](0020-browser-follow-up-and-reviewed-report-copies.md) owns the privacy/lifecycle/migration continuation; original comparisons stay frozen.

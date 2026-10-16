@@ -23,3 +23,5 @@
 - [0018-local-browser-client-and-versioned-web-state](0018-local-browser-client-and-versioned-web-state.md)
 
 - [0019-portable-rule-drafts-and-recipient-provenance](0019-portable-rule-drafts-and-recipient-provenance.md)
+
+- [0020-browser-follow-up-and-reviewed-report-copies](0020-browser-follow-up-and-reviewed-report-copies.md)

@@ -85,6 +85,63 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Save this check', exact=True).click()
         assert read_state(page)['periods'][0]['audits'][0]['assessment']['difference'] == '1.00'
         checks.append('review creates no record; explicit confirmation saves immutable 1.00 possible difference')
+        frozen_check = read_state(page)['periods'][0]['audits'][0]
+        check_id = frozen_check['id']
+        tools = page.locator(f'[data-audit-tools="{check_id}"]')
+        private_note = 'PRIVATE SYNTHETIC — explicación <script>not executable</script>\n' + '\n'.join(f'SYNTHETIC follow-up line {i}: reviewed supporting details, no legal finding.' for i in range(42)) + '\nSYNTHETIC-REPORT-TAIL'
+        assert len(private_note) <= 4000
+        tools.get_by_label('Follow-up status', exact=True).select_option('corrected')
+        tools.get_by_label('What happened?', exact=True).fill(private_note)
+        tools.get_by_role('button', name='Save follow-up', exact=True).click()
+        assert read_state(page)['periods'][0]['audits'][0] == frozen_check
+        assert read_state(page)['resolutionEvents'][0]['status'] == 'corrected'
+        assert read_state(page)['resolutionEvents'][0]['note'] == private_note
+        checks.append('worker-recorded correction appends follow-up without changing original 1.00 possible-shortfall comparison')
+        tools.get_by_role('button', name='Review evidence report', exact=True).click()
+        reviewed = tools.frame_locator('iframe')
+        expect(reviewed.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        body = reviewed.locator('body').inner_text()
+        assert 'USD 10.00' in body and 'USD 9.00' in body and 'USD 1.00' in body and 'Possible shortfall' in body
+        assert 'PRIVATE SYNTHETIC' not in body and 'Correction confirmed by me' not in body and frozen_check['work'][0]['startUTC'] not in body
+        assert 'Arial' in reviewed.locator('body').evaluate('(element) => getComputedStyle(element).fontFamily')
+        with page.expect_download() as report_event:
+            tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True).click()
+        minimized = OUTPUT / 'synthetic-minimized-report.html'
+        report_event.value.save_as(minimized)
+        assert 'PRIVATE SYNTHETIC' not in minimized.read_text()
+        report_page = context.new_page()
+        report_page.set_content(minimized.read_text())
+        assert report_page.locator('body').inner_text() == body
+        if ENGINE == 'chromium':
+            report_page.pdf(path=str(OUTPUT / 'synthetic-minimized-report.pdf'), prefer_css_page_size=True, print_background=True)
+        report_page.close()
+        checks.append('actual minimized report download matches reviewed document and excludes private notes/detailed clocks by default')
+        tools.get_by_label('Include follow-up status and notes for this check.', exact=True).check()
+        expect(tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True)).to_have_count(0)
+        tools.get_by_label('Include detailed recorded clock/break facts.', exact=True).check()
+        tools.get_by_role('button', name='Review evidence report', exact=True).click()
+        reviewed = tools.frame_locator('iframe')
+        expect(reviewed.get_by_text('Correction confirmed by me', exact=True)).to_be_visible()
+        detailed_body = reviewed.locator('body').inner_text()
+        assert private_note in detailed_body and frozen_check['work'][0]['startUTC'] in detailed_body
+        assert reviewed.locator('script').count() == 0
+        with page.expect_download() as detailed_event:
+            tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True).click()
+        detailed = OUTPUT / 'synthetic-detailed-report.html'
+        detailed_event.value.save_as(detailed)
+        assert '&lt;script&gt;not executable&lt;/script&gt;' in detailed.read_text()
+        print_page = context.new_page()
+        print_page.set_content(detailed.read_text())
+        assert print_page.locator('body').inner_text() == detailed_body
+        if ENGINE == 'chromium':
+            print_page.pdf(path=str(OUTPUT / 'synthetic-detailed-report.pdf'), prefer_css_page_size=True, print_background=True)
+        print_page.emulate_media(media='print')
+        print_page.screenshot(path=str(OUTPUT / 'report-print-layout.png'), full_page=True)
+        print_page.close()
+        assert read_state(page)['periods'][0]['audits'][0] == frozen_check
+        assert len(read_state(page)['resolutionEvents']) == 1
+        checks.append('optional follow-up/work facts require renewed exact-report review, escape source text, preserve the original verdict and do not auto-mark shared')
+
         page.get_by_role('button', name='Close this period', exact=True).click()
         page.get_by_role('button', name='Confirm close period', exact=True).click()
         profile(page, '25')
@@ -284,6 +341,7 @@ with sync_playwright() as pw:
         restored = read_state(page)
         assert restored['periods'] == baseline['periods'] and restored['profiles'] == baseline['profiles']
         assert restored['benefitChecks'] == baseline['benefitChecks']
+        assert restored['resolutionEvents'] == baseline['resolutionEvents']
         assert restored['revision'] > baseline['revision']
         checks.append('synthetic destructive reset → authenticated inspection → separate replace restores exact snapshots')
         page.get_by_role('button', name='History', exact=True).click()
@@ -311,7 +369,7 @@ with sync_playwright() as pw:
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
         # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2]:
+        for old_version in [1, 2, 3]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -334,7 +392,8 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 3 and migrated['templateOrigins'] == []
+            assert migrated['version'] == 4 and migrated['resolutionEvents'] == []
+            assert migrated['templateOrigins'] == prior.get('templateOrigins', [])
             assert migrated['benefitChecks'] == prior.get('benefitChecks', [])
             assert migrated['periods'] == prior['periods'] and migrated['profiles'] == prior['profiles']
             legacy_page.get_by_role('button', name='Pay', exact=True).click()
@@ -352,7 +411,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')
@@ -406,9 +465,22 @@ with sync_playwright() as pw:
         page.locator('#fund-preview').get_by_text('Explicit eligible earnings', exact=True).scroll_into_view_if_needed()
         page.screenshot(path=str(OUTPUT / 'fund-percent-preview-dark-viewport.png'))
         checks.append('offline percentage editor labels quantity as explicit eligible earnings in currency and preview leaves saved history untouched')
+        page.get_by_role('button', name='Pay', exact=True).click()
+        saved_check = page.locator(f'[data-paycheck-audit="{check_id}"]')
+        if saved_check.get_attribute('open') is None:
+            saved_check.locator(':scope > summary').click()
+        offline_tools = page.locator(f'[data-audit-tools="{check_id}"]')
+        offline_tools.get_by_role('button', name='Review evidence report', exact=True).click()
+        offline_report = offline_tools.frame_locator('iframe')
+        expect(offline_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        assert 'USD 1.00' in offline_report.locator('body').inner_text()
+        assert 'PRIVATE SYNTHETIC' not in offline_report.locator('body').inner_text()
+        offline_tools.locator('iframe').scroll_into_view_if_needed()
+        page.screenshot(path=str(OUTPUT / 'offline-report-review.png'))
+        checks.append('report review opens from preserved saved check while the real origin is stopped; private follow-up remains excluded')
         assert not errors, errors
-        assert all(url.startswith(origin + '/') and method == 'GET' for url, method in requests), requests
-        checks.append('all observed network traffic is same-origin app-shell GETs; no pay-data requests')
+        assert all((url.startswith(origin + '/') or url.startswith('blob:' + origin + '/')) and method == 'GET' for url, method in requests), requests
+        checks.append('network traffic is same-origin asset GETs; report Blob views stay local and no pay data is sent')
         assert runtime_hash() == source_hash, 'Runtime source changed during browser verification'
         report = {'passed': True, 'runtimeSHA256': source_hash, 'browser': ENGINE, 'browserVersion': browser.version, 'checks': checks,
                   'scope': 'Synthetic local browser workflow. No deployment, actual OS Files delivery, native snapshot migration, installed-PWA/physical-device or App Store release proof.'}

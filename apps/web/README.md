@@ -54,7 +54,7 @@ production rounding. It supports one confirmed snapshot per period, not effectiv
 Daily tier boundaries must resolve to whole elapsed seconds; smaller boundaries need review.
 Work instants are whole seconds from 2000–2099; each entry is at most 72 elapsed hours. It does not
 implement weekly entitlement, complete CBA coverage, paid-equivalent/hourly paystub mapping, complete benefit/eligibility rules,
-OCR/agreement imports, voice, evidence originals, resolution/PDF reports, commerce or localization.
+OCR/agreement imports, voice, evidence originals, complete report/physical print parity, commerce or localization.
 These remain part of the full v2 objective, not silently waived by this preview.
 
 IndexedDB stores one versioned state with revision-checked atomic replacement. A write succeeds only
@@ -71,8 +71,8 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 3. Known v1/v2 schemas migrate explicitly
-by adding only empty fund/origin metadata after validating all existing records; unknown fields/
+version 1 with `com.streamentry.linepay.web.state` version 4. Known v1/v2/v3 schemas migrate explicitly
+by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
 commit `192cab9` source. Actual encrypted old-version recovery is tested in both browsers.
@@ -107,7 +107,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 77 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+The 86 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
 fixtures, plus bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
@@ -142,3 +142,25 @@ stored records; it does not pretend storage is still opening or silently reset i
 uses a larger connection queue for parallel modules. Source-bound browser reports are fresh per
 run, record explicit pass/fail and a runtime SHA-256, and retain per-context/network diagnostics on
 failure. A stale prior green report is never retained as the current result.
+
+
+## Saved-check follow-up and evidence reports
+
+Each saved paycheck check has worker-reported follow-up and a report workflow. Statuses and notes
+append to that exact check; they never correct its wages, comparison verdict or claim recovered
+money. Record another comparison for a later paycheck. Nothing is sent to an employer or union.
+Web state v4 retains these records in protected backups; v1/v2/v3 imports add no invented history.
+The v3 fixture was generated/validated with actual `5a42523` source.
+
+The default evidence copy uses saved period/zone, amounts, confirmation, configured rules and
+engine references. It remains sensitive and is not anonymous. Follow-up notes, detailed recorded
+clocks and crew-draft text are separate opt-ins, scoped to that check. Preview the exact sandboxed
+HTML, then download that copy or invoke Print / save PDF for the report frame. Changing an option
+requires another review. Scripts/network are disabled in the document, all values are escaped,
+fixed inline CSS is hash-admitted and prepared Blob URLs are disposed on navigation/mutation.
+Reports above 2 MiB refuse rather than silently omit details. No originals are attached.
+
+Actual Chromium tests render downloaded HTML to PDFs and check privacy, amounts, Unicode text,
+pagination and the long-note tail. WebKit tests actual HTML preview/download and print-media layout.
+These do not establish actual OS print/save-provider or physical delivery. Native PDF/report UI
+and full native-state interchange remain separate gates; this browser work does not certify them.

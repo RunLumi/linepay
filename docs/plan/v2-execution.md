@@ -24,7 +24,7 @@ An implementation, test result, upload, review submission and public release are
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
-| Resolution workflow | Implemented; native/UI/storage/privacy checks passed | Saved finding/status/notes/history and shareable evidence packet |
+| Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
@@ -1155,3 +1155,70 @@ created; describe and verify each property separately.
   `/private/tmp/linepay-v2-crew-chromium-{final2,observed,network-observed}.log` receipts.
 
 - Final checkpoint: 1,032 local Markdown links, 5 documentation-tool tests, legal active-copy/inventory checks, agent-harness checks and diff whitespace checks passed. Inspected the actual asset-load error/reload screen and its preserved-record recovery. Latest WebKit capture rerun also passed 22 checks at the same runtime hash; no further client source changed. Hosted CI, native UI/device and store gates remain unproven.
+
+
+## Browser saved-check follow-up and reviewed evidence reports
+
+- Entered clean `5a42523`; the previous goal turn made concrete progress with crew-file exchange.
+  Read-only native recheck still returns first-launch **69** / CoreSimulator **1171.7**. Did not
+  invoke simctl, create a duplicate setup prompt or claim native runtime availability. Continued
+  the missing browser resolution/report workflow within the original all-stage objective.
+- Added the existing native six worker-reported statuses, appended to an exact saved period/check
+  with a bounded nonempty note. Corrected/explained/shared never change wages, the original verdict
+  or money-recovered counters, and never send a message. State validation rejects unknown status
+  types, invalid Unicode/controls, duplicate IDs and orphaned/wrong-revision relationships.
+- Web state **v4** adds only `resolutionEvents`; known v1/v2/v3 migrations preserve every previous
+  profile, wage/fund receipt and crew origin and add no invented follow-up. Frozen synthetic v3
+  fixture was generated and validated using actual `5a42523` modules in ignored `.build`.
+  Container/encryption version stays 1; native financial-state portability remains unsupported.
+- Reports are receipts of one selected saved calculation/assessment. No pay calculator is called
+  by the renderer; a newer personal profile cannot reprice the report. Saved gross/unknowns,
+  confirmed basis, period/zone, creation instant, configured rules, scope/limitations and rule/engine
+  references remain traceable. Guarantee top-ups do not claim actual clock time. A worker-recorded
+  correction remains distinct from the unchanged possible-shortfall comparison above it.
+- Default copies exclude follow-up history, detailed clocks/breaks and imported-draft text. Each
+  is an explicit opt-in for the selected check, not another revision's notes. Even minimized copies
+  contain sensitive figures/dates/reference IDs and are not anonymous. Originals are not attached.
+  A 2 MiB report limit refuses, never silently truncates a history or ledger tail.
+- Review and actual HTML download use the same prepared UTF-8 bytes; a changed privacy choice
+  invalidates actions/preview and revokes its URL. Navigation/mutation disposes previews. Only the
+  real prepared Blob document enables actions, not an initial blank frame. Independent download
+  URLs have bounded lifetimes so a UI refresh does not abort an initiated user save.
+- Preview is a sandboxed Blob document, no scripts/forms/external resources. Parent policy permits
+  Blob frames and only a SHA-256-admitted fixed inline report stylesheet; no general inline-script/
+  style relaxation. Dynamic values are escaped. Print/save PDF targets the reviewed report frame,
+  not the surrounding app/private forms. Actual OS dialog/provider delivery is still unverified.
+- Final **86 Node tests passed**, no failures/skips, log
+  `/private/tmp/linepay-v2-report-domain-final.log`. Includes all prior fixtures, relationship/Unicode/
+  type/capacity refusals, old-schema no-mutation, private-by-default reports, selected-revision notes,
+  exact optional-source admission, no-reprice behavior and stylesheet/parent-CSP hash agreement.
+  Quick gate passed **74 repository tests, strict Swift format and 134 domain tests in 20 suites**,
+  log `/private/tmp/linepay-v2-report-quick.log`; native production source did not change.
+- Actual Chromium **155.0.8059.85** and WebKit **26.0** each passed **26 checks**, logs
+  `/private/tmp/linepay-v2-report-{chromium,webkit}-final2.log`, source SHA-256
+  `53515c1c62d3c0aa6ad32cc9463f56416513fbb8946bf082b4d78e0ba86bf4b5`.
+  Saved 1.00 possible-shortfall receipt survives a corrected-status note unchanged. Real minimized/
+  detailed downloads match the reviewed document, source text cannot execute, options require renewed
+  review and downloads do not auto-mark shared. Encrypted reset/recovery retains follow-up exactly;
+  actual old-schema 1/2/3 recovery retains original records; real stopped-origin report review works.
+- The first final offline attempt tried to use report controls inside a closed saved-check disclosure
+  after reload and failed in both browsers. Opened that historical check through its actual summary
+  control, then reran unchanged report assertions. Failure logs remain separate from the final passes;
+  no saved record or storage data was missing and no selector/assertion was weakened.
+- Chromium actually printed the downloaded HTML with its PDF engine: minimized **2 pages**, detailed
+  **4 pages**. Bundled pypdf **6.10.0** extracted the saved 1.00 difference/verdict, verified absence
+  of private notes in the default copy, and found the complete Unicode/script-as-text note plus
+  `SYNTHETIC-REPORT-TAIL` only in the opt-in copy. Poppler rendered actual pages; inspected summary,
+  rules/components and note continuation/tail. Corrected a paper-column width so normal currency/
+  amount pairs stay together, then regenerated and rechecked the actual PDFs. Artifacts are ignored
+  `.build/web-e2e/chromium/synthetic-{minimized,detailed}-report.{html,pdf,txt}` plus rendered PNGs.
+- This is browser PDF rendering/HTML/download evidence, not native iOS PDF generation on the current
+  candidate, actual OS print/save, iCloud/two-device transfer, physical PWA or recipient delivery.
+  No mocked successful network responses: asset GETs are local-origin; report Blob views are local.
+  The existing controlled load-error test remains a negative abort/reload with unchanged records.
+- ADR 0020 and BR-075–079 define data/privacy/lifecycle boundaries. No backend, collector, account,
+  SDK/device install, external message, website publication, remote push, archive/upload/submission
+  or public release occurred. Broader PWA/native/Android/source/library/localization/device and final
+  store gates remain. Full v2/release completion is unproven; the original goal remains active.
+
+- Final checkpoint: 1,034 local Markdown links, 5 documentation-tool tests, legal active-copy/inventory, agent-harness and diff checks passed. Inspected final printed amounts and final note continuation/tail PNGs after regeneration. CI artifact configuration now retains only the known synthetic report HTML/PDF files alongside screenshots/receipts; hosted CI itself has not run. No further runtime source changed after the source-bound 26-check passes.
