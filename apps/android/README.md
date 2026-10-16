@@ -44,9 +44,11 @@ from `shared/contracts/`, never copied into the production library.
 
 Current evidence: nineteen shared payroll cases, nine additional pay boundaries, thirteen shared fund cases,
 six additional fund boundaries, sixteen shared gross-comparison cases, three gross-input/immutability
-boundaries, and four backup transport cases passed (70 total). The backup Unicode/tamper tests use
+boundaries, and four backup transport cases, plus thirteen effective-date price/refusal cases passed (83 total). The backup Unicode/tamper tests use
 explicitly public synthetic fixture inputs. No real worker/credential data belongs in tests or logs.
 
 The configured-pay engine has its own `linepay.android.configured-pay/1` provenance. Do not admit
 it to another client's persisted results or claim full parity solely because the current nineteen
 cases match. Broader native contracts and runtime evidence must precede that decision.
+
+Effective-date currency and rounding scale/mode must remain compatible with the baseline. The shared temporal corpus caught and fixed the prior Kotlin mode-mismatch admission; this is JVM validation, not Android runtime/complete native parity.

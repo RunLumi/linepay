@@ -31,3 +31,5 @@ The first implemented transport contract is [password-protected manual backup v1
 [Configured-gross comparisons v1](reconciliation/README.md) verifies complete-work/gross-basis guards, separate allowances, review precedence and component references in both native domain implementations.
 
 [Portable rule drafts v1](templates/README.md) supports explicit parameter sharing with omitted monetary amounts by default and recipient-confirmed adoption. It is separate from full backups and verified agreement packs.
+
+[Effective-date pay fixtures v1](payroll/effective-date-v1.md) verifies eight temporal prices and five refusals independently in Swift/Kotlin/browser, with compatible policy and explicit local-date snapshots.

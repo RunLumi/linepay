@@ -50,7 +50,8 @@ incompatible scope. The legacy-rounding case tests a saved-result review flag, n
 production or admission of native legacy snapshots.
 
 This first web engine rejects schedules, date-specific premiums, off-schedule multipliers and legacy
-production rounding. It supports one confirmed snapshot per period, not effective-date transitions.
+production rounding. Baseline v1 and versioned effective-date v2 calculations preserve their own
+historical inputs; broader weekly/agreement interactions remain unsupported.
 Daily tier boundaries must resolve to whole elapsed seconds; smaller boundaries need review.
 Work instants are whole seconds from 2000–2099; each entry is at most 72 elapsed hours. It does not
 implement weekly entitlement, complete CBA coverage, paid-equivalent/hourly paystub mapping, complete benefit/eligibility rules,
@@ -71,7 +72,7 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 4. Known v1/v2/v3 schemas migrate explicitly
+version 1 with `com.streamentry.linepay.web.state` version 5. Known v1/v2/v3/v4 schemas migrate explicitly
 by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
@@ -107,8 +108,8 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 86 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
-fixtures, plus bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
+The 103 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
 hours or overtime; optional source notes remain worker-provided, without original-file or third-party
@@ -149,7 +150,7 @@ failure. A stale prior green report is never retained as the current result.
 Each saved paycheck check has worker-reported follow-up and a report workflow. Statuses and notes
 append to that exact check; they never correct its wages, comparison verdict or claim recovered
 money. Record another comparison for a later paycheck. Nothing is sent to an employer or union.
-Web state v4 retains these records in protected backups; v1/v2/v3 imports add no invented history.
+Follow-up was introduced in web state v4; current v5 retains it in protected backups. Prior imports add no invented history.
 The v3 fixture was generated/validated with actual `5a42523` source.
 
 The default evidence copy uses saved period/zone, amounts, confirmation, configured rules and
@@ -164,3 +165,25 @@ Actual Chromium tests render downloaded HTML to PDFs and check privacy, amounts,
 pagination and the long-note tail. WebKit tests actual HTML preview/download and print-media layout.
 These do not establish actual OS print/save-provider or physical delivery. Native PDF/report UI
 and full native-state interchange remain separate gates; this browser work does not certify them.
+
+
+## Confirmed effective-date plans
+
+An open period can review/apply complete confirmed profiles from explicit local dates. The baseline
+stays intact. Each saved revision is retained; changes require compatible currency/rounding and
+fresh immutable rule versions. Preview shows the period timezone, current/proposed wages and
+allowances. Material edits clear that review. A later revision can return to baseline or move a
+change without repricing earlier audits. Closed periods retain their final plan.
+
+Legacy `linepay.web.configured-pay/1` still reproduces old checks. Dated calculations use `/2`, exact
+quantities/applied rates, rule snapshots and an immutable plan ID. Reports resolve the selected
+saved plan rather than the latest one. Web state v5 adds only empty plan metadata when migrating
+prior schemas; the v4 fixture was generated/validated with actual `f7cbe82` code. Unknown/missing
+references fail closed. Encrypted recovery retains every plan and both old/new receipts.
+
+The [temporal corpus](../../shared/contracts/payroll/effective-date-v1.md) independently verifies eight
+prices/five refusals in Swift, Kotlin and browser, including local midnight/breaks, DST, per diem,
+changed daily tiers and cross-version cent aggregation. This does not establish every agreement,
+regular-rate interaction, timezone or device. Binding callout uncertainty refuses instead of guessing.
+Pending mutations disable the previous controls after capturing their values so typing a second
+shift cannot be silently lost when the first save refreshes the form.

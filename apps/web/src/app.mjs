@@ -1,5 +1,11 @@
-import { calculate, localCandidates, localDate } from "./payroll.mjs";
+import { localCandidates, localDate } from "./payroll.mjs";
 import { assess } from "./assessment.mjs";
+import {
+  currentCalculation,
+  currentTimeline,
+  auditUsesEarlierContext,
+} from "./calculation-context.mjs";
+import { renderRuleTimelineUI } from "./rule-timeline-ui.mjs";
 import { renderAuditTools } from "./resolution-report-ui.mjs";
 import { renderBenefitUI } from "./benefits-ui.mjs";
 import { renderRuleTemplateUI } from "./rule-template-ui.mjs";
@@ -169,10 +175,10 @@ function renderPay() {
   );
   const result = period.closed
     ? period.closedCalculation
-    : calculate(period.work, period.rule);
-  main.innerHTML = `<p class="context">${esc(period.start)} → ${esc(period.end)} · ${esc(period.zone)} · ${period.closed ? "Closed record" : "Open period"}</p><h1>Expected cash wages</h1><div class="answer">${money(result.wages, result.currency)}</div><ul class="ledger"><li><span>Separate per diem</span><span class="money">${money(result.allowances, result.currency)}</span></li><li><span>Wages + configured allowance</span><strong class="money">${money(result.total, result.currency)}</strong></li></ul><p class="rule-note">Configured estimate from ${esc(period.rule.currency)} ${esc(period.rule.hourlyRate)}/hour and the saved rule version. Weekly/legal coverage and unconfigured rules remain unchecked.</p>
-  <details><summary>Calculation and saved rules</summary><ul class="ledger">${result.components.map((c) => `<li><span>${esc(c.date)} · ${esc(c.category)}<small>${esc(c.explanation)}${c.workedSeconds !== null ? " · " + esc(c.workedSeconds.replace(/\.0+$/, "")) + " seconds at " + esc(c.multiplier) + "×" : ""}</small></span><span class="money">${money(c.amount, c.currency)}</span></li>`).join("")}</ul><p>Rule snapshot ${esc(period.rule.id)}, version ${esc(period.rule.version)}. Engine ${esc(result.engine)}.</p>${templateOrigin ? `<p>Worker-provided rule draft: ${esc(templateOrigin.packet.title)}, revision ${esc(templateOrigin.packet.revision)}, ID ${esc(templateOrigin.packet.templateID)}. This reference is not source approval.</p>` : ""}</details>
-  <h2>Recorded work</h2><ul class="ledger">${period.work.map((w) => `<li><span>${esc(workClock(w.startUTC, w.timeZone))} → ${esc(workClock(w.endUTC, w.timeZone))}<small>${esc(w.kind)} · ${esc(w.timeZone)}${w.unpaidBreaks.length ? " · unpaid break recorded" : ""}</small></span>${period.closed ? "" : `<button class="danger" data-remove="${esc(w.id)}">Remove entry</button>`}</li>`).join("") || "<li>No work recorded.</li>"}</ul>
+    : currentCalculation(state, period);
+  main.innerHTML = `<p class="context">${esc(period.start)} → ${esc(period.end)} · ${esc(period.zone)} · ${period.closed ? "Closed record" : "Open period"}</p><h1>Expected cash wages</h1><div class="answer">${money(result.wages, result.currency)}</div><ul class="ledger"><li><span>Separate per diem</span><span class="money">${money(result.allowances, result.currency)}</span></li><li><span>Wages + configured allowance</span><strong class="money">${money(result.total, result.currency)}</strong></li></ul><p class="rule-note">${currentTimeline(state, period.id) ? "Configured estimate from the confirmed effective-date plan; component rates and rule versions are listed below." : `Configured estimate from ${esc(period.rule.currency)} ${esc(period.rule.hourlyRate)}/hour and the saved rule version.`} Weekly/legal coverage and unconfigured rules remain unchecked.</p>
+  <details><summary>Calculation and saved rules</summary><ul class="ledger">${result.components.map((c) => `<li><span>${esc(c.date)} · ${esc(c.category)}<small>${esc(c.explanation)}${c.baseRate ? " · " + esc(c.currency) + " " + esc(c.baseRate) + "/hour" : ""}${c.workedSeconds !== null ? " · " + esc(c.workedSeconds.replace(/\.0+$/, "")) + " seconds at " + esc(c.multiplier) + "×" : ""}</small></span><span class="money">${money(c.amount, c.currency)}</span></li>`).join("")}</ul><p>Rule snapshot ${esc(period.rule.id)}, version ${esc(period.rule.version)}. Engine ${esc(result.engine)}.</p>${templateOrigin ? `<p>Worker-provided rule draft: ${esc(templateOrigin.packet.title)}, revision ${esc(templateOrigin.packet.revision)}, ID ${esc(templateOrigin.packet.templateID)}. This reference is not source approval.</p>` : ""}</details>
+  <section id="rule-timeline-tools"></section><h2>Recorded work</h2><ul class="ledger">${period.work.map((w) => `<li><span>${esc(workClock(w.startUTC, w.timeZone))} → ${esc(workClock(w.endUTC, w.timeZone))}<small>${esc(w.kind)} · ${esc(w.timeZone)}${w.unpaidBreaks.length ? " · unpaid break recorded" : ""}</small></span>${period.closed ? "" : `<button class="danger" data-remove="${esc(w.id)}">Remove entry</button>`}</li>`).join("") || "<li>No work recorded.</li>"}</ul>
   ${period.closed ? "<p>This closed period keeps its saved work, rules and calculation.</p>" : workForm()}
   ${
     period.audits.length
@@ -180,12 +186,26 @@ function renderPay() {
           .toReversed()
           .map(
             (a) =>
-              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${JSON.stringify(a.work) !== JSON.stringify(period.work) ? '<p class="rule-note">This check retains an earlier work snapshot. Later entries did not change it.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
+              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${auditUsesEarlierContext(state, period, a) ? '<p class="rule-note">This saved check retains an earlier work/rule plan. Later changes did not rewrite it; review a new check for the current estimate.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
           )
           .join("")}`
       : ""
   }
   ${period.work.length ? auditForm() : ""}${!period.closed && (period.work.length || period.audits.length) ? '<button data-action="close">Close this period</button>' : !period.closed ? '<button data-action="discard">Discard empty period</button>' : ""}${period.closed ? periodForm() : ""}`;
+  renderRuleTimelineUI({
+    container: main.querySelector("#rule-timeline-tools"),
+    state,
+    period,
+    run,
+    uid,
+    now,
+    onSave: async (record) => {
+      await commit((s) => s.ruleTimelines.push(record));
+      message(
+        "Effective-date plan saved for the open ledger. Earlier checks retain their original plan.",
+      );
+    },
+  });
   const cleanup = period.audits.map((a) =>
     renderAuditTools({
       container: main.querySelector(`[data-audit-tools="${a.id}"]`),
@@ -239,6 +259,7 @@ async function commit(change) {
   const replacement = structuredClone(state);
   change(replacement);
   validateState(replacement);
+  message("Saving local records…");
   state = await store.write(replacement, state.revision);
   render();
   message("Saved in this browser.");
@@ -258,7 +279,7 @@ function resolveClock(text, zone, occurrence = "") {
 function bind() {
   main
     .querySelectorAll(
-      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned])",
+      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned]):not([data-timeline-owned])",
     )
     .forEach((form) =>
       form.addEventListener("submit", (event) => {
@@ -310,8 +331,18 @@ function bind() {
 async function run(fn) {
   if (busy) return;
   busy = true;
+  const pendingControls = [
+    ...document.querySelectorAll(
+      "nav button, main input, main select, main textarea, main button",
+    ),
+  ].filter((control) => !control.disabled);
   try {
-    await fn();
+    // Capture form values synchronously inside the handler before controls become disabled.
+    const pending = fn();
+    pendingControls.forEach((control) => {
+      if (control.isConnected) control.disabled = true;
+    });
+    await pending;
   } catch (error) {
     message(
       error.message ||
@@ -319,6 +350,9 @@ async function run(fn) {
       true,
     );
   } finally {
+    pendingControls.forEach((control) => {
+      if (control.isConnected) control.disabled = false;
+    });
     busy = false;
   }
 }
@@ -393,7 +427,7 @@ async function submit(form) {
     if (!checked("periodConfirmed"))
       throw Error("Confirm the paycheck period first.");
     const p = current(),
-      calculation = calculate(p.work, p.rule),
+      calculation = currentCalculation(state, p),
       facts = {
         completeWork: checked("complete"),
         grossBasis: get("basis"),
@@ -509,7 +543,7 @@ async function action(name) {
       run(() =>
         commit((s) => {
           const target = s.periods.find((x) => x.id === p.id);
-          target.closedCalculation = calculate(target.work, target.rule);
+          target.closedCalculation = currentCalculation(s, target);
           target.closed = true;
         }),
       );

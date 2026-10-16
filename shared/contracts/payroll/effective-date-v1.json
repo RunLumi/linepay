@@ -1,0 +1,1059 @@
+{
+  "format": "com.streamentry.linepay.effective-pay-fixtures",
+  "version": 1,
+  "scope": "Synthetic configured rules only; not legal or complete platform coverage.",
+  "cases": [
+    {
+      "id": "rate-and-allowance-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "8*50=400; 8*55+2*55*1.5=605; allowances80+90=170.",
+      "expected": {
+        "wages": "1005.00",
+        "allowances": "170.00",
+        "total": "1175.00",
+        "workedSeconds": "64800",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "one-interval-local-midnight",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "457fe41c-fa26-5bb4-93cd-11096c682006",
+          "startUTC": "2026-10-06T04:00:00Z",
+          "endUTC": "2026-10-06T07:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "Chicago23:00 to02:00:1*50+2*55=160, two separate local-date allowances.",
+      "expected": {
+        "wages": "160.00",
+        "allowances": "170.00",
+        "total": "330.00",
+        "workedSeconds": "10800",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "unpaid-break-across-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "5e3f5fc3-fd4c-58cd-8519-da6981caee37",
+          "startUTC": "2026-10-06T04:00:00Z",
+          "endUTC": "2026-10-06T07:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [
+            {
+              "id": "8b04d233-4ab1-5e54-ab1a-f34e1ee25bac",
+              "startUTC": "2026-10-06T04:30:00Z",
+              "endUTC": "2026-10-06T05:30:00Z"
+            }
+          ]
+        }
+      ],
+      "arithmetic": "0.5*50+1.5*55=107.50; the unpaid hour straddles local midnight.",
+      "expected": {
+        "wages": "107.50",
+        "allowances": "170.00",
+        "total": "277.50",
+        "workedSeconds": "7200",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "daily-threshold-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "6",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "400+(6*55+4*55*1.5)=1060.",
+      "expected": {
+        "wages": "1060.00",
+        "allowances": "170.00",
+        "total": "1230.00",
+        "workedSeconds": "64800",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "three-explicit-versions",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": null,
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        },
+        {
+          "effectiveDate": "2026-10-07",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "3",
+            "currency": "USD",
+            "hourlyRate": "60",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "100",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "a93a77f7-02e5-5e79-8ba4-5677979f1a54",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T14:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "35579d14-712b-5798-882c-f75cf7dd0d2a",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T14:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "aeeaa52a-edc6-5312-bfaf-525653e493d3",
+          "startUTC": "2026-10-07T13:00:00Z",
+          "endUTC": "2026-10-07T14:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "Wages50+55+60; configured allowances80+0+100, absence on second date is not legal waiver.",
+      "expected": {
+        "wages": "165.00",
+        "allowances": "180.00",
+        "total": "345.00",
+        "workedSeconds": "10800",
+        "appliedVersions": [
+          "1",
+          "2",
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "aggregate-half-cents-across-versions",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "18",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "54",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": null,
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "b75e11b9-79c8-5eb8-ad32-ad6ae9c31010",
+          "startUTC": "2026-10-06T04:59:59Z",
+          "endUTC": "2026-10-06T05:00:01Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "One second each:18/3600+54/3600=0.020 exactly, not independently rounded0.01+0.02.",
+      "expected": {
+        "wages": "0.02",
+        "allowances": "0.00",
+        "total": "0.02",
+        "workedSeconds": "2",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "dst-fall-local-effective-date",
+      "timeZone": "America/New_York",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-11-01",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "79688023-9cae-5a01-b2e7-165384aad87a",
+          "startUTC": "2026-11-01T03:00:00Z",
+          "endUTC": "2026-11-01T07:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "Oct31 23:00 EDT to Nov1 02:00 EST is4 elapsed hours:1*50+3*55=215.",
+      "expected": {
+        "wages": "215.00",
+        "allowances": "170.00",
+        "total": "385.00",
+        "workedSeconds": "14400",
+        "appliedVersions": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "future-change-does-not-reprice-earlier-work",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "99c3b9c1-9687-5d76-a20c-eeaa37532c04",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T14:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "arithmetic": "The future55 rate is not applied to the earlier one hour.",
+      "expected": {
+        "wages": "50.00",
+        "allowances": "80.00",
+        "total": "130.00",
+        "workedSeconds": "3600",
+        "appliedVersions": [
+          "1"
+        ]
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "duplicate-effective-date",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        },
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "3",
+            "currency": "USD",
+            "hourlyRate": "60",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "reason": "A date cannot choose between two rule definitions."
+    },
+    {
+      "id": "currency-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "CAD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "reason": "No implicit currency conversion."
+    },
+    {
+      "id": "rounding-policy-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "bankers",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "reason": "Native timeline requires common scale/mode; review is required."
+    },
+    {
+      "id": "reused-version",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "1",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "1e5fb432-45ae-5c8d-8bba-5569215ca933",
+          "startUTC": "2026-10-05T13:00:00Z",
+          "endUTC": "2026-10-05T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "50212aef-5735-5640-b909-9948a4a20940",
+          "startUTC": "2026-10-06T13:00:00Z",
+          "endUTC": "2026-10-06T23:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "reason": "An immutable version cannot silently change."
+    },
+    {
+      "id": "binding-callout-across-change",
+      "timeZone": "America/Chicago",
+      "baseline": {
+        "id": "synthetic-effective",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-10-06",
+          "agreement": {
+            "id": "synthetic-effective",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "55",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": "8",
+                "multiplier": "1.5"
+              }
+            ],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": "4",
+            "perDiemPerWorkDate": "90",
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "bc726367-3660-5a3a-ad54-a90de2b2f777",
+          "startUTC": "2026-10-06T04:00:00Z",
+          "endUTC": "2026-10-06T06:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "65f809d5-718d-5d94-b523-0ef9aaa145e3",
+          "unpaidBreaks": []
+        }
+      ],
+      "reason": "Do not split or guess a binding guarantee across a rule change."
+    }
+  ]
+}

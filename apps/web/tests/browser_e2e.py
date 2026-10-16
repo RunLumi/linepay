@@ -37,10 +37,12 @@ thread.start()
 origin = f'http://127.0.0.1:{server.server_port}'
 checks = []
 
-def profile(page, rate):
+def profile(page, rate, diem="80", threshold=None):
     page.get_by_role('button', name='Pay rules', exact=True).click()
     page.get_by_label('Hourly rate', exact=True).fill(rate)
-    page.get_by_label('Per diem per worked local date', exact=True).fill('80')
+    page.get_by_label('Per diem per worked local date', exact=True).fill(diem)
+    if threshold is not None:
+        page.get_by_label('Daily overtime after hours', exact=True).fill(threshold)
     page.get_by_label('I confirmed these inputs against my pay rules.', exact=True).check()
     page.get_by_role('button', name='Save a new profile', exact=True).click()
 
@@ -313,6 +315,122 @@ with sync_playwright() as pw:
             assert recovered[key] == recipient_before[key]
         recipient_context.close()
         checks.append('actual recipient encrypted backup/reset/inspect/replace preserves confirmed rule provenance and own monetary choices exactly')
+        timeline_context = browser.new_context(accept_downloads=True)
+        observe_context(timeline_context)
+        timeline_context.on('request', lambda r: requests.append((r.url, r.method)))
+        timeline_page = timeline_context.new_page()
+        timeline_page.on('pageerror', lambda e: errors.append(str(e)))
+        timeline_page.goto(origin + '/')
+        expect(timeline_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        profile(timeline_page, '50', '80', '8')
+        timeline_page.get_by_label('First work date', exact=True).fill('2026-10-05')
+        timeline_page.get_by_label('Last work date (included)', exact=True).fill('2026-10-18')
+        timeline_page.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        timeline_page.get_by_role('button', name='Start period', exact=True).click()
+        for day, finish in [('05', '16:00'), ('06', '18:00')]:
+            timeline_page.get_by_label('Start', exact=True).fill(f'2026-10-{day}T08:00')
+            timeline_page.get_by_label('End', exact=True).fill(f'2026-10-{day}T{finish}')
+            timeline_page.get_by_role('button', name='Save work', exact=True).click()
+        expect(timeline_page.locator('.answer')).to_have_text('USD 950.00')
+        def save_timeline_check(gross):
+            timeline_page.get_by_label('Confirmed paycheck gross', exact=True).fill(gross)
+            timeline_page.get_by_label('What does gross include?', exact=True).select_option('wagesOnly')
+            timeline_page.get_by_label('All work for this paycheck period is recorded.', exact=True).check()
+            timeline_page.get_by_label('I confirmed the paycheck covers this exact work period.', exact=True).check()
+            timeline_page.get_by_role('button', name='Review comparison', exact=True).click()
+            timeline_page.get_by_role('button', name='Save this check', exact=True).click()
+        save_timeline_check('950')
+        baseline_audit = read_state(timeline_page)['periods'][0]['audits'][0]
+        profile(timeline_page, '55', '90', '8')
+        expect(timeline_page.locator('.answer')).to_have_text('USD 950.00')
+        timeline_page.get_by_text('Effective-date rule plan', exact=True).click()
+        timeline_page.get_by_role('button', name='Add effective change', exact=True).click()
+        timeline_page.get_by_label('Effective payroll-local date', exact=True).fill('2026-10-06')
+        source_id = read_state(timeline_page)['profiles'][-1]['id']
+        timeline_page.get_by_label('Confirmed source profile', exact=True).select_option(source_id)
+        timeline_page.get_by_label('I confirmed these complete rules and effective dates apply to this period.', exact=True).check()
+        timeline_page.get_by_role('button', name='Review proposed rule plan', exact=True).click()
+        expect(timeline_page.locator('.timeline-preview')).to_contain_text('USD 1005.00')
+        assert read_state(timeline_page)['ruleTimelines'] == []
+        timeline_page.locator('.timeline-preview').scroll_into_view_if_needed()
+        timeline_page.screenshot(path=str(OUTPUT / 'effective-rule-plan-preview.png'))
+        timeline_page.get_by_label('Effective payroll-local date', exact=True).fill('2026-10-07')
+        expect(timeline_page.get_by_role('button', name='Save confirmed rule plan', exact=True)).to_have_count(0)
+        assert not timeline_page.get_by_label('I confirmed these complete rules and effective dates apply to this period.', exact=True).is_checked()
+        timeline_page.get_by_label('Effective payroll-local date', exact=True).fill('2026-10-06')
+        timeline_page.get_by_label('I confirmed these complete rules and effective dates apply to this period.', exact=True).check()
+        timeline_page.get_by_role('button', name='Review proposed rule plan', exact=True).click()
+        timeline_page.get_by_role('button', name='Save confirmed rule plan', exact=True).click()
+        expect(timeline_page.locator('.answer')).to_have_text('USD 1005.00')
+        first_plan = read_state(timeline_page)['ruleTimelines'][0]
+        assert read_state(timeline_page)['periods'][0]['audits'][0] == baseline_audit
+        save_timeline_check('1005')
+        dated_audit = read_state(timeline_page)['periods'][0]['audits'][1]
+        assert dated_audit['calculation']['engine'] == 'linepay.web.configured-pay/2' and dated_audit['calculation']['ruleTimelineID'] == first_plan['id']
+        checks.append('effective-date preview writes nothing; confirmed local-date rate/allowance plan yields 1005 and retains original 950 engine-v1 check')
+        timeline_page.get_by_label('Effective payroll-local date', exact=True).fill('2026-10-07')
+        timeline_page.get_by_label('I confirmed these complete rules and effective dates apply to this period.', exact=True).check()
+        timeline_page.get_by_role('button', name='Review proposed rule plan', exact=True).click()
+        timeline_page.get_by_role('button', name='Save confirmed rule plan', exact=True).click()
+        expect(timeline_page.locator('.answer')).to_have_text('USD 950.00')
+        assert read_state(timeline_page)['periods'][0]['audits'][1] == dated_audit
+        saved_details = timeline_page.locator(f'[data-paycheck-audit="{dated_audit["id"]}"]')
+        if saved_details.get_attribute('open') is None:
+            saved_details.locator(':scope > summary').click()
+        saved_tools = timeline_page.locator(f'[data-audit-tools="{dated_audit["id"]}"]')
+        saved_tools.get_by_role('button', name='Review evidence report', exact=True).click()
+        historical_report = saved_tools.frame_locator('iframe')
+        expect(historical_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        assert 'USD 1005.00' in historical_report.locator('body').inner_text() and 'USD 55/hour' in historical_report.locator('body').inner_text()
+        with timeline_page.expect_download() as dated_report_event:
+            saved_tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True).click()
+        dated_report = OUTPUT / 'synthetic-effective-report.html'
+        dated_report_event.value.save_as(dated_report)
+        dated_html = dated_report.read_text()
+        assert first_plan['id'] in dated_html and read_state(timeline_page)['ruleTimelines'][-1]['id'] not in dated_html
+        assert 'USD 1005.00' in dated_html and '2026-10-06' in dated_html
+        dated_page = timeline_context.new_page()
+        dated_page.set_content(dated_html)
+        assert dated_page.locator('body').inner_text() == historical_report.locator('body').inner_text()
+        if ENGINE == 'chromium':
+            dated_page.pdf(path=str(OUTPUT / 'synthetic-effective-report.pdf'), prefer_css_page_size=True, print_background=True)
+        dated_page.screenshot(path=str(OUTPUT / 'effective-report-review.png'), full_page=True)
+        dated_page.close()
+        checks.append('actual historical dated-report download retains the original plan/date/1005 amount and excludes the newer ledger plan')
+
+        timeline_page.get_by_role('button', name='Close this period', exact=True).click()
+        timeline_page.get_by_role('button', name='Confirm close period', exact=True).click()
+        assert read_state(timeline_page)['periods'][0]['closedCalculation']['wages'] == '950.00'
+        expect(timeline_page.get_by_role('button', name='Add effective change', exact=True)).to_have_count(0)
+        timeline_before = read_state(timeline_page)
+        timeline_page.get_by_role('button', name='Backup', exact=True).click()
+        timeline_page.get_by_label('New backup password', exact=True).fill(PASSWORD)
+        timeline_page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
+        with timeline_page.expect_download() as timeline_backup_event:
+            timeline_page.get_by_role('button', name='Download encrypted backup', exact=True).click()
+        timeline_backup = OUTPUT / 'synthetic-rule-timeline.linepaybackup'
+        timeline_backup_event.value.save_as(timeline_backup)
+        timeline_page.get_by_role('button', name='Review removal', exact=True).click()
+        timeline_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        assert read_state(timeline_page)['ruleTimelines'] == []
+        timeline_page.get_by_label('Protected web backup', exact=True).set_input_files(timeline_backup)
+        timeline_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
+        timeline_page.get_by_role('button', name='Unlock and inspect', exact=True).click()
+        assert read_state(timeline_page)['periods'] == []
+        timeline_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
+        timeline_after = read_state(timeline_page)
+        for key in ['profiles','periods','ruleTimelines','benefitChecks','templateOrigins','resolutionEvents']:
+            assert timeline_after[key] == timeline_before[key]
+        timeline_page.get_by_role('button', name='Pay', exact=True).click()
+        expect(timeline_page.locator('.answer')).to_have_text('USD 950.00')
+        timeline_page.emulate_media(color_scheme='dark', reduced_motion='reduce')
+        timeline_page.set_viewport_size({'width': 390, 'height': 844})
+        timeline_page.evaluate("document.documentElement.style.fontSize='26px'")
+        assert timeline_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        timeline_page.evaluate('scrollTo(0,0)')
+        timeline_page.screenshot(path=str(OUTPUT / 'effective-rule-history.png'))
+        timeline_context.close()
+        checks.append('a second explicit plan/close changes current estimate only; historical 1005 report and both rule plans survive actual encrypted reset/recovery')
         page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_label('New backup password', exact=True).fill(PASSWORD)
         page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
@@ -369,7 +487,7 @@ with sync_playwright() as pw:
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
         # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2, 3]:
+        for old_version in [1, 2, 3, 4]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -392,7 +510,8 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 4 and migrated['resolutionEvents'] == []
+            assert migrated['version'] == 5 and migrated['ruleTimelines'] == []
+            assert migrated['resolutionEvents'] == prior.get('resolutionEvents', [])
             assert migrated['templateOrigins'] == prior.get('templateOrigins', [])
             assert migrated['benefitChecks'] == prior.get('benefitChecks', [])
             assert migrated['periods'] == prior['periods'] and migrated['profiles'] == prior['profiles']
@@ -411,7 +530,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2/v3 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3/v4 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')

@@ -70,3 +70,5 @@ Primary platform references checked October 17, 2026:
 Web state v3 adds separately retained portable-rule origins and recipient choices, with explicit v1/v2 migration. [ADR 0019](0019-portable-rule-drafts-and-recipient-provenance.md) owns this continuation; prior wage/fund receipts are preserved.
 
 Web state v4 adds append-only saved-check follow-up and reviewed report copies. [ADR 0020](0020-browser-follow-up-and-reviewed-report-copies.md) owns the privacy/lifecycle/migration continuation; original comparisons stay frozen.
+
+Web state v5 retains confirmed effective-date plans and their original audit references. [ADR 0021](0021-versioned-effective-date-browser-calculations.md) owns the versioned engine/migration continuation; legacy v1 results remain on their original path.

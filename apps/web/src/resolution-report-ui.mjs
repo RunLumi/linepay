@@ -26,9 +26,15 @@ export function renderAuditTools({
   const events = state.resolutionEvents.filter(
     (e) => e.periodID === period.id && e.auditID === audit.id,
   );
-  const origin = state.templateOrigins.find(
-      (o) => o.profileID === period.rule.id,
-    ),
+  const savedTimeline = state.ruleTimelines.find(
+    (t) =>
+      t.id === audit.calculation.ruleTimelineID && t.periodID === period.id,
+  );
+  const sourceIDs = new Set([
+    period.rule.id,
+    ...(savedTimeline?.changes.map((c) => c.sourceProfileID) ?? []),
+  ]);
+  const origin = state.templateOrigins.find((o) => sourceIDs.has(o.profileID)),
     suffix = audit.id;
   container.innerHTML = `<h3>Worker-recorded follow-up</h3><p>Record what you reviewed, shared or heard back. These are your reports; they do not change the saved comparison or establish money owed or recovered. Nothing is sent to your employer or union.</p><form data-audit-owned id="followup-${esc(suffix)}"><label for="resolution-status-${esc(suffix)}">Follow-up status</label><select id="resolution-status-${esc(suffix)}" name="status">${Object.entries(
     resolutionStatuses,

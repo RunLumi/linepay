@@ -33,9 +33,9 @@ An implementation, test result, upload, review submission and public release are
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
-| Full PWA | Local wage/fund workflows and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
+| Full PWA | Local wage/fund, dated rules, reports and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 70 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
+| Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 83 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Browser file exchange/recovery implemented; shared Swift codec verified | Native iOS Files/UI/persistence, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -1222,3 +1222,74 @@ created; describe and verify each property separately.
   store gates remain. Full v2/release completion is unproven; the original goal remains active.
 
 - Final checkpoint: 1,034 local Markdown links, 5 documentation-tool tests, legal active-copy/inventory, agent-harness and diff checks passed. Inspected final printed amounts and final note continuation/tail PNGs after regeneration. CI artifact configuration now retains only the known synthetic report HTML/PDF files alongside screenshots/receipts; hosted CI itself has not run. No further runtime source changed after the source-bound 26-check passes.
+
+
+## Versioned browser effective-date plans and shared temporal parity
+
+- Entry was clean `f7cbe82`; previous turn was progress. Continued a hard payroll-parity gap, not
+  a release-completion claim: original browser engine **v1 remains unchanged**, and explicit dated
+  plans use **linepay.web.configured-pay/2**. Baseline/no-plan historical audits retain their exact
+  v1 path; dated audits resolve their recorded immutable plan rather than the current/latest one.
+- New pure v2 applies complete confirmed snapshots at payroll-local midnight. Exact instants,
+  recorded timezone, unpaid breaks, daily cumulative positions and highest applicable premia stay
+  explicit. Active snapshot determines rate/allowance; compatible category/multiplier numerators
+  aggregate across rate versions before rounding. One second each at18 and54/hour is0.02, not0.03.
+  Binding callout guarantees crossing a change refuse. Exact quantities/applied rates and full rule
+  snapshots are saved with plan ID. No pay function reads a device timezone, wall clock or storage.
+- Shared temporal corpus independently states **8 prices + 5 refusals**, consumed by Swift, Kotlin
+  and browser. Covers rate/allowance/threshold transitions, one interval and unpaid break across
+  local midnight, three versions, half cents, New York fall-back and a future change preserving
+  earlier work. Duplicate dates, reused versions, currency/mode mismatch and binding guarantees
+  refuse. This is bounded temporal parity, not full agreement/legal/weekly/timezone coverage.
+- The actual native `AgreementTimeline` contract requires compatible rounding scale/mode. New
+  Kotlin corpus initially failed exactly the mode-change refusal: **79 domain tests, 1 failure**,
+  `/private/tmp/linepay-v2-timeline-android-before.log`. Added that compatibility guard instead of
+  weakening the fixture. Strict offline Gradle then passed; actual JUnit XML confirms **83 tests,
+  zero failures/errors/skips** including backup. Log `/private/tmp/linepay-v2-timeline-android-after.log`.
+  No Android SDK/runtime/UI or source/legal review is established by JVM success.
+- Web state **v5** retains append-only confirmed `ruleTimelines`: period, explicit creation context,
+  source-profile copies, effective dates and fresh immutable rule versions. Preview/confirmation
+  precedes adoption; edits invalidate it. Latest plan changes only the open ledger. Old plans/checks
+  remain retained, and closed results cannot adopt a later plan. Missing/altered sources, plans,
+  versions or unsupported engines fail closed rather than reprice. Reports use their saved dated
+  rates/rule references; optional draft attribution follows that audit's retained source profiles.
+- Prior schemas1/2/3/4 gain only empty missing metadata. Frozen synthetic v4 fixture was generated
+  and validated through actual `f7cbe82` modules. Original profiles, wage/fund receipts, draft origins
+  and follow-up survive; no historical plan/event is invented. Container/encryption version stays1;
+  native financial-state interchange remains unsupported. ADR0021 and BR080–084 own these rules.
+- Final browser domain suite **103 tests passed**, no failures/skips,
+  `/private/tmp/linepay-v2-timeline-domain-final.log`. Native focused temporal consumer **2 tests**
+  passed all13 cases, `/private/tmp/linepay-v2-timeline-swift.log`. Required quick gate passed
+  **74 repository tests, strict Swift format and136 domain tests in21 suites**,
+  `/private/tmp/linepay-v2-timeline-quick.log`. Existing pure native production Swift was unchanged.
+- Actual Chromium155.0.8059.85 and WebKit26.0 each passed **29 browser checks**. Explicit preview
+  writes nothing; confirmed Oct6 profile55/day-allowance90 produces1005 wages/170 allowance versus
+  baseline950/160. Earlier950 engine-v1 audit is byte-for-value unchanged. A new1005 audit retains
+  its engine-v2 plan. Revising the date toOct7 changes the current ledger back to950 while that
+ 1005 audit/report stays fixed. Close and actual encrypted export/reset/inspect/replace retain both
+  plans and receipts. Captures include actual proposed-plan and enlarged390px dark closed history.
+- First browser run exposed a real data-entry race: only the first of two rapid work saves remained
+  (400 instead of950), with no storage error. The busy guard left old controls editable while a
+  previous commit refreshed the form. Capture handler values synchronously, then disable prior
+  enabled controls until settlement; leave separately disabled/new DOM controls owned by their
+  handlers. Failed writes retain inputs. The unchanged rapid two-shift regression then passed,
+  along with all prior encrypted export/restore/report/import workflows. No work/value was patched.
+- Browser logs `/private/tmp/linepay-v2-timeline-chromium-final.log` and
+  `/private/tmp/linepay-v2-timeline-webkit-final.log`, reports/captures `.build/web-e2e/{chromium,webkit}/`,
+  identical runtime SHA256 `a772ccb91935c7568d7bcf79f1361eacc90bf2c2f7221a96c8085d44f467064c`.
+  Real stopped-origin, negative no-worker, controlled module-error recovery, privacy and old-schema
+ 1/2/3/4 recovery remain in that run. Current branch was not pushed; hosted CI has not run.
+- No native Simulator/physical-device evidence, runtime/SDK install, duplicate Xcode setup,
+  external message, website publication, archive/store submission or public release occurred.
+  Native/Android UI/state, wider PWA/source/library/localization/physical and final release gates
+  remain required. The original all-stage objective stays active; full completion remains unproven.
+
+- Final historical-copy check: both browsers additionally downloaded the exact selected engine-v2
+  report after a newer plan existed; original plan ID/date/1005 amount remained and the newer plan
+  ID was absent. Final browser count is29 per engine at the same runtime hash. Chromium printed
+  that actual downloaded HTML to a3-page PDF; bundled pypdf verified1005, Oct6 and55/hour, and
+  Poppler/render inspection confirmed dated snapshots and applied component rates on paper.
+  `.build/web-e2e/chromium/synthetic-effective-report.{html,pdf,txt}` is synthetic local evidence,
+  not OS/provider/native/device delivery. Final1,043 local Markdown links, 5 doc
+  tests, legal inventory/active-copy, harness and diff checks passed. No further runtime source
+  changed after the source-bound passes. Goal remains active; full v2/release is incomplete.

@@ -50,3 +50,5 @@ bash scripts/agent-verify.sh quick
 That command verifies the shared cases with the existing pure native engine and the wider domain
 suite. It does not build or run an Android/PWA client. A change to fixture meaning must be reviewed
 as a contract version change; preserve historical expected arithmetic and explain the change.
+
+The separate [effective-date corpus](effective-date-v1.md) now covers eight temporal prices and five refusal boundaries in all three engines; it does not turn the original subset into full agreement/legal parity.

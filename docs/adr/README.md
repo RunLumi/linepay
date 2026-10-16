@@ -25,3 +25,5 @@
 - [0019-portable-rule-drafts-and-recipient-provenance](0019-portable-rule-drafts-and-recipient-provenance.md)
 
 - [0020-browser-follow-up-and-reviewed-report-copies](0020-browser-follow-up-and-reviewed-report-copies.md)
+
+- [0021-versioned-effective-date-browser-calculations](0021-versioned-effective-date-browser-calculations.md)

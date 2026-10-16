@@ -122,3 +122,14 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-077 | A report uses the selected saved snapshot and explicit privacy choices. | New profiles do not reprice it. Notes, detailed clocks and draft text are omitted by default; unknown gross is never zero. |
 | BR-078 | Export follows exact-copy review. | Changing privacy options invalidates preview/actions. Downloaded HTML uses the reviewed bytes; oversized reports refuse without truncating a tail. |
 | BR-079 | Printing/exporting is not delivery or external verification. | Local Blob review, browser PDF rendering, OS/provider save, recipient transfer and release remain separate evidence claims. |
+
+
+## Effective-date plan ownership
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-080 | Changes use explicit payroll-local dates and immutable compatible snapshots. | No device-timezone/rate inference, duplicate date/version choice, currency conversion or incompatible rounding policy. |
+| BR-081 | A revised open-period plan does not rewrite a saved comparison. | Earlier audit retains its engine/work/baseline or exact plan ID; a missing reference refuses rather than reprice. |
+| BR-082 | Price aggregation does not round independently at a rate-version boundary. | Compatible category/multiplier numerators sum first; one second each at 18 and 54/hour totals 0.02, not 0.03. |
+| BR-083 | Binding guarantee uncertainty stops price selection. | A physical callout spanning an effective change requires review when a minimum could bind; no guessed split/top-up. |
+| BR-084 | Saving must not discard the next work entry. | Existing controls are visibly unavailable while a mutation commits, after values are captured; errors retain entered values and old state. |

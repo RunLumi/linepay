@@ -28,7 +28,8 @@ class ConfiguredPayCalculator {
         val timeline = changes.sortedBy { it.effectiveDate }
         require(timeline.map { it.effectiveDate }.toSet().size == timeline.size)
         require((listOf(baseline.version) + timeline.map { it.agreement.version }).toSet().size == timeline.size + 1)
-        require(timeline.all { it.agreement.id == baseline.id && it.agreement.hourlyRate.currencyCode == baseline.hourlyRate.currencyCode })
+        require(timeline.all { it.agreement.id == baseline.id && it.agreement.hourlyRate.currencyCode == baseline.hourlyRate.currencyCode &&
+            it.agreement.rounding.scale == baseline.rounding.scale && it.agreement.rounding.mode == baseline.rounding.mode })
         fun rule(date: LocalDate): Agreement = timeline.lastOrNull { it.effectiveDate <= date }?.agreement ?: baseline
         val segments = entries.flatMap { split(it, ::rule) }.sortedBy { it.start }
         val cumulative = mutableMapOf<DayKey, BigDecimal>()

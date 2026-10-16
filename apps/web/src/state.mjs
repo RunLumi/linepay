@@ -11,16 +11,22 @@ import {
   ruleTemplateIdentity,
 } from "./rule-template.mjs";
 import { validateResolutionEvent } from "./resolution.mjs";
+import { validateTimeline } from "./payroll-v2.mjs";
+import {
+  currentCalculation,
+  reproduceSavedCalculation,
+} from "./calculation-context.mjs";
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 4,
+  version: 5,
   revision: 0,
   profiles: [],
   periods: [],
   benefitChecks: [],
   templateOrigins: [],
   resolutionEvents: [],
+  ruleTimelines: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -103,7 +109,7 @@ function workFacts(work, period) {
       identity(b.id);
     }
   }
-  return calculate(work, period.rule);
+  return work;
 }
 export function validateState(state) {
   need(
@@ -119,9 +125,10 @@ export function validateState(state) {
     "benefitChecks",
     "templateOrigins",
     "resolutionEvents",
+    "ruleTimelines",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 4,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 5,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -161,6 +168,57 @@ export function validateState(state) {
     unique(profile.id);
   }
   need(
+    Array.isArray(state.ruleTimelines) && state.ruleTimelines.length <= 1000,
+    "Too many rule timeline revisions.",
+  );
+  let datedChanges = 0;
+  for (const timeline of state.ruleTimelines) {
+    keys(timeline, ["id", "periodID", "createdAt", "confirmed", "changes"]);
+    need(
+      timeline.confirmed === true,
+      "An effective-date plan needs explicit confirmation.",
+    );
+    unique(timeline.id);
+    epoch(timeline.createdAt);
+    const period = state.periods.find((p) => p.id === timeline.periodID);
+    need(period, "Rule timeline has no retained period.");
+    need(
+      Array.isArray(timeline.changes) && timeline.changes.length <= 256,
+      "Too many effective changes.",
+    );
+    datedChanges += timeline.changes.length;
+    need(
+      datedChanges <= 10000,
+      "Rule timeline history exceeds its supported limit.",
+    );
+    for (const change of timeline.changes) {
+      keys(change, ["effectiveDate", "sourceProfileID", "agreement"]);
+      date(change.effectiveDate);
+      need(
+        change.effectiveDate >= period.start &&
+          change.effectiveDate <= period.end,
+        "Effective change lies outside its period.",
+      );
+      admitRule(change.agreement);
+      const source = state.profiles.find(
+        (p) => p.id === change.sourceProfileID,
+      );
+      need(source, "Effective rule has no retained source profile.");
+      const params = (value) =>
+        Object.fromEntries(
+          Object.entries(value).filter(
+            ([key]) => key !== "id" && key !== "version",
+          ),
+        );
+      need(
+        JSON.stringify(params(source)) ===
+          JSON.stringify(params(change.agreement)),
+        "Effective snapshot no longer matches its confirmed source profile.",
+      );
+    }
+    validateTimeline(period.rule, timeline);
+  }
+  need(
     state.periods.filter((p) => !p.closed).length <= 1,
     "Only one period can be open.",
   );
@@ -192,7 +250,8 @@ export function validateState(state) {
     );
     new Intl.DateTimeFormat("en", { timeZone: period.zone });
     admitRule(period.rule);
-    const current = workFacts(period.work, period);
+    workFacts(period.work, period);
+    const current = currentCalculation(state, period);
     totalWork += period.work.length;
     for (const w of period.work) unique(w.id);
     need(
@@ -222,7 +281,13 @@ export function validateState(state) {
         "paidGross",
         "paidPerDiem",
       ]);
-      const calculation = workFacts(audit.work, period);
+      workFacts(audit.work, period);
+      const calculation = reproduceSavedCalculation(
+        state,
+        period,
+        audit.work,
+        audit.calculation,
+      );
       totalWork += audit.work.length;
       need(
         JSON.stringify(calculation) === JSON.stringify(audit.calculation),
@@ -466,6 +531,26 @@ export function decodeState(state) {
       ...structuredClone(candidate),
       version: 4,
       resolutionEvents: [],
+    };
+  }
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 4
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+      "templateOrigins",
+      "resolutionEvents",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 5,
+      ruleTimelines: [],
     };
   }
   return validateState(candidate);

@@ -47,7 +47,7 @@ test("prior v1/v2/v3 schemas migrate with no invented follow-up or changed finan
     const original = fixture(version),
       before = structuredClone(original),
       current = decodeState(original);
-    assert.equal(current.version, 4);
+    assert.equal(current.version, 5);
     assert.deepEqual(current.resolutionEvents, []);
     assert.equal(current.revision, original.revision);
     for (const key of ["profiles", "periods"])
