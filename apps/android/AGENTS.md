@@ -2,7 +2,9 @@
 
 The repository-root `AGENTS.md` remains authoritative.
 
-Android is intentionally **deferred until product demand justifies the second native client**. Do not create Android app architecture, Gradle scaffolding, shared-runtime abstractions, or feature parity work unless the user/task explicitly asks to begin Android implementation.
+The owner explicitly authorized Android as part of all v2 stages on October 16, 2026. Current implementation work is authorized; preserve the local-only decision and report JVM, app-build and device evidence separately.
+
+The general default outside that authorization remains: Android is **deferred until product demand justifies the second native client**. Do not create Android app architecture, Gradle scaffolding, shared-runtime abstractions, or feature parity work unless the user/task explicitly asks to begin Android implementation.
 
 When Android work is authorized:
 

@@ -35,7 +35,7 @@ An implementation, test result, upload, review submission and public release are
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | Pending | Native app plus shared deterministic fixture parity and runtime evidence |
+| Android | JVM calculation and encrypted transport implemented; 32 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Pending | Explicit template export/import without personal pay records |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -804,3 +804,39 @@ created; describe and verify each property separately.
   `/private/tmp/linepay-v2-precision-duration-gate.log`, result directory
   `.build/v2-precision-duration-gate-20261017`. Do not claim its outcome before completion. All other
   native jobs are terminal. Preserve every earlier failed/cancelled receipt distinctly.
+
+## Native Android foundation checkpoint (October 17)
+
+- Owner authorization explicitly begins Android despite the former demand deferral. Implemented
+  independent Kotlin JVM `domain` and separate JCA `backup` modules; no shared Swift runtime,
+  account/backend/collector or production payroll SDK. Native Compose app/workflow/runtime is still
+  pending, not replaced by these libraries.
+- Official Gradle 9.4.1 wrapper JAR verified against its published SHA-256; distribution hash pinned.
+  Kotlin 2.4.0, installed Temurin JDK 21 and JVM-17 bytecode target; warnings-as-errors, dependency
+  locks and SHA-256 verification metadata. Development caches are repository-local. Gson/JUnit
+  are test-only. Strict offline verification passed, with actual JUnit XML confirming no skips.
+- Configured-pay model defensively copies facts/rules, preserves explicit timezones/instants and
+  immutable IDs/versions, prices exact second-products with BigDecimal, supports daily/schedule/
+  weekday/date/effective-date configuration, guarded callout minima and separate per diem. Selected
+  highest-premium trace is explicit; broader statutory/benefits/reconciliation support remains
+  pending. Ambiguous schedule boundary clocks fail closed rather than normalize into work.
+- Domain tests: all **19 shared fixtures plus 9 boundary cases passed**. Covers exact cent/tier
+  partition behavior, identity/overlap refusals, currency/immutability, rate transitions, highest
+  premia, daily-position conservation, guarantee interaction and clock-gap refusal.
+- Backup transport tests: **4 passed** using the same independent Unicode/AES-GCM/PBKDF2 vector,
+  header/cipher/tag tampering, wrong passwords, fixed bounded work factors and random exports.
+  This is JDK/JCA transport interoperability, not Android-provider/runtime or financial-state restore.
+- Evidence: `/private/tmp/linepay-v2-android-trace-verified.log`; actual XML under ignored
+  `apps/android/{domain,backup}/build/test-results/test/`. README/ADR 0017 state limitations and
+  reproducible commands. The Android SDK location is a symlink to an **empty** target; the prior
+  note that its directory existed did not establish installed platforms/build tools. No SDK,
+  system image, device/emulator/runtime or license acceptance was performed.
+- Current native iOS gate `69768` remains live but has a real failed receipt: encrypted-backup UI
+  saved a synthetic copy then could not select it for restore. All 328 app tests and earlier money/
+  duration cases passed, but that does not make the entire gate pass. Let the confirmed live job
+  finish and inspect the finalized Files screenshot/AX evidence; do not skip the case or blindly
+  repeat it. Verify actual provider-save success before deleting synthetic data, explicit restore
+  folder/search state and accessible file role/name. All current native production code is unchanged.
+- Android stage still requires full parity, native UI/state/migrations/history, real snapshot
+  adoption, local OCR/voice/commerce choices, localization/accessibility and actual runtime proof.
+  iOS physical-device and external publication/release approvals remain pending. Overall goal active.
