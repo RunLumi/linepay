@@ -35,7 +35,7 @@ An implementation, test result, upload, review submission and public release are
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | JVM calculation and encrypted transport implemented; 32 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
+| Android | JVM configured-pay/fund calculation and encrypted transport implemented; 51 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Pending | Explicit template export/import without personal pay records |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -878,3 +878,29 @@ created; describe and verify each property separately.
 - Meaningful independent work remains: broader JVM benefits/reconciliation/contracts, native app
   source/state, full PWA, crew templates, localization, verified-source/corpus work and release.
   These host/publication/input boundaries do not by themselves block the entire goal. Keep it active.
+
+
+## Confirmed fund parity checkpoint
+
+- Added a pure Kotlin employer-contribution calculator and a shared thirteen-case synthetic corpus
+  consumed independently by Swift and Kotlin. One explicitly confirmed fund/currency/period is
+  priced from immutable effective rule snapshots and confirmed eligibility. Hour/day/percentage/
+  fixed bases, exact raw components and one fund-total rounding remain separate from cash wages.
+- Comparison preserves statement precision (350 minus 350.001 is -0.001), unknown/unconfirmed
+  observations, units-only scope and fund/date/timezone/currency/basis compatibility. Mixed bases
+  may sum money but never sum unrelated units. No automatic eligibility or legal-fringe claim.
+- All **51 JVM tests passed**, with no failures/errors/skips in actual JUnit XML: 19 shared pay,
+  9 pay boundaries, 13 shared fund, 6 fund boundaries and 4 encryption cases. Strict offline
+  dependency verification succeeded. Log `/private/tmp/linepay-v2-android-benefit-final.log`.
+- Quick gate passed: **74 repository tests, strict Swift format and 130 domain tests in 18 suites**,
+  including the Swift thirteen-case fund consumer. Log
+  `/private/tmp/linepay-v2-benefit-parity-quick.log`. Documentation checks passed (1012 links,
+  5 tooling tests). No native production source changed in this slice.
+- The Kotlin boundary suite rejects incomplete/unconfirmed eligibility, duplicate/overlapping
+  segments, inconsistent reused rule IDs, fixed-period misuse and invalid observations. A timezone
+  mismatch remains not comparable with no inferred paid/difference. Decimal capacity refusal is
+  conservative; the corpus does not claim all extreme-value or platform behavior is identical.
+- Android Compose app/state, full payroll/audit parity, migrations, actual provider crypto and
+  runtime/E2E remain pending. Native iOS QA still awaits the already requested Xcode component
+  setup, followed by diagnosis of the retained Files-provider failure. No SDK terms were accepted,
+  website publication performed, archive uploaded or App Store state changed. Overall goal active.

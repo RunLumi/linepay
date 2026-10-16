@@ -9,6 +9,8 @@ backend, analytics collector or shared Swift runtime is introduced.
 - `domain`: immutable configured-rule/work inputs, exact BigDecimal/second pricing, daily tiers,
   break/day/schedule segmentation, explicit weekday/date premiums, isolated physical callout minima,
   per diem, effective-dated rule selection, explicit rounding and ledger allocation.
+  Separate employer-contribution calculations use confirmed fund/period/rate/unit facts; they do
+  not add benefits to wages or infer eligibility.
 - `backup`: JCA password-protected transport matching the shared native/Node/browser vector.
   This module does not decode financial snapshot state, perform restore or retain a password.
 
@@ -37,8 +39,8 @@ repositories; subsequent runs can use `--offline` when all dependencies are cach
 HTML reports are under each module's ignored `build/` directory. Shared fixtures are read directly
 from `shared/contracts/`, never copied into the production library.
 
-Current evidence: nineteen shared payroll cases, nine additional domain boundaries, and four
-backup transport cases passed. The backup Unicode/tamper tests use explicitly public synthetic
+Current evidence: nineteen shared payroll cases, nine additional pay boundaries, thirteen shared fund cases,
+six additional fund boundaries, and four backup transport cases passed. The backup Unicode/tamper tests use explicitly public synthetic
 fixture inputs. No real worker/credential data belongs in tests or logs.
 
 The configured-pay engine has its own `linepay.android.configured-pay/1` provenance. Do not admit

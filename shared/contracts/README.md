@@ -25,3 +25,5 @@ The schema should not be invented before the first real rule engine needs it. Fi
 The first implemented transport contract is [password-protected manual backup v1](backup/README.md). Its synthetic vector is checked independently by native and Node/WebCrypto implementations; complete Android/PWA restore remains a separate deliverable.
 
 [Configured-pay fixtures v1](payroll/README.md) is the first native-consumed payroll conformance subset. It includes independent synthetic arithmetic, explicit timestamps/timezone and source snapshot references; broader cross-platform coverage remains pending.
+
+[Confirmed fund fixtures v1](benefits/README.md) verifies separate employer-contribution arithmetic and comparison scope in both native implementations without inferring eligibility or legal coverage.
