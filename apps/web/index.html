@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0E746C" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>LinePaycheck — local pay notebook</title>
+    <link rel="apple-touch-icon" href="app-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" />
+    <script type="module" src="src/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header>
+      <span class="wordmark">LinePaycheck</span
+      ><span>Local pay notebook · development preview</span>
+    </header>
+    <nav aria-label="Main">
+      <button data-tab="pay">Pay</button
+      ><button data-tab="profile">Pay rules</button
+      ><button data-tab="history">History</button
+      ><button data-tab="backup">Backup</button>
+    </nav>
+    <p id="status" role="status" aria-live="polite">
+      Opening this browser’s local records…
+    </p>
+    <main id="main" tabindex="-1"></main>
+    <footer>
+      Configured estimates, not a legal-pay audit. No LinePaycheck account.
+      Records stay in this browser unless you export them. Clearing site data or
+      private browsing can remove records.
+    </footer>
+  </body>
+</html>

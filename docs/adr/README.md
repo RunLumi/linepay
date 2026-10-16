@@ -19,3 +19,5 @@
 - [0015-password-protected-manual-backups](0015-password-protected-manual-backups.md)
 - [0016-exact-time-rounding-and-saved-checks](0016-exact-time-rounding-and-saved-checks.md)
 - [0017-native-android-calculation-and-backup-boundaries](0017-native-android-calculation-and-backup-boundaries.md)
+
+- [0018-local-browser-client-and-versioned-web-state](0018-local-browser-client-and-versioned-web-state.md)

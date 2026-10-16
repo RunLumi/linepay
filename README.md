@@ -15,7 +15,8 @@ LinePaycheck records work facts, applies explicit pay rules, calculates expected
 ```text
 apps/
   ios/          Native SwiftUI app, first shipping platform
-  android/      Native Kotlin/Compose app, deliberately deferred until demand
+  android/      Native Kotlin domain/backup; Compose app and runtime gates pending
+  web/          Local browser workflow; full native parity/deployment pending
 shared/
   contracts/    Platform-neutral schemas and fixtures, not shared runtime code
 docs/
@@ -96,7 +97,7 @@ Use the [API release workflow](docs/release/api-and-testflight.md) for authentic
 1. Validate willingness to pay with real linemen.
 2. Ship a small, excellent iOS app.
 3. Prove retention and discrepancy-detection value.
-4. Build Android when user demand justifies the second native client.
+4. The owner authorized all v2 platforms: continue Android and the local browser client while preserving separate parity/runtime/release gates.
 
 See `AGENTS.md` before making changes.
 
@@ -111,3 +112,5 @@ Copyright (c) 2026 RunLumi. All rights reserved.
 This repository is **proprietary source code**. No permission is granted to any person or organization outside RunLumi to use, copy, modify, reproduce, distribute, publish, sublicense, sell, host, deploy, execute, reverse engineer, create derivative works from, or otherwise exploit any part of this repository for any purpose without prior written authorization from RunLumi.
 
 Access to or visibility of the source code does **not** grant any license or usage right. See [LICENSE](LICENSE) for the complete terms.
+
+Current platform implementation and checks: [Android](apps/android/README.md), [local browser client](apps/web/README.md), and the [v2 execution ledger](docs/plan/v2-execution.md). These are development evidence, not a new-version release receipt.

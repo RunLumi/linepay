@@ -33,7 +33,7 @@ An implementation, test result, upload, review submission and public release are
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
-| Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
+| Full PWA | Initial local workflow implemented and browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 70 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
@@ -936,3 +936,74 @@ created; describe and verify each property separately.
   website publication answers remain pending. No archive/upload/submission/public release.
 - Overall all-stages goal remains active. Final native Files failure diagnosis, real device gates,
   full Android/PWA workflows, localization, source rights/library, templates and release remain.
+
+
+## Local browser workflow and recovery checkpoint
+
+- Added `apps/web` as an actual dependency-free browser client: confirmed profile → explicit
+  period/payroll timezone → actual work/break/callout facts → explained cash wages and separate
+  per diem → scope-confirmed paycheck preview → separately saved immutable check → closed
+  period/history. New profiles do not change earlier periods; removing open work leaves saved
+  checks on their exact earlier snapshots. Empty unaudited periods have a discard confirmation.
+- Pure BigInt rational pricing consumes all **19 shared configured-pay fixtures**: local midnight,
+  DST, breaks, daily tiers, highest weekday premium, physical/split callout minima, separate
+  allowance and exact-second cent boundaries. Daily boundaries must be whole elapsed seconds;
+  unsupported schedules/date/off-schedule/legacy production policies fail explicitly. Exact
+  multiplier text is preserved. Separate gross assessment consumes **16 shared scope cases**;
+  the legacy case tests a review flag against independently priced wages, not legacy admission.
+- Local IndexedDB writes request strict durability, wait for transaction completion and compare
+  current revision inside the write transaction. Stale tabs abort rather than overwrite newer
+  state. Closed/history receipts and original rule definitions remain immutable. Added a meaningful
+  regression for conflicting definitions under one rule ID/version and explicit aborted-read refusal.
+  Unknown format/fields or inconsistent same-version retained receipts fail closed.
+- WebCrypto password exports implement the shared authenticated AES-GCM/PBKDF2 envelope and
+  public Unicode vector. Actual financial state is explicitly web snapshot/state v1; native
+  snapshots are rejected until a full schema migrator can preserve their records. Export/restore
+  clear password fields; input controls are disabled during protection/unlock. A real download
+  is still distinct from a verified OS Files/iCloud save. Restore authentication/inspection does
+  not mutate records; replacement requires a separate explicit confirmation and revision guard.
+- Final Node suite **43 passed, zero failures/skips**, log
+  `/private/tmp/linepay-v2-web-domain-final.log`. Includes exact money, 19 shared pay, 16 gross,
+  DST gap/fold/calendar refusal, invalid/unknown state, rule identity, retained receipts, actual
+  cipher-vector/wrong-password/authenticated-region rejection and fresh random transport checks.
+- Real Chromium **155.0.8059.85** and Playwright WebKit **26.0** passed the nine-check local journey:
+  exact 19.99 half-hour → 10.00; preview-before-save; 1.00 possible shortfall; closed snapshot
+  survives a new profile; actual encrypted download; wrong password leaves current records;
+  destructive synthetic reset → inspect (still empty) → explicit exact restore; stale-tab write
+  refusal; narrow/dark/enlarged text; real service-worker/IndexedDB reload after origin shutdown.
+  A fresh no-worker context fails against that stopped origin. Every observed app request was
+  a same-origin shell GET; no pay data was sent. Reports/captures `.build/web-e2e/{chromium,webkit}/`.
+- Initial Chromium failure exposed an implicit gross-basis select label including its options;
+  fixed with explicit label/ID. Initial WebKit offline-emulation reload failed with an internal
+  browser error, retained `/private/tmp/linepay-v2-web-webkit.log`. Upstream Playwright issue
+  [42775](https://github.com/microsoft/playwright/issues/42775) reproduces this even for literal
+  worker responses. Both final engines use a genuinely stopped origin and a fresh negative control,
+  without intercepted successes. Prior Chromium offline-emulation itself also passed. Final logs
+  `/private/tmp/linepay-v2-web-{chromium,webkit}-final2.log` follow the final rule-identity guard.
+- Inspected actual mobile ledger and 320px, 26px-root dark viewport captures: reflowed controls,
+  legible primary amount and no horizontal overflow. Work is presented in its saved payroll
+  timezone; original UTC instants remain in the retained facts. Home-screen PNG is an unchanged
+  copy of the existing native app icon. No generated/third-party brand assets were introduced.
+- ADR 0018 records browser storage/privacy/state/version/update policy. Shell cache has an explicit
+  asset allowlist and waits for old tabs to close; no forced form reload, user-data cache, external
+  scripts/fonts or backend. Node 22 and Python suffice to run the local client. Formatter download
+  via npm exec was blocked by the package-policy hook; the permitted --no-install invocation
+  returned formatter 3.9.10 (with npm's installation warning), then formatted only browser source.
+  No runtime package/dependency file was introduced. Do not claim the initial command succeeded.
+- This is the first complete local browser journey, **not full PWA/native parity**. Weekly/legal
+  entitlement, source/evidence/agreement/benefit/resolution/OCR/voice/report workflows, effective
+  transitions, native financial-state interchange, commerce/localization, physical/installed-PWA
+  and authorized public deployment remain pending. No Xcode/SDK setup, remote push/website
+  deployment, signed archive, App Store upload/submission or public release occurred in this slice.
+  The original all-stages goal remains active; release completion is unproven.
+
+- Checkpoint checks: 1,023 local documentation links, 5 documentation-tool tests, active-copy/
+  inventory checks and diff whitespace checks passed. Native production code did not change;
+  no Simulator rerun was attempted while host setup remains unresolved. Added a contents-read
+  GitHub workflow for the 43 domain/state/crypto checks plus both browser journeys, using the
+  existing pinned checkout/artifact actions, official setup-node v6 SHA read through GitHub API,
+  and locally tested Playwright 1.55.0. Hosted CI has **not run**; workflow source is not a green
+  hosted receipt. Browser tools remain development-only. A package-hook parser falsely treated
+  quoted prose in the file-writing command as install targets; verified the actual Playwright
+  1.55.0 release at primary PyPI (August 28, 2025, all file SHA-256 metadata present) before using
+  the normal patch tool for the file-only edit. No local browser/runtime install was performed.

@@ -1,0 +1,24 @@
+{
+  "id": "./",
+  "name": "LinePaycheck local notebook",
+  "short_name": "LinePaycheck",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F1E8",
+  "theme_color": "#0E746C",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
