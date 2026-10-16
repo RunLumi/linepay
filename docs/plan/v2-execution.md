@@ -30,7 +30,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
-| Voice logging | Implemented; focused parser/native UI passed | Full native gate running; actual physical microphone/offline recognition and privacy review pending |
+| Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Superseded by explicit local-only owner choice | Encrypted manual backup/restore portability; no account or automatic sync |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
@@ -616,3 +616,27 @@ created; describe and verify each property separately.
 - Guide build/search/freshness passed (53 mapped sources); docs/legal active-copy/inventory
   checks passed without implying owner/counsel/release approval. Website publication remains
   pending the exact remote/branch approval already requested; no push/deployment/store write.
+
+## Completed voice-work native gate
+
+- Implementation checkpoint `e4aaf22` passed the full canonical `agent-verify.sh ios` gate (exec
+  `22948`, exit 0): **343 total cases, 342 passed, 0 failed, 1 skipped**. All 316 app tests and
+  critical native UI methods ran; only the deliberately opt-in store-screenshot fixture skipped.
+  Strict formatting, privacy checks, 128 domain tests, repository tests, coverage, Release
+  Simulator build and dependency-lockfile preservation passed.
+- Final results: `.build/v2-voice-gate-20261016/AppTests.xcresult`; summary
+  `/private/tmp/linepay-v2-voice-summary.json`; log `/private/tmp/linepay-v2-voice-gate.log`.
+  Final UI captures in the result's `screenshots/` directory were inspected: correct October 16
+  07:00–15:30 CDT and noon–12:30 break, whole-row unconfirmed review control, separately disabled
+  Apply, and visible ambiguous-clock recovery at accessibility XXXL in dark mode.
+- Generated app Info.plist confirms both microphone/speech purpose strings, no background mode,
+  unchanged `com.streamentry.linepay` identity and 1.0.5 (11) development version. No signed-device
+  recognition, archive, TestFlight upload, App Store submission or new public release is claimed.
+- Asked the owner asynchronously whether a physical test iPhone can be connected; no reply is
+  assumed. Website publication permission is also still pending. These do not block other native
+  implementation: next independent slice is encrypted manual backup/restore portability, keeping
+  legacy snapshots readable, passwords off disk/logs and all financial replacement confirmation
+  and failure guarantees. Inspect the existing BackupArchive/BackupIO and platform cryptography
+  documentation before choosing the exact interoperable envelope.
+- Native test jobs are terminal and the implementation working tree was clean after its commit.
+  Overall v2 remains active, with all still-pending platform/release requirements above preserved.

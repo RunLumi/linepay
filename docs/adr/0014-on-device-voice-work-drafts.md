@@ -1,7 +1,6 @@
 # ADR 0014: on-device voice work drafts
 
-Status: accepted for the owner-authorized v2 implementation, October 16, 2026. Native verification
-is in progress; microphone and recognition accuracy on a supported physical device remain unproven.
+Status: accepted for the owner-authorized v2 implementation, October 16, 2026. Implementation `e4aaf22` passed the complete native gate: 342 passed, zero failed, one intentional store-screenshot skip. Microphone and recognition accuracy on a supported physical device remain unproven.
 
 The owner required local-only operation for every roadmap stage. Voice input therefore uses Apple's
 native recorder and Speech recognizer, with no remote processor, SDK or fallback. Recording starts
