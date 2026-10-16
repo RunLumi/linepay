@@ -75,7 +75,9 @@ struct FirstPayResultView: View {
                     Section {
                         PayAmount(
                             label: "Expected wages for this work", money: calculation.expectedWages,
-                            prominent: true)
+                            prominent: true
+                        )
+                        .onAppear { model.observedExpectedPay(periodID: context.id) }
                         if calculation.expectedAllowances.amount > 0 {
                             PayAmount(
                                 label: "Separate expected per diem",

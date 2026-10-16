@@ -14,6 +14,14 @@ App Store purchases use Apple’s services. A Files provider can use the network
 
 “Local by default” does not mean exported copies cannot leave the phone, that all services work offline, or that a lost phone’s records can be recovered without a backup. Keep your device and storage accounts appropriately protected.
 
+## Device-local activity in the v2 development build
+
+Open **Settings → Device-local activity** to inspect or disable local milestone counts. This ledger records closed event labels, counts and UTC usage days; it does not record pay amounts, payroll dates, names, document text or arbitrary attributes. Nothing is sent to a collector. Existing subscriptions and renewals are observations, not new-customer conversion evidence.
+
+**Preview local diagnostic file** shows the exact JSON before you choose a Files destination. Usage days and counts can still be personal; the file is not anonymous. Share it only deliberately. **Clear only local activity** removes these observations while keeping the recording preference and your pay records. Exported copies remain in their selected locations.
+
+The daily breakdown retains up to 400 observed UTC days. Disabled recording, failures and bounded deduplication can make counts incomplete. A pay-data backup does not include or restore this ledger. **Delete all local data** also clears activity observations while preserving your recording preference.
+
 ## Review or remove retained originals
 
 Go to **Settings → Privacy and local data → Original documents**. Choose **Remove original** for the selected document, then read and confirm the consequence. An audit’s **Remove this original** action provides the same kind of source removal.

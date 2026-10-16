@@ -35,6 +35,10 @@ struct TodayView: View {
                                 money: model.calculation?.expectedWages, prominent: true
                             )
                             .accessibilityIdentifier("today.expected-wages")
+                            .onAppear { model.observedExpectedPay() }
+                            .onChange(of: model.currentWorkRevision) { _, _ in
+                                model.observedExpectedPay()
+                            }
                             if let allowance = model.calculation?.expectedAllowances,
                                 allowance.amount > 0
                             {

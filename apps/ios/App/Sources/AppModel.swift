@@ -9,6 +9,7 @@ final class AppModel {
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
     @ObservationIgnored private let now: () -> Date
 
+    @ObservationIgnored let localActivity: LocalActivityLedger
     private var state: AppPersistentState
     private(set) var calculation: CalculationResult?
     private(set) var calculationError: String?
@@ -18,11 +19,13 @@ final class AppModel {
     init(
         store: any AppStateStoring = MemoryStateStore(),
         evidenceStore: any EvidenceStoring = MemoryEvidenceStore(),
-        now: @escaping () -> Date = { Date() }
+        now: @escaping () -> Date = { Date() },
+        activity: LocalActivityLedger? = nil
     ) {
         self.store = store
         self.evidenceStore = evidenceStore
         self.now = now
+        localActivity = activity ?? LocalActivityLedger(now: now)
 
         do {
             state = try store.load() ?? AppPersistentState()
@@ -939,6 +942,7 @@ final class AppModel {
     }
 
     func resetAllData() throws {
+        try localActivity.clear()
         // First persist a deletion queue so a failed file removal stays retryable.
         var empty = AppPersistentState()
         empty.hasUsedFreeAudit = state.hasUsedFreeAudit
@@ -958,6 +962,7 @@ final class AppModel {
             return
         }
         // Explicit user-confirmed destructive recovery, never automatic on a decode error.
+        try localActivity.clear()
         try evidenceStore.deleteAll()
         try TemporaryExports.removeAll()
         try store.reset()
@@ -1247,9 +1252,11 @@ final class AppModel {
                 || state.activePeriod?.agreement != candidate.activePeriod?.agreement
                 || state.activePeriod?.workEntries != candidate.activePeriod?.workEntries
                 || state.activePeriod?.agreementChanges != candidate.activePeriod?.agreementChanges
+            let previous = state
             state = candidate
             lastPersistenceError = nil
             if payChanged { recalculate() }
+            localActivity.observeCommittedChange(from: previous, to: candidate)
         } catch {
             lastPersistenceError = error.localizedDescription
             throw AppModelError.persistenceFailed

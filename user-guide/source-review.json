@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -25,8 +25,9 @@
         "getting-started",
         "expected-pay"
       ],
-      "disposition": "reviewed",
-      "blob": "e14f9bab689eeee83da185a1a51da18e8c125d39"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "c6e39c47f3a5de1e36320a0a07666cba4d9f09e4",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
@@ -37,8 +38,8 @@
         "changing-rules"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "a599f935bf316b305191c405e202953d581ee031",
-      "reason": "The existing scope label now has a rectangular hit area; choices, scope meanings and instructions are unchanged. Native largest-text scope effects were verified."
+      "blob": "86f195792d8d9ad7b8e9bbc949a546696af3aebc",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/EntryDrafts.swift",
@@ -64,8 +65,9 @@
         "getting-started",
         "recording-work"
       ],
-      "disposition": "reviewed",
-      "blob": "d0b51e0fc43c725ea67ba9daf44d3202889b2ea6"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "ec49a3abc55c207b126c29b2eeef1f8a57960e40",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/AddWorkView.swift",
@@ -99,8 +101,9 @@
         "pay-periods",
         "pay-rules"
       ],
-      "disposition": "reviewed",
-      "blob": "9f540326048a645ec5b52856e0ae32d7e6cf3f57"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "4520b90b8621e198a74051d9d459fdd7846ada5a",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/WeeklyOvertimeReviewView.swift",
@@ -173,7 +176,7 @@
         "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "9ada5c527f1ef87a1166b47a6faffcf349d9586a"
+      "blob": "11d2d27b388221493543bf7d5b2caffc21a2841e"
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -205,8 +208,9 @@
       "guides": [
         "pro-and-billing"
       ],
-      "disposition": "reviewed",
-      "blob": "13984ca25868cda0a58dd556259d1a37a2b72aa9"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "89abecfca7eed5e296c565ab63e6112243eebd30",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/TrialReminder.swift",
@@ -405,6 +409,42 @@
       ],
       "disposition": "reviewed",
       "blob": "545595824297ab665a306abd6b8cfb88426f54f6"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalActivityLedger.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "6e67b89065516717b1e58da30056b5f528a236c7"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalActivityObservation.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "528cb9668290798abec65974ef261dd06edb971b"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalDiagnosticsView.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "981b52fa4c77f3136d6b7a2f847064c8d432ec75"
+    },
+    {
+      "path": "apps/ios/App/Sources/AppSession.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "7ccb268ae5da3d80d7248c8e915d220b0f10c76b"
     }
   ]
 }

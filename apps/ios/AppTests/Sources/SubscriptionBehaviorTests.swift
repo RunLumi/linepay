@@ -45,9 +45,13 @@ struct SubscriptionBehaviorTests {
         let client = TestStorefront()
         client.outcome = outcome
         let store = SubscriptionStore(commerceEnabled: true, operations: client.operations)
+        let activity = LocalActivityLedger()
+        store.localActivity = activity
         #expect(!(await store.purchase(productID: SubscriptionStore.monthlyProductID)))
         #expect(!store.isPro && client.purchases == [SubscriptionStore.monthlyProductID])
         #expect(client.entitlementReads == 0)
+        #expect(
+            activity.count(.purchaseVerified) == 0 && activity.count(.verifiedPaidObserved) == 0)
         switch outcome {
         case .cancelled: #expect(store.errorMessage == nil)
         default: #expect(store.errorMessage != nil)
@@ -57,10 +61,16 @@ struct SubscriptionBehaviorTests {
     @Test func verifiedPurchaseRefreshesActualOwnershipRatherThanTrustingSuccessAlone() async {
         let client = TestStorefront()
         let store = SubscriptionStore(commerceEnabled: true, operations: client.operations)
+        let activity = LocalActivityLedger()
+        store.localActivity = activity
         #expect(!(await store.purchase(productID: SubscriptionStore.monthlyProductID)))
         client.identifiers = [SubscriptionStore.yearlyProductID]
         #expect(await store.purchase(productID: SubscriptionStore.yearlyProductID))
         #expect(store.isPro && store.errorMessage == nil && client.entitlementReads == 2)
+        #expect(activity.count(.purchaseVerified) == 2)
+        #expect(
+            activity.count(.verifiedPaidObserved) == 0
+                && activity.count(.verifiedTrialObserved) == 0)
     }
 
     @Test func failuresAreRecoverableAndDoNotRevokeKnownOwnership() async {

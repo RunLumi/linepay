@@ -28,6 +28,7 @@ final class SubscriptionStore {
     private(set) var renewalDate: Date?
     private(set) var willAutoRenew: Bool?
     private(set) var isTrial = false
+    @ObservationIgnored var localActivity: LocalActivityLedger?
     @ObservationIgnored private var transactionTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
     @ObservationIgnored private var refreshGeneration = 0
@@ -182,6 +183,13 @@ final class SubscriptionStore {
                     renewalDate = transaction.expirationDate
                     willAutoRenew = renewal.willAutoRenew
                     isTrial = transaction.offer?.paymentMode == .freeTrial
+                    if isTrial {
+                        localActivity?.record(
+                            .verifiedTrialObserved, once: .transaction(transaction.id))
+                    } else if let price = transaction.price, price > 0 {
+                        localActivity?.record(
+                            .verifiedPaidObserved, once: .transaction(transaction.id))
+                    }
                 }
                 // The verified subscription state is the source of truth for grace. The
                 // entitlement transaction set can briefly lag that state on a rebooted
@@ -220,6 +228,7 @@ final class SubscriptionStore {
         do {
             switch try await operations.purchase(productID, products) {
             case .verified:
+                localActivity?.record(.purchaseVerified)
                 await refreshEntitlements()
                 if observesStoreKit && !isPro {
                     // StoreKit can return the verified purchase before currentEntitlements updates.

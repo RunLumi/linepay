@@ -55,6 +55,12 @@ struct SettingsView: View {
                         }
                     }
                 }
+                Section("Local diagnostics") {
+                    NavigationLink("Device-local activity") {
+                        LocalDiagnosticsView(ledger: model.localActivity)
+                    }
+                    .accessibilityIdentifier("settings.local-activity")
+                }
                 Section("Employer benefits") {
                     NavigationLink("Employer contribution checks") {
                         BenefitAuditsView(model: model)
@@ -212,6 +218,9 @@ struct PrivacyDataView: View {
                 Text(
                     "App Store purchases and Files providers may use the network. You choose exports and iCloud Drive backups. iOS may also back up app data according to your device settings."
                 )
+                Text(
+                    "Optional device-local activity stores closed milestone counts and usage days. Review, disable, clear or manually export it from Settings → Device-local activity; nothing is sent to a collector."
+                )
                 NavigationLink("Read privacy policy") { LegalTextView(kind: .privacy) }
             }
             Section("Original documents") {
@@ -254,7 +263,7 @@ struct PrivacyDataView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Deletes local work, rules, drafts, audits and originals. Export a backup first. External backups and subscriptions stay; used free-audit access is not reset."
+                "Deletes local work, rules, drafts, audits, originals and local activity. Your activity-recording preference is kept. Export a backup first. External backups and subscriptions stay; used free-audit access is not reset."
             )
         }
         .confirmationDialog(

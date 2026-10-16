@@ -25,7 +25,9 @@ struct PayLedgerView: View {
                         } else {
                             PayAmount(
                                 label: "Expected wages", money: context.calculation?.expectedWages,
-                                prominent: true)
+                                prominent: true
+                            )
+                            .onAppear { model.observedExpectedPay(periodID: context.id) }
                             if let value = context.calculation?.expectedAllowances,
                                 value.amount > 0
                             {

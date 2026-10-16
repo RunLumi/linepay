@@ -10,6 +10,7 @@ final class AppSession {
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
     @ObservationIgnored private let io: any BackupHandling
 
+    let localActivity: LocalActivityLedger
     private(set) var model: AppModel
     private(set) var revision = UUID()
     private(set) var isBusy = false
@@ -18,21 +19,34 @@ final class AppSession {
     init(
         store: any AppStateStoring,
         evidenceStore: any EvidenceStoring,
-        io: any BackupHandling = BackupIO()
+        io: any BackupHandling = BackupIO(),
+        activity: LocalActivityLedger? = nil
     ) {
         self.io = io
         self.store = store
         self.evidenceStore = evidenceStore
-        model = AppModel(store: store, evidenceStore: evidenceStore)
+        localActivity = activity ?? LocalActivityLedger()
+        model = AppModel(store: store, evidenceStore: evidenceStore, activity: localActivity)
     }
 
     static func production() -> AppSession {
+        let session: AppSession
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
-                return UITestFixtures.session()
+                session = UITestFixtures.session()
+            } else {
+                session = AppSession(
+                    store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore(),
+                    activity: LocalActivityLedger(store: FileLocalActivityStore()))
             }
+        #else
+            session = AppSession(
+                store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore(),
+                activity: LocalActivityLedger(store: FileLocalActivityStore()))
         #endif
-        return AppSession(store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore())
+        session.localActivity.record(.firstObservedOpen, once: .once)
+        session.localActivity.record(.appOpened)
+        return session
     }
 
     func prepareBackup() async throws -> Data {
@@ -116,7 +130,8 @@ final class AppSession {
         }
 
         // The state is now committed; retain a retryable queue for failed old-file cleanup.
-        model = AppModel(store: store, evidenceStore: evidenceStore)
+        model = AppModel(store: store, evidenceStore: evidenceStore, activity: localActivity)
+        localActivity.record(.backupRestored)
         var cleanupFailed = false
         if model.pendingDeletionCount > 0 {
             do { try model.retryEvidenceDeletion() } catch { cleanupFailed = true }

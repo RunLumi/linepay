@@ -11,6 +11,8 @@ This user-requested addition supersedes the earlier deferral of manual restore a
 
 Backup and restore are data-safety features available without Pro. Purchases remain separate and use StoreKit's verified entitlement state; a backup never grants a subscription.
 
+Device-local activity observations are deliberately excluded from financial backups. Restoring pay data records only a new restore observation when recording is enabled; it does not recreate past opens, work, audits, or conversion observations. A manually exported diagnostic JSON is separate and cannot restore pay data. See [ADR 0013](../adr/0013-local-activity-and-diagnostic-export.md).
+
 ## Experience
 
 Settings > Your data > iCloud backup & restore. The same restore entry is available on the welcome and unreadable-data recovery screens.

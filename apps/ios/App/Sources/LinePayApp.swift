@@ -12,7 +12,10 @@ struct LinePayApp: App {
                 .id(session.revision)
                 .environment(\.linePaySession, session)
                 .disabled(session.isBusy)
-                .task { await subscriptionStore.start() }
+                .task {
+                    subscriptionStore.localActivity = session.localActivity
+                    await subscriptionStore.start()
+                }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { Task { await subscriptionStore.load() } }
                 }

@@ -41,7 +41,10 @@
             let session = AppSession(
                 store: store,
                 evidenceStore: LocalEvidenceStore(
-                    baseDirectory: base.appendingPathComponent("originals")))
+                    baseDirectory: base.appendingPathComponent("originals")),
+                activity: LocalActivityLedger(
+                    store: FileLocalActivityStore(
+                        directory: base.appendingPathComponent("activity"))))
             guard reset, let scenario = ProcessInfo.processInfo.environment["LINEPAY_UI_SCENARIO"],
                 scenario != "empty"
             else { return session }

@@ -19,8 +19,8 @@ An implementation, test result, upload, review submission and public release are
 
 | Workstream | State | Acceptance still required |
 |---|---|---|
-| Foundation: funnel measurement | Pending; owner chose local-only | Content-free local milestones and manual diagnostic export; no collector |
-| Website/store consistency | Pending | Inspect real website/listing and update only supported claims |
+| Foundation: funnel measurement | Implemented; focused unit/StoreKit/native UI passed | Full native gate running; no production cohort/completeness claim |
+| Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
@@ -537,3 +537,35 @@ created; describe and verify each property separately.
 - All verification processes from the benefits gate are terminal. The preview server was already
   stopped. Revalidate clean checkouts and exact evidence on resume; keep earlier failed and skipped
   results distinct from this final passing gate.
+
+## Local activity and manual diagnostics checkpoint
+
+- Implemented a separate versioned, device-local ledger with a closed vocabulary, bounded UTC
+  daily history/deduplication, lifetime totals, opt-out, activity-only clear and known-gap disclosure.
+  No wage/document/free-text attributes, collector, account or analytics SDK. Internal hashed
+  identities never enter the diagnostic export; usage days/counts remain potentially personal.
+- Financial writes commit before observation; recording failure cannot roll back pay. Financial
+  backup restore does not backfill activity. Explicit all-data deletion clears activity while
+  retaining the recording preference. ADR 0013 owns this boundary.
+- `v2-local-activity-commerce-20261016.xcresult` passed: 23 tests across three suites, including
+  nine activity regressions and actual local StoreKit trial-to-paid/refresh deduplication.
+  Existing-subscription/renewal observations are explicitly distinct from new-customer conversion.
+- Native `LocalActivityJourneyTests` passed in 116.975s on the existing iOS 18.5 device:
+  exact JSON preview, actual Files picker (Browse/Move), cancellation without saving, opt-out
+  surviving relaunch, largest accessibility text/dark appearance and activity-only clearing while
+  the synthetic $2,000 wage result remains intact. Captures exported to
+  `.build/v2-local-activity-ui-picker-attachments` and visually inspected. No provider save, upload
+  or cross-device arrival is claimed.
+- Earlier UI attempts are retained: one incorrect test-target selection ran no cases; subsequent
+  failures assumed Files always exposes Cancel, whereas the actual folder showed Browse/Move.
+  The final test asserts the real picker and dismisses it. Failed drivers were stopped only after
+  failure and test-host exit; no simulator was created, erased or upgraded.
+- Guide build/search/freshness (50 tracked sources), 986 documentation links, five doc tests and
+  legal inventory passed. Targeted privacy/backup guidance documents this unreleased workflow;
+  the original full-site review baseline remains distinct.
+- Initial full-gate attempt `39951` stopped at two long test lines before native execution;
+  Swift formatting was corrected. Full canonical iOS gate is running as exec `20102`, log
+  `/private/tmp/linepay-v2-local-activity-final-gate.log`, results
+  `.build/v2-local-activity-final-gate-20261016`. Do not claim its final pass before completion.
+- Website publication approval remains pending; native branch is local, public version unchanged,
+  and no archive, App Store upload/submission or new public release has occurred.

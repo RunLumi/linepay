@@ -213,6 +213,8 @@ App Store configuration evidence is recorded in [the trial setup record](../rese
 
 ## 8. Measurement contract
 
+October 16 v2 implementation: the owner chose local-only observation and manual diagnostic export. The implemented closed milestones, reset/retention behavior and gaps are defined in [ADR 0013](../adr/0013-local-activity-and-diagnostic-export.md). These counts do not measure the cohort metrics below. First observed open is not an install; verified trial/paid transactions can include existing subscriptions and renewals. No sample-versus-real or acquisition-source classification is inferred. The earlier event proposal below remains a proposal, not the shipped recording schema.
+
 At launch, use App Store Connect offer/subscription reports and privacy-safe local observation. Apple exposes completed-offer conversion and subscription lifecycle reporting [R10, R11]. A calendar-period ratio of trial starts divided by downloads is a directional proxy, not a linked install-cohort conversion rate.
 
 No new remote analytics, tracking SDK, or wage-data backend is authorized by this specification. Local counters do not provide a production funnel dashboard. If aggregate Apple reports cannot answer an experiment, document the blind spot; a minimal remote-event proposal requires an explicit privacy/data-flow decision before shipping.
@@ -233,7 +235,7 @@ De-duplicate transactions by store transaction identity. Treat switches separate
 
 For cohort trial conversion, freeze the readout after all enrolled trials have ended plus a 48-hour reporting buffer; report unresolved billing separately and revise when later charges arrive. For D30/D35 revenue, use full matured windows. Do not erase failed billing or auto-renew-disabled users to improve the rate.
 
-Proposed local development events: `first_open`, `pay_basics_saved`, `first_real_work_saved`, `first_expected_pay_viewed`, `trial_offer_viewed`, `plan_selected`, `purchase_attempted`, `verified_trial_started`, `verified_first_paid`, `first_real_audit_completed`, `manage_subscription_opened`. Store only stage, coarse variant, product identifier, and result; no wage, rule, employer, union, paystub, or raw purchase identity in analytics logs.
+Earlier proposed local development events: `first_open`, `pay_basics_saved`, `first_real_work_saved`, `first_expected_pay_viewed`, `trial_offer_viewed`, `plan_selected`, `purchase_attempted`, `verified_trial_started`, `verified_first_paid`, `first_real_audit_completed`, `manage_subscription_opened`. Store only stage, coarse variant, product identifier, and result; no wage, rule, employer, union, paystub, or raw purchase identity in analytics logs.
 
 ## 9. Experiments and decision thresholds
 

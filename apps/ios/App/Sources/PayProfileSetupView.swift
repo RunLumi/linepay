@@ -113,6 +113,7 @@ struct PayProfileSetupView: View {
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
+        .onAppear { model.localActivity.record(.profileStarted, once: .once) }
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
             do { try model.saveSetupDraft(value) } catch {
