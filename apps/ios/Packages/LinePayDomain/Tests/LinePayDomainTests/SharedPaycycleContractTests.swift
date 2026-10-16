@@ -40,7 +40,7 @@ struct SharedPaycycleContractTests {
                     "shared/contracts/paycycles/calendar-v1.json")))
         try #require(
             result.format == "com.streamentry.linepay.calendar-paycycle-fixtures"
-                && result.version == 1 && result.cases.count == 14 && result.refusals.count == 7)
+                && result.version == 1 && result.cases.count == 15 && result.refusals.count == 10)
         return result
     }
     private func local(_ text: String) throws -> LocalDate {

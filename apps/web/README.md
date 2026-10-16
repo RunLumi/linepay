@@ -108,7 +108,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 129 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+The 133 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
 fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
@@ -194,8 +194,8 @@ shift cannot be silently lost when the first save refreshes the form.
 Review weekly, biweekly, semi-monthly (1–15/16–end) or custom dates before creating a period.
 Standard windows derive the inclusive last date from the fixed payroll zone; clock changes do not
 turn them into fixed-hour spans. Cadence does not configure federal/statutory weekly overtime.
-The shared Swift/browser [calendar corpus](../../shared/contracts/paycycles/README.md) covers fourteen
-independent windows/seven refusals, including a skipped midnight that must not shift the next boundary.
+The shared Swift/Kotlin/browser [calendar corpus](../../shared/contracts/paycycles/README.md) covers fifteen
+independent windows/ten refusals, including a skipped midnight that must not shift the next boundary.
 
 New comparisons retain source work-period dates/context/confirmation separately from the ledger.
 Source date fields start blank. Use the dates covered by the paycheck, not payday. Unknown,

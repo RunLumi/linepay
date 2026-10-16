@@ -15,8 +15,8 @@ assert.equal(
   "com.streamentry.linepay.calendar-paycycle-fixtures",
 );
 assert.equal(corpus.version, 1);
-assert.equal(corpus.cases.length, 14);
-assert.equal(corpus.refusals.length, 7);
+assert.equal(corpus.cases.length, 15);
+assert.equal(corpus.refusals.length, 10);
 for (const c of corpus.cases)
   test("paycycle: " + c.id, () => {
     const actual = paycycleWindow(c.input);

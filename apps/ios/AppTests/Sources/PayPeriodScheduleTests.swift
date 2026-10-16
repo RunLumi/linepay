@@ -105,6 +105,22 @@ struct PayPeriodScheduleTests {
         }
     }
 
+    @Test func weeklyDateLabelsRemainSevenDatesApartAcrossAnEntireSkippedDate() throws {
+        let calendar = try calendar("Pacific/Apia")
+        let start = try date(2011, 12, 26, in: calendar)
+        let window = try PayPeriodSchedule.window(
+            cadence: .weekly, startDate: start, manualEndDate: start,
+            timeZoneIdentifier: calendar.timeZone.identifier)
+        #expect(window.endDate == (try date(2012, 1, 2, in: calendar)))
+        #expect(window.endEpochSeconds - window.startEpochSeconds == 144 * 3_600)
+        #expect(throws: AppModelError.invalidPayPeriod) {
+            try PayPeriodSchedule.window(
+                cadence: .manual, startDate: date(2011, 12, 28, in: calendar),
+                manualEndDate: date(2011, 12, 29, in: calendar),
+                timeZoneIdentifier: calendar.timeZone.identifier)
+        }
+    }
+
     private func calendar(_ zone: String) throws -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: zone))

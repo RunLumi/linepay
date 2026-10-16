@@ -240,6 +240,23 @@
         "endExclusiveUTC": "2018-11-11T02:00:00Z",
         "elapsedSeconds": 601200
       }
+    },
+    {
+      "id": "week-spanning-skipped-calendar-date",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2011-12-26",
+        "manualEndDate": "2012-01-01",
+        "timeZone": "Pacific/Apia"
+      },
+      "expected": {
+        "startDate": "2011-12-26",
+        "endDate": "2012-01-01",
+        "endExclusiveDate": "2012-01-02",
+        "startUTC": "2011-12-26T10:00:00Z",
+        "endExclusiveUTC": "2012-01-01T10:00:00Z",
+        "elapsedSeconds": 518400
+      }
     }
   ],
   "refusals": [
@@ -304,6 +321,33 @@
         "startDate": "2026-10-05",
         "manualEndDate": "2026-10-11",
         "timeZone": "Imaginary/Unknown"
+      }
+    },
+    {
+      "id": "wholly-skipped-start-date",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2011-12-30",
+        "manualEndDate": "2012-01-05",
+        "timeZone": "Pacific/Apia"
+      }
+    },
+    {
+      "id": "wholly-skipped-exclusive-end-date",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2011-12-28",
+        "manualEndDate": "2011-12-29",
+        "timeZone": "Pacific/Apia"
+      }
+    },
+    {
+      "id": "wholly-skipped-manual-last-date",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2011-12-28",
+        "manualEndDate": "2011-12-30",
+        "timeZone": "Pacific/Apia"
       }
     }
   ]

@@ -35,7 +35,7 @@ An implementation, test result, upload, review submission and public release are
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Local wage/fund, dated rules, reports and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 83 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
+| Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Browser file exchange/recovery implemented; shared Swift codec verified | Native iOS Files/UI/persistence, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -1345,3 +1345,53 @@ created; describe and verify each property separately.
   App Store write or public release occurred. Owner responses for host setup, Android terms,
   physical device and exact website publication scope remain outstanding. Broader native/Android/
   PWA/source/library/localization/device and final store gates remain required. Goal stays active.
+
+
+## Kotlin calendar parity and whole-date regression
+
+- Continued from clean `50e3c5d`. Added the pure Kotlin calendar helper and direct shared-fixture
+  consumer, without an SDK, Android app scaffold, dependencies, backend or persistence migration.
+  Exact date/zone inputs produce immutable date/instant outputs; standard cadence ignores a stale
+  manual-end field. Extra tests cover explicit-zone independence, missing/out-of-range custom
+  input and nonexistent boundaries. The default-zone test restores the JVM setting in `finally`;
+  the current JUnit task runs these tests serially.
+- Expanded shared calendar corpus to **15 positive cases +9 refusals**. A Samoa week starting
+  December26,2011 ends January2 local, only **144 elapsed hours** because December30 was skipped.
+  Explicit skipped start/exclusive-end dates refuse. Browser already satisfied all new cases.
+  Swift failed the spanning-week date/instant assertions (returned168h) and skipped-end refusal:
+  `/private/tmp/linepay-v2-skipped-date-swift-before.log`. Changed Swift to advance UTC Gregorian
+  date labels first, then resolve and validate both boundaries in the explicit payroll zone.
+  Existing native windows are not recalculated. Added another native adapter App regression source;
+  it remains **unexecuted** while the host setup block persists.
+- First Gradle attempt was sandbox-blocked before tests by its local file-lock socket. Approved
+  offline rerun then caught a new-data-class copy-visibility warning under warnings-as-errors.
+  Applied Kotlin's consistent visibility annotation to the new internal constructor, preserving
+  strict diagnostics; no compiler flag or test was weakened. Final cached offline Gradle passed:
+  `/private/tmp/linepay-v2-calendar-android2.log`, JUnit XML **106 domain +4 backup =110 tests**,
+  zero failures/errors/skips. Backup was unchanged/up-to-date; calendar tests actually executed.
+- Required quick gate passed **74 repository tests, strict format and138 Swift tests in22 suites**,
+  `/private/tmp/linepay-v2-skipped-date-quick.log`. The two Swift calendar tests now consume24cases.
+  Full Node suite passed **132 tests**, zero failures/skips,
+  `/private/tmp/linepay-v2-skipped-date-node.log`; its calendar consumer executes all24cases.
+  The later App-test-only addition passed focused strict formatting; no native App execution claimed.
+- Browser production assets did not change after the34-check Chromium/WebKit passes at runtime
+  SHA256 `27ab4fb5b519735268f494563d940c7685672f9fa8ad5b55d62d7e19b798d561`.
+  New cases ran at the domain layer; no new physical/browser/device claim follows from them.
+  Cross-client timezone databases, wider transitions, native UI/runtime, Android app/state and
+  final release checks remain separate. No SDK/license install, publication, store write or release.
+
+- Final admission review also found the browser/Kotlin custom-end path validated the following
+  boundary but could admit a nonexistent manual last date. Added an explicit date-existence check
+  and shared refusal rather than normalize it. Final corpus is **15 windows +10 refusals** in all
+  three consumers; browser production runtime changed for this refusal. Final Node **133 tests**
+  passed (`/private/tmp/linepay-v2-calendar-node-final.log`), strict offline Gradle passed **111
+  tests** (`/private/tmp/linepay-v2-calendar-android-final.log`), and final quick passed **74 script
+  tests/138 Swift tests/strict format** (`/private/tmp/linepay-v2-calendar-quick-final.log`).
+  Both final v8 app-shell runs completed with terminal exit0: **34 checks each**, identical runtime
+  SHA256 `26ad7cc8ff36c07ed290644c00268089e0d6b7ccdf1f8b0f033f6af0b221b3f6`.
+  Logs `/private/tmp/linepay-v2-calendar-chromium-v8.log` and
+  `/private/tmp/linepay-v2-calendar-webkit-v8.log`; source-bound reports and synthetic captures under
+  `.build/web-e2e/{chromium,webkit}/`. The cache name advances to v8 so the earlier worker shell
+  can be replaced; these tests verify fresh worker/offline paths, not an installed-device upgrade.
+  Existing report/PDF evidence belongs to its recorded earlier source; report code was unchanged.
+  Goal remains active; full v2 and App Store/manual public release are incomplete.

@@ -25,46 +25,50 @@ public enum CalendarPaycycle {
         }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = zone
-        func local(_ date: Date) -> LocalDate {
+        var dates = Calendar(identifier: .gregorian)
+        dates.timeZone = TimeZone(secondsFromGMT: 0)!
+        func local(_ date: Date, in context: Calendar) -> LocalDate {
             LocalDate(
-                year: calendar.component(.year, from: date),
-                month: calendar.component(.month, from: date),
-                day: calendar.component(.day, from: date))
+                year: context.component(.year, from: date),
+                month: context.component(.month, from: date),
+                day: context.component(.day, from: date))
         }
-        func instant(_ value: LocalDate) throws -> Date {
+        func instant(_ value: LocalDate, in context: Calendar) throws -> Date {
             guard (1...9999).contains(value.year),
-                let date = calendar.date(
+                let date = context.date(
                     from: DateComponents(year: value.year, month: value.month, day: value.day)),
-                local(date) == value
+                local(date, in: context) == value
             else { throw CalendarPaycycleError.invalidDate }
-            return calendar.startOfDay(for: date)
+            return context.startOfDay(for: date)
         }
-        let first = try instant(start)
+        let first = try instant(start, in: calendar)
+        // Advance date labels before resolving the zone: some zones skip a whole civil date.
+        let firstDate = try instant(start, in: dates)
         let candidate: Date?
         switch cadence {
-        case .weekly: candidate = calendar.date(byAdding: .day, value: 7, to: first)
-        case .biweekly: candidate = calendar.date(byAdding: .day, value: 14, to: first)
+        case .weekly: candidate = dates.date(byAdding: .day, value: 7, to: firstDate)
+        case .biweekly: candidate = dates.date(byAdding: .day, value: 14, to: firstDate)
         case .semimonthly:
             guard start.day == 1 || start.day == 16 else {
                 throw CalendarPaycycleError.unsupportedCutoff
             }
             candidate =
                 start.day == 1
-                ? calendar.date(byAdding: .day, value: 15, to: first)
-                : calendar.dateInterval(of: .month, for: first)?.end
+                ? dates.date(byAdding: .day, value: 15, to: firstDate)
+                : dates.dateInterval(of: .month, for: firstDate)?.end
         case .manual:
             guard let manualEnd, manualEnd >= start else { throw CalendarPaycycleError.invalidDate }
-            candidate = try calendar.date(byAdding: .day, value: 1, to: instant(manualEnd))
+            _ = try instant(manualEnd, in: calendar)
+            candidate = try dates.date(byAdding: .day, value: 1, to: instant(manualEnd, in: dates))
         }
         guard let candidate else { throw CalendarPaycycleError.invalidDate }
-        // Calendar addition can retain 01:00 when the starting midnight was skipped.
-        // A paycycle ends at the first instant of its ending date, not that retained hour.
-        let end = calendar.startOfDay(for: candidate)
-        guard end > first, (1...9999).contains(local(end).year),
-            let previous = calendar.date(byAdding: .day, value: -1, to: end)
+        let endingDate = local(candidate, in: dates)
+        let end = try instant(endingDate, in: calendar)
+        guard end > first,
+            let previous = dates.date(byAdding: .day, value: -1, to: candidate)
         else { throw CalendarPaycycleError.invalidDate }
         return CalendarPaycycleWindow(
-            start: start, lastDate: local(previous), endExclusive: local(end),
+            start: start, lastDate: local(previous, in: dates), endExclusive: endingDate,
             startEpochSeconds: Int64(first.timeIntervalSince1970),
             endEpochSeconds: Int64(end.timeIntervalSince1970),
             timeZoneIdentifier: timeZoneIdentifier)

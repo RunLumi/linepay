@@ -65,6 +65,7 @@ export function paycycleWindow({
       manualEndDate >= startDate,
       "The last date must not precede the first.",
     );
+    firstInstant(manualEndDate, timeZone);
     endExclusive = addDays(manualEndDate, 1);
   } else throw Error("Select a supported paycycle.");
   const endDate = addDays(endExclusive, -1);

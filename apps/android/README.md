@@ -14,6 +14,9 @@ backend, analytics collector or shared Swift runtime is introduced.
   A scoped gross paycheck assessor requires complete work and an explicit gross basis, preserves
   separately confirmed per diem and returns review states for unresolved facts/rules. Hourly
   paystub-line mapping and period matching are not implemented by this assessor.
+- `CalendarPaycycle`: weekly/biweekly/semi-monthly/custom calendar windows in an explicit zone,
+  exact start/exclusive-end instants, date-label arithmetic across whole-day timezone changes and
+  refusal of nonexistent boundaries. This pure module has no Android UI/state adoption yet.
 - `backup`: JCA password-protected transport matching the shared native/Node/browser vector.
   This module does not decode financial snapshot state, perform restore or retain a password.
 
@@ -44,7 +47,7 @@ from `shared/contracts/`, never copied into the production library.
 
 Current evidence: nineteen shared payroll cases, nine additional pay boundaries, thirteen shared fund cases,
 six additional fund boundaries, sixteen shared gross-comparison cases, three gross-input/immutability
-boundaries, and four backup transport cases, plus thirteen effective-date price/refusal cases passed (83 total). The backup Unicode/tamper tests use
+boundaries, and four backup transport cases, plus thirteen effective-date price/refusal cases, twenty-five shared calendar cases and three additional calendar boundaries passed (111 total). The backup Unicode/tamper tests use
 explicitly public synthetic fixture inputs. No real worker/credential data belongs in tests or logs.
 
 The configured-pay engine has its own `linepay.android.configured-pay/1` provenance. Do not admit

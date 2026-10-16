@@ -5,7 +5,8 @@ store proof remain pending; pure-domain/browser evidence does not close them.
 
 Use [explicit calendar boundaries](../../shared/contracts/paycycles/README.md) for weekly, biweekly,
 semi-monthly and custom windows. Normalize both boundaries to each local date's first instant.
-Calendar day addition must not retain01:00 into a later date when the starting midnight was skipped.
+Date-label addition precedes zone resolution: neither a skipped midnight nor a whole skipped date
+may shift the ending label. Explicit nonexistent start/manual-last/exclusive-end dates refuse instead of normalizing.
 The pure Swift helper reads explicit Gregorian dates/zone and is delegated to by the existing native
 adapter only for new window creation. Its stored window/cadence shape does not change; historical
 windows are not recalculated. A paycycle never implicitly defines a statutory overtime workweek.
@@ -37,7 +38,7 @@ fixture was generated/validated with actual `ddfc768` modules, including a retai
 receipt. No source dates/cadence are backfilled. Container/encryption versions stay1; native state
 admission remains unsupported pending a complete financial migrator.
 
-Verify independent Swift/browser calendar cases, native adapter regression source, wrong/unknown/
+Verify independent Swift/Kotlin/browser calendar cases, native adapter regression source, wrong/unknown/
 matching comparison scope, actual review/save/print evidence and encrypted reset/recovery. Keep
 work dates distinct from payday, fixed payroll zone distinct from device timezone, and local tests
 separate from native App, installed/physical PWA, provider delivery and App Store release evidence.
