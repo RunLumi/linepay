@@ -28,7 +28,7 @@ An implementation, test result, upload, review submission and public release are
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
-| Benefits audit | Native drafts, revisions, originals and reports implemented; focused QA passed | Final region-recovery and broad native/release checks; physical provider transfer remains separate |
+| Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Pending | Native transcription → editable draft → explicit confirmation |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
@@ -513,3 +513,27 @@ created; describe and verify each property separately.
   and the actual handle/process on resume; the final Release/coverage result is not yet claimed.
   Preserve this exact candidate and all earlier failing/skipped evidence. Full v2 / App Store
   submission and manual public release remain incomplete, with the rest of the work ledger intact.
+
+## Completed benefits gate and current delivery boundary
+
+- Final canonical `agent-verify.sh ios` **passed** (exec `34159`, exit 0), including strict Swift
+  formatting, privacy checks, 128 domain tests, 74 repository tests, Xcode generation/lockfile
+  preservation, simulator app/UI tests and the generic Release Simulator build.
+- Finalized `.build/v2-benefits-verified-gate-20261016/AppTests.xcresult`: **324 cases total,
+  323 passed, 0 failed, 1 skipped**. The only skip is the deliberately opt-in store-screenshot
+  fixture. All 300 app tests and all critical UI journeys actually executed, including the three
+  benefits methods, real Files destination and all largest-text rule scopes. Source app code is
+  the committed benefits checkpoint `cd267f2`; later native commits were task-record only.
+- Website code `0ddbb02` remains local in its isolated checkout. The attempted command to push
+  `codex/v2-plan-consistency` and create a PR in `RunLumi/linepaycheck.com` was **rejected before
+  execution by automatic approval review**: the exact remote destination/branch publication had
+  not been explicitly authorized. Do not bypass via another tool or deploy the same private source
+  indirectly. Asked the owner asynchronously to approve that exact push/PR/merge and deployment
+  to Worker `linepaycheck-com` / `linepaycheck.com`; no reply or approval is assumed.
+- No website push, PR, deployment, iOS archive, App Store upload/submission or new public app
+  release has occurred. The full v2 goal remains active; independent native work is available.
+  Next: implement content-free, device-local funnel milestones and manual diagnostic export,
+  without a collector or restoring diagnostic observations as historical install/conversion facts.
+- All verification processes from the benefits gate are terminal. The preview server was already
+  stopped. Revalidate clean checkouts and exact evidence on resume; keep earlier failed and skipped
+  results distinct from this final passing gate.
