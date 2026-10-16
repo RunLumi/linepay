@@ -680,3 +680,22 @@ created; describe and verify each property separately.
   a pass. Guide build/search/freshness (55 mapped sources), docs and legal checks passed.
 - Website exact push/PR/deploy approval and physical iPhone availability remain unanswered; neither
   is assumed. Native branch is local and App Store version remains unchanged. Overall v2 active.
+
+- Protected-backup implementation checkpoint committed as `426f237`. The pre-commit secret hook
+  initially rejected inline **synthetic** test password constants. Without disabling/bypassing it,
+  tests were changed to load explicitly public fixture inputs from the shared vector; commit then
+  passed. Added the same test-only vector resource to the UI-test target. No production code
+  changed after the full gate began. The loader/resource change needs a focused rerun after the
+  live gate finishes; do not regenerate the Xcode project concurrently with that gate.
+- Finalized vector metadata (adds only public ASCII UI input) has SHA-256
+  `9026839609df397a6cee379084555ad6b3a8d6f48e173cd407f6792b5bc9d1df`; crypto inputs/output remain
+  unchanged. Node and actual Chromium/WebKit conformance were re-run and passed on that file.
+- Added a largest-text/dark-mode mismatched-password UI method **after** the full gate compiled.
+  It is not part of that running binary. Pending follow-up: regenerate Xcode, run
+  BackupEncryptionTests and both EncryptedBackupJourneyTests, inspect final adaptive/error captures,
+  then checkpoint actual results. The only current uncommitted code is that added UI test method.
+- Read-only next-platform assessment: Android remains a placeholder, with native Kotlin/Compose
+  and independent shared-contract fixtures required. The owner's explicit all-stages decision
+  authorizes beginning it despite the old demand gate. Existing Android SDK directory and Temurin
+  21/24 JDKs are present; no Android scaffold, emulator, runtime installation or device change was
+  made. Native Android/PWA workflows are still pending, not established by browser crypto parity.
