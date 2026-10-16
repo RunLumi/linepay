@@ -30,7 +30,10 @@ transient in private browsing. Persistent storage is a user-requested hint, not 
    not save. Separately confirm to append an immutable check; editing work never changes that check.
 6. Close a period to freeze its work/rules/calculation. History keeps the original calculation and
    check snapshots. The app can append a later confirmed paycheck check to the same closed facts.
-7. Download a password-protected copy. Verify actual file delivery in the location you chose.
+7. Open Benefits to check a separate fund period. Enter explicit eligible segments, bases/rates and
+   effective-scope confirmations. Review before saving. A later statement or correction appends a
+   new revision, retaining the original unknown/confirmed observations and source-reference note.
+8. Download a password-protected copy. Verify actual file delivery in the location you chose.
    Unlock/inspect a selected copy, then separately confirm replacement. Wrong passwords, unsupported
    state and concurrent writes leave current records unchanged.
 
@@ -41,14 +44,16 @@ arithmetic and occurrence indices use safe integer Numbers. The nineteen shared 
 cases cover daily tiers, breaks, local midnight, DST, isolated/split callout minima, highest weekday
 premia, separate per diem and exact-second cent boundaries. Rounding occurs by category/multiplier,
 with deterministic remainder allocation. Sixteen shared configured-gross comparison cases verify
-scope/review behavior; the legacy-rounding case tests a saved-result review flag, not legacy-price
+scope/review behavior. Thirteen shared fund cases independently verify separate employer
+contributions, one fund-total rounding, raw statement precision, unknowns, mixed bases and
+incompatible scope. The legacy-rounding case tests a saved-result review flag, not legacy-price
 production or admission of native legacy snapshots.
 
 This first web engine rejects schedules, date-specific premiums, off-schedule multipliers and legacy
 production rounding. It supports one confirmed snapshot per period, not effective-date transitions.
 Daily tier boundaries must resolve to whole elapsed seconds; smaller boundaries need review.
 Work instants are whole seconds from 2000–2099; each entry is at most 72 elapsed hours. It does not
-implement weekly entitlement, complete CBA coverage, paid-equivalent/hourly paystub mapping, benefits,
+implement weekly entitlement, complete CBA coverage, paid-equivalent/hourly paystub mapping, complete benefit/eligibility rules,
 OCR/agreement imports, voice, evidence originals, resolution/PDF reports, commerce or localization.
 These remain part of the full v2 objective, not silently waived by this preview.
 
@@ -58,21 +63,27 @@ browser retention. Unknown formats/fields, conflicting definitions for one rule 
 calculations/assessments fail closed.
 Future engine versions must retain readable historical semantics or implement an explicit migration;
 never change a saved result silently. Limits: 8 MiB payload, 100 profiles/periods, 10,000 work records
-including audit snapshots and 1,000 checks. State validation independently reproduces same-version
+including audit snapshots and 1,000 paycheck checks. Fund history is bounded to 100 checks,
+100 revisions per check (1,000 total) and 10,000 eligibility segments; the editor allows 100 segments
+per revision. State validation independently reproduces same-version
 receipts without overwriting them.
 
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 1. **Native snapshots are rejected** until
+version 1 with `com.streamentry.linepay.web.state` version 2. Known web state v1 migrates explicitly
+by adding empty fund history after validating all existing records; unknown fields/versions are
+rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
+check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
+commit `192cab9` source. Actual encrypted old-version recovery is tested in both browsers.
+**Native snapshots are rejected** until
 an explicit complete financial-state migrator exists. Matching encryption is not state portability.
 Browser download evidence does not establish actual OS Files/iCloud delivery or two-device restore.
 
 ## Real browser verification
 
 Use the pinned `requirements-test.txt` in an isolated developer Python environment with the selected
-browser available. This
-repository does not install runtimes automatically. The harness starts/stops its own ephemeral
+browser available. The local harness does not install runtimes automatically. The harness starts/stops its own ephemeral
 loopback origin, uses synthetic data and the public backup-fixture password, and saves captures and
 reports to ignored `.build/web-e2e/`:
 
@@ -81,7 +92,8 @@ BROWSER=chromium CHROMIUM_EXECUTABLE=/path/to/chrome python3 apps/web/tests/brow
 BROWSER=webkit python3 apps/web/tests/browser_e2e.py
 ```
 
-It covers actual forms, immutable history, downloaded encrypted recovery, wrong-password refusal,
+It covers actual wage/fund forms, immutable revisions, material-edit confirmation invalidation,
+downloaded encrypted recovery, old-version migration, wrong-password refusal,
 inspection-before-replacement, stale-tab conflict, narrow/dark/enlarged text and offline reload with
 the real origin stopped plus a fresh no-worker negative control. There is no response interception.
 [Playwright WebKit issue 42775](https://github.com/microsoft/playwright/issues/42775) explains why its
@@ -93,3 +105,11 @@ The home-screen PNG is copied unchanged from the repository’s existing native 
 The local-browser GitHub workflow runs the same domain and two-browser commands on changes to this
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
+
+The 65 Node checks include the same nineteen pay, sixteen gross and thirteen fund fixtures consumed
+by the independent native clients, plus bounded-input, history/migration and cipher checks. Shared
+fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
+hours or overtime; optional source notes remain worker-provided, without original-file or third-party
+verification. Fund differences never change cash wages or the wage verdict. Fund arithmetic refuses more than 38 significant digits rather than silently rounding inputs;
+large exact internal totals are not reparsed through the bounded entry parser. Statement differences
+retain actual decimal precision rather than using the wage-comparison cent rounding policy.

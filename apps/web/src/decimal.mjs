@@ -67,7 +67,7 @@ export class Decimal {
   }
   text() {
     let power = 1n;
-    for (let scale = 0; scale <= 12; scale++, power *= 10n)
+    for (let scale = 0; scale <= 26; scale++, power *= 10n)
       if (power % this.d === 0n) {
         const value = unitsText(this.n * (power / this.d), scale);
         return value.includes(".")

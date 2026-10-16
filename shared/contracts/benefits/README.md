@@ -3,7 +3,7 @@
 [Shared contracts](../README.md)
 
 `confirmed-fund-v1.json` is independent synthetic arithmetic and comparison-scope evidence, consumed
-by Swift and Kotlin. It does not establish actual eligibility, agreement authority, contribution
+by Swift, Kotlin and the browser client. It does not establish actual eligibility, agreement authority, contribution
 remittance, a debt, recovery, statutory fringe coverage or a working client UI.
 
 One calculation has one fund, currency and explicit complete contribution period. Period dates use
@@ -34,5 +34,7 @@ inconsistent snapshots, fixed-scope misuse and invalid observations. These cases
 agreement or platform parity.
 
 Verify the native corpus with `bash scripts/agent-verify.sh quick`; use the pinned commands in
-[Android](../../../apps/android/README.md) for the independent JVM consumer. Simulator/device,
+[Android](../../../apps/android/README.md) for the independent JVM consumer. The browser consumer
+runs with `node --test apps/web/tests/benefits.test.mjs` from the repository root; its actual local
+workflow/state/recovery checks are documented in [web](../../../apps/web/README.md). Simulator/device,
 persistence/restore, source rights and release evidence remain separate requirements.

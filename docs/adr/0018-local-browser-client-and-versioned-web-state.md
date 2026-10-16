@@ -27,10 +27,28 @@ before preview; only a separate explicit replace commits it, under the same revi
 fields/versions and inconsistent retained receipts fail closed. Keep bounded payload/history limits.
 
 Web backups use the shared authenticated password envelope but a deliberately separate versioned
-financial-state format (`com.streamentry.linepay.web.snapshot`, web state v1). Native snapshots must
+financial-state format (`com.streamentry.linepay.web.snapshot`, initially web state v1). Native snapshots must
 be rejected until a full, reviewed schema migration can preserve every relevant pay/evidence record.
 Matching encryption does not prove financial portability. Passwords remain transient; no recovery
 backend or key storage is introduced. A requested download is not a verified provider-save receipt.
+
+## Web state v2: confirmed fund history
+
+The same snapshot-container version 1 now contains web state v2, adding separate `benefitChecks`.
+Each fund/period has append-only revisions retaining exact eligibility segments, effective rule
+snapshots, source-reference note, reviewed statement facts, calculation provenance and unrounded
+statement differences. It cannot alter wage calculations/verdicts. Material eligibility/scope edits
+clear the relevant confirmation; statement edits clear source confirmation and all edits invalidate
+an unsaved preview. Corrections require another explicit review/save, never in-place replacement.
+
+Decode known web state v1 by checking its exact original keys, copying every existing record and
+adding only empty fund history before complete v2 validation. Reading this migration does not write
+storage, change revision or reprice historical wages. Unknown v1 fields must fail rather than be
+silently dropped. Actual restore still uses the target database's monotonic revision guard. The
+frozen synthetic v1 fixture was generated/validated with commit `192cab9` modules; Node and actual
+encrypted browser restore verify original calculation/check/profile preservation. New schema limits
+bound checks/revisions/segments within the existing 8 MiB payload cap. Case-insensitive UUID rule
+identity cannot hide a changed definition across revisions. Native snapshot admission remains pending.
 
 The service worker caches only an explicit versioned app-shell allowlist. It never caches user data
 or arbitrary fetches. New workers wait for old clients to close; do not force activation/reload of

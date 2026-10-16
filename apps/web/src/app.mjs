@@ -1,5 +1,6 @@
 import { calculate, localCandidates, localDate } from "./payroll.mjs";
 import { assess } from "./assessment.mjs";
+import { renderBenefitUI } from "./benefits-ui.mjs";
 import {
   openStore,
   emptyState,
@@ -8,6 +9,8 @@ import {
   inspectSnapshot,
 } from "./state.mjs";
 import { encryptBackup, decryptBackup } from "./backup.mjs";
+let fundSelection = null,
+  fundEditing = false;
 let state,
   store,
   tab = "pay",
@@ -83,8 +86,48 @@ function render() {
   if (tab === "profile") renderProfiles();
   else if (tab === "history") renderHistory();
   else if (tab === "backup") renderBackup();
+  else if (tab === "benefits") renderBenefits();
   else renderPay();
   bind();
+}
+function renderBenefits() {
+  renderBenefitUI({
+    container: main,
+    state,
+    selection: fundSelection,
+    editing: fundEditing,
+    run,
+    uid,
+    now,
+    onNew: () => {
+      if (busy) return;
+      fundSelection = null;
+      fundEditing = true;
+      render();
+    },
+    onSelect: (id) => {
+      if (busy) return;
+      fundSelection = id;
+      fundEditing = false;
+      render();
+    },
+    onEdit: () => {
+      if (busy) return;
+      fundEditing = true;
+      render();
+    },
+    onSave: async (check, revision) => {
+      await commit((s) => {
+        const existing = s.benefitChecks.find((c) => c.id === check.id);
+        if (existing) existing.revisions.push(revision);
+        else s.benefitChecks.push({ ...check, revisions: [revision] });
+      });
+      fundSelection = check.id;
+      fundEditing = false;
+      render();
+      message("Fund check saved separately from wages.");
+    },
+  });
 }
 function renderProfiles() {
   const latest = state.profiles.at(-1);
@@ -163,7 +206,7 @@ function resolveClock(text, zone, occurrence = "") {
   return utc(choices.length === 1 ? choices[0] : choices[Number(occurrence)]);
 }
 function bind() {
-  main.querySelectorAll("form").forEach((form) =>
+  main.querySelectorAll("form:not(#fund-form)").forEach((form) =>
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       run(() => submit(form));
@@ -365,12 +408,14 @@ async function submit(form) {
       for (const element of form.elements) element.disabled = false;
     }
     main.querySelector("#restore-preview").innerHTML =
-      `<div class="preview"><h2>Backup inspected; records unchanged</h2><p>${pendingRestore.profiles.length} profile(s), ${pendingRestore.periods.length} period(s), ${pendingRestore.periods.reduce((n, p) => n + p.audits.length, 0)} saved check(s).</p><p>Replacing removes this browser’s current records. Export them first if you need to keep them.</p><button class="danger" id="confirm-restore">Replace with inspected backup</button></div>`;
+      `<div class="preview"><h2>Backup inspected; records unchanged</h2><p>${pendingRestore.profiles.length} profile(s), ${pendingRestore.periods.length} period(s), ${pendingRestore.periods.reduce((n, p) => n + p.audits.length, 0)} saved paycheck check(s), ${pendingRestore.benefitChecks.length} fund check(s).</p><p>Replacing removes this browser’s current records. Export them first if you need to keep them.</p><button class="danger" id="confirm-restore">Replace with inspected backup</button></div>`;
     document.querySelector("#confirm-restore").onclick = () =>
       run(async () => {
         if (!pendingRestore) throw Error("Inspect the backup again.");
         state = await store.write(pendingRestore, state.revision);
         selection = null;
+        fundSelection = null;
+        fundEditing = false;
         render();
         message("Inspected web backup restored in this browser.");
       });

@@ -33,7 +33,7 @@ An implementation, test result, upload, review submission and public release are
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
-| Full PWA | Initial local workflow implemented and browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
+| Full PWA | Local wage/fund workflows and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 70 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
@@ -1007,3 +1007,63 @@ created; describe and verify each property separately.
   quoted prose in the file-writing command as install targets; verified the actual Playwright
   1.55.0 release at primary PyPI (August 28, 2025, all file SHA-256 metadata present) before using
   the normal patch tool for the file-only edit. No local browser/runtime install was performed.
+
+
+## Browser fund workflow, immutable revisions and schema-v1 recovery
+
+- Entry was clean `192cab9`; the previous goal turn made concrete progress with the local browser
+  payday/recovery client. Continued the original all-stage objective by adding the separate fund
+  workflow rather than treating that first client journey as full PWA delivery.
+- Pure `linepay.web.confirmed-benefit/1` consumes all **13 shared fund fixtures** independently of
+  Swift/Kotlin. Confirmed hour/day/percentage/fixed-period rules multiply explicit eligible quantities;
+  raw components sum before one fund-total rounding. Mixed bases do not sum units. Fund, dates,
+  timezone and currency must be comparable; missing/unconfirmed statements and units-only results
+  preserve unknown amounts. Statement precision is retained: 350 minus 350.001 is **-0.001**.
+- Added actual browser Benefits navigation/editor: independent contribution period and timezone,
+  named fund/currency, explicit eligibility segments and effective-scope confirmation, source-reference
+  note, optional confirmed/unconfirmed statement observations, review-before-save and append-only
+  revisions. No wage-hour/OT mapping or eligibility is inferred. Wage records/verdicts never change.
+  Material segment/scope changes clear rate/completeness confirmations; source changes clear source
+  confirmation. All material edits discard the unsaved preview. References render as text, not markup.
+- New web state **v2** retains separate fund checks/revisions and validates all retained inputs/results.
+  Known v1 is checked against its exact original keys, copied and augmented only with empty fund
+  history; reading migration does not persist, advance revision or reprice wages. Unknown v1 fields
+  and future versions fail closed. Snapshot container/encryption stay v1; native snapshots still fail
+  deliberately until an actual full financial-state migrator exists. ADR 0018 records the schema change.
+- Frozen `apps/web/tests/fixtures/web-state-v1.json` was generated and validated through the actual
+  `192cab9` modules copied into ignored `.build/web-v1-reference/`, not merely a guessed old object.
+  It retains a synthetic closed 400-wage result and 25 possible-difference check. The first generator
+  attempted to reuse a dotted shared-contract rule ID outside the v1 browser identity grammar and
+  failed before writing; replaced it with an explicit synthetic allowed ID and verified against the
+  actual v1 validator. All original profiles/work/calculations/assessments survive migration tests.
+- Added negative/capacity regressions: eligibility confirmation, overlapping/duplicate segments,
+  immutable rule definition (including uppercase UUID alias), fixed-scope misuse, negative/invalid
+  observations and currency mismatch. Exact decimal products preserve 26 fractional places; more
+  than 38 significant digits require review. Large exact totals stay internal rationals instead of
+  being reparsed through the bounded input grammar. These are bounded parity checks, not complete
+  native Decimal-capacity/legal equivalence.
+- Final **65 Node tests passed**, no failures/skips, log
+  `/private/tmp/linepay-v2-web-fund-domain-final.log`: 19 shared pay, 16 shared gross, 13 shared fund
+  plus meaningful money/time/refusal/state/migration/crypto cases. Required quick gate passed:
+  **74 repository tests, strict Swift formatting, 131 domain tests in 19 suites**, log
+  `/private/tmp/linepay-v2-web-fund-quick.log`. No native production source changed.
+- Final actual Chromium **155.0.8059.85** and WebKit **26.0** each passed **15 browser checks**,
+  including eligibility/source re-confirmation, 350 missing-statement expectation, later 350.001
+  statement producing -0.001 without changing the first revision or cash wages, encrypted download,
+  wrong-password no-mutation, destructive synthetic reset and exact v2 recovery, actual encrypted
+  v1 inspect-before-replace/migration, stale-tab refusal, and real stopped-origin offline history.
+  A fresh no-worker control fails against the stopped origin; requests are only same-origin shell
+  GETs. An actual offline percentage editor separately shows 61.73 expected from 5% of 1234.56,
+  labels quantity as eligible earnings with currency, and leaves saved records unchanged on preview.
+- Reports/captures `.build/web-e2e/{chromium,webkit}/`; final logs
+  `/private/tmp/linepay-v2-web-fund-{chromium,webkit}-final3.log`. Inspected the enlarged dark fund
+  and percentage viewports: 350.00 / 350.001 / -0.001 remain visibly distinct, and eligible earnings
+  are displayed as USD 1234.56, not a percent or hour count. Initial browser run caught a missing
+  Benefits navigation button after a text replacement missed formatted HTML; fixed the actual
+  entry point and reran without weakening selectors/assertions. Failure log retained separately.
+- Source-reference notes remain worker-provided; originals, verified source rights/eligibility,
+  timing/fringe compliance and deductions are not added by this workflow. Full PWA feature/state
+  parity, native interchange, installed/physical PWA, localization, source/evidence/report/OCR/voice/
+  resolution and commerce work remain. No runtime/SDK install, new device, remote push/deploy,
+  archive/upload/submission or public release occurred. Full v2/release completion remains unproven;
+  the original goal stays active while independent implementation can continue.

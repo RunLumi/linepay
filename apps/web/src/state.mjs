@@ -1,12 +1,18 @@
 import { calculate, localDate, epoch } from "./payroll.mjs";
 import { assess } from "./assessment.mjs";
+import {
+  calculateContributions,
+  contributionRuleDefinition,
+  validateContributionPeriod,
+} from "./benefits.mjs";
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 1,
+  version: 2,
   revision: 0,
   profiles: [],
   periods: [],
+  benefitChecks: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -96,9 +102,16 @@ export function validateState(state) {
     encoder.encode(JSON.stringify(state)).length <= 8388608,
     "Saved data exceeds 8 MiB.",
   );
-  keys(state, ["format", "version", "revision", "profiles", "periods"]);
+  keys(state, [
+    "format",
+    "version",
+    "revision",
+    "profiles",
+    "periods",
+    "benefitChecks",
+  ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 1,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 2,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -217,7 +230,142 @@ export function validateState(state) {
     totalWork <= 10000 && totalAudits <= 1000,
     "Backup exceeds supported history limits.",
   );
+  need(
+    Array.isArray(state.benefitChecks) && state.benefitChecks.length <= 100,
+    "Too many saved fund checks.",
+  );
+  const fundRules = new Map();
+  let fundRevisions = 0,
+    eligibilitySegments = 0;
+  const periodShape = (value) => {
+    keys(value, ["start", "endExclusive", "timeZone"]);
+    validateContributionPeriod(value);
+  };
+  for (const check of state.benefitChecks) {
+    keys(check, ["id", "fundID", "name", "currency", "period", "revisions"]);
+    unique(check.id);
+    identity(check.fundID);
+    need(
+      typeof check.name === "string" &&
+        check.name.trim().length > 0 &&
+        check.name.length <= 120 &&
+        /^[A-Z]{3}$/.test(check.currency),
+      "Confirm the fund name and currency.",
+    );
+    periodShape(check.period);
+    need(
+      Array.isArray(check.revisions) &&
+        check.revisions.length > 0 &&
+        check.revisions.length <= 100,
+      "A fund check needs a retained revision.",
+    );
+    fundRevisions += check.revisions.length;
+    for (const revision of check.revisions) {
+      keys(revision, [
+        "id",
+        "createdAt",
+        "sourceReference",
+        "segments",
+        "completeEligibilityConfirmed",
+        "rounding",
+        "statement",
+        "result",
+      ]);
+      unique(revision.id);
+      epoch(revision.createdAt);
+      need(
+        typeof revision.sourceReference === "string" &&
+          revision.sourceReference.length <= 2000,
+        "Source reference is too long.",
+      );
+      keys(revision.rounding, ["scale", "mode", "scope"]);
+      need(
+        Array.isArray(revision.segments) &&
+          revision.segments.length > 0 &&
+          revision.segments.length <= 1000,
+        "Invalid eligibility segment list.",
+      );
+      eligibilitySegments += revision.segments.length;
+      for (const segment of revision.segments) {
+        keys(segment, [
+          "id",
+          "period",
+          "rule",
+          "quantity",
+          "eligibilityConfirmed",
+        ]);
+        periodShape(segment.period);
+        const r = segment.rule;
+        keys(r, [
+          "id",
+          "fundID",
+          "version",
+          "basis",
+          "rate",
+          "currency",
+          "effectivePeriod",
+        ]);
+        periodShape(r.effectivePeriod);
+        need(
+          r.fundID.toLowerCase() === check.fundID.toLowerCase() &&
+            r.currency === check.currency,
+          "A saved fund revision changed fund or currency.",
+        );
+        const definition = contributionRuleDefinition(r);
+        const ruleIdentity = r.id.toLowerCase();
+        need(
+          !fundRules.has(ruleIdentity) ||
+            fundRules.get(ruleIdentity) === definition,
+          "One saved fund rule has conflicting immutable definitions.",
+        );
+        fundRules.set(ruleIdentity, definition);
+      }
+      if (revision.statement !== null) {
+        keys(revision.statement, [
+          "fundID",
+          "currency",
+          "period",
+          "employerContribution",
+          "quantity",
+          "quantityBasis",
+          "confirmed",
+        ]);
+        periodShape(revision.statement.period);
+      }
+      const result = calculateContributions({
+        period: check.period,
+        segments: revision.segments,
+        completeEligibilityConfirmed: revision.completeEligibilityConfirmed,
+        rounding: revision.rounding,
+        statement: revision.statement,
+      });
+      need(
+        JSON.stringify(result) === JSON.stringify(revision.result),
+        "A saved fund result no longer matches its recorded facts. Nothing was replaced.",
+      );
+    }
+  }
+  need(
+    fundRevisions <= 1000 && eligibilitySegments <= 10000,
+    "Fund history exceeds supported limits.",
+  );
   return state;
+}
+// Known v1 had no fund records. Validate every existing record after adding only an empty field.
+// Reading does not write back, change revision or reprice any saved wage calculation/check.
+export function decodeState(state) {
+  if (
+    state?.format === "com.streamentry.linepay.web.state" &&
+    state.version === 1
+  ) {
+    keys(state, ["format", "version", "revision", "profiles", "periods"]);
+    return validateState({
+      ...structuredClone(state),
+      version: 2,
+      benefitChecks: [],
+    });
+  }
+  return validateState(state);
 }
 export function snapshot(state) {
   validateState(state);
@@ -242,7 +390,7 @@ export function inspectSnapshot(bytes) {
       payload.version === 1,
     "This is not a supported web snapshot. Native snapshots need a future explicit migration.",
   );
-  return validateState(payload.state);
+  return decodeState(payload.state);
 }
 export function openStore() {
   return new Promise((resolve, reject) => {
@@ -266,7 +414,7 @@ export function openStore() {
             };
             tx.oncomplete = () => {
               try {
-                done(validateState(result));
+                done(decodeState(result));
               } catch (e) {
                 fail(e);
               }
