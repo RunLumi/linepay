@@ -82,6 +82,18 @@
 | BR-056 | Reports are scoped evidence receipts. | Include period, comparable basis, creation time, rule/engine references, confirmation state, and limitations; originals are included only through an explicit option. |
 | BR-057 | Errors and accessibility are product behavior, not cleanup work. | Key actions work with large text/assistive technology; errors say what to do next; private paystub data is not logged or uploaded for diagnosis. |
 
+## Employer benefit contribution checks (v2)
+
+These requirements do not establish end-to-end implementation or legal/project coverage.
+
+| ID | Rule | Acceptance condition |
+|---|---|---|
+| BR-060 | Employer contributions, cash wages, allowances and employee deductions remain distinct. | A benefits difference never changes wage gross, take-home pay or the wage verdict. |
+| BR-061 | Fund identity, eligible units, basis, currency, effective dates and source snapshots are explicit. | No fund membership, OT unit multiplier, qualifying earnings or legal obligation is inferred. |
+| BR-062 | Statement comparison is scoped to the same fund and work period. | Missing statement is unverified; incompatible fund, period, timezone or currency is not comparable. A unit-only result cannot imply an amount match. |
+| BR-063 | Benefits history remains reproducible. | Corrections append revisions; exact eligibility facts, rule snapshots, original observations, engine version and rounding survive backup/restore. |
+| BR-064 | Comparison language preserves unknown coverage. | A match concerns only the confirmed contribution values; caps, eligibility exceptions, contribution timing, project/fringe compliance and employee deductions remain separately identified when unsupported. |
+
 ## Change protocol
 
 A behavioral change cites the affected BR ID and [example](payroll/worked-examples.md), updates scope/evidence when needed, and receives the narrowest meaningful regression test. A new legal rule additionally passes [source approval](payroll/sources.md). Changes to money, history, migration, or subscription boundaries require tests on the candidate code; documentation is not a substitute.

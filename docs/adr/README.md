@@ -13,3 +13,4 @@
 - [0009-calendar-paycycles](0009-calendar-paycycles.md)
 - [0010-worker-recorded-resolution-history](0010-worker-recorded-resolution-history.md)
 - [0011-local-agreement-import](0011-local-agreement-import.md)
+- [0012-confirmed-benefit-contributions](0012-confirmed-benefit-contributions.md)
