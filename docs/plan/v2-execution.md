@@ -840,3 +840,41 @@ created; describe and verify each property separately.
 - Android stage still requires full parity, native UI/state/migrations/history, real snapshot
   adoption, local OCR/voice/commerce choices, localization/accessibility and actual runtime proof.
   iOS physical-device and external publication/release approvals remain pending. Overall goal active.
+
+## Native host setup changed during the run; next required checks
+
+- Gate `69768` finished all 30 UI assertions with **one failure and one intentional skip**; the
+  sole failure is `EncryptedBackupJourneyTests` locating the locally exported synthetic file.
+  All 328 app tests passed. This is not a full gate pass and Release was not reached.
+- Xcode's result finalization then stalled: PID 70425 had zero CPU, both test hosts had exited and
+  result Data stopped advancing at suite completion. Terminated only that driver; session `69768`
+  is terminal (143). Its diagnostic child remained independently alive; do not treat the old gate
+  as live or restart solely from a polling timeout.
+- Strengthened the backup test to require the actual “Saved to your selected location” status
+  before deleting synthetic records, plus retained initial/missing picker screenshots and AX tree.
+  No locator requirement or password/replace assertion was weakened. The change is unverified:
+  focused run `.build/v2-backup-picker-observed-20261017.xcresult` ran **no tests** because devices
+  could not be enumerated. Preserve that environment-failure receipt.
+- Authoritative host state changed from Xcode 27.0 to **Xcode 27.1 (27A9275)**. The on-disk/loaded
+  CoreSimulator is 1171.7, while the new Xcode shim requires 1174.9.2. `-license check` succeeds;
+  `-checkFirstLaunchStatus` exits 69. Only Xcode.app is installed. No test app, launchd_sim or
+  unrelated xcodebuild job was running during inspection.
+- The simctl shim automatically invokes `xcodebuild -runFirstLaunch` on this mismatch. Its child
+  PID 79905 (parent old diagnostic 79881) is waiting in PackageKit AuthorizationCopyRights, proven
+  by a one-second sample. It has NOT completed installation. Asked the owner to complete the macOS
+  administrator component-install prompt. No password is requested or recorded. Keep only that
+  original setup request; duplicate read-query shells/children were stopped (81364/81367/81376 and
+  83444/83454). Read-query session `13318` is terminal (143). Avoid calling the simctl shim again
+  until setup completes, or it will create duplicate authorization prompts.
+- Existing devices/runtimes were not created, erased or installed. Do not change the repo's pinned
+  baseline just because this host updated. After owner setup, verify actual CoreSimulator version,
+  first-launch status and existing device availability before native QA. Then inspect/reproduce
+  the Files failure: save-success receipt, explicit provider/folder/search state and file AX role.
+  Do not assume the failure was caused by the later Xcode update.
+- Android build prerequisites: inspected Google's official command-line-tools page/repository only.
+  No SDK was downloaded or license accepted. Asked the owner to authorize April 28, 2026 Android
+  SDK terms and repository-local Mac ARM CLI 22/API36/Build Tools36.0.0 (no emulator/system image).
+  Exact package IDs use `android-sdk-license`; primary docs require acceptance before download.
+- Meaningful independent work remains: broader JVM benefits/reconciliation/contracts, native app
+  source/state, full PWA, crew templates, localization, verified-source/corpus work and release.
+  These host/publication/input boundaries do not by themselves block the entire goal. Keep it active.

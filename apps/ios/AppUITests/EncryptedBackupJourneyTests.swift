@@ -58,7 +58,11 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         XCTAssertTrue(save.isHittable)
         save.tap()
         XCTAssertTrue(picker.waitForNonExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["backup.status"].firstMatch.waitForExistence(timeout: 10))
+        let savedStatus = app.staticTexts["backup.status"].firstMatch
+        XCTAssertTrue(savedStatus.waitForExistence(timeout: 10))
+        capture("v2-backup-provider-save-status")
+        XCTAssertTrue(
+            savedStatus.label.contains("Saved to your selected location"), savedStatus.label)
         tap("backup.done")
         tap("settings.privacy-data")
         tap("settings.delete-all")
@@ -67,6 +71,7 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         tap("backup.open")
         tap("backup.restore")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
+        capture("v2-backup-restore-picker-initial")
         let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", filename)).firstMatch
         if !file.waitForExistence(timeout: 5) {
             let search = app.searchFields.firstMatch
@@ -75,9 +80,14 @@ final class EncryptedBackupJourneyTests: XCTestCase {
                 search.typeText(filename)
             }
         }
-        XCTAssertTrue(
-            file.waitForExistence(timeout: 15),
-            "The locally saved synthetic backup must be selectable")
+        if !file.waitForExistence(timeout: 15) {
+            capture("v2-backup-restore-file-missing")
+            let tree = XCTAttachment(string: app.debugDescription)
+            tree.name = "synthetic-backup-restore-picker-accessibility"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
+        XCTAssertTrue(file.exists, "The locally saved synthetic backup must be selectable")
         capture("v2-backup-selected-local-file")
         file.tap()
         if picker.exists, picker.buttons["Open"].exists { picker.buttons["Open"].tap() }
