@@ -14,6 +14,10 @@ App Store purchases use Apple’s services. A Files provider can use the network
 
 “Local by default” does not mean exported copies cannot leave the phone, that all services work offline, or that a lost phone’s records can be recovered without a backup. Keep your device and storage accounts appropriately protected.
 
+## Voice input in the v2 development build
+
+Voice work drafts request microphone and speech permission only when you choose to record. English recognition must run on this device; if it is unavailable, use manual entry. A short protected temporary recording is excluded from pay backups and removed on completion/cancellation; abandoned cleanup is retried at next launch. Cleanup problems are disclosed, and **Delete all local data** also retries owned-audio removal. The app adds no background microphone mode or server-recognition fallback. Review the reading and all proposed clock facts before applying them, then save work separately.
+
 ## Device-local activity in the v2 development build
 
 Open **Settings → Device-local activity** to inspect or disable local milestone counts. This ledger records closed event labels, counts and UTC usage days; it does not record pay amounts, payroll dates, names, document text or arbitrary attributes. Nothing is sent to a collector. Existing subscriptions and renewals are observations, not new-customer conversion evidence.

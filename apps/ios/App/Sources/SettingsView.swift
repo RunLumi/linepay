@@ -221,6 +221,9 @@ struct PrivacyDataView: View {
                 Text(
                     "Optional device-local activity stores closed milestone counts and usage days. Review, disable, clear or manually export it from Settings → Device-local activity; nothing is sent to a collector."
                 )
+                Text(
+                    "Voice work drafts request microphone and speech permission for temporary on-device recognition. If local recognition is unavailable, enter work manually; no server fallback is used."
+                )
                 NavigationLink("Read privacy policy") { LegalTextView(kind: .privacy) }
             }
             Section("Original documents") {

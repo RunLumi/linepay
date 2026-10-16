@@ -1,6 +1,6 @@
 # LinePaycheck test contract
 
-[OCR extraction and review evaluation](ocr-evaluation.md) and [local agreement import evaluation](agreement-import.md) record synthetic fixtures and their limits.
+[Voice work verification](voice-work.md), [OCR extraction and review evaluation](ocr-evaluation.md) and [local agreement import evaluation](agreement-import.md) record synthetic fixtures and their limits.
 
 ## What this suite proves
 
@@ -27,6 +27,8 @@ CI uploads the results even on failure when any results exist, for seven days. L
 
 | Production surface | Test ownership | Scope / remaining boundary |
 |---|---|---|
+| LocalActivityLedger / Observation / Diagnostics | LocalActivityTests; SubscriptionBehaviorTests; StoreKitLifecycleTests; LocalActivityJourneyTests | Local-only counts/UTC days, content-free manual export, opt-out/clear, failure isolation, no restore backfill, verified commerce distinctions and actual Files destination/cancellation. No global cohort or event-completeness claim. |
+| VoiceWorkProposal / LocalVoiceCapture / VoiceWorkView | VoiceWorkTests; VoiceWorkJourneyTests; [physical speech checks](voice-work.md) | Explicit work/time proposals, DST/break refusal, actual on-device request flags, scoped temporary-audio cleanup, review/apply/separate save. Typed-input UI evidence is distinct from microphone/recognition accuracy; physical-device speech is pending. |
 | DomainModels.swift | DomainContractTests; existing calculator tests | Constructors, invalid values, duplicate IDs, work/break rules, date ordering, Codable value round trips. Synthesized decoding alone does not validate external data. |
 | BenefitContributions.swift | BenefitContributionTests | Explicit fund/currency/period/basis, exact eligible units and immutable rate snapshots, unrounded components and one fund-total rounding, raw statement precision, absent/incompatible observations, overflow/invalid decoded inputs. Not a legal fringe engine. |
 | BenefitAuditModels / Validation / Operations | BenefitAuditPersistenceTests; BenefitAuditEvidenceTests | Draft/preview/save separation, material-edit confirmation invalidation, append-only corrections, stale-preview/failed-write refusal, locale context, schema-6 migration, actual original-byte backup/restore, source removal, report opt-ins and scoped temporary cleanup. |

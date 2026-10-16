@@ -61,6 +61,7 @@ If paystub scanning exists:
 - [ ] No secrets, real paystubs, or personally identifying wage data exist in repo/test fixtures.
 - [ ] Sensitive values are redacted from application logging.
 - [ ] Data deletion/export behavior is understandable to a user.
+- [ ] If voice work is included, complete [physical on-device speech verification](../../testing/voice-work.md), including offline operation, permissions, interruption, cleanup and explicit-save review; source flags/typed-input UI tests are not sufficient.
 
 ## StoreKit
 

@@ -12,6 +12,7 @@ struct AddWorkView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: WorkDraft
+    @State private var voiceDraft = false
     @State private var errorMessage: String?
     @State private var discardConfirmation = false
     @State private var viewingConflict: WorkEntry?
@@ -186,6 +187,11 @@ struct AddWorkView: View {
                         )
                         .font(.footnote)
                     }
+                }
+
+                Section {
+                    Button("Use a voice work draft") { voiceDraft = true }
+                        .linePayRowAction().accessibilityIdentifier("work.voice")
                 }
 
                 Section("Actual work") {
@@ -367,6 +373,15 @@ struct AddWorkView: View {
         }
         .onChange(of: draft.end) { _, _ in
             separateAdjacentCalloutConfirmed = false
+        }
+        .sheet(isPresented: $voiceDraft) {
+            VoiceWorkView(
+                day: draft.start, timeZoneIdentifier: model.currentTimeZoneIdentifier,
+                periodRange: periodRange
+            ) { proposal in
+                draft = proposal.applying(to: draft)
+                separateAdjacentCalloutConfirmed = false
+            }
         }
         .sheet(item: $viewingConflict) { item in
             NavigationStack {

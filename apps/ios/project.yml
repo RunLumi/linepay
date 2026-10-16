@@ -97,6 +97,8 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
         # Only Apple-provided HTTPS/StoreKit; LinePaycheck adds no encryption of its own.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Record a short work reading on this device for your review. Audio is not sent to a server."
+        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "Read a temporary work recording on this device only. Review all facts before saving work; no server fallback is used."
         INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device for a paycheck audit."
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"

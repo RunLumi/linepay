@@ -942,6 +942,7 @@ final class AppModel {
     }
 
     func resetAllData() throws {
+        try LocalVoiceAudioFiles.removeAll()
         try localActivity.clear()
         // First persist a deletion queue so a failed file removal stays retryable.
         var empty = AppPersistentState()
@@ -962,6 +963,7 @@ final class AppModel {
             return
         }
         // Explicit user-confirmed destructive recovery, never automatic on a decode error.
+        try LocalVoiceAudioFiles.removeAll()
         try localActivity.clear()
         try evidenceStore.deleteAll()
         try TemporaryExports.removeAll()

@@ -30,7 +30,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
-| Voice logging | Pending | Native transcription → editable draft → explicit confirmation |
+| Voice logging | Implemented; focused parser/native UI passed | Full native gate running; actual physical microphone/offline recognition and privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Superseded by explicit local-only owner choice | Encrypted manual backup/restore portability; no account or automatic sync |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
@@ -588,3 +588,31 @@ created; describe and verify each property separately.
   on-device voice capture into an editable work draft with explicit confirmation, never direct
   payroll writes or remote transcription. Re-read platform availability and nearest work-draft
   contracts before implementation.
+
+## Voice work implementation checkpoint
+
+- Added native, capability-checked English capture with a one-minute protected temporary recording,
+  mandatory on-device Speech request, no server fallback, explicit permission actions, bounded
+  transcription wait and foreground/cancellation cleanup. Owned audio is excluded from financial
+  state/backups; startup and all-data deletion retry its removal. ADR 0014 owns this data flow.
+- Added an editable reading and explicit clock-fact proposal, selected local work date/timezone,
+  next-day endpoint markers and required break facts. Ambiguous clocks, DST gaps/folds, overlaps
+  among breaks and extra instructions are rejected. Confirmation applies only to the current work
+  draft; ordinary Save work and existing callout/overlap/period validation remain separate.
+- Seven focused app tests passed in `.build/v2-voice-contract-20261016.xcresult`. Two native typed-
+  reading journeys passed in `.build/v2-voice-ui-review-20261016.xcresult`: synthetic eight hours
+  at USD 50 → USD 400 only after explicit save/relaunch; ambiguous large-text reading stays blocked.
+  Captures exported and inspected. Earlier compilation and toggle-hit failures are retained; the
+  confirmation now uses the established full-row ConfirmationCheckRow.
+- No physical phone appeared in `devicectl list devices`; microphone capture, actual recognition
+  accuracy and offline runtime remain **unproven**. `docs/testing/voice-work.md` gives exact
+  synthetic device checks. No real audio was recorded in the simulator journeys.
+- The reviewed mechanical inventory change is only the two microphone/speech purpose strings in
+  project.yml. No new runtime package, capability, background mode or collector. V2 privacy review
+  remains pending (#22 trigger); the 1.0.5 owner declaration is not reused as new approval.
+- Full canonical native gate is live as exec `22948`, log `/private/tmp/linepay-v2-voice-gate.log`,
+  results `.build/v2-voice-gate-20261016`. It passed all 316 app and 128 domain tests and is
+  progressing through UI journeys. Do not claim its final outcome before completion.
+- Guide build/search/freshness passed (53 mapped sources); docs/legal active-copy/inventory
+  checks passed without implying owner/counsel/release approval. Website publication remains
+  pending the exact remote/branch approval already requested; no push/deployment/store write.

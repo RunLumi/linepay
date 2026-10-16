@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -75,7 +75,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "0a919655439ed2581ba1d37c1827934f41e37a61"
+      "blob": "85176d5434ba25e336b66492d91532177554c477"
     },
     {
       "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",
@@ -176,7 +176,7 @@
         "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "11d2d27b388221493543bf7d5b2caffc21a2841e"
+      "blob": "4fe8b7f9bc8660d15ab10f7904e25e937668f49c"
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -443,8 +443,36 @@
         "privacy-and-deletion",
         "backup-and-restore"
       ],
+      "disposition": "reviewed-no-guide-change",
+      "blob": "5ee58f67ae6e280f2631631e38bbf45b164ffda9",
+      "reason": "Targeted October 16 voice review: process-start cleanup of owned temporary audio; financial backup/restore remains separate."
+    },
+    {
+      "path": "apps/ios/App/Sources/VoiceWorkProposal.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
       "disposition": "reviewed",
-      "blob": "7ccb268ae5da3d80d7248c8e915d220b0f10c76b"
+      "blob": "8e978e38aeed26cac49681ee77085c6b6a85f6fa"
+    },
+    {
+      "path": "apps/ios/App/Sources/VoiceWorkView.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "53d757f30baf124b1fc7926c49ff895796b46be8"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalVoiceCapture.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "bf72fc5ad2b65f6701a63af1e1990c144dd8a2e7"
     }
   ]
 }

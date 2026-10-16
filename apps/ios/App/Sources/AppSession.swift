@@ -30,6 +30,7 @@ final class AppSession {
     }
 
     static func production() -> AppSession {
+        LocalVoiceAudioFiles.removeAbandoned()
         let session: AppSession
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
