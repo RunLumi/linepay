@@ -28,7 +28,7 @@ An implementation, test result, upload, review submission and public release are
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
-| Benefits audit | Pending | Benefits separate from wages; confirmed rates/units; unavailable-statement handling |
+| Benefits audit | Pure domain implemented and tested; native flow in progress | Saved reviews/revisions, migration/backup, UI/source/report journeys |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Pending | Native transcription → editable draft → explicit confirmation |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
@@ -307,3 +307,74 @@ created; describe and verify each property separately.
 - Maestro remains absent. These are XCTest native journeys and adapter receipts, not proof of an
   actual external Files-provider import, physical-camera scan, hosted CI, signed archive or store
   release. Full exact-candidate native/release gates and updated public guide captures remain due.
+
+- Saved implementation as `ee932833e8f8f2fd37d1aae0c1e784ab47a82927` (44 files). No push or
+  store write. The final mixed UI batch again passed largest-text review/relaunch (130.213s),
+  but the existing report journey failed to find Preview after tapping a partially visible export
+  row. It therefore did not run its conditional Release build and is not a passing batch. The
+  driver again stalled finalizing after hosts exited and was terminated.
+- Current in-scope QA repair scrolls the audit export action fully above the actual pinned Pro
+  button, asserts the Prepare report navigation before continuing, and scrolls the frontmost
+  window for the modal fallback. It changes the test, not report consent or app pay behavior.
+  Isolated report check is running in `.build/v2-agreement-report-ui-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-report-ui.log`, exec `34929`; Release build follows only if
+  that succeeds. Check this handle/process on resume; no report or Release PASS is claimed yet.
+
+## Benefits domain and QA continuation
+
+- Previous goal turn made implementation/evidence progress; the later instruction interruption did
+  not authorize a reset. Revalidated checkout `ee93283` and all process handles on resume.
+- Agreement-slice Release Simulator build **passed**, log
+  `/private/tmp/linepay-v2-agreement-release.log`, before the new benefits code. The report privacy
+  options and exact PDF preview were asserted/visually inspected. Its later Files step skipped;
+  this is not an export receipt. Updated the guide's Prepare report PNG with source/device/build
+  provenance, explicitly recording that limit. Guide builds/search/freshness/screenshots, 982 doc
+  links, 5 docs-tool tests and legal inventory checks passed.
+- The interrupted iOS 18 report rerun found Save to Files in the app namespace, then its saved query
+  disappeared after that action. The process is terminal; no largest-text follow-on ran. Guarded
+  against retrying a vanished activity action and included a SpringBoard-hosted Save control.
+  The iOS 26.5 report still skipped its Files step. No successful Files destination claim is made.
+- That iOS 26.5 mixed run also executed **zero** Payday cases despite selecting the largest-text
+  method. Changed the method to the throwing XCTest signature used by existing working journeys;
+  the isolated rerun now actually starts that method. Standardized the remaining 16 nonthrowing
+  test entry points in that file; their discovery/full execution remains to be checked. Never treat
+  a green zero-test selection as acceptance. Current live check: exec `90579`, bundle
+  `.build/v2-agreement-largest26-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-largest26.log`. Revalidate it before any new Simulator job.
+- Added a separate pure employer-contribution model: stable fund identity, immutable rate snapshots,
+  explicit eligible hours/days/earnings/fixed-period amounts, dates/timezone/currency/source context,
+  per-fund rounding, and exact arithmetic failure on overflow/precision loss. Expected wages,
+  allowances and employee deductions are not combined with employer benefits.
+- Missing/unconfirmed statement remains unverified; incompatible fund/date/timezone/currency is not
+  comparable; unit-only and amount-only comparisons disclose their limits. The saved result retains
+  the original statement and rule/fact segments, not just a difference. Fixed amounts cannot be
+  duplicated by splitting the same period.
+- Current benefits quick gate **passed: 74 script tests, strict lint, 125 domain tests in 16 suites**,
+  including 13 new benefits tests. Log `/private/tmp/linepay-v2-benefits-quick.log`. Independent
+  example: 40 × 8.75 = 350; confirmed 35.5 hours and 310.63 gives 4.5 hours and 39.37 possible
+  differences. This is synthetic arithmetic, not a legal entitlement or end-to-end benefits claim.
+- [ADR 0012](../adr/0012-confirmed-benefit-contributions.md) and BR-060–064 state the semantics.
+  Next: local saved benefits draft → explicit review → immutable comparison/revision → source and
+  separate report, with migration/backup/failed-save and native evidence. All other v2 rows and
+  App Store submission/manual public release remain in scope and incomplete.
+
+- Benefits domain checkpoint committed as `db1d894`; native benefits still pending. Final domain
+  review added regressions refusing a fixed monthly amount treated as a weekly contribution and
+  refusing conflicting snapshots with the same rule UUID. These 15 focused tests passed in
+  `/private/tmp/linepay-v2-benefits-domain5.log`; the updated quick gate is running next.
+- The isolated iOS 26.5 largest-text journey **actually executed and passed** (132.586s), finalized
+  `.build/v2-agreement-largest26-20261016.xcresult`. Exported/inspected the real selected unresolved
+  action at accessibility XXXL under `.build/v2-agreement-largest26-attachments/`. The live exec
+  `90579` is now terminal. No Simulator test process remains from these batches.
+- Standardized XCTest signatures still need the full suite's actual case inventory checked before
+  release; do not generalize one discovered/passing method to all newly discoverable methods.
+  The report Files destination remains unproven: the iOS 26 mixed batch skipped it. Retain that
+  explicit limitation and repair/inspect the actual runtime activity destination in final QA.
+
+- Final benefits quick gate **passed: 127 tests in 16 domain suites, 74 repository tests and strict
+  Swift lint**, log `/private/tmp/linepay-v2-benefits-quick-final.log`. Final doc links (983), 5
+  docs-tool tests, diff check and legal active-copy/inventory also passed. This does not replace
+  the final native/StoreKit/release candidate gate after the remaining app changes.
+- All known check handles are terminal at this checkpoint. No branch push, hosted CI, signed
+  archive, App Store upload/submission, or public release has occurred. Continue with the native
+  benefits draft/revision/backup/report vertical slice; preserve all other pending v2 work.

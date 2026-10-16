@@ -23,7 +23,19 @@ final class LegalJourneyTests: XCTestCase {
         scrollTo(scope, maxSwipes: 24)
         XCTAssertTrue(scope.waitForExistence(timeout: 15))
         capture("legal-audit-scope")
-        tap("audit.export")
+        let export = app.buttons["audit.export"].firstMatch
+        scrollTo(export, maxSwipes: 24)
+        let frontmost = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let pinned = app.buttons["audit.view-pro"].firstMatch
+        for _ in 0..<12 {
+            let lowerEdge = pinned.exists ? pinned.frame.minY - 8 : frontmost.frame.maxY - 120
+            if export.exists && export.frame.minY > 140 && export.frame.maxY < lowerEdge { break }
+            let start = frontmost.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.65))
+            start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: -160)))
+        }
+        XCTAssertTrue(export.isHittable)
+        export.tap()
+        XCTAssertTrue(app.navigationBars["Prepare report"].waitForExistence(timeout: 10))
         let preview = app.buttons["report.preview"].firstMatch
         let reportForm = app.scrollViews.firstMatch
         for _ in 0..<12 {
@@ -31,7 +43,7 @@ final class LegalJourneyTests: XCTestCase {
             if reportForm.exists {
                 reportForm.swipeUp()
             } else {
-                app.windows.element(boundBy: 0).swipeUp()
+                app.windows.element(boundBy: max(0, app.windows.count - 1)).swipeUp()
             }
         }
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
@@ -48,8 +60,12 @@ final class LegalJourneyTests: XCTestCase {
         // A screenshot alone also succeeds when ShareLink never opens. Require the actual
         // system activity, then its non-sending Files destination to exercise PDF transfer.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        var saveToFiles = springboard.buttons
-            .matching(NSPredicate(format: "label == %@", "Save to Files")).firstMatch
+        let filesLabel = NSPredicate(format: "label == %@", "Save to Files")
+        // iOS 18 can expose the activity sheet in the app; newer hosts may use SpringBoard.
+        let appFilesAction = app.descendants(matching: .any).matching(filesLabel).firstMatch
+        var saveToFiles =
+            appFilesAction.waitForExistence(timeout: 5)
+            ? appFilesAction : springboard.buttons.matching(filesLabel).firstMatch
         if !saveToFiles.waitForExistence(timeout: 15) {
             // Some hosted iOS 26 share sheets expose the selected Files action only as the
             // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
@@ -71,8 +87,10 @@ final class LegalJourneyTests: XCTestCase {
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
+        let saveInSpringboard = springboard.buttons["Save"].firstMatch
         var saveVisible = false
         for attempt in 0..<2 {
+            guard saveToFiles.exists else { break }
             if saveToFiles.isHittable {
                 saveToFiles.tap()
             } else {
@@ -81,6 +99,7 @@ final class LegalJourneyTests: XCTestCase {
             saveVisible =
                 saveInFiles.waitForExistence(timeout: 15)
                 || saveInShareSheet.waitForExistence(timeout: 15)
+                || saveInSpringboard.waitForExistence(timeout: 15)
             if saveVisible || attempt == 1 { break }
         }
         XCTAssertTrue(

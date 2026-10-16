@@ -85,7 +85,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["pay.check-paycheck"].waitForExistence(timeout: 10))
     }
 
-    func testOnboardingEndsWithDismissibleTrialOffer() {
+    func testOnboardingEndsWithDismissibleTrialOffer() throws {
         launch(scenario: "profile", commerce: true, store: "trial")
         tap("activation.skip-work")
         XCTAssertTrue(app.staticTexts["paywall.trial-headline"].waitForExistence(timeout: 10))
@@ -117,7 +117,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(addWork.waitForExistence(timeout: 10))
     }
 
-    func testTrialOfferKeepsTermsAndFreeExitReachableAtLargestText() {
+    func testTrialOfferKeepsTermsAndFreeExitReachableAtLargestText() throws {
         launch(scenario: "work", commerce: true, store: "trial", largeText: true)
         tab("Settings")
         tap("settings.view-pro")
@@ -132,7 +132,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["settings.view-pro"].firstMatch.waitForExistence(timeout: 10))
     }
 
-    func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() {
+    func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() throws {
         launch(scenario: "unresolved")
         tab("Pay")
         let finish = app.buttons["pay.finish-period"]
@@ -176,7 +176,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Calculation needs review"].waitForExistence(timeout: 10))
     }
 
-    func testAuditVerdictsAndEvidenceRoutes() {
+    func testAuditVerdictsAndEvidenceRoutes() throws {
         for (scenario, verdict) in [
             ("matches", "Gross total matches"),
             ("shortfall", "Possible shortfall"),
@@ -197,11 +197,11 @@ final class PaydayJourneyTests: XCTestCase {
         }
     }
 
-    func testPaycheckFollowUpPersistsWithoutChangingVerdict() {
+    func testPaycheckFollowUpPersistsWithoutChangingVerdict() throws {
         followUpJourney(largeText: false)
     }
 
-    func testPaycheckFollowUpAtLargestText() {
+    func testPaycheckFollowUpAtLargestText() throws {
         followUpJourney(largeText: true)
     }
 
@@ -286,7 +286,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("store-08-history")
     }
 
-    func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() {
+    func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() throws {
         launch(scenario: "matches")
         tab("Pay")
         tap("pay.open-audit")
@@ -301,7 +301,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(value.value as? String, "550")
     }
 
-    func testCancellingWorkSheetsNeverLeavesABlockingDraft() {
+    func testCancellingWorkSheetsNeverLeavesABlockingDraft() throws {
         launch(scenario: "work")
         // Untouched repeat: Cancel leaves nothing behind.
         tap("today.repeat-shift")
@@ -339,7 +339,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["today.repeat-shift"].firstMatch.isEnabled)
     }
 
-    func testDraftRecoveryAndUnsupportedRulePresentation() {
+    func testDraftRecoveryAndUnsupportedRulePresentation() throws {
         launch(scenario: "work")
         tap("today.add-work")
         // Multiline TextField uses a different accessibility type across OS releases.
@@ -361,7 +361,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("unsupported-rule-settings")
     }
 
-    func testLargeTextDarkSettingsAndRecovery() {
+    func testLargeTextDarkSettingsAndRecovery() throws {
         XCUIDevice.shared.appearance = .dark
         launch(scenario: "review", largeText: true)
         capture("large-dark-today")
@@ -388,7 +388,7 @@ final class PaydayJourneyTests: XCTestCase {
             app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
-    func testEditedWorkDraftResumesItsOriginalEntry() {
+    func testEditedWorkDraftResumesItsOriginalEntry() throws {
         launch(scenario: "work")
         tap("today.edit-work")
         let note = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
@@ -413,14 +413,14 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(app.buttons["today.add-work"].label, "Add work")
     }
 
-    func testAgreementImportCanStartBeforeEnteringARate() {
+    func testAgreementImportCanStartBeforeEnteringARate() throws {
         launch()
         tap("onboarding.import-agreement")
         XCTAssertTrue(app.buttons["agreements.choose-pdf"].waitForExistence(timeout: 10))
         capture("v2-agreement-first-run")
     }
 
-    func testAgreementReviewKeepsSourceAndRequiresExplicitActivation() {
+    func testAgreementReviewKeepsSourceAndRequiresExplicitActivation() throws {
         launch(scenario: "agreement")
         openAgreementReview()
         tap("agreement.candidate.baseRate")
@@ -479,7 +479,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("v2-agreement-confirmed-next-period")
     }
 
-    func testAgreementCandidateAtLargestText() {
+    func testAgreementCandidateAtLargestText() throws {
         launch(scenario: "agreement", largeText: true)
         openAgreementReview()
         tap("agreement.candidate.baseRate")
@@ -502,11 +502,11 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(base.exists)
     }
 
-    func testOCRConfidenceStaysAnUnconfirmedReadingWithSourceEvidence() {
+    func testOCRConfidenceStaysAnUnconfirmedReadingWithSourceEvidence() throws {
         ocrConfidenceJourney(largeText: false)
     }
 
-    func testOCRConfidenceAtLargestText() {
+    func testOCRConfidenceAtLargestText() throws {
         ocrConfidenceJourney(largeText: true)
     }
 
@@ -539,7 +539,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertFalse(audit.isEnabled, "An OCR score cannot confirm the dates or gross value")
     }
 
-    func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {
+    func testInterruptedPaycheckReviewRetainsSourceAndCorrection() throws {
         launch(scenario: "intake")
         tab("Pay")
         tap("pay.check-paycheck")

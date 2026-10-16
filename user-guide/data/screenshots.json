@@ -49,18 +49,18 @@
   },
   "prepare-report": {
     "guide": "evidence-and-reports",
-    "source": "LegalJourneyTests.testDefaultReportRequiresPreviewBeforeSharing / legal-default-report-options",
-    "alt": "The Prepare report screen explaining what the default copy includes and excludes, an Include optional source details switch turned off, and a Preview this report button.",
+    "source": "LegalJourneyTests.testDefaultReportRequiresPreviewBeforeSharing / legal-default-report-options; v2-agreement-report-ui-20261016.xcresult; later Files step skipped, not an export receipt",
+    "alt": "Prepare report with both optional source details and follow-up history switches off. The default excludes originals and notes, explains that pay amounts remain sensitive, and requires Preview this report before sharing.",
     "caption": "The default report is minimized; preview it before anything can be shared.",
-    "appVersion": "1.0.4",
-    "appCommit": "e9f23d4",
-    "build": "Debug simulator build of the 1.0.4 (9) source",
-    "ios": "iOS 26.5",
-    "device": "iPhone 11 Pro Max simulator",
+    "appVersion": "1.0.5 (v2 development)",
+    "appCommit": "ee932833e8f8f2fd37d1aae0c1e784ab47a82927",
+    "build": "Debug Simulator build of 1.0.5 (11), unreleased v2 source; report-test scroll repair",
+    "ios": "iOS 18.5",
+    "device": "LinePay Release iPhone 18 simulator",
     "appearance": "light",
     "textSize": "Large (default)",
     "locale": "en_US",
     "fixture": "Synthetic UI-test fixtures (LINEPAY_UI_SCENARIO); no real worker, employer or paystub data",
-    "capturedOn": "2026-10-04"
+    "capturedOn": "2026-10-16"
   }
 }
