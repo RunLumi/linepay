@@ -1,7 +1,6 @@
 # ADR 0015: password-protected manual backups
 
-Status: accepted for owner-authorized local-only v2 work, October 17, 2026. Implementation and native
-verification are in progress; cross-device/provider, Android/PWA restoration and release declarations
+Status: accepted for owner-authorized local-only v2 work, October 17, 2026. Implementation `426f237` passed the full native gate (349 passed, zero failed, one intentional skip) and eight focused crypto/adaptive UI checks; cross-device/provider, Android/PWA restoration and release declarations
 remain separate evidence.
 
 The owner superseded accounts/automatic sync with manual backup and diagnostic exports. Add optional

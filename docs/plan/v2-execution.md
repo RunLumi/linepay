@@ -32,7 +32,7 @@ An implementation, test result, upload, review submission and public release are
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
-| Encrypted sync/account | Accounts/sync superseded; encrypted manual native workflow implemented | Full native gate running; two-device/provider checks and Android/PWA state adoption pending |
+| Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | Pending | Native app plus shared deterministic fixture parity and runtime evidence |
@@ -699,3 +699,28 @@ created; describe and verify each property separately.
   authorizes beginning it despite the old demand gate. Existing Android SDK directory and Temurin
   21/24 JDKs are present; no Android scaffold, emulator, runtime installation or device change was
   made. Native Android/PWA workflows are still pending, not established by browser crypto parity.
+
+## Completed protected-backup verification and first payroll treaty
+
+- Canonical full native gate (exec `12921`) exited 0: **350 total cases, 349 passed, 0 failed,
+  one intentional store-screenshot skip**; 322 app and 128 domain tests, script/privacy/coverage
+  checks, Release Simulator build and lockfile preservation passed. Final result is
+  `.build/v2-encrypted-backup-gate-20261017/AppTests.xcresult`, summary
+  `/private/tmp/linepay-v2-encrypted-backup-summary.json`.
+- After that gate ended, regenerated Xcode for the final public fixture loaders/resource and ran
+  the six crypto tests plus both backup UI methods. All **8 passed** (exec `97102`, exit 0),
+  `.build/v2-encrypted-backup-final-focus-20261017.xcresult`. Actual local Files round trip passed
+  again; largest-text dark mismatch rejected export and preserved synthetic USD 550. Final
+  mismatch, wrong-password and unlocked-preview captures exported and visually inspected under
+  `.build/v2-encrypted-backup-final-focus-attachments`. No iCloud/two-device or store claim.
+- Added the first platform-neutral payroll treaty: fourteen independently calculated synthetic
+  cases covering daily tiers, breaks, midnight, DST, physical callout identity, separate per diem,
+  highest-premium precedence, fractional time rounding and currency. Native consumer verifies
+  category sums, worked time, multipliers, dates and snapshot/source-work references. No production
+  engine code changed. `agent-verify.sh quick` passed **129 domain tests in 17 suites**, including
+  the fourteen-case consumer; final focused run also passed after explicit timestamp/reference
+  assertions. Broader legal/weekly/effective-date/benefits/refusal parity remains pending.
+- Implementation source is `426f237`; its full gate started before test-only fixture-loader changes.
+  The focused follow-up verifies those changes and the added adaptive method. All native jobs are
+  terminal. The total v2 goal, physical-device gates, external approvals and public release remain
+  open. Next: complete shared parity coverage/native clients while retaining every pending stage.

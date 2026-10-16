@@ -106,6 +106,40 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 15))
     }
 
+    func testMismatchedPasswordAtLargestTextDoesNotExportOrChangeWages() throws {
+        let password = try fixturePhrase()
+        continueAfterFailure = false
+        app.terminate()
+        _ = app.wait(for: .notRunning, timeout: 10)
+        XCUIDevice.shared.press(.home)
+        XCUIDevice.shared.appearance = .dark
+        app.launchArguments = [
+            "--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US", "-UIPreferredContentSizeCategoryName",
+            "UICTContentSizeCategoryAccessibilityXXXL",
+        ]
+        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "work"
+        app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
+        app.launch()
+        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 15))
+        app.tabBars.buttons["Settings"].tap()
+        tap("backup.open")
+        tap("backup.protect")
+        enter("backup.password", password)
+        enter("backup.password-confirm", password + " mismatch")
+        tap("backup.password-kept")
+        tap("backup.save")
+        let status = app.staticTexts["backup.status"].firstMatch
+        reveal(status)
+        XCTAssertTrue(status.label.contains("confirmation does not match"))
+        XCTAssertFalse(app.buttons["backup.choose-location"].exists)
+        XCTAssertFalse(app.navigationBars["FullDocumentManagerViewControllerNavigationBar"].exists)
+        capture("v2-backup-large-dark-password-mismatch")
+        tap("backup.done")
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 15))
+    }
+
     private func enter(_ id: String, _ value: String) {
         let field = app.secureTextFields[id].firstMatch
         reveal(field)
