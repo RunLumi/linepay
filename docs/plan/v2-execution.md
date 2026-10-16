@@ -777,3 +777,30 @@ created; describe and verify each property separately.
   `.build/v2-exact-seconds-verified-gate-20261017`. Revalidate it on resume and keep all earlier
   failure evidence. No source arithmetic/history behavior changed after the first gate began;
   the follow-up change is the obsolete copy expectation only.
+
+- Gate `94858` ran 326 app tests with one failure: the unchanged real StoreKit refund test threw
+  local `ASOctaneSupportXPCService` connection error 4097. This is a failed integration receipt,
+  not a passing run. Separately, actual screenshot inspection showed a misleading rounded-hour
+  equation (“0.02 h × $58.50”) beside the correctly calculated minute amount USD 0.98.
+- Cancelled that already-failed run to correct the confirmed display issue. SIGINT stopped hosts;
+  after the same Xcode cancellation error retained its driver, terminated only PID 65588. Session
+  `94858` is terminal (143). No simulator erase/runtime installation. Agent doctor passed with
+  the two known optional tool warnings; that is not StoreKit proof by itself.
+- Display-only duration formatting now shows minutes/seconds and explicit hourly-rate units, with
+  ≈ on normalized quantities. Summary, add/repeat preview, ledger/evidence and PDF formula paths
+  no longer claim that rounded decimal hours multiply exactly into the money result. The money
+  kernel is unchanged by this follow-up. Missing recorded multipliers no longer invent a formula.
+- A first narrow StoreKit method selector selected an empty suite; it did NOT execute refund and
+  is not its proof. Then ran the whole real local StoreKit suite: all seven lifecycle cases actually
+  executed and passed, including refund (0.730s). Duration/report tests also passed: 11 Swift Testing
+  methods across three suites; native corrected-cent/formula journey passed in 22.618s with actual
+  AX label “Regular hours, $0.98, ≈1 min at $58.50/h” and absence of “0.02 h”.
+- Final focused evidence `.build/v2-duration-and-storekit-20261017.xcresult`; log
+  `/private/tmp/linepay-v2-duration-and-storekit.log`; captures exported under
+  `.build/v2-duration-and-storekit-attachments` and visually inspected. New controls/layout remain
+  native. A one-time compile warning from an unused multiplier binding was fixed, not suppressed.
+- Latest quick passed 129 domain tests and 74 repository tests; guide checks passed (58 sources),
+  with current reviewed wording. Fresh comprehensive gate is live as exec `69768`, log
+  `/private/tmp/linepay-v2-precision-duration-gate.log`, result directory
+  `.build/v2-precision-duration-gate-20261017`. Do not claim its outcome before completion. All other
+  native jobs are terminal. Preserve every earlier failed/cancelled receipt distinctly.

@@ -33,6 +33,11 @@ struct ReconciliationReportExporter {
             writer.beginPage()
             writer.title("LinePaycheck paycheck reconciliation")
             writer.text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
+            if calculation.provenance?.engine != "linepay.configured-pay/3" {
+                writer.caption(
+                    "Saved calculation: amounts remain as recorded. A new paycheck review uses current precision."
+                )
+            }
             writer.caption("Payroll timezone: \(timeZoneIdentifier)")
             writer.caption("Report created: \(ISO8601DateFormatter().string(from: created))")
 
@@ -103,11 +108,10 @@ struct ReconciliationReportExporter {
                 writer.text(
                     "\(LinePayFormat.localDate(component.localDate))  \(componentTitle(component))  \(LinePayFormat.money(component.amount))"
                 )
-                if let hours = component.hours {
+                if let hours = component.hours, let multiplier = component.multiplier {
                     let rate = component.baseRate ?? agreement.hourlyRate
-                    let multiplier = component.multiplier ?? 1
                     writer.caption(
-                        "\(LinePayFormat.hours(hours)) \(component.category == .calloutGuarantee ? "paid-hour equivalent" : "hours") x \(LinePayFormat.money(rate)) x \(LinePayFormat.decimal(multiplier))"
+                        "\(LinePayFormat.workDuration(hours)) \(component.category == .calloutGuarantee ? "paid equivalent" : "worked") at \(LinePayFormat.money(rate))/h × \(LinePayFormat.decimal(multiplier))"
                     )
                 }
                 writer.caption(component.explanation)

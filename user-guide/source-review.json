@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -25,9 +25,8 @@
         "getting-started",
         "expected-pay"
       ],
-      "disposition": "reviewed-no-guide-change",
-      "blob": "c6e39c47f3a5de1e36320a0a07666cba4d9f09e4",
-      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
+      "disposition": "reviewed",
+      "blob": "8699fb7afed5684484d6ae79052090b12b56e817"
     },
     {
       "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
@@ -57,7 +56,7 @@
         "troubleshooting"
       ],
       "disposition": "reviewed",
-      "blob": "47e224779bc983adbfde4470013a0434dd22778c"
+      "blob": "ceafa64b830906284216850b817c81c4f4b319b7"
     },
     {
       "path": "apps/ios/App/Sources/TodayView.swift",
@@ -65,9 +64,8 @@
         "getting-started",
         "recording-work"
       ],
-      "disposition": "reviewed-no-guide-change",
-      "blob": "ec49a3abc55c207b126c29b2eeef1f8a57960e40",
-      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
+      "disposition": "reviewed",
+      "blob": "c835ff24611c4ebc3c3a17680ccfad0fd02e35c4"
     },
     {
       "path": "apps/ios/App/Sources/AddWorkView.swift",
@@ -75,7 +73,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "85176d5434ba25e336b66492d91532177554c477"
+      "blob": "a2597672525a8179c1d29492949fa18c635d38db"
     },
     {
       "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",
@@ -92,7 +90,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "649805fe794f1d9a028281aab3e267de281fe494"
+      "blob": "8a80855f0a0755a72e2cc55b6cfd2c34a0570970"
     },
     {
       "path": "apps/ios/App/Sources/PayLedgerView.swift",
@@ -102,7 +100,7 @@
         "pay-rules"
       ],
       "disposition": "reviewed",
-      "blob": "03d62dd6a8c1f8a58d3c74465235a7ad1620bd92"
+      "blob": "3c7416474405b0619e7d2258fa721ab8eae6973f"
     },
     {
       "path": "apps/ios/App/Sources/WeeklyOvertimeReviewView.swift",
@@ -295,7 +293,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "3060cf1e8ebaf0c4f5b595f68705b28762c17d78"
+      "blob": "af5fd475e9fdceb71cf8e158ef7f506ec75864af"
     },
     {
       "path": "apps/ios/App/Sources/ReconciliationReportExporter.swift",
@@ -303,7 +301,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "1c8cbc01ea3baac9421c58f7ea1c45f5d9a8e215"
+      "blob": "40e19e09ccefa391c96d05b9fbe2409adb80b14e"
     },
     {
       "path": "apps/ios/App/Sources/BenefitAuditEditorView.swift",

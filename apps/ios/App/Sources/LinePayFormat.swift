@@ -38,6 +38,37 @@ enum LinePayFormat {
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? decimal(value)
     }
 
+    /// Display only: retain useful minute/second context instead of a rounded-hour equation.
+    /// Monetary calculation never reads this presentation-normalized quantity.
+    static func workDuration(_ hours: Decimal, locale: Locale = .current) -> String {
+        guard !hours.isNaN, hours >= 0 else { return "—" }
+        var seconds = hours * 3_600
+        var displayed = Decimal()
+        NSDecimalRound(&displayed, &seconds, 6, .plain)
+        guard !displayed.isNaN, displayed <= Decimal(Int64.max) else { return "—" }
+        if hours > 0 && displayed == 0 { return "<0.000001 s" }
+        let prefix = displayed == seconds ? "" : "≈"
+        let whole = NSDecimalNumber(decimal: displayed).int64Value
+        if Decimal(whole) == displayed {
+            let formatter = DateComponentsFormatter()
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.locale = locale
+            calendar.timeZone = .gmt
+            formatter.calendar = calendar
+            formatter.allowedUnits = [.hour, .minute, .second]
+            formatter.unitsStyle = .short
+            formatter.zeroFormattingBehavior = .dropAll
+            if let text = formatter.string(from: TimeInterval(whole)) { return prefix + text }
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 6
+        formatter.locale = locale
+        return prefix
+            + (formatter.string(from: NSDecimalNumber(decimal: displayed)) ?? decimal(displayed))
+            + " s"
+    }
+
     static func decimal(_ value: Decimal) -> String {
         NSDecimalNumber(decimal: value).stringValue
     }

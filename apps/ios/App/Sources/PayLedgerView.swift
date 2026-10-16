@@ -34,7 +34,7 @@ struct PayLedgerView: View {
                                 PayAmount(label: "Expected per diem", money: value)
                             }
                             Text(
-                                "\(LinePayFormat.hours(model.totalHours)) h worked · rules version \(context.agreement.version)"
+                                "\(LinePayFormat.workDuration(model.totalHours)) worked · rules version \(context.agreement.version)"
                             ).font(.footnote).monospacedDigit()
                         }
                         if let error = model.calculationError {

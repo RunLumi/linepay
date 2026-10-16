@@ -205,19 +205,18 @@ func componentTitle(_ component: PayComponent) -> String {
     }
 }
 
-/// The arithmetic behind one ledger amount, such as "2 h × $50.00 × 1.5". Returns nil when the
+/// The arithmetic behind one ledger amount, such as "2 hr at $50.00/h × 1.5". Returns nil when the
 /// saved component does not carry enough facts to show the formula honestly.
 func componentFormula(_ component: PayComponent, fallbackRate: Money) -> String? {
     switch component.category {
     case .perDiem: return nil
     case .workedHours, .calloutGuarantee:
-        guard let hours = component.hours else { return nil }
+        guard let hours = component.hours, let multiplier = component.multiplier else { return nil }
         let rate = LinePayFormat.money(component.baseRate ?? fallbackRate)
-        let multiplier = component.multiplier ?? 1
         let prefix = component.category == .calloutGuarantee ? "Top-up " : ""
         return multiplier == 1
-            ? "\(prefix)\(LinePayFormat.hours(hours)) h × \(rate)"
-            : "\(prefix)\(LinePayFormat.hours(hours)) h × \(rate) × \(LinePayFormat.decimal(multiplier))"
+            ? "\(prefix)\(LinePayFormat.workDuration(hours)) at \(rate)/h"
+            : "\(prefix)\(LinePayFormat.workDuration(hours)) at \(rate)/h × \(LinePayFormat.decimal(multiplier))"
     }
 }
 

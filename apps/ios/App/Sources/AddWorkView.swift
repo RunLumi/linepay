@@ -261,7 +261,7 @@ struct AddWorkView: View {
 
                 Section("Preview") {
                     LabeledContent(
-                        "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
+                        "Actual worked time", value: LinePayFormat.workDuration(worked))
                     if let change = wagesChange {
                         LabeledContent(
                             draft.editingEntryID == nil

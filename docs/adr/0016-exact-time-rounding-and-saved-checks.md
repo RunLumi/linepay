@@ -37,3 +37,10 @@ app regressions verify affected active review, unchanged-price provenance, froze
 and explicit closed re-review. Simulator confirmation/save verifies the USD 0.98 result. Complete
 native, report, backup/restore, adaptive and release checks must be recorded before shipping; earlier
 passing suites did not contain these newly discovered boundaries and are not proof of this fix.
+
+Quantity presentation is separate from pricing. A two-decimal-hour label such as “0.02 h × 58.50”
+is not an honest explanation of the USD 0.98 minute result. Work summaries, ledger/evidence formulas
+and PDF arithmetic use duration units with explicit hourly-rate units. Presentation normalization
+is marked with ≈ and never feeds a calculation. Paystub-hour entry/comparison retains its stated
+basis. A formula without a recorded multiplier is omitted, not completed with an invented value.
+Earlier saved calculation reports retain their amounts/version and identify the saved precision.

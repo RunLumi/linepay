@@ -18,7 +18,7 @@ struct EvidenceReceiptView: View {
                     Text(LinePayFormat.shiftTimes(entry.interval))
                     LabeledContent(
                         "Actual work",
-                        value: "\(LinePayFormat.hours(entry.interval.durationHours)) h")
+                        value: LinePayFormat.workDuration(entry.interval.durationHours))
                     if let text = LinePayFormat.breakDuration(entry.interval) { Text(text) }
                     Text(
                         "Payroll timezone: \(LinePayFormat.timeZoneName(entry.interval.timeZoneIdentifier))"
@@ -34,21 +34,20 @@ struct EvidenceReceiptView: View {
                 Text(component.explanation)
                 if component.category == .calloutGuarantee, let rule = agreement.calloutMinimum {
                     LabeledContent(
-                        "Minimum", value: "\(LinePayFormat.hours(rule.minimumHours)) paid h")
+                        "Minimum",
+                        value: "\(LinePayFormat.workDuration(rule.minimumHours)) paid equivalent")
                     Text(
                         "Actual clock time remains unchanged. The amount below is a derived top-up."
                     )
                     .font(.footnote)
                 }
-                if let hours = component.hours, let multiplier = component.multiplier {
+                if let hours = component.hours, component.multiplier != nil {
                     LabeledContent(
                         component.category == .calloutGuarantee
-                            ? "Additional paid equivalent" : "Worked hours",
-                        value: "\(LinePayFormat.hours(hours)) h")
-                    Text(
-                        "\(LinePayFormat.decimal(hours)) × \(LinePayFormat.money(component.baseRate ?? agreement.hourlyRate)) × \(LinePayFormat.decimal(multiplier))"
-                    )
-                    .monospacedDigit().textSelection(.enabled)
+                            ? "Additional paid equivalent" : "Worked time",
+                        value: LinePayFormat.workDuration(hours))
+                    Text(componentFormula(component, fallbackRate: agreement.hourlyRate) ?? "")
+                        .monospacedDigit().textSelection(.enabled)
                 }
                 LabeledContent("Rounded amount", value: LinePayFormat.money(component.amount))
                 Text(

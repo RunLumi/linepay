@@ -84,7 +84,7 @@ struct FirstPayResultView: View {
                                 money: calculation.expectedAllowances)
                         }
                         Text(
-                            "\(LinePayFormat.hours(model.totalHours)) h worked · pay period \(LinePayFormat.payPeriod(context.window, timeZoneIdentifier: context.timeZoneIdentifier))"
+                            "\(LinePayFormat.workDuration(model.totalHours)) worked · pay period \(LinePayFormat.payPeriod(context.window, timeZoneIdentifier: context.timeZoneIdentifier))"
                         )
                         .font(.subheadline).monospacedDigit()
                         Text(

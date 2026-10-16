@@ -54,6 +54,12 @@ final class CalculationPrecisionJourneyTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Add work"].waitForExistence(timeout: 10))
         app.buttons["work.save"].tap()
         XCTAssertTrue(app.staticTexts["$0.98"].firstMatch.waitForExistence(timeout: 15))
+        let formula = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS %@", "at $58.50/h")
+        ).firstMatch
+        XCTAssertTrue(formula.waitForExistence(timeout: 10))
+        XCTAssertTrue(formula.label.contains("min"))
+        XCTAssertFalse(formula.label.contains("0.02 h"))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "v2-one-minute-exact-half-cent"
         screenshot.lifetime = .keepAlways

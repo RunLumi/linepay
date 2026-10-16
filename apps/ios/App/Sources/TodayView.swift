@@ -45,7 +45,7 @@ struct TodayView: View {
                                 PayAmount(label: "Separate expected per diem", money: allowance)
                             }
                             Text(
-                                "\(LinePayFormat.hours(model.totalHours)) h worked · \(model.workEntries.count) \(model.workEntries.count == 1 ? "shift" : "shifts")"
+                                "\(LinePayFormat.workDuration(model.totalHours)) worked · \(model.workEntries.count) \(model.workEntries.count == 1 ? "shift" : "shifts")"
                             )
                             .font(.footnote).monospacedDigit()
                         }
