@@ -200,6 +200,34 @@ struct BenefitContributionTests {
         }
     }
 
+    @Test func fixedAmountForADifferentPeriodCannotBeTreatedAsAProratedAmount() throws {
+        let month = try period(endDay: 31)
+        let rule = try BenefitRuleSnapshot(
+            fundID: fundID, version: "Synthetic monthly amount", basis: .fixedPeriod,
+            rate: 125, currencyCode: "USD", effectivePeriod: month)
+        let weekly = BenefitEligibilitySegment(
+            period: try period(), rule: rule, quantity: 1,
+            eligibilityConfirmed: true)
+        #expect(throws: BenefitContributionError.invalidQuantity) { try calculate([weekly]) }
+    }
+
+    @Test func theSameRuleIdentityCannotDescribeTwoDifferentRates() throws {
+        let all = try period()
+        let one = try BenefitRuleSnapshot(
+            fundID: fundID, version: "1", basis: .eligibleHour,
+            rate: 10, currencyCode: "USD", effectivePeriod: all)
+        let changed = try BenefitRuleSnapshot(
+            id: one.id, fundID: fundID, version: "1", basis: .eligibleHour,
+            rate: 20, currencyCode: "USD", effectivePeriod: all)
+        let a = BenefitEligibilitySegment(
+            period: try period(endDay: 4), rule: one, quantity: 8,
+            eligibilityConfirmed: true)
+        let b = BenefitEligibilitySegment(
+            period: try period(startDay: 4), rule: changed, quantity: 8,
+            eligibilityConfirmed: true)
+        #expect(throws: BenefitContributionError.invalidRule) { try calculate([a, b]) }
+    }
+
     private func period(startDay: Int = 1, endDay: Int = 8, zone: String = "UTC") throws
         -> BenefitPeriod
     {

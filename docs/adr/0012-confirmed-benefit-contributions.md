@@ -15,7 +15,7 @@ currency, hourly/daily/percentage/fixed-period basis, effective interval, timezo
 references. Each eligibility segment retains that exact snapshot, scoped work dates and explicitly
 confirmed eligible units. Actual shift hours, overtime paid equivalents and eligible benefit units
 are distinct. Percentage rules use separately reviewed eligible earnings; allowances or wage gross
-are not silently substituted. Fixed-period contributions cannot be multiplied by splitting a period.
+are not silently substituted. Fixed-period amounts are explicitly scoped to that exact assessment period; they cannot be multiplied by splitting it or treated as a weekly proration of a monthly amount. A rule ID cannot identify conflicting snapshots.
 
 A calculation covers one explicitly complete fund/statement period. Segments cannot overlap or
 extend beyond their source snapshot's dates. Gaps can represent dates with no eligible work only

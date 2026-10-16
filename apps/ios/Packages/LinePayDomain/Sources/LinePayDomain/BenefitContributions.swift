@@ -180,15 +180,21 @@ public struct BenefitContributionCalculator: Sendable {
         var raw: Decimal = 0
         var units: Decimal = 0
         var previousEnd = period.start
+        var snapshots: [UUID: BenefitRuleSnapshot] = [:]
         for segment in sorted {
             try segment.period.validate()
             try segment.rule.validate()
+            if let saved = snapshots[segment.rule.id], saved != segment.rule {
+                throw BenefitContributionError.invalidRule
+            }
+            snapshots[segment.rule.id] = segment.rule
             guard segment.eligibilityConfirmed else {
                 throw BenefitContributionError.eligibilityNotConfirmed
             }
             guard !segment.quantity.isNaN, segment.quantity >= 0,
                 segment.rule.basis != .fixedPeriod
-                    || (segment.quantity == 1 && sorted.count == 1 && segment.period == period)
+                    || (segment.quantity == 1 && sorted.count == 1 && segment.period == period
+                        && segment.rule.effectivePeriod == period)
             else { throw BenefitContributionError.invalidQuantity }
             guard segment.rule.fundID == fundID else { throw BenefitContributionError.fundMismatch }
             guard segment.rule.currencyCode == currency else {
