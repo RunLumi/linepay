@@ -86,6 +86,18 @@ struct PayPeriodScheduleTests {
         #expect(model.activePeriod?.window.endDate == (try date(2026, 9, 1, in: calendar)))
     }
 
+    @Test func skippedStartingMidnightDoesNotCarryOneAMIntoTheFollowingWeek() throws {
+        let calendar = try calendar("America/Sao_Paulo")
+        let start = try date(2018, 11, 4, in: calendar)
+        let window = try PayPeriodSchedule.window(
+            cadence: .weekly, startDate: start, manualEndDate: start,
+            timeZoneIdentifier: calendar.timeZone.identifier)
+        #expect(calendar.component(.hour, from: window.startDate) == 1)
+        #expect(calendar.component(.hour, from: window.endDate) == 0)
+        #expect(window.endDate == (try date(2018, 11, 11, in: calendar)))
+        #expect(window.endEpochSeconds - window.startEpochSeconds == 167 * 3_600)
+    }
+
     @Test func existingCadenceWireValuesRemainStable() throws {
         for cadence in [PayPeriodCadence.weekly, .biweekly, .manual] {
             let data = Data("\"\(cadence.rawValue)\"".utf8)

@@ -22,7 +22,7 @@ An implementation, test result, upload, review submission and public release are
 | Foundation: funnel measurement | Implemented; full native gate passed | Final release-candidate/device checks; no production cohort/completeness claim |
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
-| Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
+| Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Current native App/Simulator regression, physical timezone/provider checks and final release gate |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
@@ -1293,3 +1293,55 @@ created; describe and verify each property separately.
   not OS/provider/native/device delivery. Final1,043 local Markdown links, 5 doc
   tests, legal inventory/active-copy, harness and diff checks passed. No further runtime source
   changed after the source-bound passes. Goal remains active; full v2/release is incomplete.
+
+
+## Calendar paycycles and source-period comparison checkpoint
+
+- Continued from clean `ddfc768`. Shared calendar v1 defines **14 explicit boundary cases and
+  7 refusals**: weekly, biweekly, semi-monthly, custom, leap/month/year edges, LA spring/fall,
+  New York 25-hour day and Sao Paulo skipped midnight. Swift and browser consume the same
+  independently specified local/UTC endpoints. A paycycle does not define a statutory workweek.
+- New pure Swift helper normalizes both date boundaries to the first local instant. The native
+  adapter delegates only new window creation; retained historical windows are unchanged.
+  Sao Paulo's November 4–11, 2018 starts at01:00 and ends at00:00: **167 hours**. Previous calendar
+  addition could carry01:00 into the following week. Added an App regression, but that App test
+  has **not run** while the known Xcode/CoreSimulator setup block remains. Domain success is
+  not native App/Simulator evidence.
+- Browser period setup previews explicit cadence/date/zone/boundaries before creation; edits
+  invalidate review. New comparisons retain independently entered paycheck source dates and
+  reviewed date-context timezone. Blank dates are never copied from the ledger. A wrong or
+  unconfirmed scope saves a noncomparable review with null expected gross/difference and no
+  directional components. Only confirmed matching dates/zone proceed through existing guards.
+- Original configured-gross v1 remains unchanged for historical replay. New engine v2 retains
+  source scope with its receipt. General browser state v6 adds owned schedules/scopes atomically;
+  schemas1–5 gain empty metadata without invented cadence, dates or reclassification. Frozen v5
+  fixture was generated/validated through actual `ddfc768` modules and includes a second dated
+  600-wage receipt. Missing/orphan/changed source facts or calendar boundaries refuse recovery.
+  Reports disclose saved cadence/source dates and confirmation; legacy missing provenance stays
+  explicit. Container/encryption remains version1. ADR0022 and BR085–089 own these boundaries.
+- Final Node suite **129 tests passed**, no failures/skips,
+  `/private/tmp/linepay-v2-period-domain.log`. Focused Swift consumer **2 tests** passed all21 cases,
+  `/private/tmp/linepay-v2-paycycle-swift.log`. Required quick gate passed **74 repository tests,
+  strict Swift format and138 domain tests in22 suites**, `/private/tmp/linepay-v2-period-quick.log`.
+- Actual Chromium and WebKit each passed **34 E2E checks**: preview writes nothing, material edits
+  invalidate confirmation, LA spring weekly167h/fall biweekly337h, invalid half-month refusal,
+  leap February, wrong/unknown source period gives no25 shortfall, matching dates give25, empty
+  discard removes only its owned metadata, and actual encrypted export/reset/inspect/replace
+  preserves three source-scope reviews and fixed calendar windows. Device-context Tokyo does not
+  change LA payroll boundaries. Legacy schemas1–5 recover without fabricated source metadata.
+- Initial Chromium test incorrectly assumed the last v5 period was the original400-wage record;
+  fixture intentionally also retains newer600. Corrected the test to open the first historical
+  record explicitly. Stored records already deep-equaled the fixture; no product behavior/data
+  was patched or assertion weakened. Final logs `/private/tmp/linepay-v2-period-chromium2.log`
+  and `/private/tmp/linepay-v2-period-webkit.log`; source-bound receipts/captures under
+  `.build/web-e2e/{chromium,webkit}/`, identical runtime SHA256
+  `27ab4fb5b519735268f494563d940c7685672f9fa8ad5b55d62d7e19b798d561`.
+- Chromium printed the actual downloaded minimized HTML to a **2-page PDF**. Bundled pypdf
+  extraction confirms reported source dates, confirmed-same-period disclosure and saved1.00
+  difference, without private synthetic notes; rendered/inspected page1 and the real calendar
+  preview. This is browser rendering evidence, not actual OS print/save or physical/native delivery.
+  Stopped-origin/no-worker negatives and controlled module-abort recovery remain in both passes.
+- No native Simulator/physical proof, SDK/license acceptance, website publication, push, archive,
+  App Store write or public release occurred. Owner responses for host setup, Android terms,
+  physical device and exact website publication scope remain outstanding. Broader native/Android/
+  PWA/source/library/localization/device and final store gates remain required. Goal stays active.

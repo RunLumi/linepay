@@ -72,7 +72,7 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 5. Known v1/v2/v3/v4 schemas migrate explicitly
+version 1 with `com.streamentry.linepay.web.state` version 6. Known v1/v2/v3/v4/v5 schemas migrate explicitly
 by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
@@ -108,7 +108,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 103 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+The 129 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
 fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
@@ -187,3 +187,26 @@ changed daily tiers and cross-version cent aggregation. This does not establish 
 regular-rate interaction, timezone or device. Binding callout uncertainty refuses instead of guessing.
 Pending mutations disable the previous controls after capturing their values so typing a second
 shift cannot be silently lost when the first save refreshes the form.
+
+
+## Calendar setup and paycheck date scope
+
+Review weekly, biweekly, semi-monthly (1–15/16–end) or custom dates before creating a period.
+Standard windows derive the inclusive last date from the fixed payroll zone; clock changes do not
+turn them into fixed-hour spans. Cadence does not configure federal/statutory weekly overtime.
+The shared Swift/browser [calendar corpus](../../shared/contracts/paycycles/README.md) covers fourteen
+independent windows/seven refusals, including a skipped midnight that must not shift the next boundary.
+
+New comparisons retain source work-period dates/context/confirmation separately from the ledger.
+Source date fields start blank. Use the dates covered by the paycheck, not payday. Unknown,
+unconfirmed or mismatched periods can be retained as noncomparable review records, with no expected
+gross/directional difference. Only confirmed matching dates/context permit the existing scoped
+comparison, subject to complete work, basis and rule-review guards. Editing dates/context requires
+re-confirmation. Legacy configured-gross v1 results stay as recorded and disclose missing separate
+source facts; new guarded reviews use v2.
+
+Web state v6 atomically retains schedule/source-period metadata with its owner. Old schema1–5
+imports add no inferred cadence or source dates. The v5 fixture was generated/validated using actual
+`ddfc768` source. Protected reset/recovery preserves wrong/unknown/matching reviews distinctly.
+This browser record flow is not the native App confirmation path, native runtime/device proof or
+legal verification; final release and physical/provider delivery gates remain open.

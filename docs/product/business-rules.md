@@ -133,3 +133,14 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-082 | Price aggregation does not round independently at a rate-version boundary. | Compatible category/multiplier numerators sum first; one second each at 18 and 54/hour totals 0.02, not 0.03. |
 | BR-083 | Binding guarantee uncertainty stops price selection. | A physical callout spanning an effective change requires review when a minimum could bind; no guessed split/top-up. |
 | BR-084 | Saving must not discard the next work entry. | Existing controls are visibly unavailable while a mutation commits, after values are captured; errors retain entered values and old state. |
+
+
+## Calendar windows and reported paycheck periods
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-085 | Paycycle means explicit local calendar boundaries, not fixed elapsed hours. | Seven/fourteen dates, true half-months and custom inclusive bounds retain their timezone and UTC boundaries through DST/leap/year changes. No statutory workweek is inferred. |
+| BR-086 | Source work-period dates are distinct from selected ledger dates and payday. | New comparison fields start blank; prefilled timezone is a review context, not an extracted fact. |
+| BR-087 | Unknown/unconfirmed/mismatched source scope stops directional comparison. | Paid facts remain; expected comparison/difference are null, never zero or an inferred shortfall. |
+| BR-088 | Retain the evidence basis of each comparison version. | New source facts commit with the review; source edits clear confirmation. Legacy dates/cadence remain explicitly unretained rather than backfilled. |
+| BR-089 | New calendar corrections do not rewrite history. | The native calendar helper affects new windows only; existing window instants and saved comparisons remain unchanged. |

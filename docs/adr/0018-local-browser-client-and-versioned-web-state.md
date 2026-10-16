@@ -72,3 +72,5 @@ Web state v3 adds separately retained portable-rule origins and recipient choice
 Web state v4 adds append-only saved-check follow-up and reviewed report copies. [ADR 0020](0020-browser-follow-up-and-reviewed-report-copies.md) owns the privacy/lifecycle/migration continuation; original comparisons stay frozen.
 
 Web state v5 retains confirmed effective-date plans and their original audit references. [ADR 0021](0021-versioned-effective-date-browser-calculations.md) owns the versioned engine/migration continuation; legacy v1 results remain on their original path.
+
+Web state v6 retains selected cadence and new reported-paycheck period facts. [ADR 0022](0022-calendar-windows-and-reported-paycheck-periods.md) owns the continuation; prior comparisons/window facts remain as originally recorded.

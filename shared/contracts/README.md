@@ -33,3 +33,5 @@ The first implemented transport contract is [password-protected manual backup v1
 [Portable rule drafts v1](templates/README.md) supports explicit parameter sharing with omitted monetary amounts by default and recipient-confirmed adoption. It is separate from full backups and verified agreement packs.
 
 [Effective-date pay fixtures v1](payroll/effective-date-v1.md) verifies eight temporal prices and five refusals independently in Swift/Kotlin/browser, with compatible policy and explicit local-date snapshots.
+
+[Calendar paycycles v1](paycycles/README.md) verifies fourteen local-date/instant boundaries and seven refusals independently in Swift/browser; cadence is separate from legal workweek coverage.

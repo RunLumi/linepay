@@ -27,3 +27,5 @@
 - [0020-browser-follow-up-and-reviewed-report-copies](0020-browser-follow-up-and-reviewed-report-copies.md)
 
 - [0021-versioned-effective-date-browser-calculations](0021-versioned-effective-date-browser-calculations.md)
+
+- [0022-calendar-windows-and-reported-paycheck-periods](0022-calendar-windows-and-reported-paycheck-periods.md)

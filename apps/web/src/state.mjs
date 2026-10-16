@@ -1,5 +1,9 @@
 import { calculate, localDate, epoch } from "./payroll.mjs";
-import { assess } from "./assessment.mjs";
+import {
+  reproduceAssessment,
+  validatePaycheckScope,
+} from "./assessment-period.mjs";
+import { paycycleWindow } from "./paycycle.mjs";
 import {
   calculateContributions,
   contributionRuleDefinition,
@@ -19,7 +23,7 @@ import {
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 5,
+  version: 6,
   revision: 0,
   profiles: [],
   periods: [],
@@ -27,6 +31,8 @@ export const emptyState = () => ({
   templateOrigins: [],
   resolutionEvents: [],
   ruleTimelines: [],
+  paycycleSchedules: [],
+  paycheckScopes: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -126,9 +132,11 @@ export function validateState(state) {
     "templateOrigins",
     "resolutionEvents",
     "ruleTimelines",
+    "paycycleSchedules",
+    "paycheckScopes",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 5,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 6,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -219,6 +227,47 @@ export function validateState(state) {
     validateTimeline(period.rule, timeline);
   }
   need(
+    Array.isArray(state.paycycleSchedules) &&
+      state.paycycleSchedules.length <= 100 &&
+      Array.isArray(state.paycheckScopes) &&
+      state.paycheckScopes.length <= 1000,
+    "Paycycle/source-period metadata exceeds its limit.",
+  );
+  const scheduledPeriods = new Set(),
+    scopedAudits = new Set();
+  for (const schedule of state.paycycleSchedules) {
+    keys(schedule, ["periodID", "window"]);
+    need(
+      !scheduledPeriods.has(schedule.periodID),
+      "Duplicate saved paycycle metadata.",
+    );
+    scheduledPeriods.add(schedule.periodID);
+    const period = state.periods.find((p) => p.id === schedule.periodID);
+    need(period, "Saved paycycle has no retained period.");
+    const window = paycycleWindow({
+      cadence: schedule.window.cadence,
+      startDate: period.start,
+      manualEndDate: period.end,
+      timeZone: period.zone,
+    });
+    need(
+      window.endDate === period.end &&
+        JSON.stringify(window) === JSON.stringify(schedule.window),
+      "Saved paycycle does not match its confirmed dates/timezone.",
+    );
+  }
+  for (const scope of state.paycheckScopes) {
+    validatePaycheckScope(scope);
+    need(!scopedAudits.has(scope.auditID), "Duplicate reported-period facts.");
+    scopedAudits.add(scope.auditID);
+    const period = state.periods.find((p) => p.id === scope.periodID),
+      audit = period?.audits.find((a) => a.id === scope.auditID);
+    need(
+      audit && audit.assessment.engine === "linepay.web.configured-gross/2",
+      "Reported-period facts have no compatible saved comparison.",
+    );
+  }
+  need(
     state.periods.filter((p) => !p.closed).length <= 1,
     "Only one period can be open.",
   );
@@ -295,7 +344,7 @@ export function validateState(state) {
       );
       need(
         JSON.stringify(
-          assess(calculation, audit.facts, period.rule.rounding),
+          reproduceAssessment(state, period, audit, calculation),
         ) === JSON.stringify(audit.assessment),
         "Saved assessment does not match its recorded facts.",
       );
@@ -551,6 +600,28 @@ export function decodeState(state) {
       ...structuredClone(candidate),
       version: 5,
       ruleTimelines: [],
+    };
+  }
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 5
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+      "templateOrigins",
+      "resolutionEvents",
+      "ruleTimelines",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 6,
+      paycycleSchedules: [],
+      paycheckScopes: [],
     };
   }
   return validateState(candidate);

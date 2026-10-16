@@ -71,6 +71,7 @@ with sync_playwright() as pw:
         page.get_by_label('First work date', exact=True).fill('2026-10-01')
         page.get_by_label('Last work date (included)', exact=True).fill('2026-10-14')
         page.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        page.get_by_role('button', name='Review pay period', exact=True).click()
         page.get_by_role('button', name='Start period', exact=True).click()
         page.get_by_label('Start', exact=True).fill('2026-10-01T08:00')
         page.get_by_label('End', exact=True).fill('2026-10-01T08:30')
@@ -80,7 +81,9 @@ with sync_playwright() as pw:
         page.get_by_label('Confirmed paycheck gross', exact=True).fill('9.00')
         page.get_by_label('What does gross include?', exact=True).select_option('wagesOnly')
         page.get_by_label('All work for this paycheck period is recorded.', exact=True).check()
-        page.get_by_label('I confirmed the paycheck covers this exact work period.', exact=True).check()
+        page.get_by_label('Reported first work date', exact=True).fill('2026-10-01')
+        page.get_by_label('Reported last work date (included)', exact=True).fill('2026-10-14')
+        page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
         page.get_by_role('button', name='Review comparison', exact=True).click()
         expect(page.locator('#audit-preview')).to_contain_text('Possible shortfall')
         assert len(read_state(page)['periods'][0]['audits']) == 0
@@ -284,6 +287,7 @@ with sync_playwright() as pw:
         recipient.get_by_label('First work date', exact=True).fill('2026-10-01')
         recipient.get_by_label('Last work date (included)', exact=True).fill('2026-10-14')
         recipient.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        recipient.get_by_role('button', name='Review pay period', exact=True).click()
         recipient.get_by_role('button', name='Start period', exact=True).click()
         recipient.get_by_label('Start', exact=True).fill('2026-10-01T08:00')
         recipient.get_by_label('End', exact=True).fill('2026-10-01T09:00')
@@ -311,7 +315,7 @@ with sync_playwright() as pw:
         assert read_state(recipient)['profiles'] == []
         recipient.get_by_role('button', name='Replace with inspected backup', exact=True).click()
         recovered = read_state(recipient)
-        for key in ['profiles', 'periods', 'benefitChecks', 'templateOrigins']:
+        for key in ['profiles', 'periods', 'benefitChecks', 'templateOrigins', 'paycheckScopes', 'paycycleSchedules']:
             assert recovered[key] == recipient_before[key]
         recipient_context.close()
         checks.append('actual recipient encrypted backup/reset/inspect/replace preserves confirmed rule provenance and own monetary choices exactly')
@@ -326,6 +330,7 @@ with sync_playwright() as pw:
         timeline_page.get_by_label('First work date', exact=True).fill('2026-10-05')
         timeline_page.get_by_label('Last work date (included)', exact=True).fill('2026-10-18')
         timeline_page.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        timeline_page.get_by_role('button', name='Review pay period', exact=True).click()
         timeline_page.get_by_role('button', name='Start period', exact=True).click()
         for day, finish in [('05', '16:00'), ('06', '18:00')]:
             timeline_page.get_by_label('Start', exact=True).fill(f'2026-10-{day}T08:00')
@@ -336,7 +341,9 @@ with sync_playwright() as pw:
             timeline_page.get_by_label('Confirmed paycheck gross', exact=True).fill(gross)
             timeline_page.get_by_label('What does gross include?', exact=True).select_option('wagesOnly')
             timeline_page.get_by_label('All work for this paycheck period is recorded.', exact=True).check()
-            timeline_page.get_by_label('I confirmed the paycheck covers this exact work period.', exact=True).check()
+            timeline_page.get_by_label('Reported first work date', exact=True).fill('2026-10-05')
+            timeline_page.get_by_label('Reported last work date (included)', exact=True).fill('2026-10-18')
+            timeline_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
             timeline_page.get_by_role('button', name='Review comparison', exact=True).click()
             timeline_page.get_by_role('button', name='Save this check', exact=True).click()
         save_timeline_check('950')
@@ -419,7 +426,7 @@ with sync_playwright() as pw:
         assert read_state(timeline_page)['periods'] == []
         timeline_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
         timeline_after = read_state(timeline_page)
-        for key in ['profiles','periods','ruleTimelines','benefitChecks','templateOrigins','resolutionEvents']:
+        for key in ['profiles','periods','ruleTimelines','benefitChecks','templateOrigins','resolutionEvents','paycheckScopes','paycycleSchedules']:
             assert timeline_after[key] == timeline_before[key]
         timeline_page.get_by_role('button', name='Pay', exact=True).click()
         expect(timeline_page.locator('.answer')).to_have_text('USD 950.00')
@@ -431,6 +438,119 @@ with sync_playwright() as pw:
         timeline_page.screenshot(path=str(OUTPUT / 'effective-rule-history.png'))
         timeline_context.close()
         checks.append('a second explicit plan/close changes current estimate only; historical 1005 report and both rule plans survive actual encrypted reset/recovery')
+        calendar_context = browser.new_context(accept_downloads=True, timezone_id='Asia/Tokyo')
+        observe_context(calendar_context)
+        calendar_context.on('request', lambda r: requests.append((r.url, r.method)))
+        calendar_page = calendar_context.new_page()
+        calendar_page.on('pageerror', lambda e: errors.append(str(e)))
+        calendar_page.goto(origin + '/')
+        expect(calendar_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        profile(calendar_page, '50')
+        calendar_page.get_by_label('Paycycle', exact=True).select_option('weekly')
+        calendar_page.get_by_label('First work date', exact=True).fill('2026-03-02')
+        calendar_page.get_by_label('Payroll timezone', exact=True).fill('America/Los_Angeles')
+        expect(calendar_page.get_by_label('Last work date (included)', exact=True)).to_have_value('2026-03-08')
+        calendar_page.get_by_role('button', name='Review pay period', exact=True).click()
+        expect(calendar_page.locator('.period-preview')).to_contain_text('2026-03-09T07:00:00Z')
+        assert read_state(calendar_page)['periods'] == []
+        calendar_page.get_by_label('First work date', exact=True).fill('2026-03-03')
+        expect(calendar_page.get_by_role('button', name='Start period', exact=True)).to_have_count(0)
+        calendar_page.get_by_label('First work date', exact=True).fill('2026-03-02')
+        calendar_page.get_by_role('button', name='Review pay period', exact=True).click()
+        calendar_page.screenshot(path=str(OUTPUT / 'calendar-week-preview.png'), full_page=True)
+        calendar_page.get_by_role('button', name='Start period', exact=True).click()
+        assert read_state(calendar_page)['paycycleSchedules'][0]['window']['elapsedSeconds'] == 167 * 3600
+        calendar_page.get_by_label('Start', exact=True).fill('2026-03-03T08:00')
+        calendar_page.get_by_label('End', exact=True).fill('2026-03-03T16:00')
+        calendar_page.get_by_role('button', name='Save work', exact=True).click()
+        expect(calendar_page.locator('.answer')).to_have_text('USD 400.00')
+        checks.append('weekly calendar preview writes nothing, material edits invalidate it, and fixed LA zone retains a 167-hour DST week on a Tokyo device')
+        def calendar_review(start, end, confirmed):
+            calendar_page.get_by_label('Confirmed paycheck gross', exact=True).fill('375')
+            calendar_page.get_by_label('What does gross include?', exact=True).select_option('wagesOnly')
+            calendar_page.get_by_label('All work for this paycheck period is recorded.', exact=True).check()
+            if start is not None:
+                calendar_page.get_by_label('Reported first work date', exact=True).fill(start)
+                calendar_page.get_by_label('Reported last work date (included)', exact=True).fill(end)
+            if confirmed:
+                calendar_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
+            calendar_page.get_by_role('button', name='Review comparison', exact=True).click()
+        calendar_review('2026-03-09', '2026-03-15', True)
+        expect(calendar_page.locator('#audit-preview')).to_contain_text('Not comparable')
+        assert read_state(calendar_page)['periods'][0]['audits'] == []
+        calendar_page.get_by_role('button', name='Save this check', exact=True).click()
+        mismatched = read_state(calendar_page)['periods'][0]['audits'][0]
+        assert mismatched['assessment']['periodMatch'] == 'differentPeriod' and mismatched['assessment']['gross'] is None and mismatched['assessment']['difference'] is None
+        mismatch_tools = calendar_page.locator(f'[data-audit-tools="{mismatched["id"]}"]')
+        mismatch_tools.get_by_role('button', name='Review evidence report', exact=True).click()
+        mismatch_report = mismatch_tools.frame_locator('iframe')
+        expect(mismatch_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        mismatch_body = mismatch_report.locator('body').inner_text()
+        assert '2026-03-09 through 2026-03-15' in mismatch_body and 'Different work period / context' in mismatch_body and 'USD 25.00' not in mismatch_body
+        calendar_page.screenshot(path=str(OUTPUT / 'mismatched-period-review.png'), full_page=True)
+        checks.append('source dates from another week cannot produce a shortfall; recorded facts/report retain mismatch and unknown expected comparison')
+        calendar_review(None, None, False)
+        expect(calendar_page.locator('#audit-preview')).to_contain_text('Not comparable')
+        calendar_page.get_by_role('button', name='Save this check', exact=True).click()
+        assert read_state(calendar_page)['periods'][0]['audits'][1]['assessment']['periodMatch'] == 'unconfirmedPeriod'
+        calendar_review('2026-03-02', '2026-03-08', True)
+        expect(calendar_page.locator('#audit-preview')).to_contain_text('Possible shortfall')
+        calendar_page.get_by_label('Reported last work date (included)', exact=True).fill('2026-03-07')
+        expect(calendar_page.get_by_role('button', name='Save this check', exact=True)).to_have_count(0)
+        assert not calendar_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).is_checked()
+        calendar_page.get_by_label('Reported last work date (included)', exact=True).fill('2026-03-08')
+        calendar_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
+        calendar_page.get_by_role('button', name='Review comparison', exact=True).click()
+        calendar_page.get_by_role('button', name='Save this check', exact=True).click()
+        matched = read_state(calendar_page)['periods'][0]['audits'][2]
+        assert matched['assessment']['periodMatch'] == 'confirmedSamePeriod' and matched['assessment']['difference'] == '25.00'
+        checks.append('unknown dates remain unconfirmed/noncomparable; only explicitly matching source dates allow a directional amount, and later date edits clear confirmation')
+        calendar_page.get_by_role('button', name='Close this period', exact=True).click()
+        calendar_page.get_by_role('button', name='Confirm close period', exact=True).click()
+        calendar_page.get_by_label('Paycycle', exact=True).select_option('biweekly')
+        calendar_page.get_by_label('First work date', exact=True).fill('2026-10-26')
+        calendar_page.get_by_label('Payroll timezone', exact=True).fill('America/Los_Angeles')
+        calendar_page.get_by_role('button', name='Review pay period', exact=True).click()
+        calendar_page.get_by_role('button', name='Start period', exact=True).click()
+        assert read_state(calendar_page)['paycycleSchedules'][-1]['window']['elapsedSeconds'] == 337 * 3600
+        calendar_page.get_by_role('button', name='Discard empty period', exact=True).click()
+        calendar_page.get_by_role('button', name='Confirm discard empty period', exact=True).click()
+        calendar_page.get_by_label('Paycycle', exact=True).select_option('semimonthly')
+        calendar_page.get_by_label('First work date', exact=True).fill('2028-02-15')
+        calendar_page.get_by_label('Payroll timezone', exact=True).fill('UTC')
+        calendar_page.get_by_role('button', name='Review pay period', exact=True).click()
+        expect(calendar_page.locator('#status')).to_contain_text('start on the 1st or 16th')
+        assert len(read_state(calendar_page)['periods']) == 1
+        calendar_page.get_by_label('First work date', exact=True).fill('2028-02-16')
+        expect(calendar_page.get_by_label('Last work date (included)', exact=True)).to_have_value('2028-02-29')
+        calendar_page.get_by_role('button', name='Review pay period', exact=True).click()
+        calendar_page.get_by_role('button', name='Start period', exact=True).click()
+        assert read_state(calendar_page)['paycycleSchedules'][-1]['window']['endExclusiveUTC'] == '2028-03-01T00:00:00Z'
+        calendar_page.get_by_role('button', name='Discard empty period', exact=True).click()
+        calendar_page.get_by_role('button', name='Confirm discard empty period', exact=True).click()
+        assert len(read_state(calendar_page)['paycycleSchedules']) == 1
+        checks.append('biweekly fall boundary and leap-February semimonthly boundary are calendar-based; invalid cutoffs never create records and explicit empty discard removes only owned metadata')
+        calendar_before = read_state(calendar_page)
+        calendar_page.get_by_role('button', name='Backup', exact=True).click()
+        calendar_page.get_by_label('New backup password', exact=True).fill(PASSWORD)
+        calendar_page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
+        with calendar_page.expect_download() as calendar_backup_event:
+            calendar_page.get_by_role('button', name='Download encrypted backup', exact=True).click()
+        calendar_backup = OUTPUT / 'synthetic-period-scope.linepaybackup'
+        calendar_backup_event.value.save_as(calendar_backup)
+        calendar_page.get_by_role('button', name='Review removal', exact=True).click()
+        calendar_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        assert read_state(calendar_page)['paycheckScopes'] == [] and read_state(calendar_page)['paycycleSchedules'] == []
+        calendar_page.get_by_label('Protected web backup', exact=True).set_input_files(calendar_backup)
+        calendar_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
+        calendar_page.get_by_role('button', name='Unlock and inspect', exact=True).click()
+        assert read_state(calendar_page)['periods'] == []
+        calendar_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
+        calendar_after = read_state(calendar_page)
+        for key in ['profiles','periods','benefitChecks','templateOrigins','resolutionEvents','ruleTimelines','paycycleSchedules','paycheckScopes']:
+            assert calendar_after[key] == calendar_before[key]
+        calendar_context.close()
+        checks.append('actual encrypted reset/inspect/replace retains all three source-period reviews and fixed DST calendar metadata without inventing source dates')
         page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_label('New backup password', exact=True).fill(PASSWORD)
         page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
@@ -460,6 +580,7 @@ with sync_playwright() as pw:
         assert restored['periods'] == baseline['periods'] and restored['profiles'] == baseline['profiles']
         assert restored['benefitChecks'] == baseline['benefitChecks']
         assert restored['resolutionEvents'] == baseline['resolutionEvents']
+        assert restored['paycheckScopes'] == baseline['paycheckScopes'] and restored['paycycleSchedules'] == baseline['paycycleSchedules']
         assert restored['revision'] > baseline['revision']
         checks.append('synthetic destructive reset → authenticated inspection → separate replace restores exact snapshots')
         page.get_by_role('button', name='History', exact=True).click()
@@ -487,7 +608,7 @@ with sync_playwright() as pw:
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
         # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2, 3, 4]:
+        for old_version in [1, 2, 3, 4, 5]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -510,12 +631,14 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 5 and migrated['ruleTimelines'] == []
+            assert migrated['version'] == 6 and migrated['paycheckScopes'] == [] and migrated['paycycleSchedules'] == []
+            assert migrated['ruleTimelines'] == prior.get('ruleTimelines', [])
             assert migrated['resolutionEvents'] == prior.get('resolutionEvents', [])
             assert migrated['templateOrigins'] == prior.get('templateOrigins', [])
             assert migrated['benefitChecks'] == prior.get('benefitChecks', [])
             assert migrated['periods'] == prior['periods'] and migrated['profiles'] == prior['profiles']
-            legacy_page.get_by_role('button', name='Pay', exact=True).click()
+            legacy_page.get_by_role('button', name='History', exact=True).click()
+            legacy_page.locator(f'[data-period="{prior["periods"][0]["id"]}"]').click()
             expect(legacy_page.locator('.answer')).to_have_text('USD 400.00')
             if old_version == 2:
                 retained = read_state(legacy_page)
@@ -530,7 +653,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2/v3/v4 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3/v4/v5 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')

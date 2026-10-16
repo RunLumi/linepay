@@ -1,5 +1,6 @@
 import { localCandidates, localDate } from "./payroll.mjs";
-import { assess } from "./assessment.mjs";
+import { assessForPeriod } from "./assessment-period.mjs";
+import { bindPeriodSetup } from "./period-setup-ui.mjs";
 import {
   currentCalculation,
   currentTimeline,
@@ -27,6 +28,7 @@ let state,
   selection = null,
   busy = false,
   pendingAudit = null,
+  pendingPaycheckScope = null,
   pendingRestore = null;
 const main = document.querySelector("main"),
   status = document.querySelector("#status");
@@ -74,7 +76,7 @@ const verdicts = {
   notComparable: "Not comparable",
 };
 function resultView(result, currency) {
-  return `<p class="badge">${esc(verdicts[result.verdict])}</p>${result.gross === null ? "<p>No comparable expected gross.</p>" : `<ul class="ledger"><li><span>Expected gross in confirmed scope</span><strong class="money">${money(result.gross, currency)}</strong></li><li><span>Confirmed paycheck gross</span><span class="money">${money(result.paidGross, currency)}</span></li><li><span>Expected minus paid</span><strong class="money">${money(result.difference, currency)}</strong></li></ul>`}<ul>${result.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${result.comparisons
+  return `<p class="badge">${esc(verdicts[result.verdict])}</p>${result.reportedPeriod ? `<p class="context">Reported work period: ${result.reportedPeriod.startDate === null ? "not stated" : esc(result.reportedPeriod.startDate) + " through " + esc(result.reportedPeriod.endDate)} · ${esc(result.reportedPeriod.timeZone)} · ${result.reportedPeriod.confirmed ? "confirmed from source" : "not confirmed"}</p>` : '<p class="note">This legacy check did not retain separate reported-date facts. Its original result remains as recorded.</p>'}${result.gross === null ? "<p>No comparable expected gross.</p>" : `<ul class="ledger"><li><span>Expected gross in confirmed scope</span><strong class="money">${money(result.gross, currency)}</strong></li><li><span>Confirmed paycheck gross</span><span class="money">${money(result.paidGross, currency)}</span></li><li><span>Expected minus paid</span><strong class="money">${money(result.difference, currency)}</strong></li></ul>`}<ul>${result.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${result.comparisons
     .filter((c) => c.field !== "grossPay")
     .map(
       (c) =>
@@ -89,6 +91,7 @@ function render() {
   disposeReports();
   disposeReports = () => {};
   pendingAudit = null;
+  pendingPaycheckScope = null;
   pendingRestore = null;
   document
     .querySelectorAll("[data-tab]")
@@ -170,13 +173,16 @@ function renderPay() {
     main.innerHTML = `<h1>Your work. Your expected pay.</h1><p>Start with the rules you explicitly confirmed. Record actual work, then compare a paycheck in the same period.</p>${state.profiles.length ? periodForm() : `<p>No pay profile is saved yet.</p><button class="primary" data-action="profile">Confirm pay rules</button>`}`;
     return;
   }
+  const schedule = state.paycycleSchedules.find(
+    (s) => s.periodID === period.id,
+  );
   const templateOrigin = state.templateOrigins.find(
     (o) => o.profileID === period.rule.id,
   );
   const result = period.closed
     ? period.closedCalculation
     : currentCalculation(state, period);
-  main.innerHTML = `<p class="context">${esc(period.start)} → ${esc(period.end)} · ${esc(period.zone)} · ${period.closed ? "Closed record" : "Open period"}</p><h1>Expected cash wages</h1><div class="answer">${money(result.wages, result.currency)}</div><ul class="ledger"><li><span>Separate per diem</span><span class="money">${money(result.allowances, result.currency)}</span></li><li><span>Wages + configured allowance</span><strong class="money">${money(result.total, result.currency)}</strong></li></ul><p class="rule-note">${currentTimeline(state, period.id) ? "Configured estimate from the confirmed effective-date plan; component rates and rule versions are listed below." : `Configured estimate from ${esc(period.rule.currency)} ${esc(period.rule.hourlyRate)}/hour and the saved rule version.`} Weekly/legal coverage and unconfigured rules remain unchecked.</p>
+  main.innerHTML = `<p class="context">${esc(period.start)} → ${esc(period.end)} · ${esc(period.zone)} · ${period.closed ? "Closed record" : "Open period"}</p><p class="context">${schedule ? `Saved paycycle: ${esc(schedule.window.cadence)} · exclusive boundary ${esc(schedule.window.endExclusiveUTC)}` : "Paycycle selection was not retained in this legacy record; its saved dates remain unchanged."}</p><h1>Expected cash wages</h1><div class="answer">${money(result.wages, result.currency)}</div><ul class="ledger"><li><span>Separate per diem</span><span class="money">${money(result.allowances, result.currency)}</span></li><li><span>Wages + configured allowance</span><strong class="money">${money(result.total, result.currency)}</strong></li></ul><p class="rule-note">${currentTimeline(state, period.id) ? "Configured estimate from the confirmed effective-date plan; component rates and rule versions are listed below." : `Configured estimate from ${esc(period.rule.currency)} ${esc(period.rule.hourlyRate)}/hour and the saved rule version.`} Weekly/legal coverage and unconfigured rules remain unchecked.</p>
   <details><summary>Calculation and saved rules</summary><ul class="ledger">${result.components.map((c) => `<li><span>${esc(c.date)} · ${esc(c.category)}<small>${esc(c.explanation)}${c.baseRate ? " · " + esc(c.currency) + " " + esc(c.baseRate) + "/hour" : ""}${c.workedSeconds !== null ? " · " + esc(c.workedSeconds.replace(/\.0+$/, "")) + " seconds at " + esc(c.multiplier) + "×" : ""}</small></span><span class="money">${money(c.amount, c.currency)}</span></li>`).join("")}</ul><p>Rule snapshot ${esc(period.rule.id)}, version ${esc(period.rule.version)}. Engine ${esc(result.engine)}.</p>${templateOrigin ? `<p>Worker-provided rule draft: ${esc(templateOrigin.packet.title)}, revision ${esc(templateOrigin.packet.revision)}, ID ${esc(templateOrigin.packet.templateID)}. This reference is not source approval.</p>` : ""}</details>
   <section id="rule-timeline-tools"></section><h2>Recorded work</h2><ul class="ledger">${period.work.map((w) => `<li><span>${esc(workClock(w.startUTC, w.timeZone))} → ${esc(workClock(w.endUTC, w.timeZone))}<small>${esc(w.kind)} · ${esc(w.timeZone)}${w.unpaidBreaks.length ? " · unpaid break recorded" : ""}</small></span>${period.closed ? "" : `<button class="danger" data-remove="${esc(w.id)}">Remove entry</button>`}</li>`).join("") || "<li>No work recorded.</li>"}</ul>
   ${period.closed ? "<p>This closed period keeps its saved work, rules and calculation.</p>" : workForm()}
@@ -191,7 +197,7 @@ function renderPay() {
           .join("")}`
       : ""
   }
-  ${period.work.length ? auditForm() : ""}${!period.closed && (period.work.length || period.audits.length) ? '<button data-action="close">Close this period</button>' : !period.closed ? '<button data-action="discard">Discard empty period</button>' : ""}${period.closed ? periodForm() : ""}`;
+  ${period.work.length ? auditForm(period) : ""}${!period.closed && (period.work.length || period.audits.length) ? '<button data-action="close">Close this period</button>' : !period.closed ? '<button data-action="discard">Discard empty period</button>' : ""}${period.closed ? periodForm() : ""}`;
   renderRuleTimelineUI({
     container: main.querySelector("#rule-timeline-tools"),
     state,
@@ -233,13 +239,13 @@ function renderPay() {
   );
 }
 function periodForm() {
-  return `<h2>Start a pay period</h2><form id="period-form"><div class="fields">${label("First work date", "start", 'type="date" required')}${label("Last work date (included)", "end", 'type="date" required')}${label("Payroll timezone", "zone", `required value="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)}"`)}</div><p class="note">Confirm the payroll timezone. Device timezone changes will not reinterpret saved work. The newest profile will be copied into this period.</p><button class="primary">Start period</button></form>`;
+  return `<h2>Start a pay period</h2><form id="period-form" data-period-owned><label for="paycycle-cadence">Paycycle</label><select id="paycycle-cadence" name="cadence"><option value="manual">Custom dates</option><option value="weekly">Weekly</option><option value="biweekly">Every two weeks</option><option value="semimonthly">Twice monthly (1–15, 16–end)</option></select><div class="fields">${label("First work date", "start", 'type="date" required')}${label("Last work date (included)", "end", 'type="date" required')}${label("Payroll timezone", "zone", `required value="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)}"`)}</div><p class="note">Confirm the payroll timezone. Device timezone changes will not reinterpret saved work. The newest profile will be copied into this period.</p><button>Review pay period</button><section class="period-preview" aria-live="polite"></section></form>`;
 }
 function workForm() {
   return `<h2>Add actual work</h2><form id="work-form"><div class="fields">${label("Start", "start", 'type="datetime-local" required')}${label("End", "end", 'type="datetime-local" required')}<label>When the start clock repeats<select name="startOccurrence"><option value="">Choose if needed</option><option value="0">First occurrence</option><option value="1">Second occurrence</option></select></label><label>When the end clock repeats<select name="endOccurrence"><option value="">Choose if needed</option><option value="0">First occurrence</option><option value="1">Second occurrence</option></select></label><label>Work kind<select name="kind"><option value="regular">Regular work</option><option value="callout">Separate physical callout</option><option value="other">Other recorded work</option></select></label></div><details><summary>Unpaid break (optional actual times)</summary><div class="fields">${label("Break start", "breakStart", 'type="datetime-local"')}${label("Break end", "breakEnd", 'type="datetime-local"')}</div><p class="note">Only enter an unpaid break you explicitly classified. Repeated-clock break times require a separate reviewed entry.</p></details><button class="primary">Save work</button></form>`;
 }
-function auditForm() {
-  return `<h2>Check a paycheck</h2><form id="audit-form"><div class="fields">${label("Confirmed paycheck gross", "gross", 'inputmode="decimal" required')}<div><label for="gross-basis">What does gross include?</label><select id="gross-basis" name="basis"><option value="unconfirmed">Not confirmed</option><option value="wagesOnly">Cash wages only</option><option value="wagesAndPerDiem">Wages and per diem</option></select></div>${label("Separately confirmed per diem (optional)", "perdiem", 'inputmode="decimal"')}</div>${check("All work for this paycheck period is recorded.", "complete")}${check("Some paycheck fields still need review.", "unreviewed")}${check("Some applicable rules are not represented here.", "unsupported")}${check("A complete-workweek overtime review is pending.", "weekly")}${check("I confirmed the paycheck covers this exact work period.", "periodConfirmed", true)}<p class="note">Enter gross earnings, not take-home pay or a bank deposit. No OCR or automatic rule interpretation is applied.</p><button>Review comparison</button></form><section id="audit-preview" aria-live="polite"></section>`;
+function auditForm(period) {
+  return `<h2>Check a paycheck</h2><form id="audit-form"><div class="fields">${label("Confirmed paycheck gross", "gross", 'inputmode="decimal" required')}<div><label for="gross-basis">What does gross include?</label><select id="gross-basis" name="basis"><option value="unconfirmed">Not confirmed</option><option value="wagesOnly">Cash wages only</option><option value="wagesAndPerDiem">Wages and per diem</option></select></div>${label("Separately confirmed per diem (optional)", "perdiem", 'inputmode="decimal"')}</div>${check("All work for this paycheck period is recorded.", "complete")}${check("Some paycheck fields still need review.", "unreviewed")}${check("Some applicable rules are not represented here.", "unsupported")}${check("A complete-workweek overtime review is pending.", "weekly")}<fieldset><legend>Paycheck source work-period dates</legend><p>Use the dates for work covered by this paycheck, not its payday. Blank dates remain unknown. The timezone is your review context, not an OCR extraction.</p><div class="fields">${label("Reported first work date", "reported-start", 'type="date"')}${label("Reported last work date (included)", "reported-end", 'type="date"')}${label("Paycheck date-context timezone", "reported-zone", `required value="${esc(period.zone)}"`)}</div>${check("I confirmed these work-period dates and timezone against the source.", "reported-confirmed")}</fieldset><p class="note">Enter gross earnings, not take-home pay or a bank deposit. No OCR or automatic rule interpretation is applied.</p><button>Review comparison</button></form><section id="audit-preview" aria-live="polite"></section>`;
 }
 function renderHistory() {
   main.innerHTML = `<h1>Pay history</h1><p>Saved checks retain their original work, rules and comparison. New profiles do not rewrite them.</p><ul class="ledger">${
@@ -277,9 +283,25 @@ function resolveClock(text, zone, occurrence = "") {
   return utc(choices.length === 1 ? choices[0] : choices[Number(occurrence)]);
 }
 function bind() {
+  main.querySelectorAll("[data-period-owned]").forEach((form) =>
+    bindPeriodSetup({
+      form,
+      state,
+      run,
+      uid,
+      onSave: async (period, schedule) => {
+        await commit((s) => {
+          s.periods.push(period);
+          s.paycycleSchedules.push(schedule);
+        });
+        selection = period.id;
+        render();
+      },
+    }),
+  );
   main
     .querySelectorAll(
-      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned]):not([data-timeline-owned])",
+      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned]):not([data-timeline-owned]):not([data-period-owned])",
     )
     .forEach((form) =>
       form.addEventListener("submit", (event) => {
@@ -317,16 +339,27 @@ function bind() {
       b.disabled = true;
     }),
   );
-  for (const id of ["audit-form", "restore-form"])
-    main.querySelector("#" + id)?.addEventListener("input", () => {
+  for (const id of ["audit-form", "restore-form"]) {
+    const form = main.querySelector("#" + id);
+    const changed = (event) => {
       if (id === "audit-form") {
         pendingAudit = null;
+        pendingPaycheckScope = null;
+        if (
+          ["reported-start", "reported-end", "reported-zone"].includes(
+            event.target.name,
+          )
+        )
+          form.elements["reported-confirmed"].checked = false;
         main.querySelector("#audit-preview").replaceChildren();
       } else {
         pendingRestore = null;
         main.querySelector("#restore-preview").replaceChildren();
       }
-    });
+    };
+    form?.addEventListener("input", changed);
+    form?.addEventListener("change", changed);
+  }
 }
 async function run(fn) {
   if (busy) return;
@@ -384,23 +417,6 @@ async function submit(form) {
     await commit((s) => s.profiles.push(profile));
     tab = "pay";
     render();
-  } else if (form.id === "period-form") {
-    if (state.periods.some((p) => !p.closed))
-      throw Error("Close the current period before starting another.");
-    const period = {
-      id: uid(),
-      start: get("start"),
-      end: get("end"),
-      zone: get("zone"),
-      rule: structuredClone(state.profiles.at(-1)),
-      work: [],
-      audits: [],
-      closed: false,
-      closedCalculation: null,
-    };
-    await commit((s) => s.periods.push(period));
-    selection = period.id;
-    render();
   } else if (form.id === "work-form") {
     const p = current();
     if (p.closed) throw Error("Closed work cannot be changed.");
@@ -424,8 +440,6 @@ async function submit(form) {
     };
     await commit((s) => s.periods.find((x) => x.id === p.id).work.push(entry));
   } else if (form.id === "audit-form") {
-    if (!checked("periodConfirmed"))
-      throw Error("Confirm the paycheck period first.");
     const p = current(),
       calculation = currentCalculation(state, p),
       facts = {
@@ -437,13 +451,30 @@ async function submit(form) {
         paidGross: get("gross"),
         paidPerDiem: nullable("perdiem"),
       };
+    const auditID = uid(),
+      reportedStart = nullable("reported-start"),
+      reportedEnd = nullable("reported-end");
+    pendingPaycheckScope = {
+      auditID,
+      periodID: p.id,
+      startDate: reportedStart,
+      endDate: reportedEnd,
+      timeZone: get("reported-zone"),
+      confirmed: checked("reported-confirmed"),
+    };
     pendingAudit = {
-      id: uid(),
+      id: auditID,
       createdAt: now(),
       work: structuredClone(p.work),
       facts,
       calculation,
-      assessment: assess(calculation, facts, p.rule.rounding),
+      assessment: assessForPeriod(
+        calculation,
+        facts,
+        p.rule.rounding,
+        p,
+        pendingPaycheckScope,
+      ),
     };
     main.querySelector("#audit-preview").innerHTML =
       `<div class="preview"><h2>Review before saving</h2>${resultView(pendingAudit.assessment, p.rule.currency)}<button class="primary" id="confirm-audit">Save this check</button></div>`;
@@ -451,9 +482,10 @@ async function submit(form) {
       run(async () => {
         if (!pendingAudit) throw Error("Review the current facts again.");
         openAuditID = pendingAudit.id;
-        await commit((s) =>
-          s.periods.find((x) => x.id === p.id).audits.push(pendingAudit),
-        );
+        await commit((s) => {
+          s.periods.find((x) => x.id === p.id).audits.push(pendingAudit);
+          s.paycheckScopes.push(pendingPaycheckScope);
+        });
       });
   } else if (form.id === "export-form") {
     if (get("password") !== get("repeat"))
@@ -521,12 +553,16 @@ async function action(name) {
     const section = document.createElement("section");
     section.className = "preview";
     section.innerHTML =
-      '<p>Discard this empty period? No recorded work or paycheck checks will be removed.</p><button id="confirm-discard">Confirm discard empty period</button>';
+      '<p>Discard this empty period and its paycycle/rule-plan metadata? No recorded work or paycheck checks will be removed.</p><button id="confirm-discard">Confirm discard empty period</button>';
     main.append(section);
     section.querySelector("button").onclick = () =>
       run(async () => {
         await commit((s) => {
           s.periods = s.periods.filter((x) => x.id !== p.id);
+          s.paycycleSchedules = s.paycycleSchedules.filter(
+            (x) => x.periodID !== p.id,
+          );
+          s.ruleTimelines = s.ruleTimelines.filter((x) => x.periodID !== p.id);
         });
         selection = null;
         render();
