@@ -97,7 +97,7 @@ struct FirstPayResultView: View {
                     }
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
-                        work: context.workEntries)
+                        work: context.workEntries, model: model)
                 } else {
                     CalculationProblemView(
                         message: model.calculationError ?? "Review your saved work and rules.")

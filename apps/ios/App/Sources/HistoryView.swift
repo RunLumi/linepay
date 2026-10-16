@@ -147,7 +147,7 @@ struct HistoricalPeriodView: View {
                 if let calculation = context.calculation {
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
-                        work: context.workEntries)
+                        work: context.workEntries, model: model)
                 }
                 Section("Saved paycheck checks") {
                     if context.revisions.isEmpty { Text("No saved paycheck checks yet.") }
@@ -173,7 +173,9 @@ struct HistoricalPeriodView: View {
                     }
                 }
                 Section {
-                    NavigationLink("Rule sources") { RuleSourcesView(agreement: context.agreement) }
+                    NavigationLink("Rule sources") {
+                        RuleSourcesView(agreement: context.agreement, model: model)
+                    }
                     Button("Delete work period and its checks", role: .destructive) {
                         showingDelete = true
                     }

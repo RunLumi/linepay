@@ -16,6 +16,7 @@ enum AppStateValidation {
             state.profile != nil || ids.isEmpty,
             state.schemaVersion == AppPersistentState.currentSchemaVersion
         else { throw invalid() }
+        try AgreementImportValidation.validate(state.agreementDocuments ?? [])
         let events = state.resolutionEvents ?? []
         guard events.count <= 10_000, Set(events.map(\.id)).count == events.count else {
             throw invalid()
@@ -262,6 +263,8 @@ enum AppStateValidation {
     }
 
     private static func validate(_ agreement: AgreementSnapshot) throws {
+        for source in agreement.sources { try AgreementImportValidation.validate(source) }
+
         guard !agreement.hourlyRate.amount.isNaN, agreement.hourlyRate.amount > 0,
             agreement.hourlyRate.amount <= 10_000_000,
             agreement.hourlyRate.currencyCode.utf8.count == 3,

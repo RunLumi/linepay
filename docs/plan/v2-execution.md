@@ -19,7 +19,7 @@ An implementation, test result, upload, review submission and public release are
 
 | Workstream | State | Acceptance still required |
 |---|---|---|
-| Foundation: funnel measurement | Pending | Content-free event schema; consent/data-flow decision; observable funnel |
+| Foundation: funnel measurement | Pending; owner chose local-only | Content-free local milestones and manual diagnostic export; no collector |
 | Website/store consistency | Pending | Inspect real website/listing and update only supported claims |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Implemented; focused native tests passed | Weekly, biweekly, semi-monthly, custom; timezone boundaries; mismatch guard |
@@ -27,12 +27,12 @@ An implementation, test result, upload, review submission and public release are
 | Resolution workflow | Implemented; native/UI/storage/privacy checks passed | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
-| Agreement extraction | Pending | Document/page citations, confirmation, effective dates, conflict abstention and corpus |
+| Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Pending | Benefits separate from wages; confirmed rates/units; unavailable-statement handling |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Pending | Native transcription → editable draft → explicit confirmation |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
-| Encrypted sync/account | Pending | Optional architecture, encryption/recovery, offline independence and provider proof |
+| Encrypted sync/account | Superseded by explicit local-only owner choice | Encrypted manual backup/restore portability; no account or automatic sync |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | Pending | Native app plus shared deterministic fixture parity and runtime evidence |
@@ -240,3 +240,70 @@ complete from a subset of the roadmap or from a submitted-but-unapproved build.
 - OCR slice Release generic Simulator build **passed** (`BUILD SUCCEEDED`), log
   `/private/tmp/linepay-v2-ocr-release.log`. All OCR check sessions are now terminal.
   This checkpoint has not been pushed, merged, uploaded or submitted for review.
+
+## Owner data-flow decision, October 16, 2026
+
+The owner answered the pending architecture question: **“Keep everything local; export diagnostics
+and backups manually.”** This supersedes the earlier authorization to implement optional
+sync/accounts and remote funnel telemetry. Preserve the rest of the v2 goal: native Android,
+local PWA workflows, agreement/benefit verification, templates, diagnostics and App Store release.
+Use manual, user-directed transfer for portability and source/template exchange. Do not add a
+LinePaycheck account, automatic sync, analytics collector or remote pay/document processing.
+Local exports are not anonymous, encrypted or successfully delivered merely because a file was
+created; describe and verify each property separately.
+
+## Local agreement import checkpoint
+
+- Added retained local PDF imports and a bounded embedded-text/Vision reader. Each candidate keeps
+  a physical PDF page, quote and file fingerprint. Conditional/low-confidence/conflicting text does
+  not silently choose a wage rule. Supported preparation uses existing engine semantics; unsupported
+  benefits/weekly/meal/differential conditions remain limitations for their later roadmap slices.
+- Saved per-clause decisions, currency, timezone, applicability and effective-date review feed an
+  editable rule draft. Import and preparation cannot activate rules. The existing editor keeps final
+  scope/confirmation authority; replacing an unfinished draft needs an explicit action.
+- Schema 6 preserves old snapshots and adds document ownership. Exact original files participate in
+  backup/restore; removing one keeps source citations. Reattachment requires the same bytes, cited
+  imports are protected from unused deletion, and failed saves preserve prior state. Fixed an existing
+  backup-mapping omission that dropped closed-period calculation issues and work-correction history.
+- Optional report source details now include agreement quotes/page/fingerprint; default minimized
+  reports exclude them. Updated manual setup, evidence, backup and deletion guidance. Architecture:
+  [ADR 0011](../adr/0011-local-agreement-import.md); [evaluation limits](../testing/agreement-import.md).
+- Focused initial agreement/lifecycle batch passed **17 tests in 2 suites**:
+  `.build/v2-agreement-lifecycle2-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-lifecycle2.log`. Quick gate passed 74 script tests, strict lint
+  and **112 domain tests in 15 suites**. Both guide base-path builds, search, source review,
+  screenshot provenance, 975 local doc links and 5 docs-tool tests passed before the last copy edit.
+- Initial native QA: first-run import entry passed; largest-text query needed scrolling before
+  asserting a virtualized candidate, and the activation flow's confirmation switches remained off.
+  Retained failed log `/private/tmp/linepay-v2-agreement-ui.log`; its driver stalled finalizing after
+  test hosts exited and was terminated. Updated tests to tap the actual switch side and assert each
+  confirmation. Moved detailed applicability guidance to its own section to shorten the opening.
+- Current native batch: `.build/v2-agreement-ui2-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-ui2.log`, exec session `96640`. Includes the real raster-only
+  PDF/Vision regression, which passed with the 8-test agreement suite. UI results still pending.
+  Do not claim completion or release from these partial results.
+
+- Largest-text candidate review/relaunch passed in the second batch (116.275s). Its later normal
+  journey failed a switch assertion, so that mixed bundle was not a passing batch and did not
+  finalize. An isolated diagnosis identified native switch frames ending at x=355 within the
+  larger labelled row: the 95% tap landed in trailing padding. A 90% tap targets the actual switch;
+  each of five values was asserted on before preparing. No confirmation requirement was relaxed.
+- Final activation journey **passed** (89.496s), finalized bundle
+  `.build/v2-agreement-switch-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-switch.log`. It viewed the actual retained PDF, edited 60.00
+  to 60.50, reviewed unsupported meal terms as unresolved, explicitly confirmed the editor change,
+  preserved prior-period 550 and produced 484 for eight hours in the next period. Screenshot
+  attachments were exported to `.build/v2-agreement-ui-attachments/` and inspected: retained source,
+  prepared rate, final review and next-period result. Debug frame logging/captures were then removed.
+- Broad app regression **passed: 282 tests in 40 suites**, including the seven native StoreKit
+  lifecycle tests, migration/backup and all OCR adapters. Finalized bundle
+  `.build/v2-agreement-all-app-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-agreement-all-app.log`.
+- Current final evidence batch (exec `17080`): largest-text review plus the report preview/share
+  journey in `.build/v2-agreement-final-ui-20261016.xcresult`, followed on success by a Release
+  Simulator build. Logs `/private/tmp/linepay-v2-agreement-final-ui.log` and
+  `/private/tmp/linepay-v2-agreement-release.log`. Refresh the changed report guide screenshot
+  from its named attachment after inspecting it. No outcome is claimed yet.
+- Maestro remains absent. These are XCTest native journeys and adapter receipts, not proof of an
+  actual external Files-provider import, physical-camera scan, hosted CI, signed archive or store
+  release. Full exact-candidate native/release gates and updated public guide captures remain due.

@@ -698,6 +698,110 @@ final class AppModel {
         try commit(candidate)
     }
 
+    var agreementDocuments: [ImportedAgreementDocument] { state.agreementDocuments ?? [] }
+
+    func agreementDocument(id: UUID) -> ImportedAgreementDocument? {
+        state.agreementDocuments?.first { $0.id == id }
+    }
+
+    @discardableResult
+    func retainAgreement(data: Data, filename: String) throws -> UUID {
+        guard !data.isEmpty, data.count <= AgreementDocumentService.maximumBytes,
+            data.starts(with: Data("%PDF".utf8)), !filename.isEmpty, filename.count <= 512,
+            agreementDocuments.count < 64
+        else { throw AppModelError.invalidField("Agreement PDF (up to 25 MB)") }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: filename, mediaType: "application/pdf",
+            sourceKind: .file, recognizedText: nil)
+        let document = ImportedAgreementDocument(
+            id: UUID(), filename: filename, sha256: AgreementDocumentService.digest(data),
+            evidence: evidence, importedEpochSeconds: epochSeconds(now()),
+            extractionVersion: AgreementClauseParser.version)
+        var candidate = state
+        candidate.agreementDocuments = agreementDocuments + [document]
+        do { try commit(candidate) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+        return document.id
+    }
+
+    func canDeleteAgreementImport(id: UUID) -> Bool {
+        !state.referencedAgreementDocumentIDs.contains(id)
+    }
+
+    func deleteUnusedAgreementImport(id: UUID) throws {
+        guard let document = agreementDocument(id: id), canDeleteAgreementImport(id: id) else {
+            throw AppModelError.invalidField(
+                "This agreement is cited by saved rules or an unfinished setup")
+        }
+        var candidate = state
+        candidate.agreementDocuments?.removeAll { $0.id == id }
+        if let evidence = document.evidence { enqueue([evidence], in: &candidate) }
+        try commit(candidate)
+        try retryEvidenceDeletion()
+    }
+
+    func finishAgreementExtraction(id: UUID, result: AgreementExtraction) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }) else {
+            throw AppModelError.invalidField("Agreement document unavailable")
+        }
+        guard state.agreementDocuments?[index].candidates == nil else { return }
+        var candidate = state
+        candidate.agreementDocuments?[index].pageCount = result.pageCount
+        candidate.agreementDocuments?[index].candidates = result.candidates
+        candidate.agreementDocuments?[index].extractionNotice = result.notice
+        try commit(candidate)
+    }
+
+    func saveAgreementReview(id: UUID, review: AgreementImportReview) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }),
+            state.agreementDocuments?[index].candidates != nil
+        else { throw AppModelError.invalidField("Agreement document unavailable") }
+        var candidate = state
+        candidate.agreementDocuments?[index].review = review
+        try commit(candidate)
+    }
+
+    func prepareImportedAgreement(id: UUID, replaceExistingDraft: Bool = false) async throws {
+        guard let original = agreementDocument(id: id), let evidence = original.evidence,
+            let url = evidenceStore.url(for: evidence)
+        else {
+            throw AppModelError.invalidField("Retain the original agreement before preparing rules")
+        }
+        _ = try await AgreementDocumentService.verifiedURL(url, sha256: original.sha256, page: 0)
+        try Task.checkCancellation()
+        guard let document = agreementDocument(id: id), document.evidence == evidence,
+            let review = document.review
+        else { throw AppModelError.invalidField("The agreement changed during review") }
+        guard state.setupDraft == nil || replaceExistingDraft else {
+            throw AppModelError.invalidField("An unfinished rule setup already exists")
+        }
+        let draft = try AgreementImportDraftBuilder.build(
+            document: document, review: review, profile: profile, activePeriod: activePeriod)
+        if !draft.hourlyRate.isEmpty { _ = try previewAgreement(draft) }
+        var candidate = state
+        candidate.setupDraft = draft
+        try commit(candidate)
+    }
+
+    func reattachAgreementOriginal(id: UUID, data: Data) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }),
+            let document = agreementDocument(id: id), document.evidence == nil,
+            data.count <= AgreementDocumentService.maximumBytes,
+            AgreementDocumentService.digest(data) == document.sha256
+        else { throw AppModelError.invalidField("Choose the exact original PDF for this source") }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: document.filename, mediaType: "application/pdf",
+            sourceKind: .file, recognizedText: nil)
+        var candidate = state
+        candidate.agreementDocuments?[index].evidence = evidence
+        do { try commit(candidate) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+    }
+
     func recordResolution(
         periodID: UUID, paystubID: UUID? = nil, status: ResolutionStatus, note: String
     ) throws {
@@ -1462,7 +1566,9 @@ final class AppModel {
                     title: trimmedTitle.isEmpty ? "Worker-provided source" : trimmedTitle,
                     url: trimmedURL,
                     section: trimmedSection.isEmpty ? nil : trimmedSection,
-                    ruleKey: draft.sourceRuleKey
+                    ruleKey: draft.sourceRuleKey,
+                    documentID: draft.sourceDocumentID, documentSHA256: draft.sourceDocumentSHA256,
+                    documentPage: draft.sourceDocumentPage, quotedText: draft.sourceQuotedText
                 )
             ]
         }
@@ -1475,7 +1581,9 @@ final class AppModel {
             return AgreementSource(
                 title: source.title.isEmpty ? "Worker-provided source" : source.title,
                 url: url, section: source.section.isEmpty ? nil : source.section,
-                ruleKey: source.ruleKey)
+                ruleKey: source.ruleKey, documentID: source.documentID,
+                documentSHA256: source.documentSHA256, documentPage: source.documentPage,
+                quotedText: source.quotedText)
         }
         return try AgreementSnapshot(
             id: agreementID,

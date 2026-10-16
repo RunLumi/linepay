@@ -11,12 +11,13 @@ struct OnboardingFlowView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var step: Step = .welcome
+    @State private var importingAgreement = false
 
     var body: some View {
         Group {
             switch step {
             case .welcome:
-                OnboardingWelcomeView {
+                OnboardingWelcomeView(onImportAgreement: { importingAgreement = true }) {
                     step = .paySetup
                 }
 
@@ -29,5 +30,18 @@ struct OnboardingFlowView: View {
             }
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: step)
+        .sheet(isPresented: $importingAgreement) {
+            NavigationStack {
+                AgreementDocumentsView(model: model) {
+                    importingAgreement = false
+                    step = .paySetup
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { importingAgreement = false }
+                    }
+                }
+            }
+        }
     }
 }

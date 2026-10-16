@@ -47,7 +47,7 @@ struct ReportSharingView: View {
                     }
                     if privacy.includeSourceDetails {
                         Label(
-                            "This adds profile identity, source names and URLs, private rule notes and OCR source lines. Those lines may include unrelated personal information. Review every page before sharing.",
+                            "This adds profile identity, source names and URLs, agreement excerpts and file fingerprints, private rule notes and OCR source lines. Those lines may include unrelated personal information. Review every page before sharing.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)

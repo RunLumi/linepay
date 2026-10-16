@@ -39,7 +39,7 @@ struct PayLedgerView: View {
                             CalculationProblemView(message: error)
                         }
                         NavigationLink("Rules used for this estimate") {
-                            RuleSourcesView(agreement: context.agreement)
+                            RuleSourcesView(agreement: context.agreement, model: model)
                         }
                         if context.agreement.weeklyOvertime != nil {
                             Text(
@@ -119,7 +119,7 @@ struct PayLedgerView: View {
                     if let calculation = context.calculation {
                         PayLedgerRows(
                             calculation: calculation, agreement: context.agreement,
-                            work: context.workEntries)
+                            work: context.workEntries, model: model)
                     }
                     if !context.workEntries.isEmpty {
                         Section {

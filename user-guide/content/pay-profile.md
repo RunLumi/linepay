@@ -41,3 +41,13 @@ Use a specific agreement version or section where possible. A saved link is a re
 When editing an established profile, read [Choose where a rule change applies]({{< relref "/changing-rules" >}}) before confirming. A new rate should not accidentally reprice earlier work.
 
 On **Confirm rules**, **Apply this change** keeps the selected **Scope** visible in the form. Review that current value and any **New rules start** date before **Save reviewed rules**; the action is not hidden in a toolbar-only menu.
+
+## Start with an agreement PDF
+
+Choose **Import an agreement PDF** on the welcome screen, or **Settings → Agreement documents** after setup. Select **Choose agreement PDF** in Files. The app retains the original locally before reading its text or scanned pages on the device.
+
+Open the retained document and review every candidate clause. Inspect the original physical PDF page, correct any reading, and explicitly choose whether to confirm it, mark it not applicable, or keep it unresolved. A text match or recognition percentage does not establish that a rule applies to your employer, classification, dates or work.
+
+Confirm applicability, currency and effective dates separately. Conditional, unsupported or conflicting clauses need your attention; the reader does not choose a classification or invent missing rules. If replacing daily overtime tiers, acknowledge that replacement. **Review complete rule setup** prepares a draft in the usual editor. Check every step and the change scope before its final save; importing or preparing alone never activates rules.
+
+The reader handles a bounded set of explicit clause formats. It can miss tables, cross-references, amendments and other layouts. Reading is limited to 25 MB, 128 pages, 250,000 text characters and 64 candidates; an incomplete-reading notice requires further manual review. The complete retained PDF can contain more than the reader examined. Empty or unresolved extraction is not evidence that the agreement has no additional obligations.

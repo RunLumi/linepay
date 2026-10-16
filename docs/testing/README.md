@@ -1,6 +1,6 @@
 # LinePaycheck test contract
 
-[OCR extraction and review evaluation](ocr-evaluation.md) records the synthetic corpus and its limits.
+[OCR extraction and review evaluation](ocr-evaluation.md) and [local agreement import evaluation](agreement-import.md) record synthetic fixtures and their limits.
 
 ## What this suite proves
 

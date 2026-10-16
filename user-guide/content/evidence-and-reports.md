@@ -18,6 +18,8 @@ If no expected component is applicable, check for incomplete work or an incompat
 
 Use the component’s evidence or **Rule snapshot → Rules used · version …** to inspect the relevant snapshot and references. A reference entered by you is not independent verification by LinePaycheck.
 
+Imported agreement references can also retain a quotation, physical PDF page and file fingerprint. Open the cited original to inspect that page. The app checks its bytes against the recorded fingerprint; that check establishes file identity, not legal validity. A missing original remains an evidence limitation.
+
 Use **View original paystub** to open retained source pages. For a mapped field, **View source for this field** can take you to the relevant region. Check labels and current-period columns as well as digits.
 
 A manually entered audit or one whose original was removed can retain confirmed values without a document. “No original available” is an evidence limitation, not permission to imply that the app verified the source.
@@ -33,7 +35,7 @@ A manually entered audit or one whose original was removed can retain confirmed 
 4. Choose **Preview this report** and inspect the exact generated PDF. **Share report** becomes available only after this preview.
 5. Review the period, comparison scope, limitations, and sensitive amounts before selecting a destination in the system share sheet.
 
-The default report excludes original paystub pages, optional OCR source text, profile names, source identifiers, and follow-up notes, but it still contains sensitive pay amounts/dates and is not anonymous. Optional source details can add private rule, source, and OCR text and require a new review. Share only with an intended recipient and avoid public links. A previously saved or shared copy is outside later local deletion. Preparing or sharing a PDF does not contact payroll on your behalf.
+The default report excludes original paystub pages, optional OCR source text, profile names, source identifiers, and follow-up notes, but it still contains sensitive pay amounts/dates and is not anonymous. Optional source details can add private agreement quotations and fingerprints, rule references, and OCR text and require a new review. Share only with an intended recipient and avoid public links. A previously saved or shared copy is outside later local deletion. Preparing or sharing a PDF does not contact payroll on your behalf.
 
 Existing records and exports remain available without Pro. A PDF is a report, not a complete restorable backup.
 

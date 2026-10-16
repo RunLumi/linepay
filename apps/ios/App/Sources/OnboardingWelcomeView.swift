@@ -2,6 +2,12 @@ import SwiftUI
 
 struct OnboardingWelcomeView: View {
     let onContinue: () -> Void
+    let onImportAgreement: (() -> Void)?
+
+    init(onImportAgreement: (() -> Void)? = nil, onContinue: @escaping () -> Void) {
+        self.onContinue = onContinue
+        self.onImportAgreement = onImportAgreement
+    }
 
     var body: some View {
         ScrollView {
@@ -39,6 +45,11 @@ struct OnboardingWelcomeView: View {
                         title: "Explainable pay",
                         detail: "See how your confirmed rules turn worked hours into expected pay."
                     )
+                }
+                if let onImportAgreement {
+                    Button("Import an agreement PDF", action: onImportAgreement)
+                        .buttonStyle(LinePaySecondaryButtonStyle())
+                        .accessibilityIdentifier("onboarding.import-agreement")
                 }
                 BackupRestoreEntryPoint(title: "Restore from iCloud Drive")
             }

@@ -285,13 +285,14 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 5
+    static let currentSchemaVersion = 6
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
     var resolutionEvents: [ResolutionEvent]?
+    var agreementDocuments: [ImportedAgreementDocument]?
     var onboardingProgress: OnboardingProgress?
     var setupDraft: PayProfileDraft?
     var workDraft: WorkDraft?
@@ -310,7 +311,8 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit, resolutionEvents
+        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit, resolutionEvents,
+            agreementDocuments
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
     }
@@ -321,8 +323,10 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1–v4 migration. Historical calculations and sources are not recalculated.
+        // Additive v1–v5 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
+        agreementDocuments = try values.decodeIfPresent(
+            [ImportedAgreementDocument].self, forKey: .agreementDocuments)
         resolutionEvents = try values.decodeIfPresent(
             [ResolutionEvent].self, forKey: .resolutionEvents)
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)

@@ -179,7 +179,7 @@ struct AuditDetailView: View {
                 }
                 Section("Rule snapshot") {
                     NavigationLink("Rules used · version \(context.agreement.version)") {
-                        RuleSourcesView(agreement: context.agreement)
+                        RuleSourcesView(agreement: context.agreement, model: model)
                     }
                 }
                 Section("Share with payroll") {
@@ -260,7 +260,7 @@ struct PaycheckComparisonDetail: View {
                                 component: component,
                                 agreement: appliedSnapshot(
                                     for: component, in: calculation, fallback: context.agreement),
-                                work: context.workEntries)
+                                work: context.workEntries, model: model)
                         }
                     }
                 }

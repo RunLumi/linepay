@@ -156,6 +156,15 @@ struct ReconciliationReportExporter {
                             "\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
                         if !source.url.isEmpty { writer.caption(source.url) }
                         if let section = source.section { writer.caption(section) }
+                        if let page = source.documentPage {
+                            writer.caption("Physical PDF page: \(page + 1)")
+                        }
+                        if let digest = source.documentSHA256 {
+                            writer.caption("Recorded PDF fingerprint: \(digest)")
+                        }
+                        if let quote = source.quotedText {
+                            writer.caption("Recorded agreement excerpt: \(quote)")
+                        }
                     }
                 } else if !agreement.sources.isEmpty {
                     writer.caption(

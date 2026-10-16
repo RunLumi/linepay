@@ -10,7 +10,7 @@ keywords: [backup, restore, iCloud, new phone, migration, recovery, Files, expor
 
 | Operation | What it gives you |
 | --- | --- |
-| **Complete LinePaycheck backup** | A restorable snapshot of saved work, profiles, rule snapshots, notes, periods, saved drafts, audit history, and retained original paystubs. |
+| **Complete LinePaycheck backup** | A restorable snapshot of saved work, profiles, rule snapshots, notes, periods, saved drafts, audit history, and retained original paystub and agreement PDFs. |
 | **Audit PDF or JSON data export** | A report or structured data for your use. A JSON export does not include original document bytes and is not the complete backup format. |
 | **Restore Purchases** | A check of App Store purchase access. It does not restore work, paystubs, or history. |
 
@@ -28,7 +28,7 @@ Despite the button’s name, the Files picker can offer other locations. A copy 
 
 > **The backup is not password-encrypted by LinePaycheck.** Anyone who can access and open the file can access its contents. Choose a private location; do not attach it to a public support issue or share it casually.
 
-Deleted originals, unsaved input, and App Store subscription entitlements are not included. Saved drafts and originals still retained by the app are included.
+Deleted originals, unsaved input, and App Store subscription entitlements are not included. Saved drafts, agreement review decisions, source citations and originals still retained by the app are included.
 
 ## Restore a selected backup
 

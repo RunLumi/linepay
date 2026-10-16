@@ -7,6 +7,7 @@ extension AppPersistentState {
             + history.map { $0.paystub?.evidence }
             + (activePeriod?.auditRevisions ?? []).map { $0.paystub.evidence }
             + history.flatMap { ($0.auditRevisions ?? []).map { $0.paystub.evidence } }
+            + (agreementDocuments ?? []).map(\.evidence)
         return originals.compactMap { $0 }
     }
 
@@ -23,6 +24,11 @@ extension AppPersistentState {
         -> AppPersistentState
     {
         var result = self
+        result.agreementDocuments = result.agreementDocuments?.map { document in
+            var copy = document
+            copy.evidence = document.evidence.flatMap(transform)
+            return copy
+        }
         if var active = result.activePeriod {
             active.paystub = active.paystub?.mappingEvidence(transform)
             active.auditRevisions = active.auditRevisions?.map { $0.mappingEvidence(transform) }
@@ -47,7 +53,8 @@ extension AppPersistentState {
                 archivedEpochSeconds: period.archivedEpochSeconds,
                 auditRevisions: period.auditRevisions?.map { $0.mappingEvidence(transform) },
                 hasConsumedAuditAccess: period.hasConsumedAuditAccess,
-                agreementChanges: period.agreementChanges
+                agreementChanges: period.agreementChanges,
+                calculationIssue: period.calculationIssue, workCorrections: period.workCorrections
             )
         }
         return result

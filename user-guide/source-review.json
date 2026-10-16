@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -9,7 +9,7 @@
         "getting-started"
       ],
       "disposition": "reviewed",
-      "blob": "0e9da2e6d9045317b2a01e8d8668456559568d06"
+      "blob": "c744e31cfce656e1f4761a31d70c1ff90d4a10f7"
     },
     {
       "path": "apps/ios/App/Sources/OnboardingWelcomeView.swift",
@@ -17,7 +17,7 @@
         "getting-started"
       ],
       "disposition": "reviewed",
-      "blob": "6428be7533db4fedd34b105831e43ec05ae970e1"
+      "blob": "ee7bae60b3054a961352c77e03c34cad61782d09"
     },
     {
       "path": "apps/ios/App/Sources/FirstPayResultView.swift",
@@ -26,7 +26,7 @@
         "expected-pay"
       ],
       "disposition": "reviewed",
-      "blob": "6f625f8620bd8db141448c6cfc72dbf476ab7f77"
+      "blob": "e14f9bab689eeee83da185a1a51da18e8c125d39"
     },
     {
       "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
@@ -46,7 +46,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "7dcad3dff8140a469038889a4029eadabee51dea"
+      "blob": "901917361f8b96b164320c8fe0b08809389335a6"
     },
     {
       "path": "apps/ios/App/Sources/LinePayFormat.swift",
@@ -99,7 +99,7 @@
         "pay-rules"
       ],
       "disposition": "reviewed",
-      "blob": "ad18d72562dd270412e2390b251bb8b97238734e"
+      "blob": "9f540326048a645ec5b52856e0ae32d7e6cf3f57"
     },
     {
       "path": "apps/ios/App/Sources/WeeklyOvertimeReviewView.swift",
@@ -117,7 +117,7 @@
         "pay-periods"
       ],
       "disposition": "reviewed",
-      "blob": "0069b04165ad8b4f3a0e5873356bcbc15893c86f"
+      "blob": "245e6f0ab072307101075dc10338281fc1b643ec"
     },
     {
       "path": "apps/ios/App/Sources/PaystubImportView.swift",
@@ -136,7 +136,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "3ea5e22beb49d57eb8a2111c0d29d5bd757f027f"
+      "blob": "ec1fc9016b33f3e05ac542fda8e4c38c02715761"
     },
     {
       "path": "apps/ios/App/Sources/AuditStatusView.swift",
@@ -152,7 +152,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "05fc725fe674e436e0b43157427211a3815906fc"
+      "blob": "407dd7272af652042edf8878acc653b65711e34a"
     },
     {
       "path": "apps/ios/App/Sources/BackupRestoreView.swift",
@@ -170,7 +170,7 @@
         "support"
       ],
       "disposition": "reviewed",
-      "blob": "2c5e40bda111f74a885ad6a248cb94260db540b3"
+      "blob": "95d3ad2ea12cf44b06673a4a0ed52c507210c558"
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -240,6 +240,64 @@
       ],
       "disposition": "reviewed",
       "blob": "211d4f73a704bf6efe44b20855fa67e08f1a63dc"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementDocumentsView.swift",
+      "guides": [
+        "getting-started",
+        "pay-profile"
+      ],
+      "disposition": "reviewed",
+      "blob": "80a7a25c7bac1ebf3664f75b53afe065e9ba98df"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementDocumentReviewView.swift",
+      "guides": [
+        "pay-profile"
+      ],
+      "disposition": "reviewed",
+      "blob": "8a0f78f4f5aad27577f331bc8d67984ead24955c"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementOriginalView.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "5491b38181c53447d035de73350dfd4cf26a4338"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementImportDraftBuilder.swift",
+      "guides": [
+        "pay-profile",
+        "changing-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "2b1934663ced6d00f402e5a8db625dd67e98335b"
+    },
+    {
+      "path": "apps/ios/App/Sources/BackupStateMapping.swift",
+      "guides": [
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "c716c5b54d3a43ec7d298fc69fc17cd5fadfd541"
+    },
+    {
+      "path": "apps/ios/App/Sources/EvidenceReceiptView.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "3060cf1e8ebaf0c4f5b595f68705b28762c17d78"
+    },
+    {
+      "path": "apps/ios/App/Sources/ReconciliationReportExporter.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "a2cc508607168337676c53c5f496ca1c80d9ff68"
     }
   ]
 }

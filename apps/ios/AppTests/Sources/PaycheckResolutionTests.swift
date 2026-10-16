@@ -130,7 +130,7 @@ struct PaycheckResolutionTests {
         json.removeValue(forKey: "resolutionEvents")
         let migrated = try JSONDecoder().decode(
             AppPersistentState.self, from: JSONSerialization.data(withJSONObject: json))
-        #expect(migrated.schemaVersion == 5)
+        #expect(migrated.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(migrated.resolutionEvents == nil)
         #expect(migrated.activePeriod == state.activePeriod)
         #expect(migrated.profile == state.profile)

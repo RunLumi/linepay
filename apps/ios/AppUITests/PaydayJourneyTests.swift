@@ -413,6 +413,95 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(app.buttons["today.add-work"].label, "Add work")
     }
 
+    func testAgreementImportCanStartBeforeEnteringARate() {
+        launch()
+        tap("onboarding.import-agreement")
+        XCTAssertTrue(app.buttons["agreements.choose-pdf"].waitForExistence(timeout: 10))
+        capture("v2-agreement-first-run")
+    }
+
+    func testAgreementReviewKeepsSourceAndRequiresExplicitActivation() {
+        launch(scenario: "agreement")
+        openAgreementReview()
+        tap("agreement.candidate.baseRate")
+        tap("agreement.candidate-source")
+        XCTAssertTrue(app.staticTexts["agreement.original-checked"].waitForExistence(timeout: 15))
+        capture("v2-agreement-original")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let rate = app.textFields["agreement.candidate-value"].firstMatch
+        scrollTo(rate)
+        XCTAssertTrue(rate.waitForExistence(timeout: 10))
+        rate.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5) + "60.50")
+        dismissKeyboard()
+        tap("agreement.decision.confirmed")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        for kind in ["dailyOvertime", "effectiveStart", "mealPremium"] {
+            tap("agreement.candidate.\(kind)")
+            tap(
+                kind == "mealPremium"
+                    ? "agreement.decision.unresolved" : "agreement.decision.confirmed")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        for id in [
+            "agreement.confirm-applicability", "agreement.confirm-currency",
+            "agreement.confirm-no-end", "agreement.confirm-dates",
+            "agreement.confirm-tier-replacement",
+        ] {
+            let control = app.switches[id].firstMatch
+            scrollTo(control)
+            XCTAssertTrue(control.waitForExistence(timeout: 10))
+            // SwiftUI exposes the whole labelled row; the native switch ends before its
+            // trailing padding. Target the switch, rather than that padding or the label.
+            control.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+            XCTAssertEqual(control.value as? String, "1", "Confirmation did not turn on: \(id)")
+        }
+        capture("v2-agreement-reviewed")
+        tap("agreement.prepare-setup")
+        let preparedRate = app.textFields["pay-profile.hourly-rate"].firstMatch
+        XCTAssertTrue(preparedRate.waitForExistence(timeout: 10))
+        XCTAssertEqual(preparedRate.value as? String, "60.50")
+        capture("v2-agreement-prepared-draft")
+        advanceSetupStep(to: "Step 2 of 4")
+        advanceSetupStep(to: "Step 3 of 4")
+        advanceSetupStep(to: "Step 4 of 4")
+        tapSetupSave()
+        tap("pay-profile.confirm-change")
+        tab("Today")
+        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 10))
+        tab("Pay")
+        tap("pay.finish-period")
+        tap("period.confirm-close")
+        tab("Today")
+        tap("today.add-work")
+        tap("work.save")
+        XCTAssertTrue(app.staticTexts["$484.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("v2-agreement-confirmed-next-period")
+    }
+
+    func testAgreementCandidateAtLargestText() {
+        launch(scenario: "agreement", largeText: true)
+        openAgreementReview()
+        tap("agreement.candidate.baseRate")
+        tap("agreement.decision.unresolved")
+        capture("v2-agreement-candidate-largest-text")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.terminate()
+        launch(reset: false, scenario: "agreement", largeText: true)
+        openAgreementReview()
+        XCTAssertTrue(
+            app.buttons["agreement.candidate.baseRate"].label.contains("Keep as unresolved"))
+    }
+
+    private func openAgreementReview() {
+        tab("Settings")
+        tap("settings.agreements")
+        tap("agreements.document")
+        let base = app.buttons["agreement.candidate.baseRate"]
+        if !base.waitForExistence(timeout: 15) || !base.isHittable { scrollTo(base) }
+        XCTAssertTrue(base.exists)
+    }
+
     func testOCRConfidenceStaysAnUnconfirmedReadingWithSourceEvidence() {
         ocrConfidenceJourney(largeText: false)
     }

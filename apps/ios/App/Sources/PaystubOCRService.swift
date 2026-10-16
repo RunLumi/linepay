@@ -95,7 +95,7 @@ struct PaystubOCRService: Sendable {
         }.cgImage
     }
 
-    private static func recognizeLines(_ image: CGImage, page: Int) throws
+    static func recognizeLines(_ image: CGImage, page: Int) throws
         -> [RecognizedPaystubLine]
     {
         try Task.checkCancellation()

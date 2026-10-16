@@ -225,19 +225,32 @@ public struct AgreementSource: Codable, Hashable, Sendable {
     public let section: String?
     public let verifiedEpochSeconds: Int64?
     public let ruleKey: PayRuleKey?
+    public let documentID: UUID?
+    public let documentSHA256: String?
+    /// Zero-based physical PDF page, independent of printed page numbering.
+    public let documentPage: Int?
+    public let quotedText: String?
 
     public init(
         title: String,
         url: String,
         section: String? = nil,
         verifiedEpochSeconds: Int64? = nil,
-        ruleKey: PayRuleKey? = nil
+        ruleKey: PayRuleKey? = nil,
+        documentID: UUID? = nil,
+        documentSHA256: String? = nil,
+        documentPage: Int? = nil,
+        quotedText: String? = nil
     ) {
         self.title = title
         self.url = url
         self.section = section
         self.verifiedEpochSeconds = verifiedEpochSeconds
         self.ruleKey = ruleKey
+        self.documentID = documentID
+        self.documentSHA256 = documentSHA256
+        self.documentPage = documentPage
+        self.quotedText = quotedText
     }
 }
 

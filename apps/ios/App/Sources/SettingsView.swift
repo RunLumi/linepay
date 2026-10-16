@@ -51,9 +51,13 @@ struct SettingsView: View {
                             PayPeriodSettingsView(model: model)
                         }
                         NavigationLink("Rule sources") {
-                            RuleSourcesView(agreement: profile.agreement)
+                            RuleSourcesView(agreement: profile.agreement, model: model)
                         }
                     }
+                }
+                Section("Agreements") {
+                    NavigationLink("Agreement documents") { AgreementDocumentsView(model: model) }
+                        .accessibilityIdentifier("settings.agreements")
                 }
                 Section("LinePaycheck Pro") {
                     LabeledContent(
@@ -204,7 +208,7 @@ struct PrivacyDataView: View {
                 )
                 NavigationLink("Read privacy policy") { LegalTextView(kind: .privacy) }
             }
-            Section("Original paystubs") {
+            Section("Original documents") {
                 ForEach(model.retainedEvidence) { evidence in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(evidence.originalFilename)
@@ -213,7 +217,7 @@ struct PrivacyDataView: View {
                         }.frame(minHeight: 44)
                     }
                 }
-                if model.retainedEvidence.isEmpty { Text("No original paystubs retained.") }
+                if model.retainedEvidence.isEmpty { Text("No original documents retained.") }
             }
             Section("Deletion and recovery") {
                 if model.pendingDeletionCount > 0 {

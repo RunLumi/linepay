@@ -96,6 +96,10 @@
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,
                     note: "Synthetic test shift")
                 try model.completeFirstResult()
+                if scenario == "agreement" {
+                    try seedAgreement(model)
+                    return session
+                }
                 if scenario == "work" || scenario == "unsupported" { return session }
                 guard let id = model.activePeriod?.id else {
                     throw AppModelError.missingActivePayPeriod
@@ -148,6 +152,39 @@
                 session.restoreNotice = "Synthetic UI fixture failed: \(error.localizedDescription)"
             }
             return session
+        }
+
+        private static func seedAgreement(_ model: AppModel) throws {
+            guard let next = model.activePeriod?.window.endDate,
+                let zone = model.profile?.timeZoneIdentifier
+            else {
+                throw AppModelError.missingActivePayPeriod
+            }
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(identifier: zone)
+            formatter.dateFormat = "yyyy-MM-dd"
+            let lines = [
+                "SYNTHETIC AGREEMENT",
+                "Base hourly rate: USD 60.00 per hour",
+                "Daily overtime: after 8 hours at 1.5x",
+                "Effective from: \(formatter.string(from: next))",
+                "Meal premium: USD 25.00 per missed meal",
+            ]
+            let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+            let data = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                context.beginPage()
+                UIColor.white.setFill()
+                context.fill(bounds)
+                for (index, line) in lines.enumerated() {
+                    (line as NSString).draw(
+                        at: CGPoint(x: 36, y: 60 + index * 34),
+                        withAttributes: [
+                            .font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.black,
+                        ])
+                }
+            }
+            try model.retainAgreement(data: data, filename: "synthetic-agreement.pdf")
         }
 
         /// The App Store sample paycheck `store-week-2026-08-v1` from

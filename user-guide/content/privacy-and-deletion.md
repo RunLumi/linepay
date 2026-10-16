@@ -1,5 +1,5 @@
 ---
-title: Control your data and original paystubs
+title: Control your data and original documents
 linkTitle: Privacy and deletion
 weight: 150
 group: Keep control
@@ -16,9 +16,11 @@ App Store purchases use Apple’s services. A Files provider can use the network
 
 ## Review or remove retained originals
 
-Go to **Settings → Privacy and local data → Original paystubs**. Choose **Remove original** for the selected document, then read and confirm the consequence. An audit’s **Remove this original** action provides the same kind of source removal.
+Go to **Settings → Privacy and local data → Original documents**. Choose **Remove original** for the selected document, then read and confirm the consequence. An audit’s **Remove this original** action provides the same kind of source removal.
 
 Every audit revision sharing that original loses access to its document and associated OCR excerpts. Confirmed figures and calculation records remain. This is different from deleting the entire period.
+
+For an imported agreement, removing its original keeps saved review decisions and rule-snapshot citations. Reattach only the exact same PDF when you need to restore that source; a changed document is a separate import. An import referenced by a saved draft or rule history cannot be deleted as unused.
 
 Files already exported elsewhere are not removed. A removed original is also absent from future backups, although an earlier backup may still contain it.
 
