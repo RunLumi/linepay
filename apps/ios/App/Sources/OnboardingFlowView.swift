@@ -12,12 +12,16 @@ struct OnboardingFlowView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var step: Step = .welcome
     @State private var importingAgreement = false
+    @State private var importingCrewRules = false
 
     var body: some View {
         Group {
             switch step {
             case .welcome:
-                OnboardingWelcomeView(onImportAgreement: { importingAgreement = true }) {
+                OnboardingWelcomeView(
+                    onImportAgreement: { importingAgreement = true },
+                    onImportCrewRules: { importingCrewRules = true }
+                ) {
                     step = .paySetup
                 }
 
@@ -39,6 +43,19 @@ struct OnboardingFlowView: View {
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Close") { importingAgreement = false }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $importingCrewRules) {
+            NavigationStack {
+                CrewRulesView(model: model) {
+                    importingCrewRules = false
+                    step = .paySetup
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { importingCrewRules = false }
                     }
                 }
             }

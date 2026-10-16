@@ -97,8 +97,11 @@ func benefitErrorMessage(_ error: any Error) -> String {
 }
 
 func benefitLastDate(_ exclusive: Binding<Date>, zone: String) -> Binding<Date> {
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: zone) ?? .gmt
+    let calendar: Calendar = {
+        var value = Calendar(identifier: .gregorian)
+        value.timeZone = TimeZone(identifier: zone) ?? .gmt
+        return value
+    }()
     return Binding(
         get: {
             calendar.date(byAdding: .day, value: -1, to: exclusive.wrappedValue)

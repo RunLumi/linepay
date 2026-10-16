@@ -137,6 +137,9 @@ final class AppModel {
     private func candidateForProfile(
         _ draft: PayProfileDraft, scope: RuleChangeScope = .prospective
     ) throws -> AppPersistentState {
+        if draft.crewRuleAdoption != nil, state.profile != nil, scope != .futurePeriods {
+            throw AppModelError.invalidField("Worker-provided drafts apply only to future periods")
+        }
         let agreement = try makeAgreement(from: draft)
         let existing = state.profile
         var candidate = state
@@ -262,6 +265,15 @@ final class AppModel {
             preferredCadence: draft.preferredCadence,
             baselineAgreement: baseline, agreementChanges: changes.isEmpty ? nil : changes)
         candidate.profile = profile
+        if let adoption = draft.crewRuleAdoption {
+            try adoption.validate(agreement: agreement)
+            candidate.crewRuleOrigins =
+                (candidate.crewRuleOrigins ?? []) + [
+                    CrewRuleOrigin(
+                        adoption: adoption, agreement: agreement,
+                        timeZoneIdentifier: draft.timeZoneIdentifier)
+                ]
+        }
         if existing == nil {
             candidate.onboardingProgress = .firstWork
             let window = try makePeriodWindow(
@@ -985,6 +997,22 @@ final class AppModel {
     }
 
     var setupDraft: PayProfileDraft? { state.setupDraft }
+    var crewRuleOrigins: [CrewRuleOrigin] { state.crewRuleOrigins ?? [] }
+
+    func prepareCrewRuleDraft(_ draft: PayProfileDraft, replaceExistingDraft: Bool = false) throws {
+        guard draft.crewRuleAdoption != nil else {
+            throw AppModelError.invalidField("Review a worker-provided rule draft first")
+        }
+        guard state.setupDraft == nil || replaceExistingDraft else {
+            throw AppModelError.invalidField("An unfinished rule setup already exists")
+        }
+        let agreement = try previewAgreement(draft)
+        try draft.crewRuleAdoption?.validate(agreement: agreement)
+        if let adoption = draft.crewRuleAdoption {
+            try CrewRuleDraftBuilder.validateIdentity(adoption, among: state.crewRuleOrigins ?? [])
+        }
+        try saveSetupDraft(draft)
+    }
 
     func deferFirstWork() throws {
         var candidate = state
@@ -1597,7 +1625,8 @@ final class AppModel {
                 FlatPerDiemRule(
                     amountPerWorkDate: Money(
                         amount: try positiveDecimal(
-                            draft.perDiemAmount, field: "Per diem", currencyCode: currency),
+                            draft.perDiemAmount, field: "Per diem", allowZero: true,
+                            currencyCode: currency),
                         currencyCode: currency
                     )
                 )
@@ -1664,6 +1693,16 @@ final class AppModel {
                 documentSHA256: source.documentSHA256, documentPage: source.documentPage,
                 quotedText: source.quotedText)
         }
+        let rounding: MoneyRoundingRule
+        if let adoption = draft.crewRuleAdoption {
+            rounding = try adoption.proposedAgreement(newAgreementID: UUID()).rounding
+        } else if let existing = existingAgreement?.rounding, existing.scope == .payCategory {
+            rounding = existing
+        } else {
+            rounding = MoneyRoundingRule(
+                scale: existingAgreement?.rounding.scale
+                    ?? min(2, LinePayFormat.fractionDigits(currencyCode: currency)))
+        }
         return try AgreementSnapshot(
             id: agreementID,
             version: nextVersion,
@@ -1679,11 +1718,9 @@ final class AppModel {
             calloutMinimum: calloutMinimum,
             flatPerDiem: perDiem,
             weeklyOvertime: weeklyOvertime,
-            // Only the scale follows the currency (none for VND); mode and scope stay the current
-            // defaults, exactly as every new rule version received before currencies varied.
-            rounding: MoneyRoundingRule(
-                scale: existingAgreement?.rounding.scale
-                    ?? min(2, LinePayFormat.fractionDigits(currencyCode: currency))),
+            // Manual setup keeps its existing defaults. Crew drafts retain explicitly reviewed
+            // rounding, with timeline compatibility checked before adoption.
+            rounding: rounding,
             sources: sources,
             unsupportedRuleNotes: draft.unsupportedRuleNotes.trimmingCharacters(
                 in: .whitespacesAndNewlines),

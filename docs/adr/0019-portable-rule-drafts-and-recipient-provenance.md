@@ -1,7 +1,8 @@
 # ADR 0019: portable rule drafts and recipient provenance
 
 Status: accepted for the owner's all-stage/local-only v2 request, October 17, 2026. Browser file
-exchange is implemented; native UI/Android and public/device release evidence remain pending.
+exchange is verified. [Native implementation](0023-native-crew-drafts-and-retained-adoption.md) now
+retains adoption in schema8; native runtime/Files, Android and public/device release remain pending.
 
 Use the [portable rule-draft contract](../../shared/contracts/templates/README.md) for explicit
 manual sharing. Keep it separate from financial-state backups and verified agreement packs. A draft
@@ -24,8 +25,9 @@ locale, UI, network or storage. Native callers use the exposed calculation polic
 
 Every import is inspection first. The recipient must confirm their own hourly amount and listed
 rules/applicability. Configured-but-omitted allowance amounts require an explicit own-amount or
-not-applicable choice. Absent configuration is not waived entitlement. Adoption creates a new
-profile and leaves existing periods/history unchanged. Monetary choices and original draft are
+not-applicable choice. Absent configuration is not waived entitlement. Browser adoption creates a new
+profile; native adoption creates the first profile or a new future-period version in its single
+profile. Existing saved comparisons/history remain unchanged. Monetary choices and original draft are
 retained separately so a profile cannot silently rewrite what was confirmed.
 
 Web state v3 adds `templateOrigins`: profile ID, complete admitted packet, recipient hourly/allowance

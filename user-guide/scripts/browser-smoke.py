@@ -15,6 +15,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 def run():
     evidence = ROOT / '.qa/browser'
     evidence.mkdir(parents=True, exist_ok=True)
+    (evidence / 'results.json').unlink(missing_ok=True)
     server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT / '.qa/project')))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -25,7 +26,7 @@ def run():
             options = {'headless': True}
             if os.environ.get('CHROMIUM_PATH'): options['executable_path'] = os.environ['CHROMIUM_PATH']
             browser = p.chromium.launch(**options)
-            slugs = ['', 'getting-started/', 'paystub-layouts/', 'backup-and-restore/', 'search/']
+            slugs = ['', 'getting-started/', 'paystub-layouts/', 'backup-and-restore/', 'benefits/', 'support/', 'search/']
             for name, width, height, theme in [('desktop-light', 1440, 1000, 'light'), ('mobile-light', 390, 844, 'light'), ('small-dark', 320, 780, 'dark')]:
                 context = browser.new_context(viewport={'width': width, 'height': height}, color_scheme=theme, reduced_motion='reduce')
                 page = context.new_page()
@@ -38,6 +39,8 @@ def run():
                     assert page.locator('h1').count() == 1
                     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'Horizontal overflow: {name}/{slug}'
                     assert page.locator('main').is_visible()
+                    if slug == 'support/':
+                        assert 'Never send the backup password.' in page.locator('main').inner_text()
                     records.append({'configuration': name, 'path': slug or '/', 'status': 'passed'})
                 page.goto(base)
                 page.screenshot(path=str(evidence / f'{name}-home.png'), full_page=True)
@@ -76,7 +79,7 @@ def run():
             assert page.get_by_role('navigation', name='User guide', exact=True).is_visible()
             assert page.locator('main').inner_text().find('Set up your pay') >= 0
             page.goto(base + 'search/')
-            assert page.locator('.browse-list a').count() == 20
+            assert page.locator('.browse-list a').count() == 21
             assert page.locator('main').inner_text().find('Browse all guides') >= 0
             context.close()
             context = browser.new_context(viewport={'width': 390, 'height': 844})

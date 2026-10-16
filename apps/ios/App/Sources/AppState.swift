@@ -295,7 +295,7 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 7
+    static let currentSchemaVersion = 8
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -303,6 +303,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     var hasUsedFreeAudit = false
     var resolutionEvents: [ResolutionEvent]?
     var agreementDocuments: [ImportedAgreementDocument]?
+    var crewRuleOrigins: [CrewRuleOrigin]?
     var benefitAudits: [BenefitAuditRecord]?
     var benefitAuditDraft: BenefitAuditDraft?
     var onboardingProgress: OnboardingProgress?
@@ -327,6 +328,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
             agreementDocuments, benefitAudits, benefitAuditDraft
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
+        case crewRuleOrigins
     }
 
     init(from decoder: any Decoder) throws {
@@ -335,8 +337,10 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1–v6 migration. Historical calculations and sources are not recalculated.
+        // Additive v1–v7 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
+        crewRuleOrigins = try values.decodeIfPresent(
+            [CrewRuleOrigin].self, forKey: .crewRuleOrigins)
         agreementDocuments = try values.decodeIfPresent(
             [ImportedAgreementDocument].self, forKey: .agreementDocuments)
         benefitAudits = try values.decodeIfPresent(

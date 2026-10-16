@@ -29,3 +29,5 @@
 - [0021-versioned-effective-date-browser-calculations](0021-versioned-effective-date-browser-calculations.md)
 
 - [0022-calendar-windows-and-reported-paycheck-periods](0022-calendar-windows-and-reported-paycheck-periods.md)
+
+- [0023-native-crew-drafts-and-retained-adoption](0023-native-crew-drafts-and-retained-adoption.md)

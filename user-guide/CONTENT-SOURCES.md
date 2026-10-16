@@ -70,3 +70,11 @@ V2 OCR evidence review (2026-10-16, release pending): `OCRFieldProvenanceView.sw
 V2 agreement review (2026-10-16, release pending): local agreement import, saved candidate review, exact-file page citations, rule editor handoff and backup metadata were reviewed against getting-started, pay-profile, evidence-and-reports, privacy-and-deletion and backup-and-restore. Source metadata passed through existing ledger/history screens without changing expected-pay or work-entry instructions. No source rights, legal applicability or broad extraction-accuracy claim is made.
 
 V2 benefits review (2026-10-16, release pending): reviewed the fund/period editor, immutable revisions, statement originals, exact calculation breakdown, report opt-ins and backup mapping against the new benefits guide and the affected backup, privacy, history and report guides. Employer contributions remain separate from wages, allowances and employee deductions; no fund eligibility or legal/project compliance is inferred. Existing Pro, Support, wage-report and work-entry instructions remain unchanged.
+
+
+Native crew-draft candidate (October17,2026): `CrewRulesView.swift`, `CrewRuleFileIO.swift`,
+`CrewRuleDraft.swift` and `CrewRuleWorkflowTests.swift` implement the proposed local exchange path.
+Its internal behavior/evidence is recorded in `docs/adr/0023-native-crew-drafts-and-retained-adoption.md`.
+Native App/runtime, Files-provider and visual acceptance is pending; no public crew instructions or
+successful-release/transfer claim is added from SDK compilation. Review publication guidance after
+those gates pass. Existing manual rule scopes, privacy/billing/support and benefits steps are unchanged.

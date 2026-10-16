@@ -84,6 +84,7 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var editScope: RuleEditScope = .futurePeriods
     var setupStep = 0
     var roundingRule: MoneyRoundingRule?
+    var crewRuleAdoption: CrewRuleAdoption?
     var sourceTitle = ""
     var sourceURL = ""
     var sourceSection = ""

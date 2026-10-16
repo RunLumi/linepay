@@ -19,6 +19,10 @@ enum AppStateValidation {
         try BenefitAuditValidation.validate(
             records: state.benefitAudits ?? [], draft: state.benefitAuditDraft)
         try AgreementImportValidation.validate(state.agreementDocuments ?? [])
+        try CrewRuleDraftBuilder.validate(state.crewRuleOrigins ?? [])
+        if let adoption = state.setupDraft?.crewRuleAdoption {
+            _ = try adoption.proposedAgreement(newAgreementID: UUID())
+        }
         let events = state.resolutionEvents ?? []
         guard events.count <= 10_000, Set(events.map(\.id)).count == events.count else {
             throw invalid()

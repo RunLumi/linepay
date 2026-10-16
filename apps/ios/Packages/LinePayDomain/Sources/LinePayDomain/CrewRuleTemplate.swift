@@ -159,7 +159,7 @@ public struct CrewRuleTemplate: Hashable, Sendable {
                     throw CrewRuleTemplateError.allowanceReviewRequired
                 }
                 _ = try Self.number(Self.text(perDiemAmount.amount))
-                allowance = try FlatPerDiemRule(amountPerWorkDate: perDiemAmount)
+                allowance = FlatPerDiemRule(amountPerWorkDate: perDiemAmount)
             case .notApplicable:
                 guard perDiemAmount == nil else {
                     throw CrewRuleTemplateError.allowanceReviewRequired

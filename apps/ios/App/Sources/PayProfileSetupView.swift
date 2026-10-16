@@ -52,6 +52,14 @@ struct PayProfileSetupView: View {
                     }
                     .padding(.vertical, 4)
                 }
+                if draft.crewRuleAdoption != nil {
+                    Section("Worker-provided draft") {
+                        Text(
+                            "The original draft and your reviewed amount choices will be retained with the new rule version. For an existing profile these rules apply only to future periods. To change the imported terms, return to Crew rule drafts and prepare them again."
+                        )
+                        .font(.footnote)
+                    }
+                }
                 switch step {
                 case 0: basics
                 case 1: period
@@ -425,12 +433,14 @@ struct PayProfileSetupView: View {
                     Menu {
                         Button("Future work periods only") { draft.editScope = .futurePeriods }
                             .accessibilityIdentifier("pay-profile.scope.future")
-                        Button("New rules from a date") { draft.editScope = .datedChange }
-                            .accessibilityIdentifier("pay-profile.scope.dated")
-                        Button("Recalculate this entire current period") {
-                            draft.editScope = .currentPeriod
+                        if draft.crewRuleAdoption == nil {
+                            Button("New rules from a date") { draft.editScope = .datedChange }
+                                .accessibilityIdentifier("pay-profile.scope.dated")
+                            Button("Recalculate this entire current period") {
+                                draft.editScope = .currentPeriod
+                            }
+                            .accessibilityIdentifier("pay-profile.scope.current")
                         }
-                        .accessibilityIdentifier("pay-profile.scope.current")
                     } label: {
                         HStack {
                             Text("Scope")

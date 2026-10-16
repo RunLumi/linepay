@@ -37,7 +37,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
-| Crew templates | Browser file exchange/recovery implemented; shared Swift codec verified | Native iOS Files/UI/persistence, Android adoption, physical transfer and actual crew use remain unverified |
+| Crew templates | Browser exchange/recovery verified; native Files/UI/adoption/state implementation added | Native App tests/Simulator/visual/provider execution, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
 
 ## Initial verified state
@@ -1395,3 +1395,115 @@ created; describe and verify each property separately.
   can be replaced; these tests verify fresh worker/offline paths, not an installed-device upgrade.
   Existing report/PDF evidence belongs to its recorded earlier source; report code was unchanged.
   Goal remains active; full v2 and App Store/manual public release are incomplete.
+
+
+## Native crew-file workflow and retained recipient adoption
+
+- Previous goal turn was progress (`50e3c5d`, `b49646c`); resumed at clean `b49646c` on
+  `codex/v2-e2e`. The read-only `xcodebuild -checkFirstLaunchStatus` still returned69. No first-launch
+  setup, duplicate admin prompt, Simulator creation/runtime/SDK install or unrelated process stop.
+- Added native Settings → Crew rule drafts: fresh public template identity, omitted wage/allowance
+  amounts by default, explicit rights choice and exact in-memory file review before system Files
+  export. Title/revision/amount edits invalidate the prepared copy and rights review. Export never
+  copies private profile/period IDs, work/audit history, notes, original sources or evidence bytes.
+  The save callback distinguishes selected location from cloud upload/recipient delivery.
+- User-selected import uses security-scoped coordinated reads off the UI actor, cancellation and
+  a65,536-byte allocation cap. Strict UTF-8/schema/duplicate admission runs before inspection.
+  Opening does not save anything. Own amount fields start blank even if draft amounts are present.
+  Explicit applicability/value/currency/timezone/allowance review prepares the usual setup draft;
+  unfinished setup replacement requires a separate choice. The four-step editor still owns final
+  review/save, with source limitations visible. No automatic message or transfer is performed.
+- New pure `CrewRuleAdoption` retains exact original bytes plus actual recipient wage/allowance
+  choices, and reproduces final terms after decoding/before adoption. Native state schema8 retains
+  frozen adopted agreement/version/timezone origins atomically with profile save; schemas1–7 add no
+  invented origins. The existing backup state/container carries this metadata without a new crypto
+  format. Domain round-trip, unknown/unconfirmed allowance, changed-term and decoded-choice tests
+  passed **3 tests/1 suite**, `/private/tmp/linepay-v2-crew-adoption-domain.log`.
+- Native has one profile: first-time adoption creates it; an existing worker gets a new immutable
+  version for future periods only. Current-period correction and arbitrary dated scopes are blocked
+  in the UI and model. Existing period/audit/history snapshots remain frozen. Incompatible currency
+  or rounding refuses. Original draft and own choices remain associated with the adopted version;
+  later edits cannot retain a stale adoption confirmation. No official pack/source approval is implied.
+- Fixed explicit zero allowance admission in the native profile adapter (domain already allowed
+  zero), retaining configured-zero versus absent. Preserve already reviewed pay-category rounding
+  on subsequent manual edits, including bankers mode; legacy/manual initial defaults keep their
+  existing path. Added **6 native App test sources** for inspection/preparation, unfinished/failed
+  save preservation, future-only audit/history, backup/old-schema shapes, changed choices, zero and
+  incompatible/preserved rounding. These tests are not executed native evidence yet.
+- Direct installed-SDK compilation is available without launching Simulator. Strict language6,
+  complete concurrency and warnings-as-errors checks compiled all production domain/App sources
+  for arm64 iOS18 Simulator. The first attempt found an existing unnecessary `try` in the crew
+  codec; removed it. A later check exposed mutable calendar capture warnings in benefits date
+  bindings under the new SDK; capture the already configured calendar as a `let` instead. No
+  isolation bypass, diagnostic suppression or compiler baseline change was introduced.
+- Focused App-test typechecking initially lacked Apple's Testing framework/plugin paths; after
+  supplying the installed originals, it caught two missing synthetic identity arguments in new
+  tests. Corrected them; test-only typechecking passed. A final production+focused-test compiler
+  run is in progress after the rounding-preservation review; record its terminal result below.
+  This is compilation, not an app bundle/build-system/native App-test/Simulator/Files/visual PASS.
+- Initial quick gate failed its guide-freshness regression, before native formatting/domain work.
+  Reviewed mapped setup/privacy/support/billing/benefits/work/result pages, recorded only the five
+  affected sources with specific reasons and kept unverified crew instructions internal. Corrected
+  stale support-copy wording about optional v2 backup protection. Final quick gate passed **74
+  repository tests, strict format and141 Swift domain tests in23 suites**,
+  `/private/tmp/linepay-v2-crew-quick-final.log`; no user-guide render PASS: its required check stops
+  with missing pinned Hugo0.165.0. Public guide changes were not deployed.
+- ADR0023 and BR090–092 own the native state/adoption boundary. New workflow uses native Form,
+  semantic tokens, explicit currency/unit labels, stable selectors, standard Files controls and
+  dynamic rows. Actual light/dark/largest-text/VoiceOver/error/cancellation/Files acceptance is
+  **pending**, as is native backup migration execution and physical handoff. Design is not approved
+  from source inspection or the compiler. Native full gate remains blocked by host setup.
+- Browser and Android sources were unchanged this turn; prior receipts are not new runs. No push,
+  PR, named library/pack, external message, website publication, archive/store submission or public
+  release occurred. All-stage scope and manual App Store release objective remain active/incomplete.
+
+- Final entry-path review added optional welcome-screen inspection for a recipient without a profile;
+  preparation returns to the normal onboarding setup, while Settings uses the existing editor sheet.
+  Updated both affected guide-source reviews; existing manual setup instructions remain valid and
+  native crew instructions are still pending actual UI acceptance. A final compiler refresh follows.
+
+- Added native conflict admission: a retained public draft ID/revision cannot be reused with changed
+  packet contents. Preparation checks existing identities; state validation uses one bounded map,
+  rather than repeated pairwise decoding. Original recipient values remain separate from packet
+  identity. The sixth focused App test covers this refusal; it remains execution-pending.
+
+- Final frozen-source SDK run completed with terminal exit0: all89 production App files,14 domain
+  files and2 focused test/support files compiled/typechecked (**105 sources**) for arm64 iOS18
+  Simulator using the installed27.1 SDK, language6, complete concurrency and warnings-as-errors.
+  No diagnostics in final log `/private/tmp/linepay-v2-crew-sdk-final.log`. Receipt
+  `.build/v2-crew-typecheck/compiler-receipt.json` binds source SHA256
+  `f63d7fba73a1719b041db0954aea811f8222badc98ac712c7572059f475362c5` and explicitly excludes
+  linking/bundling/runtime/UI/Files delivery. One earlier run detected a source edit during compile;
+  it failed and was replaced with this frozen-source pass, not relabelled green.
+  Final quick at the same source passed **74 script tests/strict format/141 domain tests in23 suites**,
+  `/private/tmp/linepay-v2-crew-quick-current.log`. The six App tests were **typechecked, not run**.
+- Resolved the missing-Hugo build-tool block instead of treating it as a release dependency on the
+  owner: downloaded the official0.165.0 Darwin universal package, verified its published SHA256
+  `10ea75335975a13d0e73ac298402179335c55fa4e99d1687452d9cfa70b30d16`, and used `pkgutil
+  --expand-full` inside ignored `.build/tools/hugo-0.165.0/` without installer/admin scripts or global
+  installation. Official source: <https://github.com/gohugoio/hugo/releases/tag/v0.165.0>.
+  Executable reports0.165.0/darwin-arm64. Required `user-guide/scripts/check.sh` now passes both root
+  and `/linepay/` builds:24 HTML pages/21 search entries each, all internal links/fragments/assets,
+  deterministic search tests,58 source reviews and4 screenshot-provenance checks. Log
+  `/private/tmp/linepay-v2-crew-guide-check.log`. No public deployment occurred.
+
+- Actual guide Chromium check first failed its stale no-JS browse-count20 assertion after the benefits
+  page increased the generated task inventory to21. Corrected that bounded expectation, added actual
+  support/benefits page coverage at each viewport and the new password-guidance assertion, and clear
+  stale success receipts before running. Final **21 page/configuration checks passed** with real
+  search/mobile navigation/dark preference/no-JS/keyboard/print checks,
+  `/private/tmp/linepay-v2-crew-guide-browser-final.log`; synthetic captures/results under
+  `user-guide/.qa/browser/`. Root/project HTML validation independently confirms21 search entries.
+  This is documentation-browser evidence, not native App/Files proof or public deployment.
+
+- Last native copy-only change displays a recoverable file-selection error instead of silently
+  ignoring it. Frozen-source compiler rerun again passed with terminal exit0 and no diagnostics:
+  `/private/tmp/linepay-v2-crew-sdk-checked.log`, final source SHA256
+  `18317aacd815775b52968e5ce54f6b82f714f85d82b6c2827c83716d1574453e`.
+  Receipt scope remains module emission/focused test typechecking, not native test execution.
+  Final documentation checks:1,054 local links,5 documentation-tool tests, legal inventory/active-copy,
+  agent harness and diff checks passed. New UI remains acceptance-pending; full v2/release incomplete.
+
+- Final quick rerun after that copy change also exited0:74 repository tests, strict formatting and141
+  domain tests/23 suites, `/private/tmp/linepay-v2-crew-quick-checked.log`. No native source changed
+  after the final compiler receipt. Full native runtime/UI/release acceptance remains outstanding.

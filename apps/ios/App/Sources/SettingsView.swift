@@ -70,6 +70,8 @@ struct SettingsView: View {
                 Section("Agreements") {
                     NavigationLink("Agreement documents") { AgreementDocumentsView(model: model) }
                         .accessibilityIdentifier("settings.agreements")
+                    NavigationLink("Crew rule drafts") { CrewRulesView(model: model) }
+                        .accessibilityIdentifier("settings.crew-rules")
                 }
                 Section("LinePaycheck Pro") {
                     LabeledContent(

@@ -58,13 +58,18 @@ may be displayed for review but does not waive confirmation. A configured allowa
 explicit own-amount or not-applicable decision. An unconfigured allowance remains unconfigured,
 not a legal waiver. Unsupported/unknown values do not become zero or an inferred rule.
 
-Adoption creates a fresh profile, preserving the draft and the recipient's actual choices. It does
-not edit existing period/rule/history snapshots. The browser stores those origins atomically with
+Adoption creates fresh recipient rule identity/version, preserving the draft and actual choices.
+The browser creates a fresh profile; native iOS creates the first profile or a new immutable version
+for future periods in its existing single profile. It does not reprice current work or rewrite saved
+audit/history snapshots. The browser stores those origins atomically with
 the profile in web state v3, and protects them in manual encrypted backup/recovery. Its old v1/v2
 migrations add only empty origin metadata after validating retained records. The Swift codec
-returns a new proposed agreement and exposes its calculation policy; native app adapters must
-persist original draft/choices, collect confirmation and implement actual Files UI before claiming
-a native sharing workflow. Android decoding/adoption remains pending.
+returns a new proposed agreement and exposes its calculation policy. The native Settings workflow now
+implements inspection, exact-file review, own-value confirmation, setup preparation and atomic
+provenance retention in state schema8. Its App/runtime/Files and visual acceptance remains pending;
+source implementation or SDK compilation does not establish actual native sharing. See
+[ADR0023](../../../docs/adr/0023-native-crew-drafts-and-retained-adoption.md). Android decoding/adoption
+remains pending.
 
 ## Verification
 
