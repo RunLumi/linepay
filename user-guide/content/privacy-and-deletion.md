@@ -12,6 +12,8 @@ The app does not require a LinePaycheck account or employer connection. Work, pa
 
 App Store purchases use Apple’s services. A Files provider can use the network to retrieve or store a selected document. You choose report exports and manual iCloud Drive backups, and iOS may also back up app data according to device settings.
 
+The v2 development build offers optional password protection for complete backup copies. Unprotected copies remain readable without a password. The app cannot recover or store your backup password; keep it separately and check the selected file before relying on it. Manual reports and diagnostic exports have their own sharing scope and are not automatically protected by a backup password.
+
 “Local by default” does not mean exported copies cannot leave the phone, that all services work offline, or that a lost phone’s records can be recovered without a backup. Keep your device and storage accounts appropriately protected.
 
 ## Voice input in the v2 development build

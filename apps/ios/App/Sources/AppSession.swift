@@ -50,7 +50,7 @@ final class AppSession {
         return session
     }
 
-    func prepareBackup() async throws -> Data {
+    func prepareBackup(password: String? = nil) async throws -> Data {
         guard !isBusy else { throw BackupError.operationInProgress }
         isBusy = true
         defer { isBusy = false }
@@ -63,14 +63,14 @@ final class AppSession {
             }
             return BackupSource(id: reference.id, url: url)
         }
-        return try await io.create(state: state, sources: sources)
+        return try await io.create(state: state, sources: sources, password: password)
     }
 
-    func inspectBackup(at url: URL) async throws -> BackupArchive {
+    func inspectBackup(at url: URL, password: String? = nil) async throws -> BackupArchive {
         guard !isBusy else { throw BackupError.operationInProgress }
         isBusy = true
         defer { isBusy = false }
-        return try await io.open(url)
+        return try await io.open(url, password: password)
     }
 
     /// Call only after the worker confirms the replace-not-merge preview.

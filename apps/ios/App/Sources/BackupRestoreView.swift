@@ -9,7 +9,6 @@ extension UTType {
 
 struct BackupTransfer: Transferable, Sendable {
     let data: Data
-
     static var transferRepresentation: some TransferRepresentation {
         DataRepresentation(exportedContentType: .linePayBackup) { $0.data }
     }
@@ -61,12 +60,41 @@ struct BackupRestoreView: View {
     @State private var message: String?
     @State private var isError = false
     @State private var operation = ""
+    @State private var passwordProtect = false
+    @State private var exportPassword = ""
+    @State private var confirmPassword = ""
+    @State private var passwordKept = false
+    @State private var encryptedSelection: URL?
+    @State private var unlockPassword = ""
 
     var body: some View {
         NavigationStack {
             List {
+                Section("Optional password protection") {
+                    ConfirmationCheckRow(
+                        "Protect this copy with a password", isOn: $passwordProtect
+                    )
+                    .accessibilityIdentifier("backup.protect")
+                    if passwordProtect {
+                        SecureField("New backup password", text: $exportPassword)
+                            .textContentType(.newPassword).accessibilityIdentifier(
+                                "backup.password")
+                        SecureField("Confirm backup password", text: $confirmPassword)
+                            .textContentType(.newPassword).accessibilityIdentifier(
+                                "backup.password-confirm")
+                        Text(
+                            "Use a long, unique passphrase of at least 12 characters. Spaces are kept. Store it separately; LinePaycheck cannot recover a forgotten password. Older app versions cannot open protected copies."
+                        )
+                        .font(.footnote)
+                        ConfirmationCheckRow(
+                            "I have kept the password separately", isOn: $passwordKept
+                        )
+                        .accessibilityIdentifier("backup.password-kept")
+                    }
+                }.disabled(session.isBusy)
                 Section {
                     Button {
+                        guard validateExportPassword() else { return }
                         showExportConsent = true
                     } label: {
                         Label("Back up to iCloud Drive", systemImage: "icloud.and.arrow.up")
@@ -94,8 +122,31 @@ struct BackupRestoreView: View {
                     )
                 }
 
+                if let url = encryptedSelection {
+                    Section("Unlock selected backup") {
+                        Text(
+                            "This copy is password-protected. Unlocking checks the file; it does not replace your records."
+                        )
+                        SecureField("Backup password", text: $unlockPassword)
+                            .textContentType(.password).accessibilityIdentifier(
+                                "backup.unlock-password")
+                        Button("Unlock and review") { inspect(url, password: unlockPassword) }
+                            .disabled(session.isBusy || unlockPassword.isEmpty)
+                            .accessibilityIdentifier("backup.unlock")
+                        Button("Discard locked selection", role: .cancel) {
+                            encryptedSelection = nil
+                            unlockPassword = ""
+                        }.accessibilityIdentifier("backup.discard-locked")
+                    }
+                }
                 if let archive = reviewedBackup {
                     Section("Review this backup") {
+                        Text(
+                            archive.wasPasswordProtected
+                                ? "Password-protected copy unlocked"
+                                : "This copy is not password-encrypted"
+                        )
+                        .accessibilityIdentifier("backup.protection-status")
                         LabeledContent("Created") { Text(archive.createdAt, format: .dateTime) }
                         LabeledContent("Pay periods", value: "\(archive.periodCount)")
                         LabeledContent("Work entries", value: "\(archive.workCount)")
@@ -146,7 +197,7 @@ struct BackupRestoreView: View {
                 }
                 Section("Privacy & control") {
                     Text(
-                        "The file contains sensitive pay data and is not password-encrypted by LinePaycheck. Use a private folder. Anyone who can open the file can access its contents."
+                        "With password protection off, the file is not password-encrypted by LinePaycheck. Anyone who can open that copy can read it. Protected copies require their password; weak or shared passwords reduce protection. Keep all copies in a private location."
                     )
                     Text(
                         "Data leaves this device only when you choose a destination. LinePaycheck does not upload it to its own server. Deleting local data does not delete copies saved in iCloud Drive or Files."
@@ -157,7 +208,8 @@ struct BackupRestoreView: View {
                 }
                 .font(.footnote)
             }
-            .linePayCanvas()
+            .disabled(session.isBusy)
+            .linePayCanvas().linePayKeyboardDismiss()
             .labeledContentStyle(LinePayValueStyle())
             .navigationTitle("Backup")
             .navigationBarTitleDisplayMode(.inline)
@@ -167,6 +219,14 @@ struct BackupRestoreView: View {
                         .accessibilityIdentifier("backup.done")
                 }
             }
+        }
+        .onChange(of: passwordProtect) { _, _ in clearExportPassword() }
+        .onChange(of: exportPassword) { _, _ in passwordKept = false }
+        .onChange(of: confirmPassword) { _, _ in passwordKept = false }
+        .onDisappear {
+            clearExportPassword()
+            unlockPassword = ""
+            encryptedSelection = nil
         }
         .interactiveDismissDisabled(session.isBusy)
         .fileExporter(
@@ -203,7 +263,9 @@ struct BackupRestoreView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "Includes pay details and original paystubs. Not password-encrypted."
+                passwordProtect
+                    ? "Includes sensitive pay details and originals. This copy will require the password you entered. Keep the password separately; LinePaycheck cannot recover it."
+                    : "Includes pay details and original paystubs. Not password-encrypted."
             )
         }
         .confirmationDialog(
@@ -225,12 +287,44 @@ struct BackupRestoreView: View {
         isError = error
     }
 
+    private func clearExportPassword() {
+        exportPassword = ""
+        confirmPassword = ""
+        passwordKept = false
+    }
+
+    private func validateExportPassword() -> Bool {
+        guard passwordProtect else { return true }
+        do { try BackupEncryption.validateNewPassword(exportPassword) } catch {
+            showMessage(backupMessage(error), error: true)
+            return false
+        }
+        guard
+            exportPassword.precomposedStringWithCanonicalMapping
+                == confirmPassword.precomposedStringWithCanonicalMapping
+        else {
+            showMessage(
+                "The password confirmation does not match. Nothing was exported.", error: true)
+            return false
+        }
+        guard passwordKept else {
+            showMessage(
+                "Keep the password separately and confirm before exporting. LinePaycheck cannot recover it.",
+                error: true)
+            return false
+        }
+        return true
+    }
+
     private func prepare() {
+        guard validateExportPassword() else { return }
+        let password = passwordProtect ? exportPassword : nil
         operation = "Preparing complete backup..."
         message = nil
         Task {
+            defer { clearExportPassword() }
             do {
-                export = BackupTransfer(data: try await session.prepareBackup())
+                export = BackupTransfer(data: try await session.prepareBackup(password: password))
                 exportName = "LinePaycheck-\(UUID().uuidString.prefix(8))"
                 showExporter = true
             } catch {
@@ -239,11 +333,20 @@ struct BackupRestoreView: View {
         }
     }
 
-    private func inspect(_ url: URL) {
+    private func inspect(_ url: URL, password: String? = nil) {
+        reviewedBackup = nil
+        encryptedSelection = nil
         operation = "Checking backup integrity..."
         message = nil
         Task {
-            do { reviewedBackup = try await session.inspectBackup(at: url) } catch {
+            defer { unlockPassword = "" }
+            do {
+                reviewedBackup = try await session.inspectBackup(at: url, password: password)
+            } catch BackupError.passwordRequired {
+                encryptedSelection = url
+                showMessage(backupMessage(BackupError.passwordRequired))
+            } catch {
+                if password != nil { encryptedSelection = url }
                 showMessage(backupMessage(error), error: true)
             }
         }

@@ -21,3 +21,5 @@ A canonical fixture should state explicit inputs and expected outputs so iOS and
 Do not put secrets, real paystubs, employer-private documents, or personally identifying wage records here. Fixtures must be synthetic or safely anonymized.
 
 The schema should not be invented before the first real rule engine needs it. First learn the domain in native Swift types and real customer examples; then extract the smallest stable interchange contract.
+
+The first implemented transport contract is [password-protected manual backup v1](backup/README.md). Its synthetic vector is checked independently by native and Node/WebCrypto implementations; complete Android/PWA restore remains a separate deliverable.

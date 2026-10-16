@@ -7,13 +7,24 @@ struct BackupSource: Sendable {
 }
 
 protocol BackupHandling: Sendable {
-    func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data
-    func open(_ url: URL) async throws -> BackupArchive
+    func create(state: AppPersistentState, sources: [BackupSource], password: String?) async throws
+        -> Data
+    func open(_ url: URL, password: String?) async throws -> BackupArchive
+}
+
+extension BackupHandling {
+    func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data {
+        try await create(state: state, sources: sources, password: nil)
+    }
+    func open(_ url: URL) async throws -> BackupArchive { try await open(url, password: nil) }
 }
 
 /// File-provider coordination and serialization never run on the UI actor.
 actor BackupIO: BackupHandling {
-    func create(state: AppPersistentState, sources: [BackupSource]) throws -> Data {
+    func create(state: AppPersistentState, sources: [BackupSource], password: String?) throws
+        -> Data
+    {
+        if let password { try BackupEncryption.validateNewPassword(password) }
         var files: [BackupArchive.EvidenceFile] = []
         var total = 0
         for source in sources {
@@ -24,10 +35,14 @@ actor BackupIO: BackupHandling {
             guard total <= BackupArchive.maximumBytes else { throw BackupError.tooLarge }
             files.append(.init(id: source.id, bytes: bytes))
         }
-        return try BackupArchive(createdAt: Date(), state: state, files: files).encoded()
+        let archive = BackupArchive(createdAt: Date(), state: state, files: files)
+        if let password {
+            return try BackupEncryption.seal(archive.portableEncoded(), password: password)
+        }
+        return try archive.encoded()
     }
 
-    func open(_ url: URL) throws -> BackupArchive {
+    func open(_ url: URL, password: String?) throws -> BackupArchive {
         guard url.isFileURL else { throw BackupError.unavailableFile }
         let accessed = url.startAccessingSecurityScopedResource()
         defer { if accessed { url.stopAccessingSecurityScopedResource() } }
@@ -44,7 +59,15 @@ actor BackupIO: BackupHandling {
         if coordinationError != nil { throw BackupError.unavailableFile }
         guard let read = result.value.withLock({ $0 }) else { throw BackupError.unavailableFile }
         try Task.checkCancellation()
-        return try BackupArchive.decode(read.get())
+        let bytes = try read.get()
+        if BackupEncryption.isEncrypted(bytes) {
+            let plaintext = try BackupEncryption.open(bytes, password: password)
+            try Task.checkCancellation()
+            var archive = try BackupArchive.decodePortable(plaintext)
+            archive.wasPasswordProtected = true
+            return archive
+        }
+        return try BackupArchive.decode(bytes)
     }
 
     /// Bound allocation even when a provider's file-size metadata is absent or misleading.

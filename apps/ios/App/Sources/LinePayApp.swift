@@ -11,7 +11,7 @@ struct LinePayApp: App {
             RootView(model: session.model, subscriptionStore: subscriptionStore)
                 .id(session.revision)
                 .environment(\.linePaySession, session)
-                .disabled(session.isBusy)
+                // Backup owns its modal busy lock; disabling this root resets that sheet on iOS 18.
                 .task {
                     subscriptionStore.localActivity = session.localActivity
                     await subscriptionStore.start()

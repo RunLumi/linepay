@@ -25,7 +25,7 @@ A Files save callback establishes provider acceptance, not that remote iCloud up
 
 ## Scope and format
 
-State schemas 1 and 2 migrate in memory to schema 3, retaining recorded calculations and evidence. The backup envelope remains version 1. Older schema-2 apps reject newly saved schema-3 state; they must not silently drop drafts or audit revisions.
+The current v2 candidate uses pay-state schema 7 and reads historical schemas 1–6 through the existing in-memory upgrade path, retaining recorded history. The legacy unprotected binary envelope remains version 1. Optional protected copies use the versioned [password-protected transport](../../shared/contracts/backup/README.md) and a JSON snapshot with decimal Unix-second timestamp strings. Older apps cannot read protected copies; unsupported schemas must be rejected rather than dropping financial records. [ADR 0015](../adr/0015-password-protected-manual-backups.md) owns this additive format and password boundary.
 
 A single binary property-list envelope contains a version, format identifier, payload bytes, and SHA-256 payload digest. The payload contains the saved-state JSON, creation date, and original document bytes keyed by evidence ID. Format/UTType: `com.streamentry.linepay.backup`; extension: `.linepaybackup`.
 
@@ -37,7 +37,7 @@ Bounds: 64 MiB encoded file, 8 MiB state JSON, 25 MiB per retained original, 512
 
 ## Privacy
 
-The archive contains sensitive information and is **not password-encrypted by LinePaycheck**. The explicit warning appears before export and on the backup screen. Use a private destination and do not share the archive casually. SHA-256 detects accidental changes; it does not prove authorship, conceal contents, verify payroll correctness, or authenticate a maliciously modified backup.
+An unprotected archive contains sensitive information and is **not password-encrypted by LinePaycheck**; its warning remains explicit. The v2 candidate adds optional password-protected export using Apple OS cryptography, matching password confirmation and separate password-kept acknowledgement. Unlocking authenticates/validates a copy before the existing replace preview. No password is stored or recoverable by LinePaycheck. Use a private destination for either form and do not share the archive casually. SHA-256 detects accidental changes; it does not prove authorship, conceal contents, verify payroll correctness, or authenticate a maliciously modified backup.
 
 iCloud's encryption properties depend on the user's Apple settings and availability of Advanced Data Protection. Do not promise universal end-to-end encryption. Saving through another Files provider uses that provider's security. No raw pay data, file paths, filenames, or archive contents are logged by this feature.
 
@@ -53,7 +53,7 @@ Deleting local records does not delete user-exported/iCloud copies. Manage those
 - Do not overwrite or delete the chosen backup. Do not automatically merge, recompute historical results, grant Pro, or reset known used free-audit access. Preserve usage with the logical OR of existing and restored state; this is not claimed to be tamper-proof identity enforcement.
 - Rebuild the observable app model and reset the navigation lifetime only after committing. Tests inject the existing store seams; no parallel persistence architecture is introduced.
 
-The original evidence/state adapters retain their existing data-protection behavior. This feature does not make a new claim about crash-atomic deletion across multiple files or password-based archive encryption.
+The original evidence/state adapters retain their existing data-protection behavior. This feature does not claim crash-atomic deletion across multiple files. Optional password-based archive encryption is separately versioned by ADR 0015; it does not change the financial restore commit point.
 
 ## Verification
 

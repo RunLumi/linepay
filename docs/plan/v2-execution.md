@@ -32,7 +32,7 @@ An implementation, test result, upload, review submission and public release are
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
-| Encrypted sync/account | Superseded by explicit local-only owner choice | Encrypted manual backup/restore portability; no account or automatic sync |
+| Encrypted sync/account | Accounts/sync superseded; encrypted manual native workflow implemented | Full native gate running; two-device/provider checks and Android/PWA state adoption pending |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | Pending | Native app plus shared deterministic fixture parity and runtime evidence |
@@ -640,3 +640,43 @@ created; describe and verify each property separately.
   documentation before choosing the exact interoperable envelope.
 - Native test jobs are terminal and the implementation working tree was clean after its commit.
   Overall v2 remains active, with all still-pending platform/release requirements above preserved.
+
+## Optional protected-backup implementation checkpoint (October 17)
+
+- Added optional per-copy password protection to manual backup with NFC-normalized passwords,
+  bounded 600,000-round PBKDF2-HMAC-SHA256, random salt/nonce, AES-256-GCM and an authenticated
+  versioned header. No password/key storage, server, account, synchronization or Pro restriction.
+  Legacy unprotected copies remain readable. Protected payload uses versioned JSON with decimal
+  Unix-second date strings, preserving subsecond values without lossy epoch shifting.
+- ADR 0015 and the shared backup transport specify limits, exact bytes, normalization and existing
+  financial restore ownership. Password confirmation and separate password-kept acknowledgement
+  precede export; unlock/validation is distinct from replacement. Bad passwords/tampering cannot
+  produce financial preview/state changes, and unsupported versions/costs fail before derivation.
+- Initial focused native suites passed 18 tests (five crypto cases, legacy originals/restore and
+  concurrent operation guards). The later full-gate candidate includes an additional future-
+  payload-version regression; all 322 app tests have passed so far.
+- Native actual Files journey passed in 76.243s in
+  `.build/v2-encrypted-backup-ui-import-20261017.xcresult`: protected copy saved specifically under
+  On My iPhone → disposable synthetic data deleted → exact saved file selected → password required
+  → wrong password refused → correct unlock → separate replace confirmation → synthetic USD 550
+  restored. This proves local-provider persistence/readback; no remote upload/two-phone delivery.
+- Actual UI testing found the prior app-root `.disabled(session.isBusy)` reset the backup sheet's
+  state on iOS 18.5 during preparation. The busy interaction lock now belongs to the backup modal;
+  backend AppSession exclusion, disabled Done/actions and interactive-dismiss protection remain.
+  Switching Transferable to FileDocument did not fix it and was reverted. Earlier failing evidence
+  remains. The test also targets the largest app window instead of a retained 131×284 provider
+  window; final assertions preserve actual file selection, unlock and replacement.
+- Shared synthetic vector SHA-256 `42aef4cc154a19d0c58db94bfb30182200d29ebb433abb60a066a93c4175ae1c`
+  matched CommonCrypto/CryptoKit, Node crypto, Node WebCrypto, actual Chromium 155.0.8059.85 and
+  Playwright WebKit 26.0. Both browsers rejected wrong passwords, changed authenticated headers
+  and tags. Browser reports are `.build/backup-crypto-browser/{chromium,webkit}.json`; this is
+  transport conformance, not a working PWA/Android restore client. No external pay data was used.
+- Mechanical resource inventory change is only project.yml (test vector resource and corrected
+  Apple-OS-only cryptography comment). No new runtime package. #32 export-declaration review is
+  pending for v2; no old owner approval, App Store write or new release is implied.
+- Full canonical native gate is running as exec `12921`, log
+  `/private/tmp/linepay-v2-encrypted-backup-gate.log`, results
+  `.build/v2-encrypted-backup-gate-20261017`. Revalidate the handle and final result before claiming
+  a pass. Guide build/search/freshness (55 mapped sources), docs and legal checks passed.
+- Website exact push/PR/deploy approval and physical iPhone availability remain unanswered; neither
+  is assumed. Native branch is local and App Store version remains unchanged. Overall v2 active.
