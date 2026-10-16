@@ -61,47 +61,37 @@ final class LegalJourneyTests: XCTestCase {
         // system activity, then its non-sending Files destination to exercise PDF transfer.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         let filesLabel = NSPredicate(format: "label == %@", "Save to Files")
-        // iOS 18 can expose the activity sheet in the app; newer hosts may use SpringBoard.
-        let appFilesAction = app.descendants(matching: .any).matching(filesLabel).firstMatch
-        var saveToFiles =
-            appFilesAction.waitForExistence(timeout: 5)
-            ? appFilesAction : springboard.buttons.matching(filesLabel).firstMatch
-        if !saveToFiles.waitForExistence(timeout: 15) {
-            // Some hosted iOS 26 share sheets expose the selected Files action only as the
-            // generic actionGroupCell identifier. The Documents app Save/Cancel assertions
-            // below still prove that this action reached the actual Files destination.
-            let genericCell = springboard.descendants(matching: .any)
-                .matching(identifier: "actionGroupCell")
-                .matching(NSPredicate(format: "label == %@", "Save to Files"))
-                .firstMatch
-            let cellTitle = springboard.descendants(matching: .any)
-                .matching(identifier: "cellTitleLabel")
-                .matching(NSPredicate(format: "label == %@", "Save to Files"))
-                .firstMatch
-            saveToFiles = cellTitle.exists ? cellTitle : genericCell
+        var saveToFiles: XCUIElement?
+        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        for _ in 0..<12 {
+            for surface in [app, springboard] {
+                if let visible = surface.descendants(matching: .any).matching(filesLabel)
+                    .allElementsBoundByIndex.first(where: { $0.isHittable })
+                {
+                    saveToFiles = visible
+                    break
+                }
+            }
+            if saveToFiles != nil { break }
+            // The system activity list can inherit accessibility text size from its service.
+            // Materialized offscreen cells are not tappable destinations; reveal the real row.
+            let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85))
+            start.press(
+                forDuration: 0.05,
+                thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
         }
-        guard saveToFiles.waitForExistence(timeout: 15) else {
-            throw XCTSkip("The hosted simulator did not expose a Save to Files action.")
-        }
+        let filesAction = try XCTUnwrap(
+            saveToFiles, "Save to Files never became visible in the system activity list")
         captureSystem("legal-system-share-sheet")
         let documentsApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         let saveInFiles = documentsApp.buttons["Save"].firstMatch
         let saveInShareSheet = app.buttons["Save"].firstMatch
         let saveInSpringboard = springboard.buttons["Save"].firstMatch
-        var saveVisible = false
-        for attempt in 0..<2 {
-            guard saveToFiles.exists else { break }
-            if saveToFiles.isHittable {
-                saveToFiles.tap()
-            } else {
-                saveToFiles.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            }
-            saveVisible =
-                saveInFiles.waitForExistence(timeout: 15)
-                || saveInShareSheet.waitForExistence(timeout: 15)
-                || saveInSpringboard.waitForExistence(timeout: 15)
-            if saveVisible || attempt == 1 { break }
-        }
+        filesAction.tap()
+        let saveVisible =
+            saveInFiles.waitForExistence(timeout: 15)
+            || saveInShareSheet.waitForExistence(timeout: 15)
+            || saveInSpringboard.waitForExistence(timeout: 15)
         XCTAssertTrue(
             saveVisible,
             "The PDF did not reach the system Files export destination.")
@@ -227,12 +217,12 @@ final class LegalJourneyTests: XCTestCase {
                 }
             }
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
-            let scopeControl = app.descendants(matching: .any)
-                .matching(identifier: "pay-profile.change-scope").firstMatch
+            let scopeControl = app.buttons["pay-profile.change-scope"].firstMatch
             revealReviewElement(scopeControl, maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             XCTAssertEqual(app.buttons.matching(identifier: "pay-profile.change-scope").count, 1)
-            scopeControl.tap()
+            tapScopeControl(scopeControl)
+            captureSystem("legal-menu-\(scopeID)")
             try chooseScope(label: scope, identifier: scopeID)
             XCTAssertTrue(
                 scopeControl.waitForExistence(timeout: 5) && scopeControl.value as? String == scope,
@@ -286,10 +276,41 @@ final class LegalJourneyTests: XCTestCase {
         XCTAssertTrue(button.exists, "Missing control: \(id)")
         button.tap()
     }
+    private func tapScopeControl(_ element: XCUIElement) {
+        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let save = app.buttons["pay-profile.save"].firstMatch
+        for _ in 0..<16 {
+            guard element.exists, save.exists else { break }
+            let top: CGFloat = 140
+            let bottom = save.frame.minY - 8
+            let frame = element.frame
+            if frame.minY >= top && frame.maxY <= bottom {
+                element.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)).press(
+                    forDuration: 0.1)
+                return
+            }
+            if frame.height > bottom - top {
+                let visible = frame.intersection(
+                    CGRect(
+                        x: window.frame.minX, y: top,
+                        width: window.frame.width, height: max(0, bottom - top)))
+                if !visible.isNull && visible.height >= 44 {
+                    window.coordinate(withNormalizedOffset: .zero)
+                        .withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
+                    return
+                }
+            }
+            let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+            start.press(
+                forDuration: 0.05,
+                thenDragTo: start.withOffset(CGVector(dx: 0, dy: frame.maxY > bottom ? -160 : 160)))
+        }
+        XCTFail("Scope menu did not expose a visible target above the pinned save action")
+    }
+
     private func chooseScope(label: String, identifier: String) throws {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let control = app.descendants(matching: .any)
-            .matching(identifier: "pay-profile.change-scope").firstMatch
+        let control = app.buttons["pay-profile.change-scope"].firstMatch
         for attempt in 0..<3 {
             if attempt > 0 {
                 scrollTo(control, maxSwipes: 8)

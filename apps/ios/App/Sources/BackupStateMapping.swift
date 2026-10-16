@@ -8,6 +8,8 @@ extension AppPersistentState {
             + (activePeriod?.auditRevisions ?? []).map { $0.paystub.evidence }
             + history.flatMap { ($0.auditRevisions ?? []).map { $0.paystub.evidence } }
             + (agreementDocuments ?? []).map(\.evidence)
+            + [benefitAuditDraft?.statementEvidence]
+            + (benefitAudits ?? []).flatMap { $0.revisions.map { $0.input.statementEvidence } }
         return originals.compactMap { $0 }
     }
 
@@ -24,6 +26,19 @@ extension AppPersistentState {
         -> AppPersistentState
     {
         var result = self
+        if var draft = result.benefitAuditDraft {
+            draft.statementEvidence = draft.statementEvidence.flatMap(transform)
+            result.benefitAuditDraft = draft
+        }
+        result.benefitAudits = result.benefitAudits?.map { record in
+            var copy = record
+            copy.revisions = record.revisions.map { revision in
+                var value = revision
+                value.input.statementEvidence = value.input.statementEvidence.flatMap(transform)
+                return value
+            }
+            return copy
+        }
         result.agreementDocuments = result.agreementDocuments?.map { document in
             var copy = document
             copy.evidence = document.evidence.flatMap(transform)

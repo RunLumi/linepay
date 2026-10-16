@@ -20,6 +20,8 @@ Go to **Settings → Privacy and local data → Original documents**. Choose **R
 
 Every audit revision sharing that original loses access to its document and associated OCR excerpts. Confirmed figures and calculation records remain. This is different from deleting the entire period.
 
+For a v2 benefits statement, removing its original keeps saved observations and comparisons; every revision sharing that original loses access to its bytes. Benefits checks remain separate from wage-period records.
+
 For an imported agreement, removing its original keeps saved review decisions and rule-snapshot citations. Reattach only the exact same PDF when you need to restore that source; a changed document is a separate import. An import referenced by a saved draft or rule history cannot be deleted as unused.
 
 Files already exported elsewhere are not removed. A removed original is also absent from future backups, although an earlier backup may still contain it.

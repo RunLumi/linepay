@@ -441,6 +441,7 @@ struct PayProfileSetupView: View {
                                 .foregroundStyle(LinePayColor.actionText)
                         }
                         .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Scope")
                     .accessibilityValue(editScopeTitle)

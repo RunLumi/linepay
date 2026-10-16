@@ -698,6 +698,61 @@ final class AppModel {
         try commit(candidate)
     }
 
+    var benefitAuditRecords: [BenefitAuditRecord] { state.benefitAudits ?? [] }
+    var benefitAuditDraft: BenefitAuditDraft? { state.benefitAuditDraft }
+    var benefitRecordedEpochSeconds: Int64 { epochSeconds(now()) }
+
+    func makeBenefitDraft() -> BenefitAuditDraft {
+        let zone = currentTimeZoneIdentifier
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: zone) ?? .gmt
+        let start = activePeriod?.window.startDate ?? calendar.startOfDay(for: now())
+        let end =
+            activePeriod?.window.endDate ?? calendar.date(byAdding: .day, value: 1, to: start)
+            ?? start
+        var draft = BenefitAuditDraft(start: start, end: end)
+        draft.timeZoneIdentifier = zone
+        draft.statementTimeZoneIdentifier = zone
+        draft.currencyCode =
+            profile?.agreement.hourlyRate.currencyCode ?? PayProfileDraft.suggestedCurrencyCode
+        draft.statementCurrencyCode = draft.currencyCode
+        draft.roundingScale = NumberEntry.amountFractionDigits(currencyCode: draft.currencyCode)
+        return draft
+    }
+
+    func retainBenefitStatement(data: Data, filename: String, draftID: UUID) throws {
+        guard var draft = benefitAuditDraft, draft.id == draftID, draft.hasStatement,
+            !data.isEmpty, data.count <= AgreementDocumentService.maximumBytes,
+            data.starts(with: Data("%PDF".utf8)), !filename.isEmpty, filename.count <= 512
+        else {
+            throw AppModelError.invalidField(
+                "Open the intended benefits draft and choose a PDF up to 25 MB")
+        }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: filename,
+            mediaType: "application/pdf", sourceKind: .file, recognizedText: nil)
+        draft.hasStatement = true
+        draft.statementEvidence = evidence
+        draft.statementSHA256 = AgreementDocumentService.digest(data)
+        draft.statementConfirmed = false
+        do { try keepBenefitDraft(draft) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+    }
+
+    /// The benefits feature owns its intent/revision rules; this seam owns the atomic state write.
+    func commitBenefits(records: [BenefitAuditRecord], draft: BenefitAuditDraft?) throws {
+        var candidate = state
+        candidate.benefitAudits = records
+        candidate.benefitAuditDraft = draft
+        let retained = Set(candidate.allEvidence.map(\.id))
+        let removed = state.allEvidence.filter { !retained.contains($0.id) }
+        enqueue(removed, in: &candidate)
+        try commit(candidate)
+        if !removed.isEmpty { try? retryEvidenceDeletion() }
+    }
+
     var agreementDocuments: [ImportedAgreementDocument] { state.agreementDocuments ?? [] }
 
     func agreementDocument(id: UUID) -> ImportedAgreementDocument? {

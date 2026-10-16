@@ -21,7 +21,7 @@ A calculation covers one explicitly complete fund/statement period. Segments can
 extend beyond their source snapshot's dates. Gaps can represent dates with no eligible work only
 under the worker's whole-period eligibility confirmation. Independent expected quantities and money
 are exact Decimal values. Sum unrounded segment contributions, then apply the recorded rounding
-mode/scale once per fund; reject arithmetic precision loss or overflow. Cash pay remains unchanged.
+mode/scale once per fund; reject arithmetic precision loss or overflow. The difference subtracts the unmodified confirmed observation from that rounded expectation without a second rounding step. Statement precision must not disappear into a false match. Cash pay remains unchanged.
 
 ## Evidence and comparison
 
@@ -34,6 +34,28 @@ Retain the expectation's period, rule/fact segments, statement observation, engi
 policy, result and limitations together. Corrections append a revision in the native adapter; a new
 rate or later statement does not rewrite a historical comparison. Backups and manual exports must
 preserve these relationships; no backend or automatic collection is introduced.
+
+## Native storage and review
+
+Schema 7 adds optional benefits drafts and records; versions 1–6 migrate additively, without
+repricing wages or inventing benefit records. Each correction binds to the latest revision and
+appends immutable input/result snapshots. Another period reuses fund identity only. A stale
+preview, unrelated unfinished draft or failed state write cannot overwrite newer input.
+
+Drafts preserve their numeric-entry separator and explicitly stored rounding scale. Material rule
+or eligibility edits clear expectation confirmations; statement edits clear statement confirmation.
+The editor separates input, comparison preview and explicit save. Historical input retains its
+original numeric context and exact source snapshots.
+
+Statement PDFs use the existing protected evidence store and preserve a SHA-256. Import is bound
+to the intended draft and does not automatically read or confirm numbers. Backups remap physical
+filenames while preserving logical identity and hashes. Original removal affects shared references,
+not recorded statement facts or results. Benefits source references protect cited agreement imports.
+
+The separate benefits PDF reuses the existing immutable-preview sharing session and paginated
+text writer. Source names/quotations/fingerprints and the private note require separate opt-ins.
+No original PDF pages are embedded. Report preparation, native transfer, provider persistence,
+source rights and legal review remain distinct evidence states.
 
 ## Acceptance
 

@@ -169,6 +169,10 @@ extension AppPersistentState {
         var ids = Set(agreements.flatMap(\.sources).compactMap(\.documentID))
         if let id = setupDraft?.sourceDocumentID { ids.insert(id) }
         ids.formUnion((setupDraft?.additionalSources ?? []).compactMap(\.documentID))
+        let benefits =
+            (benefitAudits ?? []).flatMap { $0.revisions.map(\.input) }
+            + [benefitAuditDraft].compactMap { $0 }
+        ids.formUnion(benefits.flatMap(\.segments).flatMap(\.sources).compactMap(\.documentID))
         return ids
     }
 }

@@ -285,7 +285,7 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 6
+    static let currentSchemaVersion = 7
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -293,6 +293,8 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     var hasUsedFreeAudit = false
     var resolutionEvents: [ResolutionEvent]?
     var agreementDocuments: [ImportedAgreementDocument]?
+    var benefitAudits: [BenefitAuditRecord]?
+    var benefitAuditDraft: BenefitAuditDraft?
     var onboardingProgress: OnboardingProgress?
     var setupDraft: PayProfileDraft?
     var workDraft: WorkDraft?
@@ -312,7 +314,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit, resolutionEvents,
-            agreementDocuments
+            agreementDocuments, benefitAudits, benefitAuditDraft
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
     }
@@ -323,10 +325,14 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1–v5 migration. Historical calculations and sources are not recalculated.
+        // Additive v1–v6 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
         agreementDocuments = try values.decodeIfPresent(
             [ImportedAgreementDocument].self, forKey: .agreementDocuments)
+        benefitAudits = try values.decodeIfPresent(
+            [BenefitAuditRecord].self, forKey: .benefitAudits)
+        benefitAuditDraft = try values.decodeIfPresent(
+            BenefitAuditDraft.self, forKey: .benefitAuditDraft)
         resolutionEvents = try values.decodeIfPresent(
             [ResolutionEvent].self, forKey: .resolutionEvents)
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)

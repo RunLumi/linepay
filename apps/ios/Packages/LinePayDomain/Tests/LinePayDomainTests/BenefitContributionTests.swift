@@ -9,6 +9,7 @@ struct BenefitContributionTests {
     @Test func missingStatementIsUnverifiedWithoutInventingZeroOrADebt() throws {
         let result = try calculate([try segment(rate: "8.75", units: "40")])
         #expect(result.expectedEmployerContribution.amount == decimal("350"))
+        #expect(result.components.map(\.unroundedContribution.amount) == [decimal("350")])
         #expect(result.status == .notVerified)
         #expect(result.confirmedEmployerContribution == nil && result.contributionDifference == nil)
         #expect(result.quantityDifference == nil)
@@ -50,6 +51,11 @@ struct BenefitContributionTests {
         let result = try calculate([b, a])
         #expect(result.expectedEmployerContribution.amount == decimal("0.01"))
         #expect(result.segments.map(\.id) == [a.id, b.id])
+        #expect(result.components.map(\.id) == [a.id, b.id])
+        #expect(
+            result.components.map(\.unroundedContribution.amount) == [
+                decimal("0.005"), decimal("0.005"),
+            ])
         #expect(result.segments.map(\.rule.id) == [a.rule.id, b.rule.id])
         let restored = try JSONDecoder().decode(
             BenefitContributionResult.self,
@@ -226,6 +232,18 @@ struct BenefitContributionTests {
             period: try period(startDay: 4), rule: changed, quantity: 8,
             eligibilityConfirmed: true)
         #expect(throws: BenefitContributionError.invalidRule) { try calculate([a, b]) }
+    }
+
+    @Test func confirmedStatementPrecisionIsNotRoundedAwayIntoAFalseMatch() throws {
+        let statement = BenefitStatementObservation(
+            fundID: fundID, currencyCode: "USD", period: try period(),
+            employerContribution: Money(amount: decimal("350.001"), currencyCode: "USD"),
+            confirmed: true)
+        let result = try calculate([segment(rate: "8.75", units: "40")], statement: statement)
+        #expect(result.expectedEmployerContribution.amount == 350)
+        #expect(result.contributionDifference?.amount == decimal("-0.001"))
+        #expect(result.confirmedEmployerContribution?.amount == decimal("350.001"))
+        #expect(result.status == .possibleDifference)
     }
 
     private func period(startDay: Int = 1, endDay: Int = 8, zone: String = "UTC") throws

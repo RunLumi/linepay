@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -36,8 +36,9 @@
         "pay-rules",
         "changing-rules"
       ],
-      "disposition": "reviewed",
-      "blob": "7228a90e5fa88bf15ad645c2b2b7f8153ed3b123"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "a599f935bf316b305191c405e202953d581ee031",
+      "reason": "The existing scope label now has a rectangular hit area; choices, scope meanings and instructions are unchanged. Native largest-text scope effects were verified."
     },
     {
       "path": "apps/ios/App/Sources/EntryDrafts.swift",
@@ -149,10 +150,11 @@
     {
       "path": "apps/ios/App/Sources/ReportSharingView.swift",
       "guides": [
-        "evidence-and-reports"
+        "evidence-and-reports",
+        "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "407dd7272af652042edf8878acc653b65711e34a"
+      "blob": "b885dd7b0cf76caea5aa7158220b0d802a4d7d5a"
     },
     {
       "path": "apps/ios/App/Sources/BackupRestoreView.swift",
@@ -167,10 +169,11 @@
       "guides": [
         "privacy-and-deletion",
         "pro-and-billing",
-        "support"
+        "support",
+        "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "95d3ad2ea12cf44b06673a4a0ed52c507210c558"
+      "blob": "9ada5c527f1ef87a1166b47a6faffcf349d9586a"
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -281,7 +284,7 @@
         "backup-and-restore"
       ],
       "disposition": "reviewed",
-      "blob": "c716c5b54d3a43ec7d298fc69fc17cd5fadfd541"
+      "blob": "7c85932b732e5ddc9982a59a765d97dd8f0dcbda"
     },
     {
       "path": "apps/ios/App/Sources/EvidenceReceiptView.swift",
@@ -297,7 +300,111 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "a2cc508607168337676c53c5f496ca1c80d9ff68"
+      "blob": "6a150ebf1bd63d8161c09fd356eb918ca009cea3"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditEditorView.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "9cbd28fe5021f7e5fb6c4002f3ba1e69b41f9952"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditsView.swift",
+      "guides": [
+        "benefits",
+        "history"
+      ],
+      "disposition": "reviewed",
+      "blob": "3e9f052f40d5813e1b0ac6e0be46e6468527bfea"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditModels.swift",
+      "guides": [
+        "benefits",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "b9eed29399ad5fa3a83da623c7562b4fd0353ce5"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditOperations.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "6074d9f9fc67d20829c4a74684ea6683ef27e2b4"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitSegmentEditor.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "cefea57a7616829b82f353a1ce5a3c715233fbd2"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitStatementOriginalView.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "6a286440e1b39274a487805e400b9dd106198f98"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditPresentation.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "eb67a6b1c0e57b2a50290ecf1493d14d038b417a"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitReportSharingView.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "cd9973d316ccf51fa54934a80b87724b4428c20a"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitReportExporter.swift",
+      "guides": [
+        "benefits",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "bd9940ca08b7a8be59dd880de5f2cad09ca5e1d7"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/BenefitContributions.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "03de627c186f8860cee5444f44be628260ea4fcc"
+    },
+    {
+      "path": "apps/ios/App/Sources/TemporaryExports.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "4b03c3346c9c9912dd30fa8ead20a50d1c977554"
+    },
+    {
+      "path": "apps/ios/App/Sources/ReportShareSession.swift",
+      "guides": [
+        "benefits",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "545595824297ab665a306abd6b8cfb88426f54f6"
     }
   ]
 }

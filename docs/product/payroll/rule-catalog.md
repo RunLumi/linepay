@@ -59,3 +59,7 @@ Candidate code / tests / user-visible scope:
 ```
 
 Follow [source approval](sources.md) before shipping a named verified pack. Prefer a small correct variant to a broad ambiguous rule, but disclose omissions that could change a paycheck conclusion.
+
+## V2 configured employer contributions (development)
+
+PAY-17 has a separate configured-contribution path under BR-060–064 and [ADR 0012](../../adr/0012-confirmed-benefit-contributions.md). It models explicit eligible units and source rates for one fund/period, with hourly, daily, eligible-earnings percentage or fixed-period amounts. It does not turn employer contributions into cash wages or implement the project/fringe compliance gap. Native release and runtime evidence belong in the [v2 execution record](../../plan/v2-execution.md); this paragraph is not a release claim.

@@ -91,6 +91,41 @@
                     try model.completeFirstResult()
                     return session
                 }
+                if scenario.hasPrefix("benefits") {
+                    for offset in 0..<5 {
+                        let day = calendar.date(
+                            byAdding: .day, value: offset, to: profile.periodStartDate)!
+                        let start = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: day)!
+                        try model.addWork(
+                            start: start, end: start.addingTimeInterval(8 * 3_600),
+                            kind: .regular, note: "Synthetic eight-hour benefits fixture")
+                    }
+                    try model.completeFirstResult()
+                    if scenario.hasPrefix("benefits-review") {
+                        var draft = model.makeBenefitDraft()
+                        draft.fundName = "SYNTHETIC PENSION"
+                        let comma = scenario.hasSuffix("comma")
+                        draft.decimalSeparator = comma ? "," : "."
+                        draft.segments[0].rate = comma ? "8,75" : "8.75"
+                        draft.segments[0].quantity = "40"
+                        draft.hasStatement = true
+                        draft.statementMatchesFund = true
+                        draft.statementAmount = comma ? "310,63" : "310.63"
+                        draft.statementQuantity = comma ? "35,5" : "35.5"
+                        try model.keepBenefitDraft(draft)
+                        let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+                        let data = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                            context.beginPage()
+                            ("SYNTHETIC BENEFITS STATEMENT\nEmployer contribution: USD 310.63\nEligible hours: 35.5"
+                                as NSString).draw(
+                                    in: CGRect(x: 48, y: 80, width: 500, height: 300),
+                                    withAttributes: [.font: UIFont.systemFont(ofSize: 18)])
+                        }
+                        try model.retainBenefitStatement(
+                            data: data, filename: "synthetic-benefits.pdf", draftID: draft.id)
+                    }
+                    return session
+                }
                 let start = profile.periodStartDate.addingTimeInterval(7 * 3600)
                 try model.addWork(
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,

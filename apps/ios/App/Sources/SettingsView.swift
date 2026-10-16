@@ -55,6 +55,12 @@ struct SettingsView: View {
                         }
                     }
                 }
+                Section("Employer benefits") {
+                    NavigationLink("Employer contribution checks") {
+                        BenefitAuditsView(model: model)
+                    }
+                    .accessibilityIdentifier("settings.benefits")
+                }
                 Section("Agreements") {
                     NavigationLink("Agreement documents") { AgreementDocumentsView(model: model) }
                         .accessibilityIdentifier("settings.agreements")

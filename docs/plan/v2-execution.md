@@ -28,7 +28,7 @@ An implementation, test result, upload, review submission and public release are
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
-| Benefits audit | Pure domain implemented and tested; native flow in progress | Saved reviews/revisions, migration/backup, UI/source/report journeys |
+| Benefits audit | Native drafts, revisions, originals and reports implemented; focused QA passed | Final region-recovery and broad native/release checks; physical provider transfer remains separate |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Pending | Native transcription → editable draft → explicit confirmation |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
@@ -378,3 +378,128 @@ created; describe and verify each property separately.
 - All known check handles are terminal at this checkpoint. No branch push, hosted CI, signed
   archive, App Store upload/submission, or public release has occurred. Continue with the native
   benefits draft/revision/backup/report vertical slice; preserve all other pending v2 work.
+
+## Native benefits workflow checkpoint
+
+- Continuing from `ef6b7e6`, implemented native fund/period drafts, explicit eligibility/rule/statement
+  review, immutable preview/save, append-only corrections, older-revision selection, another-period
+  checks, original statement PDFs and separate minimized reports. Schema 7 adds optional benefits
+  records/drafts; versions 1–6 migrate without repricing wage history. Existing agreements cited by
+  benefits drafts/history remain protected from unused-source deletion.
+- Numeric input retains its explicit separator and rounding scale. Material edits invalidate relevant
+  confirmations in the model; a stale preview or another unfinished draft cannot overwrite newer
+  input. Original PDFs bind to a draft and SHA-256; late intake is rejected after statement withdrawal.
+  Backup/restore remaps physical filenames while preserving original bytes, identities and results.
+- The pure result now retains per-segment unrounded contributions for explanation. Expected amounts
+  round once per fund; subtracting a confirmed statement does not round its extra precision away.
+  USD 350 versus confirmed 350.001 is a possible -0.001 difference, not a false match. Pension,
+  annuity, health/welfare and other configured contributions stay separate from wages/allowances
+  and employee deductions; no fund membership, full benefits or legal/project compliance is inferred.
+- Initial storage batch passed **17 tests in 2 suites** (`v2-benefits-storage2-20261016.xcresult`).
+  Expanded original/backup/privacy/review tests passed **22 tests in 3 suites**
+  (`v2-benefits-evidence-20261016.xcresult`). These preceded later component/precision/cleanup work.
+- First native attempt had a test query compilation error; corrected the keyboard-button query.
+  Next identified a real accessibility issue: a verdict identifier exposed its decorative image name.
+  The verdict now exposes one explicit text label. Logs retained under `/private/tmp/linepay-v2-benefits-ui*.log`.
+- The full normal journey passed (182.354s) in `.build/v2-benefits-ui3-20261016.xcresult`: forty
+  synthetic actual worked hours at 50 retain wage estimate 2,000; a separate 40 eligible units at
+  8.75 gives 350; missing statement remains unverified; a later 35.5 / 310.63 statement appends a
+  correction with 4.5 units / 39.37 possible differences. No wage audit access is consumed.
+- Runtime review found the result list stayed at its prior scroll position after correction. Reset
+  list identity when selecting a different revision, and made difference rows explicit accessible
+  values. Final normal + accessibility XXXL journeys passed (138.983s / 114.352s) in
+  `.build/v2-benefits-ui-final-20261016.xcresult`, including old revision remaining unverified, an
+  actually loaded original PDF, fresh confirmations and a minimized exact PDF preview.
+- Inspected captures under `.build/v2-benefits-ui-final-attachments/`. At XXXL the long save label
+  consumed excessive space; accessibility sizes now use short Preview check / Save check labels.
+  A separate dark/XXXL journey passed (174.713s), including PDF viewport >100 pt, in
+  `.build/v2-benefits-large-dark-20261016.xcresult`. Its real captures were inspected. The report
+  warning was visibly truncated, so it now wraps fully; its repeat journey passed (182.817s) in
+  `.build/v2-benefits-warning-layout-20261016.xcresult`, followed by a successful Release Simulator
+  build (`/private/tmp/linepay-v2-benefits-release.log`). These are Simulator receipts, not an archive.
+- Broad app regression passed **295 tests in 42 suites**, including StoreKit lifecycle, in
+  `.build/v2-benefits-all-app-20261016.xcresult`. A later broad run (298 tests) had one test-only
+  assertion error: withdrawn intake correctly created no directory, but the test tried to enumerate
+  it. Fixed the assertion to accept absent or empty storage; this failed batch remains a failure.
+- Review found and reproduced a genuine privacy-cleanup mismatch: TemporaryExports accepted only
+  audit filenames while the new exporter created benefits filenames. A standalone real-code probe
+  failed with unsafePath, then passed after allowing exactly those two report prefixes. Added an
+  actual preview-discard regression, preserving unrelated files/symlink guards. Cleanup/privacy/
+  transfer batch passed **18 tests in 3 suites**, `.build/v2-benefits-cleanup-20261016.xcresult`.
+- Region recovery now losslessly reformats fully parseable saved numbers for the current region,
+  clears confirmations and preserves partial input unchanged on conversion failure. Corrected a
+  Character interpolation warning without disabling strict warnings. Current sequential check:
+  exec `34142`, `.build/v2-benefits-format2-20261016.xcresult` then
+  `.build/v2-benefits-region-ui-20261016.xcresult`, logs
+  `/private/tmp/linepay-v2-benefits-format2.log` and `/private/tmp/linepay-v2-benefits-region-ui.log`.
+  Revalidate that handle/process before starting another device job. No current outcome claimed yet.
+- Added unreleased-v2 benefits guide and updated backup/privacy/history/report scope. The guide
+  validator originally expected 20 articles; intentionally updated to 21 and added benefits search
+  relevance. Full guide/source-freshness, script/native and Release checks still need final readback
+  after the latest region-recovery edits. Do not claim full v2, hosted CI, actual provider delivery,
+  physical-device behavior, signed archive or App Store release from this work.
+
+- Region-recovery adapter batch passed **18 tests in 2 suites** in
+  `.build/v2-benefits-format2-20261016.xcresult`; actual comma-draft conversion/relaunch passed
+  (36.681s) in `.build/v2-benefits-region-ui-20261016.xcresult`. Original numeric values stay exact;
+  partial values are not guessed or discarded. Current-number formatting is required before preview.
+- Complete `agent-verify.sh ios` was actually run using the existing iOS 18.5 UDID and
+  `.build/v2-benefits-full-gate-20261016`. Its **128 domain tests and 300 app tests passed**;
+  all three benefits UI methods executed/passed. Final result is **Failed**, 324 cases total:
+  321 passed, 1 failed, 2 skipped. Failure: native Files destination was not reached. Critical
+  skip: largest-text New rules from a date menu option was not exposed. The other skip was the
+  intentionally opt-in store-screenshot journey. Do not call this a passing native gate; its
+  conditional Release step did not run. Log `/private/tmp/linepay-v2-benefits-full-gate.log`.
+- Inspected the retained system-share screenshot: the activity sheet had accessibility-sized text,
+  with Save to Files below the visible actions. The test had materialized an offscreen cell and
+  tried a blind center tap. Repaired it to scroll until an actually hittable Files action appears,
+  with no skip/fallback coordinate pretending to reach the destination. The isolated native
+  destination/preview journey **passed** (80.954s), reaching actual Files and cancelling without
+  selecting a recipient or persisting a report.
+- Also brought the scope menu fully above the pinned save action before tapping and retained menu
+  captures. Current check is exec `1712`, `.build/v2-provider-scope-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-provider-scope.log`; its largest-text scope case is still live at this
+  checkpoint. Revalidate before another UI job. App source has stayed fixed during these checks.
+- Final guide verification passed for both base paths: 24 HTML pages, 21 indexed guides, internal
+  links/assets, benefits search relevance, 46 reviewed source blobs and screenshot provenance.
+  Local docs: 985 links and 5 tool tests passed; legal active-copy/inventory passed. No publication
+  or external professional approval follows from those checks.
+
+- The first repaired provider/scope batch passed the actual Files destination but still skipped
+  dated scope. Retained captures showed the scope menu was not open after a center tap. Queried
+  the actual Button (rather than inherited-label identifiers), supplied a rectangular label hit
+  area and pressed the visible label after revealing it above Save. No test-only scope mutation
+  hook or pay assertion was removed. The isolated largest-text three-scope journey then **passed**
+  (109.806s), `.build/v2-scope-label-20261016.xcresult`, log
+  `/private/tmp/linepay-v2-scope-label.log`: future/date retain 550; explicitly current recalculation
+  becomes 660. The earlier skipped results remain recorded as skips.
+
+- Second complete native gate again passed **128 domain / 300 app tests**, plus all normal benefits,
+  region and legacy checks, but failed the dark XXXL report-preview action once: the body button was
+  only partially visible. Its actual PDF-sharing assertion stayed in place. The helper now brings
+  that body action fully within the modal viewport and captures before/after the tap. The isolated
+  XXXL original/review/report journey passed (181.067s), `.build/v2-benefits-preview-target-20261016.xcresult`.
+  This does not erase the failed full-gate result in `.build/v2-benefits-complete-gate-20261016`.
+- Started the independent Foundation website consistency work while native gates ran. Verified the
+  public App Store listing still shows 1.0.5, USD 9.99 monthly / 79.99 annual and Data Not Collected;
+  public home matches those prices. Found the public /features table and FAQ incorrectly treating
+  first-check scanning and saved history/reports as Pro-only, contrary to the canonical pricing
+  contract and home page. Sources: https://linepaycheck.com/features and
+  https://apps.apple.com/us/app/linepaycheck-lineman-pay/id6808889292 (October 16 readback).
+- Isolated website checkout `/private/tmp/linepaycheck-v2-consistency-20261016`, branch
+  `codex/v2-plan-consistency`, base `56dd690`. Only the Features copy and its registry date changed;
+  existing v2 availability remains unadvertised. Primary `/Volumes/SSD/linepaycheck.com` is unchanged.
+  `pnpm check` passed with the project-selected 10.11.0, and the real production build passed all
+  23 browser checks in both Chromium and WebKit, including narrow/enlarged/no-JS states. Local
+  preview is exec `25352`, port 4338; stop only that owned process after review. No web deployment.
+
+- Final corrected target now passed: `.build/v2-benefits-preview-target-20261016.xcresult`
+  (181.067s), while actual share availability and PDF viewport assertions remain. The newest full
+  gate is live as exec `34159`, `.build/v2-benefits-verified-gate-20261016`, log
+  `/private/tmp/linepay-v2-benefits-verified-gate.log`. It has freshly passed 128 domain and 300
+  app tests, plus the two long benefits flows; do not claim its overall result before completion.
+- Website production-build browser inspection passed in Chromium and WebKit (23 checks each), plus
+  focused actual table-cell and 320/390px enlarged-text captures in `artifacts/consistency/` of the
+  isolated site worktree. Its task-created Python environment was moved out of the checkout to
+  `/private/tmp/linepaycheck-v2-browser-env-20261016`; only two source files are modified. No site
+  deployment, pull request, branch push or App Store write has occurred.

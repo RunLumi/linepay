@@ -208,7 +208,7 @@ struct ReconciliationReportExporter {
 /// TextKit supplies real line wrapping. Each line is paginated independently, so a long note or
 /// URL can span pages rather than being clipped or shrinking to unreadable text.
 @MainActor
-private struct PDFTextWriter {
+struct PDFTextWriter {
     let context: UIGraphicsPDFRendererContext
     let pageBounds: CGRect
     private var y: CGFloat = 48

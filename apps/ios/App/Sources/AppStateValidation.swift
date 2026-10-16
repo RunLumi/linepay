@@ -16,6 +16,8 @@ enum AppStateValidation {
             state.profile != nil || ids.isEmpty,
             state.schemaVersion == AppPersistentState.currentSchemaVersion
         else { throw invalid() }
+        try BenefitAuditValidation.validate(
+            records: state.benefitAudits ?? [], draft: state.benefitAuditDraft)
         try AgreementImportValidation.validate(state.agreementDocuments ?? [])
         let events = state.resolutionEvents ?? []
         guard events.count <= 10_000, Set(events.map(\.id)).count == events.count else {

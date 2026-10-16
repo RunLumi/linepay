@@ -50,3 +50,5 @@ Fill this from your actual reviewed records, not the guide’s examples. Do not 
 ## Preserve a recoverable copy
 
 Use [Backup and restore]({{< relref "/backup-and-restore" >}}) to preserve records and retained originals. Removing an original affects every audit revision sharing that source; see [privacy and deletion]({{< relref "/privacy-and-deletion" >}}) before doing so.
+
+The v2 development workflow has a [separate employer-benefits report]({{< relref "/benefits" >}}). Choose the intended fund revision before preparing it; it does not change the wage verdict.

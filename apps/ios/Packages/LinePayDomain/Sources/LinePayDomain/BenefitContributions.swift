@@ -129,6 +129,11 @@ public enum BenefitComparisonStatus: String, Codable, Hashable, Sendable {
     case notVerified, notComparable, comparedValuesMatch, possibleDifference
 }
 
+public struct BenefitContributionComponent: Codable, Hashable, Sendable, Identifiable {
+    public let id: UUID
+    public let unroundedContribution: Money
+}
+
 public struct BenefitContributionResult: Codable, Hashable, Sendable {
     public let fundID: UUID
     public let engineVersion: String
@@ -144,6 +149,7 @@ public struct BenefitContributionResult: Codable, Hashable, Sendable {
     public let status: BenefitComparisonStatus
     public let limitation: String?
     public let segments: [BenefitEligibilitySegment]
+    public let components: [BenefitContributionComponent]
     public let rounding: MoneyRoundingRule
 }
 
@@ -178,6 +184,7 @@ public struct BenefitContributionCalculator: Sendable {
         let fundID = sorted[0].rule.fundID
         let bases = Set(sorted.map { $0.rule.basis })
         var raw: Decimal = 0
+        var components: [BenefitContributionComponent] = []
         var units: Decimal = 0
         var previousEnd = period.start
         var snapshots: [UUID: BenefitRuleSnapshot] = [:]
@@ -218,6 +225,10 @@ public struct BenefitContributionCalculator: Sendable {
                 }
                 value = divided
             }
+            components.append(
+                BenefitContributionComponent(
+                    id: segment.id,
+                    unroundedContribution: Money(amount: value, currencyCode: currency)))
             raw = try exact(raw, value, multiply: false)
             if bases.count == 1 { units = try exact(units, segment.quantity, multiply: false) }
         }
@@ -234,7 +245,8 @@ public struct BenefitContributionCalculator: Sendable {
                 confirmedEmployerContribution: paid, contributionDifference: difference,
                 eligibleQuantity: eligibleUnits, quantityBasis: basis,
                 quantityDifference: unitDifference,
-                status: status, limitation: limitation, segments: sorted, rounding: rounding)
+                status: status, limitation: limitation, segments: sorted, components: components,
+                rounding: rounding)
         }
         guard let statement else {
             return result(
@@ -262,10 +274,13 @@ public struct BenefitContributionCalculator: Sendable {
         else {
             return result(
                 .notComparable,
-                "Statement fund, dates, timezone or currency differ from the reviewed expectation.")
+                "A same-fund comparison with matching dates, timezone and currency has not been established."
+            )
         }
         let difference = try statement.employerContribution.map {
-            try expected.subtracting($0).rounded(using: rounding)
+            Money(
+                amount: try exact(expected.amount, -$0.amount, multiply: false),
+                currencyCode: currency)
         }
         let unitDifference: Decimal?
         if let quantity = statement.quantity, let eligibleUnits, statement.quantityBasis == basis {

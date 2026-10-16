@@ -43,3 +43,5 @@ Original files can be shared by several revisions. Removing a shared original re
 Export a complete backup first when those records may be needed later. Local deletion does not delete copies already exported to Files, iCloud Drive, email, or another destination. It also does not cancel a subscription.
 
 Next: [Back up and restore safely]({{< relref "/backup-and-restore" >}}).
+
+In the v2 development workflow, [benefits checks]({{< relref "/benefits" >}}) are independent fund/period records. Deleting a wage work period does not delete those separate benefits checks.

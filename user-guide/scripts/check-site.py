@@ -79,7 +79,7 @@ def validate(root: Path, base: str) -> None:
                 failures.append(f'Inline/external script: {relative}')
         for link in page.links: target(link, url)
     index = json.loads((root / 'index.json').read_text())
-    assert len(index) == 20, f'Expected 20 indexed guides, got {len(index)}'
+    assert len(index) == 21, f'Expected 21 indexed guides, got {len(index)}'
     assert len({item['url'] for item in index}) == len(index)
     for item in index:
         assert item['title'] and item['description'] and len(item['text']) > 300

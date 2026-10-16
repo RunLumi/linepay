@@ -126,8 +126,9 @@ struct ReportShareSessionTests {
         #expect(session.errorMessage != nil)
     }
 
-    @Test func scopedRemovalIsIdempotentAndPreservesOtherReports() throws {
-        let first = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
+    @Test(arguments: ["LinePaycheck-audit", "LinePaycheck-benefits"])
+    func scopedRemovalIsIdempotentAndPreservesOtherReports(_ name: String) throws {
+        let first = try TemporaryExports.destination(name: name, extension: "pdf")
         let second = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
         defer {
             try? FileManager.default.removeItem(at: first)

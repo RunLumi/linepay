@@ -154,7 +154,7 @@ struct AgreementImportLifecycleTests {
         try bytes.write(to: url)
         let loaded = try VersionedLocalStateStore(baseDirectory: root).load()
         let restored = try #require(loaded)
-        #expect(restored.schemaVersion == 6)
+        #expect(restored.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(
             restored.history == state.history && restored.resolutionEvents == state.resolutionEvents
         )

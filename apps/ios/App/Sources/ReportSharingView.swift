@@ -94,7 +94,7 @@ struct ReportSharingView: View {
     }
 }
 
-private struct ReportPreviewView: View {
+struct ReportPreviewView: View {
     let report: PreparedReport
     @Binding var session: ReportShareSession
     @Environment(\.dismiss) private var dismiss
@@ -104,6 +104,7 @@ private struct ReportPreviewView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Sensitive pay information. Review this exact copy before sharing.")
                     .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
                     .accessibilityIdentifier("report.preview-warning")
                 if let document = PDFDocument(data: report.data), document.pageCount > 0 {
