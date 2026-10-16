@@ -29,6 +29,13 @@ struct StartPayPeriodView: View {
                         LabeledContent("Cadence", value: profile.preferredCadence.title)
                     }
                     DatePicker("Starts", selection: $startDate, displayedComponents: .date)
+                        .accessibilityIdentifier("pay-period.start")
+                    if model.profile?.preferredCadence == .semimonthly {
+                        Text(
+                            "Twice-monthly periods run from the 1st through the 15th, or the 16th through the last day. For other cutoffs, choose dates manually in your pay profile."
+                        )
+                        .font(.footnote)
+                    }
                     if model.profile?.preferredCadence == .manual {
                         DatePicker("Ends", selection: $endDate, displayedComponents: .date)
                     }

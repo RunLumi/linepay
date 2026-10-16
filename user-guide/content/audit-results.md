@@ -49,3 +49,15 @@ An earlier audit is no longer current after relevant input changes. Use **Review
 Check the complete work log, unpaid breaks, rate/version, confirmed source fields, gross basis, and earnings layout. Note any missing coverage. Then share a focused question and, when useful, an [audit report]({{< relref "/evidence-and-reports" >}}).
 
 Use neutral language: “Can you help reconcile this difference?” LinePaycheck provides records and comparisons, not a legal finding or a guarantee that money is owed.
+
+## Keep track of a paycheck question
+
+Choose **Follow up → Track this paycheck question** on the result screen. Select a **Status**,
+enter **What happened?**, and choose **Save follow-up**. Each dated entry stays tied to the
+paycheck revision you reviewed. After correcting a paycheck, notes about earlier versions are
+labelled **Different paycheck revision**.
+
+Your notes do not change the calculation or its verdict. **Correction confirmed by me** and
+**Explanation accepted by me** record your judgement; LinePaycheck has not verified a recovery
+or contacted your employer. Follow-ups stay available without Pro and are included in a complete
+backup. Deleting the period deletes its follow-ups.

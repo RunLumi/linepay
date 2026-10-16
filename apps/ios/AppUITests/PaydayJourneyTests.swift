@@ -197,6 +197,45 @@ final class PaydayJourneyTests: XCTestCase {
         }
     }
 
+    func testPaycheckFollowUpPersistsWithoutChangingVerdict() {
+        followUpJourney(largeText: false)
+    }
+
+    func testPaycheckFollowUpAtLargestText() {
+        followUpJourney(largeText: true)
+    }
+
+    private func followUpJourney(largeText: Bool) {
+        launch(scenario: "shortfall", largeText: largeText)
+        tab("Pay")
+        tap("View paycheck result")
+        XCTAssertTrue(
+            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+        tap("audit.follow-up")
+        let note = app.textFields["resolution.note"].firstMatch
+        scrollTo(note)
+        XCTAssertTrue(note.waitForExistence(timeout: 10))
+        note.tap()
+        note.typeText("Synthetic payroll question reviewed")
+        dismissKeyboard()
+        tap("resolution.save")
+        let saved = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
+        scrollTo(saved)
+        XCTAssertTrue(saved.waitForExistence(timeout: 10))
+        capture(largeText ? "v2-follow-up-largest-text" : "v2-follow-up")
+        app.terminate()
+        launch(reset: false, scenario: "shortfall", largeText: largeText)
+        tab("Pay")
+        tap("View paycheck result")
+        XCTAssertTrue(
+            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+        tap("audit.follow-up")
+        let restored = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
+        scrollTo(restored)
+        XCTAssertTrue(restored.waitForExistence(timeout: 10))
+        capture("v2-follow-up-restored")
+    }
+
     /// Captures the App Store set from the `store-week` sample paycheck
     /// (docs/design/app-stores/screenshots.md). Opt-in so CI time stays unchanged:
     /// `TEST_RUNNER_LINEPAY_STORE_CAPTURE=1 TEST_RUNNER_TZ=America/Chicago xcodebuild test ...`

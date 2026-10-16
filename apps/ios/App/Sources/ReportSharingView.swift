@@ -21,7 +21,7 @@ struct ReportSharingView: View {
                     window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
                     agreement: context.agreement, calculation: calculation,
                     paystub: context.paystub, reconciliation: context.reconciliation,
-                    findings: [], privacy: privacy)
+                    findings: [], resolutionEvents: context.resolutionEvents, privacy: privacy)
             })
     }
 
@@ -30,10 +30,21 @@ struct ReportSharingView: View {
             Form {
                 Section("Choose what to share") {
                     Text(
-                        "The default copy includes pay amounts, dates, calculations and source page references. Original paystub pages, optional OCR source text, profile names and source identifiers are excluded. It is not anonymous."
+                        "The default copy includes pay amounts, dates, calculations and source page references. Original paystub pages, optional OCR source text, profile names, source identifiers and follow-up notes are excluded. It is not anonymous."
                     )
                     Toggle("Include optional source details", isOn: $privacy.includeSourceDetails)
                         .accessibilityIdentifier("report.include-source-details")
+                    Toggle(
+                        "Include follow-up history and notes",
+                        isOn: $privacy.includeResolutionHistory
+                    )
+                    .accessibilityIdentifier("report.include-resolution")
+                    if privacy.includeResolutionHistory {
+                        Text(
+                            "Your follow-up notes may contain personal information. Review the entire report before sharing."
+                        )
+                        .font(.footnote)
+                    }
                     if privacy.includeSourceDetails {
                         Label(
                             "This adds profile identity, source names and URLs, private rule notes and OCR source lines. Those lines may include unrelated personal information. Review every page before sharing.",

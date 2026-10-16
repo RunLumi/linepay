@@ -14,6 +14,7 @@ struct ReconciliationReportExporter {
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
         findings: [AuditFinding],
+        resolutionEvents: [ResolutionEvent] = [],
         privacy: ReportPrivacyOptions = ReportPrivacyOptions()
     ) throws -> URL {
         let created = Date()
@@ -71,6 +72,22 @@ struct ReconciliationReportExporter {
                 }
             } else {
                 writer.text("Awaiting paycheck. No paid amount has been confirmed.")
+            }
+
+            if privacy.includeResolutionHistory, !resolutionEvents.isEmpty {
+                writer.section("Worker-recorded follow-up")
+                writer.caption(
+                    "These notes do not change the calculation or establish money owed or recovered."
+                )
+                for event in resolutionEvents {
+                    writer.text(event.status.title)
+                    writer.caption("Paycheck revision: \(event.paystubID.uuidString)")
+                    writer.caption(
+                        ISO8601DateFormatter().string(
+                            from: Date(
+                                timeIntervalSince1970: TimeInterval(event.recordedEpochSeconds))))
+                    writer.text(event.note)
+                }
             }
 
             writer.section(ComparisonScopeDisclosure.title)

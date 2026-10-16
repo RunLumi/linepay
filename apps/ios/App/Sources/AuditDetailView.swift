@@ -191,6 +191,15 @@ struct AuditDetailView: View {
                     ).font(.footnote)
                 }
             }
+            if let paystub = context.paystub {
+                Section("Follow up") {
+                    NavigationLink("Track this paycheck question") {
+                        PaycheckResolutionView(
+                            model: model, periodID: context.id, paystubID: paystub.id)
+                    }
+                    .accessibilityIdentifier("audit.follow-up")
+                }
+            }
             if let errorMessage {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
             }

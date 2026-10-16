@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted 1.0.4-1.0.5 review; see CONTENT-SOURCES.md. Update blobs with --record only after re-reviewing the mapped guides.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -37,7 +37,7 @@
         "changing-rules"
       ],
       "disposition": "reviewed",
-      "blob": "c1cbdea37dd132c11ab1dc7153a27a6e711663af"
+      "blob": "7228a90e5fa88bf15ad645c2b2b7f8153ed3b123"
     },
     {
       "path": "apps/ios/App/Sources/EntryDrafts.swift",
@@ -117,7 +117,7 @@
         "pay-periods"
       ],
       "disposition": "reviewed",
-      "blob": "3530bdd95ef5a220b2880037d6dbebf951e39057"
+      "blob": "0069b04165ad8b4f3a0e5873356bcbc15893c86f"
     },
     {
       "path": "apps/ios/App/Sources/PaystubImportView.swift",
@@ -136,7 +136,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "5d55337b5a5d2acda26193e41c03cf2d1a372045"
+      "blob": "3ea5e22beb49d57eb8a2111c0d29d5bd757f027f"
     },
     {
       "path": "apps/ios/App/Sources/AuditStatusView.swift",
@@ -152,7 +152,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "e7d426ddb454bf025a79d62c62886a313c8d1081"
+      "blob": "05fc725fe674e436e0b43157427211a3815906fc"
     },
     {
       "path": "apps/ios/App/Sources/BackupRestoreView.swift",

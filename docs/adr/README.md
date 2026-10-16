@@ -9,3 +9,6 @@
 - [0005-effective-dated-rules-and-audit-scope](0005-effective-dated-rules-and-audit-scope.md)
 - [0006-evidence-aware-payday-records](0006-evidence-aware-payday-records.md)
 - [0008-bounded-weekly-regular-rate](0008-bounded-weekly-regular-rate.md)
+
+- [0009-calendar-paycycles](0009-calendar-paycycles.md)
+- [0010-worker-recorded-resolution-history](0010-worker-recorded-resolution-history.md)

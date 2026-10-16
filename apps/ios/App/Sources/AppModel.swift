@@ -671,8 +671,19 @@ final class AppModel {
             return
         }
 
+        // A cadence edit must not prevent closing an existing period or invent a partial cycle.
+        if profile.preferredCadence == .semimonthly {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .gmt
+            if ![1, 16].contains(calendar.component(.day, from: active.window.endDate)) {
+                candidate.activePeriod = nil
+                try commit(candidate)
+                return
+            }
+        }
+
         switch profile.preferredCadence {
-        case .weekly, .biweekly:
+        case .weekly, .biweekly, .semimonthly:
             let nextWindow = try makePeriodWindow(
                 cadence: profile.preferredCadence,
                 startDate: active.window.endDate,
@@ -687,10 +698,36 @@ final class AppModel {
         try commit(candidate)
     }
 
+    func recordResolution(
+        periodID: UUID, paystubID: UUID? = nil, status: ResolutionStatus, note: String
+    ) throws {
+        guard let context = periodContext(id: periodID),
+            let targetID = paystubID ?? context.paystub?.id,
+            context.paystub?.id == targetID
+                || context.revisions.contains(where: { $0.paystub.id == targetID })
+        else { throw AppModelError.unconfirmedPaystub }
+        let note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !note.isEmpty, note.count <= 4_000 else {
+            throw AppModelError.invalidField("Resolution note (1–4,000 characters)")
+        }
+        var candidate = state
+        var events = candidate.resolutionEvents ?? []
+        guard events.count < 10_000 else {
+            throw AppModelError.invalidField("Resolution history limit reached")
+        }
+        events.append(
+            ResolutionEvent(
+                id: UUID(), periodID: periodID, paystubID: targetID, status: status,
+                note: note, recordedEpochSeconds: epochSeconds(now())))
+        candidate.resolutionEvents = events
+        try commit(candidate)
+    }
+
     func deleteHistoryPeriod(id: UUID) throws {
         guard let period = state.history.first(where: { $0.id == id }) else { return }
         var candidate = state
         candidate.history.removeAll { $0.id == id }
+        candidate.resolutionEvents?.removeAll { $0.periodID == id }
         let draftEvidence =
             candidate.paystubDraft?.targetPeriodID == id
             ? candidate.paystubDraft?.sourceEvidence : nil
@@ -818,7 +855,8 @@ final class AppModel {
                 paystub: active.paystub, reconciliation: active.reconciliation,
                 revisions: active.auditRevisions ?? [], isClosed: false,
                 agreementChanges: active.agreementChanges,
-                calculationIssue: calculation == nil ? calculationError : nil)
+                calculationIssue: calculation == nil ? calculationError : nil,
+                resolutionEvents: state.resolutionEvents?.filter { $0.periodID == active.id } ?? [])
         }
         guard let period = state.history.first(where: { $0.id == id }) else { return nil }
         return PayPeriodContext(
@@ -828,7 +866,8 @@ final class AppModel {
             reconciliation: period.reconciliation,
             revisions: period.auditRevisions ?? [], isClosed: true,
             agreementChanges: period.agreementChanges,
-            calculationIssue: period.calculationIssue)
+            calculationIssue: period.calculationIssue,
+            resolutionEvents: state.resolutionEvents?.filter { $0.periodID == period.id } ?? [])
     }
 
     func status(for context: PayPeriodContext) -> AuditDisplayStatus {
@@ -1471,40 +1510,9 @@ final class AppModel {
         manualEndDate: Date,
         timeZoneIdentifier: String
     ) throws -> PayPeriodWindow {
-        guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
-            throw AppModelError.invalidField("Time zone")
-        }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let start = calendar.startOfDay(for: startDate)
-
-        let end: Date
-        switch cadence {
-        case .weekly:
-            guard let candidate = calendar.date(byAdding: .day, value: 7, to: start) else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        case .biweekly:
-            guard let candidate = calendar.date(byAdding: .day, value: 14, to: start) else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        case .manual:
-            let endDay = calendar.startOfDay(for: manualEndDate)
-            guard endDay >= start,
-                let candidate = calendar.date(byAdding: .day, value: 1, to: endDay)
-            else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        }
-
-        return PayPeriodWindow(
-            startEpochSeconds: epochSeconds(start),
-            endEpochSeconds: epochSeconds(end),
-            cadence: cadence
-        )
+        try PayPeriodSchedule.window(
+            cadence: cadence, startDate: startDate, manualEndDate: manualEndDate,
+            timeZoneIdentifier: timeZoneIdentifier)
     }
 
     func auditStatus(for period: CompletedPayPeriod) -> AuditDisplayStatus {

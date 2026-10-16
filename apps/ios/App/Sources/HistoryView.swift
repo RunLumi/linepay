@@ -156,7 +156,12 @@ struct HistoricalPeriodView: View {
                             "Checked \(Date(timeIntervalSince1970: TimeInterval(revision.paystub.confirmedEpochSeconds)).formatted(date: .abbreviated, time: .shortened))"
                         ) {
                             AuditDetailView(
-                                model: model, context: revision.context(periodID: periodID))
+                                model: model,
+                                context: revision.context(
+                                    periodID: periodID,
+                                    resolutionEvents: context.resolutionEvents.filter {
+                                        $0.paystubID == revision.paystub.id
+                                    }))
                         }
                     }
                     if let issue = context.calculationIssue {
@@ -221,12 +226,12 @@ struct HistoricalPeriodView: View {
 }
 
 extension AuditRevision {
-    func context(periodID: UUID) -> PayPeriodContext {
+    func context(periodID: UUID, resolutionEvents: [ResolutionEvent] = []) -> PayPeriodContext {
         PayPeriodContext(
             id: periodID, window: window, agreement: agreement,
             timeZoneIdentifier: timeZoneIdentifier, workEntries: workEntries,
             calculation: calculation,
             paystub: paystub, reconciliation: reconciliation, revisions: [], isClosed: true,
-            agreementChanges: agreementChanges)
+            agreementChanges: agreementChanges, resolutionEvents: resolutionEvents)
     }
 }

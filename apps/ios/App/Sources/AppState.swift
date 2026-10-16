@@ -32,6 +32,7 @@ struct PayProfile: Identifiable, Codable, Hashable, Sendable {
 enum PayPeriodCadence: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
     case weekly
     case biweekly
+    case semimonthly
     case manual
 
     var id: String { rawValue }
@@ -40,6 +41,7 @@ enum PayPeriodCadence: String, Codable, CaseIterable, Hashable, Sendable, Identi
         switch self {
         case .weekly: "Weekly"
         case .biweekly: "Every 2 weeks"
+        case .semimonthly: "Twice monthly (1–15, 16–end)"
         case .manual: "Choose dates manually"
         }
     }
@@ -283,12 +285,13 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 4
+    static let currentSchemaVersion = 5
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
+    var resolutionEvents: [ResolutionEvent]?
     var onboardingProgress: OnboardingProgress?
     var setupDraft: PayProfileDraft?
     var workDraft: WorkDraft?
@@ -307,7 +310,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit
+        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit, resolutionEvents
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
     }
@@ -318,8 +321,10 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1/v2/v3 -> v4 migration. Historical calculations and sources are not recalculated.
+        // Additive v1–v4 migration. Historical calculations and sources are not recalculated.
         schemaVersion = Self.currentSchemaVersion
+        resolutionEvents = try values.decodeIfPresent(
+            [ResolutionEvent].self, forKey: .resolutionEvents)
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)
         activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)
         history = try values.decodeIfPresent([CompletedPayPeriod].self, forKey: .history) ?? []
@@ -366,6 +371,7 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     let isClosed: Bool
     var agreementChanges: [AgreementChange]?
     var calculationIssue: String? = nil
+    var resolutionEvents: [ResolutionEvent] = []
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {

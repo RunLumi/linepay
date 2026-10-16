@@ -22,7 +22,7 @@ Existing periods retain their timezone context. Do not change the phone’s time
 
 ## Choose the actual pay period
 
-Select **Weekly**, **Every 2 weeks**, or manual dates in the cadence selector. At first setup, check **First day of this pay period**, any manual end date, and the period preview. The pay period is the interval covered by the paycheck, not its issue or deposit date.
+Select **Weekly**, **Every 2 weeks**, **Twice monthly (1–15, 16–end)**, or manual dates in the cadence selector. Twice-monthly periods start on the 1st or 16th and follow the payroll calendar, including February and daylight-saving changes. Use manual dates if your employer uses other cutoff days. At first setup, check **First day of this pay period**, any manual end date, and the period preview. The pay period is the interval covered by the paycheck, not its issue or deposit date.
 
 Later cadence edits apply to future periods. Use [Correct current dates]({{< relref "/pay-periods" >}}) for an open period’s dates.
 

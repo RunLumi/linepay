@@ -594,19 +594,17 @@ struct PayProfileSetupView: View {
         ).sorted()
     }
     private var periodPreview: String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = zone
-        let end =
-            draft.preferredCadence == .manual
-            ? draft.manualPeriodEndDate
-            : calendar.date(
-                byAdding: .day, value: draft.preferredCadence == .weekly ? 6 : 13,
-                to: draft.periodStartDate) ?? draft.periodStartDate
+        guard
+            let window = try? PayPeriodSchedule.window(
+                cadence: draft.preferredCadence, startDate: draft.periodStartDate,
+                manualEndDate: draft.manualPeriodEndDate,
+                timeZoneIdentifier: draft.timeZoneIdentifier)
+        else { return "Choose valid dates; twice-monthly periods start on the 1st or 16th." }
         let formatter = DateIntervalFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         formatter.timeZone = zone
-        return formatter.string(from: draft.periodStartDate, to: end)
+        return formatter.string(from: window.startDate, to: window.displayEndDate)
     }
     private func rebase(from old: String, to new: String) {
         guard let oldZone = TimeZone(identifier: old), let newZone = TimeZone(identifier: new)

@@ -16,6 +16,28 @@ enum AppStateValidation {
             state.profile != nil || ids.isEmpty,
             state.schemaVersion == AppPersistentState.currentSchemaVersion
         else { throw invalid() }
+        let events = state.resolutionEvents ?? []
+        guard events.count <= 10_000, Set(events.map(\.id)).count == events.count else {
+            throw invalid()
+        }
+        for event in events {
+            let paystubs: [UUID]
+            if let active = state.activePeriod, active.id == event.periodID {
+                paystubs =
+                    [active.paystub?.id].compactMap { $0 }
+                    + (active.auditRevisions ?? []).map { $0.paystub.id }
+            } else if let period = state.history.first(where: { $0.id == event.periodID }) {
+                paystubs =
+                    [period.paystub?.id].compactMap { $0 }
+                    + (period.auditRevisions ?? []).map { $0.paystub.id }
+            } else {
+                throw invalid()
+            }
+            guard paystubs.contains(event.paystubID), !event.note.isEmpty,
+                event.note.count <= 4_000,
+                (-62_135_596_800...253_402_300_799).contains(event.recordedEpochSeconds)
+            else { throw invalid() }
+        }
         if let profile = state.profile {
             guard TimeZone(identifier: profile.timeZoneIdentifier) != nil else { throw invalid() }
             try validate(profile.agreement)

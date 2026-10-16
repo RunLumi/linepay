@@ -28,7 +28,9 @@ This is a paycheck-fact correction, not arbitrary editing of frozen work. If alr
 
 ## Read an earlier revision
 
-Under **Audit revisions**, select the timestamped audit you need. Its saved work, rules, calculation, and confirmed facts explain what was assessed at that time. A later correction does not make that earlier record the current answer.
+Under **Saved paycheck checks**, select the timestamped audit you need. Its saved work, rules, calculation, and confirmed facts explain what was assessed at that time. A later correction does not make that earlier record the current answer.
+
+Use **Track this paycheck question** from the intended audit revision to record a follow-up about that exact paycheck. Notes for a different revision are labelled, and a report for an older revision includes only that revision’s follow-ups when you opt in.
 
 When sharing a report, make sure you have opened the intended current or historical revision. Keep the period and revision context with any explanation you send.
 
