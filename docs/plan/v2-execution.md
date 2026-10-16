@@ -763,3 +763,17 @@ created; describe and verify each property separately.
   parity/independent-corpus/accessibility/source-rights/crew/localization and release evidence still
   pending. Website publication and physical-phone questions remain unanswered. Do not bypass the
   earlier rejected remote publication or infer external approvals.
+
+- Precision implementation checkpoint is `bc698f9`; source tree was clean at that commit. The first
+  full precision gate `69702` ran 326 app cases: **325 passed, one failed** solely because
+  ScreenContractTests still expected the former literal “Work or rules changed.” The actual new
+  message includes calculation changes. Updated only that assertion; its needs-review and original-
+  evidence-preservation assertions remain intact. Do not describe that first gate as passed.
+- Cancelled the already-failed owned run; SIGINT stopped the test hosts but Xcode reported an
+  internal cancellation/run-operation error and retained its driver. After host exit, terminated
+  only PID 62052. Session `69702` is terminal (143); it is not waiting/running anymore.
+- Fresh canonical gate now runs as exec `94858`, log
+  `/private/tmp/linepay-v2-exact-seconds-verified-gate.log`, results
+  `.build/v2-exact-seconds-verified-gate-20261017`. Revalidate it on resume and keep all earlier
+  failure evidence. No source arithmetic/history behavior changed after the first gate began;
+  the follow-up change is the obsolete copy expectation only.
