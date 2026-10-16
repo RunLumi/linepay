@@ -503,3 +503,13 @@ created; describe and verify each property separately.
   isolated site worktree. Its task-created Python environment was moved out of the checkout to
   `/private/tmp/linepaycheck-v2-browser-env-20261016`; only two source files are modified. No site
   deployment, pull request, branch push or App Store write has occurred.
+
+- Native implementation checkpoint is committed as `cd267f2`; source tree was clean after commit.
+  Isolated website correction is committed as `0ddbb02` on `codex/v2-plan-consistency`. Neither
+  branch has been pushed or deployed. The task-owned preview on port 4338 was stopped after QA.
+- Newest full iOS gate is still live as exec `34159` at this checkpoint. It has passed all 300 app
+  tests, 128 domain tests, all three benefits UI cases, both previously failing/skipped legal cases,
+  and continued legacy UI journeys. Inspect `/private/tmp/linepay-v2-benefits-verified-gate.log`
+  and the actual handle/process on resume; the final Release/coverage result is not yet claimed.
+  Preserve this exact candidate and all earlier failing/skipped evidence. Full v2 / App Store
+  submission and manual public release remain incomplete, with the rest of the work ledger intact.
