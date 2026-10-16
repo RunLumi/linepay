@@ -35,7 +35,7 @@ An implementation, test result, upload, review submission and public release are
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Pending | Actual workflows, offline/storage/restore safety and browser verification |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | JVM configured-pay/fund calculation and encrypted transport implemented; 51 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
+| Android | JVM configured-pay/fund/gross comparison and encrypted transport implemented; 70 tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Pending | Explicit template export/import without personal pay records |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -904,3 +904,35 @@ created; describe and verify each property separately.
   runtime/E2E remain pending. Native iOS QA still awaits the already requested Xcode component
   setup, followed by diagnosis of the retained Files-provider failure. No SDK terms were accepted,
   website publication performed, archive uploaded or App Store state changed. Overall goal active.
+
+
+## Scoped paycheck comparison parity checkpoint
+
+- Added pure Kotlin configured-gross assessment plus sixteen independent shared cases consumed by
+  the existing Swift assessor. Expected full-period gross requires confirmed complete work and a
+  confirmed gross basis. Cash wages exclude separate per diem unless explicitly included; absent
+  allowance observations stay unknown. Missing calculations never create a zero expectation.
+- The corpus checks match/possible directional differences, half-cent and sub-cent wage-comparison
+  rounding, missing work/basis, unsupported rules, unreviewed fields, legacy rounding, pending
+  weekly review, per-diem scope and offsetting allowance differences. Paid precision and selected
+  source component IDs are preserved. The 48-hour synthetic case requires weekly review; the
+  Android flag represents a pending review, not a weekly-rate implementation.
+- Both focused consumers passed all sixteen cases. Final strict offline Gradle suite passed;
+  actual JUnit XML confirms **70 tests, zero failures/errors/skips** (67 prior/shared checks plus
+  3 new negative-money/currency/immutable-receipt boundary tests). Log
+  `/private/tmp/linepay-v2-gross-jvm-final.log`. Initial sandbox run could not create Gradle's
+  local lock-coordination socket; the authorized retry passed without changing verification.
+- Required quick gate passed: **74 repository tests, strict Swift format, 131 domain tests in
+  19 suites**, log `/private/tmp/linepay-v2-gross-quick.log`. Focused native consumer log
+  `/private/tmp/linepay-v2-gross-native.log`. A test-only Swift compile mistake (throwing decimal
+  parsing inside nonthrowing assertion autoclosures) was fixed by parsing expected values first.
+- This is configured-gross/allowance comparison, not full wage-line/hours/guarantee mapping,
+  period matching, complete timeline transitions, Android app state/UI/history, actual runtime
+  or legal completeness. Persisted verdicts require immutable calculation/fact snapshots; no
+  Android persistence or cross-client state admission is implemented by this slice.
+- Read-only host recheck still returns Xcode first-launch status **69**, CoreSimulator **1171.7**,
+  with only original setup PID 79905 (diagnostic parent 79881) waiting. No duplicate Simulator
+  invocation, component/runtime installation or native test was started. Owner setup/SDK-terms/
+  website publication answers remain pending. No archive/upload/submission/public release.
+- Overall all-stages goal remains active. Final native Files failure diagnosis, real device gates,
+  full Android/PWA workflows, localization, source rights/library, templates and release remain.

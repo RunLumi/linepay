@@ -11,6 +11,9 @@ backend, analytics collector or shared Swift runtime is introduced.
   per diem, effective-dated rule selection, explicit rounding and ledger allocation.
   Separate employer-contribution calculations use confirmed fund/period/rate/unit facts; they do
   not add benefits to wages or infer eligibility.
+  A scoped gross paycheck assessor requires complete work and an explicit gross basis, preserves
+  separately confirmed per diem and returns review states for unresolved facts/rules. Hourly
+  paystub-line mapping and period matching are not implemented by this assessor.
 - `backup`: JCA password-protected transport matching the shared native/Node/browser vector.
   This module does not decode financial snapshot state, perform restore or retain a password.
 
@@ -40,8 +43,9 @@ HTML reports are under each module's ignored `build/` directory. Shared fixtures
 from `shared/contracts/`, never copied into the production library.
 
 Current evidence: nineteen shared payroll cases, nine additional pay boundaries, thirteen shared fund cases,
-six additional fund boundaries, and four backup transport cases passed. The backup Unicode/tamper tests use explicitly public synthetic
-fixture inputs. No real worker/credential data belongs in tests or logs.
+six additional fund boundaries, sixteen shared gross-comparison cases, three gross-input/immutability
+boundaries, and four backup transport cases passed (70 total). The backup Unicode/tamper tests use
+explicitly public synthetic fixture inputs. No real worker/credential data belongs in tests or logs.
 
 The configured-pay engine has its own `linepay.android.configured-pay/1` provenance. Do not admit
 it to another client's persisted results or claim full parity solely because the current nineteen

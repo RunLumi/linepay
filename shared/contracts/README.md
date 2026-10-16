@@ -27,3 +27,5 @@ The first implemented transport contract is [password-protected manual backup v1
 [Configured-pay fixtures v1](payroll/README.md) is the first native-consumed payroll conformance subset. It includes independent synthetic arithmetic, explicit timestamps/timezone and source snapshot references; broader cross-platform coverage remains pending.
 
 [Confirmed fund fixtures v1](benefits/README.md) verifies separate employer-contribution arithmetic and comparison scope in both native implementations without inferring eligibility or legal coverage.
+
+[Configured-gross comparisons v1](reconciliation/README.md) verifies complete-work/gross-basis guards, separate allowances, review precedence and component references in both native domain implementations.
