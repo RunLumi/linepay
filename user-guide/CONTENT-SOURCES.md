@@ -25,7 +25,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Get started; pay profile | `apps/ios/App/Sources/OnboardingFlowView.swift`, `PayProfileSetupView.swift`, `TodayView.swift` |
 | Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `AppSession.swift`, `SettingsView.swift`, `AppState.swift`, `AppStateValidation.swift`; `UnresolvedPeriodLifecycleTests.swift` |
 | Recording work | `AddWorkView.swift`, `CalloutEntryWorkflow.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; app regressions in `CalloutEntryWorkflowTests.swift` / `RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
-| Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
+| Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `WeeklyRecordedWork.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
 | Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `AppState.swift`, domain `PaycheckAssessment.swift` |
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |

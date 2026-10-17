@@ -26,7 +26,7 @@ def run():
             options = {'headless': True}
             if os.environ.get('CHROMIUM_PATH'): options['executable_path'] = os.environ['CHROMIUM_PATH']
             browser = p.chromium.launch(**options)
-            slugs = ['', 'getting-started/', 'paystub-layouts/', 'backup-and-restore/', 'benefits/', 'support/', 'search/']
+            slugs = ['', 'getting-started/', 'paystub-layouts/', 'backup-and-restore/', 'benefits/', 'support/', 'pay-rules/', 'supported-rules/', 'search/']
             for name, width, height, theme in [('desktop-light', 1440, 1000, 'light'), ('mobile-light', 390, 844, 'light'), ('small-dark', 320, 780, 'dark')]:
                 context = browser.new_context(viewport={'width': width, 'height': height}, color_scheme=theme, reduced_motion='reduce')
                 page = context.new_page()
@@ -41,6 +41,10 @@ def run():
                     assert page.locator('main').is_visible()
                     if slug == 'support/':
                         assert 'Never send the backup password.' in page.locator('main').inner_text()
+                    if slug == 'pay-rules/':
+                        text = page.locator('main').inner_text().replace('\u2019', "'")
+                        assert '168-hour end (excluded)' in text
+                        assert "does not automatically clear a paycheck's weekly-review warning" in text
                     records.append({'configuration': name, 'path': slug or '/', 'status': 'passed'})
                 page.goto(base)
                 page.screenshot(path=str(evidence / f'{name}-home.png'), full_page=True)

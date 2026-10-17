@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct. Targeted October17 native crew candidate review: existing mapped public steps unchanged; new candidate Files/adoption instructions remain internal pending native runtime, provider and visual acceptance. This is not a complete public-guide release review.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct. Targeted October17 native crew candidate review: existing mapped public steps unchanged; new candidate Files/adoption instructions remain internal pending native runtime, provider and visual acceptance. This is not a complete public-guide release review. Targeted October17 weekly correction: v2 candidate guidance for exact 168-hour boundary and remuneration classification; no automatic audit clearance or native runtime approval.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -112,7 +112,8 @@
         "supported-rules"
       ],
       "disposition": "reviewed",
-      "blob": "96bda954ea04dbfb135c60750180e1f550fe45bb"
+      "blob": "b0401aaf44555b43515eddaab942d941847a056d",
+      "reason": "Targeted October17 weekly v2 review: updated pay-rules/supported-rules with explicit candidate labels, exact 168-hour boundary, remuneration/credit input and no saved/automatic paycheck clearance. Source and compiler review is not native runtime/accessibility or legal-profile approval."
     },
     {
       "path": "apps/ios/App/Sources/HistoryView.swift",
@@ -247,7 +248,8 @@
         "supported-rules"
       ],
       "disposition": "reviewed",
-      "blob": "211d4f73a704bf6efe44b20855fa67e08f1a63dc"
+      "blob": "7ba914debac3c3bbce8c627fd4e2bef67430637e",
+      "reason": "Targeted October17 weekly v2 review: updated pay-rules/supported-rules with explicit candidate labels, exact 168-hour boundary, remuneration/credit input and no saved/automatic paycheck clearance. Source and compiler review is not native runtime/accessibility or legal-profile approval."
     },
     {
       "path": "apps/ios/App/Sources/AgreementDocumentsView.swift",
@@ -520,6 +522,16 @@
       ],
       "disposition": "reviewed",
       "blob": "867819a1b9a368f40f9b98d8a884271f3e9d2df2"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WeeklyRecordedWork.swift",
+      "guides": [
+        "pay-rules",
+        "supported-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "0e830fc714f3ad71c20f713d8b76e61aa8531798",
+      "reason": "New explicit-boundary collector: clips exact seconds/breaks/dated rates and refuses relevant scope/overlap. Native acceptance remains pending."
     }
   ]
 }

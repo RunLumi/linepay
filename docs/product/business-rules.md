@@ -152,3 +152,13 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-090 | Native crew-draft adoption is inspection → recipient review → setup draft → final save. | Opening/preparing never activates rules. Existing profiles adopt only into a new future-period version; incompatible currency/rounding and changed imported terms refuse. |
 | BR-091 | Retain original crew-draft bytes and recipient choices with the adopted version. | Native schema8 saves provenance atomically; old schemas invent no origins. No file/UUID/rights checkbox confers official source approval. |
 | BR-092 | Explicit zero per diem remains distinct from no configuration. | Native setup may confirm a zero amount without converting absent or unreviewed allowance data to zero. |
+
+
+## Restricted weekly review
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-093 | A statutory-reference workweek is independent of calendar paycycles. | Review exact start time and a fixed168-hour end; no inferred anchor from weekday or paycheck dates. DST local end times can differ. |
+| BR-094 | Weekly remuneration and premium treatment are explicit facts. | Unknown credit treatment refuses; confirmed non-overtime work premiums are included without credit. Clock work does not fill remuneration or determine exclusions. |
+| BR-095 | Collect the actual portion of recorded work in the reviewed interval. | Clip both tails, remove intersecting breaks, preserve seconds/dated rates and original records; unrelated old scope does not block, relevant mixed scope requires review. |
+| BR-096 | New weekly arithmetic has a new version; old receipts remain recorded. | V2 revalidates decoded inputs and uses deterministic allocation IDs; a new review does not rewrite v1 or silently clear paycheck warnings. |

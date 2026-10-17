@@ -32,7 +32,7 @@ Older callout rows that predate event identity remain ambiguous until explicitly
 
 ## Do not approximate missing rules
 
-The restricted weekly review is available only after you explicitly confirm a covered, nonexempt hourly profile and a complete single-employer workweek. It does not establish state/local, public-agency, exemption, union/CBA, alternative-method, or universal federal coverage. Rest-period premiums, unusual stacking, meal penalties, travel guarantees, and overnight regular-schedule windows are not automatically inferred by the setup. More specialized agreements may have further requirements not represented here.
+The restricted weekly review requires a covered, nonexempt hourly profile and a complete single-employer workweek. The v2 development candidate additionally requires an exact employer workweek start instant, its fixed 168-hour end, and separately reviewed remuneration/inclusion/credit inputs. Its native interaction/accessibility acceptance remains pending. A configured weekday or paycheck period is not an automatically verified workweek anchor. Unknown premium treatment blocks calculation. It does not establish state/local, public-agency, exemption, union/CBA, alternative-method, or universal federal coverage. Rest-period premiums, unusual stacking, meal penalties, travel guarantees, and overnight regular-schedule windows are not automatically inferred by the setup. More specialized agreements may have further requirements not represented here.
 
 Use **I don’t see my rule** in setup and record what is missing. A nonempty missing-rule note marks coverage as incomplete. Do not hide the limitation by adding fake hours, setting a misleading base rate, or choosing a near-enough rule.
 

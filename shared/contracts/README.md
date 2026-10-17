@@ -35,3 +35,5 @@ The first implemented transport contract is [password-protected manual backup v1
 [Effective-date pay fixtures v1](payroll/effective-date-v1.md) verifies eight temporal prices and five refusals independently in Swift/Kotlin/browser, with compatible policy and explicit local-date snapshots.
 
 [Calendar paycycles v1](paycycles/README.md) verifies fourteen local-date/instant boundaries and seven refusals independently in Swift/browser; cadence is separate from legal workweek coverage.
+
+- [Historical weekly result](weekly/README.md): actual synthetic v1 receipt and explicit v2 correction.

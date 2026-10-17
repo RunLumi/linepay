@@ -76,3 +76,19 @@ link and print layout. Synthetic artifacts: `.qa/browser/`; log
 Native crew-file source and SDK compilation do not verify the actual iOS/Files workflow. Its new
 instructions remain internal until native App tests, Simulator/physical provider transfer and visual/
 accessibility acceptance. This paragraph does not revise the historical September deployment receipts.
+
+
+## October17 weekly-review candidate guidance
+
+Updated pay-rules/supported-rules with a development-preview label, fixed168-hour employer-boundary
+review, explicit remuneration/credit classification and the fact that the review is unsaved/separate
+from Pay. Source freshness now covers59 mapped files. Root/project builds remain24 HTML pages and
+21 search entries each. This is candidate guidance; native interaction and accessibility acceptance
+is pending and no new native screenshot was invented.
+
+Expanded actual Chromium checks to both weekly guidance pages in desktop/mobile/small-dark layouts.
+The first new assertion differed only on Hugo's typographic apostrophe; normalize that character
+before asserting the same visible statement. Final **27 page/configuration checks passed**, with
+navigation/search/no-JS/keyboard/print controls, log
+`/private/tmp/linepay-v2-weekly-guide-browser-final.log`. Source/policy text and guide rendering do not
+establish native App/weekly-to-paycheck mapping or public release.

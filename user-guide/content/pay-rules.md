@@ -22,9 +22,15 @@ Multiple entries on the same payroll-local date share the daily overtime calcula
 
 ## Restricted weekly overtime review
 
-For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime review** and choose the payroll workweek start. Open **Pay → Review weekly overtime**, select the workweek, and confirm that the week is complete before calculating. The review can include recorded work from more than one stored pay period.
+**V2 development preview:** the expanded review below is implemented in the candidate; native interaction and accessibility validation is still pending. Earlier App Store builds may show a simpler review.
 
-The weekly review is separate: it is **never added to Expected wages**. When weekly overtime is on and more than 40 hours are logged, a paycheck check stays **Needs review** until you review each complete workweek, so an equal gross cannot look like a clean match. This is a restricted estimate for one complete workweek. It does not determine state, local, public-agency, union, CBA, exemption, or alternative-method coverage. If the week is incomplete, historical weekly rules differ, or the inputs cannot be combined safely, the review stays **Needs review**; keep the actual work and clarify the rule instead of adding hours or treating the result as a legal conclusion.
+For a confirmed covered, nonexempt hourly profile, enable **Weekly overtime review**. Open **Pay → Review weekly overtime**. The initial date is a suggestion from your configured weekday. Set the actual **Workweek starts** date and time, check **Payroll timezone** and **168-hour end (excluded)**, and confirm the boundary against your employer's recurring workweek. A calendar pay period is a different concept. Daylight saving can change the local end time; do not choose dates merely to move overtime hours between weeks.
+
+Confirm that every shift in this interval is logged. The review can use work from multiple saved pay periods, including only the portion of a crossing shift inside this workweek, with actual unpaid breaks removed and dated rates retained. Incompatible historical rule/timezone scope needs review.
+
+Enter **Reviewed straight-time wages** for the complete week. Use **Add other payment** for every other cash amount and explicitly choose its treatment. Include bonuses or non-overtime work premiums when applicable; use an exclusion or eligible credit only after checking its actual conditions. An “overtime” label alone does not establish a credit. Enter only the extra premium above base wages already included in straight time, not a full-rate overtime line. Do not enter net pay, YTD totals, employer fund contributions, or duplicate base wages. Unknown or unclassified treatment prevents a result. Confirm the payment review separately, then choose **Check this workweek**.
+
+The review is **not saved**, **not added to Expected wages**, and **does not automatically clear a paycheck's weekly-review warning**. Changing the week clears unsaved payment rows; changing material facts or relevant work/rules invalidates the result and confirmations. Cash shown concerns only the entered classification and declared scope. State/local, public-agency, exemption, union/CBA, alternative-method and other obligations remain separate. Keep actual work and clarify uncertainty rather than inserting fake hours or treating this reference calculation as a legal conclusion.
 
 ## Weekdays, dates, and outside-schedule pay
 

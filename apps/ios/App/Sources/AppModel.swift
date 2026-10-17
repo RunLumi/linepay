@@ -1334,63 +1334,72 @@ final class AppModel {
     }
 
     func calculateWeeklyRegularRate(
-        weekStart: Date, completeWorkweek: Bool
+        weekStart: Date, completeWorkweek: Bool,
+        straightTimeRemuneration: Money? = nil,
+        additionalRemuneration: [WeeklyRemunerationFact] = [],
+        remunerationComplete: Bool = false, workweekBoundaryConfirmed: Bool = false
     ) throws -> WeeklyRegularRateResult {
+        guard completeWorkweek else { throw WeeklyRegularRateError.incompleteWorkweek }
+        guard workweekBoundaryConfirmed else {
+            throw WeeklyRegularRateError.workweekBoundaryUnconfirmed
+        }
+        guard remunerationComplete, let straightTimeRemuneration else {
+            throw WeeklyRegularRateError.remunerationIncomplete
+        }
         guard let profile, let rule = profile.agreement.weeklyOvertime else {
             throw WeeklyRegularRateError.applicabilityUnknown
         }
         let zone = profile.timeZoneIdentifier
-        guard let timeZone = TimeZone(identifier: zone) else {
-            throw WeeklyRegularRateError.applicabilityUnknown
-        }
+        guard TimeZone(identifier: zone) != nil,
+            straightTimeRemuneration.currencyCode == profile.agreement.hourlyRate.currencyCode
+        else { throw WeeklyRegularRateError.currencyMismatch }
+        let start = localDate(from: weekStart, timeZoneIdentifier: zone)
+        let seconds = weekStart.timeIntervalSince1970
+        guard seconds.isFinite, seconds == seconds.rounded(),
+            (-62_135_596_800...(253_402_300_799 - 604_800)).contains(seconds)
+        else { throw WeeklyRegularRateError.invalidWorkweek }
+        let startEpoch = Int64(seconds)
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let start = calendar.startOfDay(for: weekStart)
-        guard let end = calendar.date(byAdding: .day, value: 7, to: start) else {
-            throw WeeklyRegularRateError.incompleteWorkweek
+        calendar.timeZone = TimeZone(identifier: zone) ?? .gmt
+        guard let actualWeekday = Weekday(rawValue: calendar.component(.weekday, from: weekStart))
+        else {
+            throw WeeklyRegularRateError.invalidWorkweek
         }
-        let weekStartLocal = localDate(from: start, timeZoneIdentifier: zone)
         let periods =
             state.history.map {
-                ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+                WeeklyStoredPeriod(
+                    id: $0.id, timeZoneIdentifier: timeZoneIdentifier(for: $0),
+                    agreement: $0.agreement, changes: $0.agreementChanges ?? [],
+                    work: $0.workEntries.map(\.interval))
             }
             + [
                 state.activePeriod.map {
-                    ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+                    WeeklyStoredPeriod(
+                        id: $0.id,
+                        timeZoneIdentifier: $0.agreementTimeZone(
+                            fallback: profile.timeZoneIdentifier),
+                        agreement: $0.agreement, changes: $0.agreementChanges ?? [],
+                        work: $0.workEntries.map(\.interval))
                 }
             ].compactMap { $0 }
-        var facts: [WeeklyWorkFact] = []
-        for (periodID, _, agreement, changes, entries) in periods {
-            guard agreement.weeklyOvertime == profile.agreement.weeklyOvertime else {
-                throw WeeklyRegularRateError.applicabilityUnknown
-            }
-            let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
-            for entry in entries {
-                let intervalStart = Date(
-                    timeIntervalSince1970: TimeInterval(entry.interval.startEpochSeconds))
-                let intervalEnd = Date(
-                    timeIntervalSince1970: TimeInterval(entry.interval.endEpochSeconds))
-                guard intervalStart >= start, intervalEnd <= end else { continue }
-                let date = localDate(from: intervalStart, timeZoneIdentifier: zone)
-                let applied = timeline.agreement(on: date)
-                facts.append(
-                    try WeeklyWorkFact(
-                        id: entry.id, payPeriodID: periodID,
-                        hours: entry.interval.durationHours,
-                        straightRate: applied.hourlyRate))
-            }
+        let slices = try WeeklyRecordedWork.slices(
+            weekStart: start, startEpochSeconds: startEpoch, rule: rule, timeZoneIdentifier: zone,
+            periods: periods)
+        let facts = try slices.map {
+            try WeeklyWorkFact(
+                id: UUID(), payPeriodID: $0.payPeriodID,
+                hours: Decimal($0.workedSeconds) / 3_600, straightRate: $0.agreement.hourlyRate,
+                workedSeconds: $0.workedSeconds)
         }
-        let remuneration = try WeeklyRemunerationFact(
-            amount: Money(
-                amount: facts.reduce(Decimal.zero) { $0 + $1.straightTimeAmount.amount },
-                currencyCode: profile.agreement.hourlyRate.currencyCode),
-            kind: .straightTime)
-        let input = try WeeklyRegularRateInput(
-            weekStart: weekStartLocal, workweekStart: rule.workweekStart,
-            completeWorkweek: completeWorkweek,
-            applicability: rule.applicability, thresholdHours: rule.thresholdHours,
-            work: facts, remuneration: [remuneration])
-        return try WeeklyRegularRateCalculator().calculate(input)
+        let base = try WeeklyRemunerationFact(amount: straightTimeRemuneration, kind: .straightTime)
+        return try WeeklyRegularRateCalculator().calculate(
+            WeeklyRegularRateInput(
+                weekStart: start, workweekStart: actualWeekday,
+                completeWorkweek: completeWorkweek,
+                applicability: rule.applicability, thresholdHours: rule.thresholdHours,
+                work: facts, remuneration: [base] + additionalRemuneration,
+                rounding: profile.agreement.rounding, startEpochSeconds: startEpoch,
+                timeZoneIdentifier: zone))
     }
 
     /// How much saving `draft` would change the open period's expected wages, priced by the same

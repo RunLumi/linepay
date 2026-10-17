@@ -31,3 +31,5 @@
 - [0022-calendar-windows-and-reported-paycheck-periods](0022-calendar-windows-and-reported-paycheck-periods.md)
 
 - [0023-native-crew-drafts-and-retained-adoption](0023-native-crew-drafts-and-retained-adoption.md)
+
+- [0024-weekly-review-admission-and-exact-boundaries](0024-weekly-review-admission-and-exact-boundaries.md)

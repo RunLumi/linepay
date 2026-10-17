@@ -23,6 +23,7 @@ An implementation, test result, upload, review submission and public release are
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Current native App/Simulator regression, physical timezone/provider checks and final release gate |
+| Weekly review correctness | V2 domain fixes and native source implemented; SDK checks passed | Native App/visual/accessibility execution, versioned paycheck-scope guard, physical scope acceptance, persistent weekly evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
@@ -1507,3 +1508,104 @@ created; describe and verify each property separately.
 - Final quick rerun after that copy change also exited0:74 repository tests, strict formatting and141
   domain tests/23 suites, `/private/tmp/linepay-v2-crew-quick-checked.log`. No native source changed
   after the final compiler receipt. Full native runtime/UI/release acceptance remains outstanding.
+
+
+## Weekly review correctness before platform port
+
+- Previous goal turn was progress (`f4dd8e1`). Resumed clean on `codex/v2-e2e`; read-only Xcode
+  first-launch status still69. No Simulator/setup/admin prompt or SDK/runtime/license operation.
+  Began inspecting the missing PWA weekly review, then found financially material native defects;
+  corrected these before copying them to another client. PWA/Android weekly integration is still
+  required; this checkpoint does not replace the all-stage objective with a narrower one.
+- Added regressions against the original code:3 tests failed with12 issues,
+  `/private/tmp/linepay-v2-weekly-safety-before.log`. The old engine excluded a240 noncreditable
+  work premium from2400/48h regular-rate remuneration, producing2840 instead of independently
+  calculated2860. It also calculated with unknown credit, negative decoded amounts, duplicate
+  facts, wrong date/weekday, threshold80 and unsupported rounding. No expected answer was changed
+  to fit those failures. New v2 re-admits decoded input/facts, includes confirmed non-overtime work
+  premiums without credit and refuses unknown treatment or invalid arithmetic/allocation context.
+- `WeeklyWorkFact` optionally retains exact worked seconds; old hours-only facts remain readable.
+  Sum seconds and rate×seconds numerators before conversion. New allocation IDs derive from source
+  fact identity, removing random IDs from the pure calculation; period order/residual conservation
+  are deterministic. Multiply before division so a displayed rounded rate never sets the premium.
+  New results use `linepay.weekly-regular-rate/2`; no automatic historical recalculation.
+- New pure recorded-work collector clips both tails of crossing shifts, removes actual intersecting
+  breaks, validates decoded break spans, splits at local midnights and chooses each dated snapshot.
+  Retains source work/period identities, exact instants/seconds and applied references. Unrelated old
+  periods no longer block a current review; relevant mixed rule/timezone context, overlapping or
+  duplicate work refuse. Saved work/rules/calculations are not modified by collecting or reviewing.
+- Primary-source review caught a further error in the old calendar-week assumption: the ordinary
+  statutory workweek is fixed 168 elapsed hours and may begin at any hour, distinct from a paycycle.
+  New collector requires an exact start instant and clips604,800 seconds. The native form requires
+  explicit employer-boundary confirmation and displays its exclusive168-hour end. Configured
+  weekday provides only an initial suggestion; no recurring anchor is inferred/migrated from it.
+  Actual date/time/zone remain in new results; legacy missing context is not fabricated. UI lets
+  the worker review non-midnight starts and local DST-shifted boundaries rather than force midnight.
+- Native review now separately requires full-week work confirmation, reviewed straight-time wages,
+  all other cash-payment classifications and boundary confirmation. Additional rows start unclassified;
+  unknown treatment refuses. Explicitly warns that eligible extra-premium portions differ from full
+  overtime lines; no inferred bonus/exclusion/credit. Material/date/rule/work edits invalidate results
+  and confirmations; selecting a different week clears unsaved payment rows. Review remains ephemeral,
+  separate from Pay, and does not clear paycheck weekly-review warnings or consume audit access.
+- Corrected a native App-test fixture that previously called a Friday a Monday workweek: epoch
+  1,800,000,000 was not the declared recurring weekday. It now uses independently checked Monday
+  September7,2026 UTC. Kept its48h/2600 and two-period expectations, added reviewed remuneration/
+  boundary requirements and a noncreditable-premium2860 check. Added a crossing-shift4h result
+  while the original5h work stays unchanged. Four focused App tests now cover the application path;
+  these have not run in Simulator while the host setup block remains.
+- Generated `shared/contracts/weekly/legacy-result-v1.json` by compiling and executing **actual
+  f4dd8e1 domain sources** in ignored `.build/v2-weekly-reference/`,
+  `/private/tmp/linepay-v2-weekly-legacy-generation.log`. This original v1 receipt retains its known
+  2840 result/allocation identity. Current regression preserves its decoded/re-encoded values, then
+  explicitly calculates a separate v2 result2860. Fixture is historical synthetic software behavior,
+  not correct current legal pay, a verified agreement or cross-platform backup admission.
+- Focused weekly tests passed19 cases/3 suites after the fixed 168-hour correction,
+  `/private/tmp/linepay-v2-weekly-fixed 168.log`. A further boundary-metadata regression is included
+  in full quick: **74 repository tests, strict format and152 domain tests/25 suites passed**,
+  `/private/tmp/linepay-v2-weekly-quick.log`. The new suites exercise classification, decoded input,
+  seconds, legacy retention, both clipped tails/breaks, rate changes, overlap/relevant scope, spring
+  168-hour Monday tail, fall excluded calendar hour and an explicit non-midnight start.
+- Direct SDK compilation passed all current production and focused App/support test files with
+  language6, complete concurrency and warnings-as-errors, source-bound receipt under
+  `.build/v2-weekly-typecheck/`. It is not a native app build, link, App-test run or UI acceptance.
+  A final copy-only credit-portion warning is being recompiled; record the final receipt below.
+- ADR0024 and BR093–096 record the scope. Targeted primary eCFR778.105/778.207 review checked
+  October 17; #42/legal applicability/professional review remains open. Existing native state8 and
+  backup/crypto containers are unchanged. Updated candidate-labelled guide instructions and removed
+  the inaccurate suggestion that an ephemeral weekly review automatically clears a paycheck warning.
+  Native visual/VoiceOver, runtime, independent scope review, persistence and platform parity remain
+  required. No account/backend, new dependency, actual pay-data upload or automatic transfer.
+
+- **Remaining release blocker discovered during this review:** `PaycheckAssessment.swift` still
+  gates its weekly warning on >40 hours in the single supplied calculation and the absence of any
+  attached weekly result. A fragmented pay period can have <40h while its complete workweek has
+  overtime, and a loosely attached weekly result does not prove mapping/coverage of that paycheck.
+  Existing assessment engine3 and its ≤40h test encode this coarse contract. The native review
+  remains separate and does not attach results, so the new UI cannot clear that warning. Before
+  release or platform parity, implement a versioned assessment guard/mapping with historical
+  engine3 preservation and appropriate regression/App evidence. Do not relabel this checkpoint
+  as full weekly/paycheck correctness or bypass the remaining guard by attaching a result.
+- Final source-bound SDK check exited0 with no diagnostics:107 production/test/support sources,
+  language6/complete concurrency/warnings-as-errors, arm64 iOS18 Simulator target/installed27.1 SDK,
+  `/private/tmp/linepay-v2-weekly-sdk-checked.log`; source SHA256
+  `8a1a89e10c11de7016bfcb2f73d182f78a624a8645b22476f8b80311d714eecd`.
+  This only emits modules/typechecks focused App tests; no native test/Simulator/UI/link/bundle PASS.
+- Pinned workspace Hugo checks passed root and `/linepay/`:24 HTML pages/21 search entries each,
+  deterministic search,59 guide-source reviews and4 screenshot-provenance checks,
+  `/private/tmp/linepay-v2-weekly-guide.log`. Expanded actual Chromium coverage to weekly guidance
+  and supported-limits pages. The first new wording assertion failed because Hugo renders a curly
+  apostrophe; normalized that typography in the assertion without changing the content/meaning.
+  Final browser receipt follows. No guide/native/public website deployment occurred.
+
+- Final actual documentation-browser run passed **27 page/configuration checks**, including the new
+  weekly guidance at desktop/mobile/small-dark widths plus search/navigation/no-JS/keyboard/print,
+  `/private/tmp/linepay-v2-weekly-guide-browser-final.log`. No successful network response was mocked.
+  SDK receipt remains107 sources with hash8a1a89e10c11de7016bfcb2f73d182f78a624a8645b22476f8b80311d714eecd.
+  No native source changed after that receipt. No push, PR, archive, store write or public release.
+  Full v2, especially versioned paycheck-scope safeguards and native/runtime/platform acceptance,
+  remains incomplete; the original goal stays active.
+
+- Final quick rerun after the credit-portion copy also exited0:74 repository tests, strict format and
+  152 domain tests/25 suites, `/private/tmp/linepay-v2-weekly-quick-checked.log`. Final1,061 local
+  Markdown links,5 documentation-tool tests, legal active-copy/inventory, agent-harness and diff
+  checks passed. Scope remains the corrected weekly reference, not full release approval.
