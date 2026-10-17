@@ -28,6 +28,14 @@ Open **Pay → View paycheck result**, or choose **View paycheck result** for th
 
 **Awaiting paycheck** in History describes a closed work period without a paycheck yet. It is not a pay-error verdict.
 
+## Weekly comparison safeguards in the v2 candidate
+
+**Development preview:** native interaction, migration and report validation for these changes is still pending; this is not an App Store release receipt.
+
+When weekly scope is configured or a weekly result is attached, the comparison stays **Needs review** until complete workweeks and any additional premium are actually mapped into this paycheck. A short pay period can belong to an overtime week. A separate weekly review does not clear this guard, and the shown configured difference does not establish a shortfall or overpayment.
+
+An active older weekly check requires **Review or correct paycheck facts**. This creates a new check while keeping the earlier verdict, amounts and evidence. Use **View recorded comparison**, where offered, to inspect its saved revision before correcting or closing the period. An archived **Earlier weekly comparison** remains a record of its original scope; a report labels its **Recorded verdict**. Do not treat that older match as current proof of complete weekly coverage.
+
 ## Interpret the sign
 
 The detail screen labels the amount **Expected minus confirmed paid**. A positive difference means expected was higher; a negative difference means confirmed paid was higher. Check that you are comparing the same period, currency, and gross basis.

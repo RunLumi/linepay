@@ -92,3 +92,17 @@ before asserting the same visible statement. Final **27 page/configuration check
 navigation/search/no-JS/keyboard/print controls, log
 `/private/tmp/linepay-v2-weekly-guide-browser-final.log`. Source/policy text and guide rendering do not
 establish native App/weekly-to-paycheck mapping or public release.
+
+
+## October 17 assessment-v4 candidate guidance
+
+Candidate audit/history/report/expected-pay/import guidance distinguishes active re-review from
+preserved earlier weekly comparisons. View recorded comparison is described only where a saved
+revision exists. No new native screenshot or successful native PDF/migration receipt is claimed.
+
+Pinned Hugo root/project checks pass24 HTML pages/21 search entries each,59 targeted source
+reviews and4 existing screenshot-provenance checks. Actual local Chromium now checks the changed
+pages as well: **42 page/configuration checks passed**, including mobile/dark overflow, real
+navigation/search, no-JS, keyboard skip and print controls. Log
+`/private/tmp/linepay-v2-assessment-guide-browser.log`; no publication occurred. Source/SDK checks
+and guide rendering do not establish native App/VoiceOver/PDF or verified weekly allocation.

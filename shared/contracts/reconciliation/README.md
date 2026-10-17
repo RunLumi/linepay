@@ -33,3 +33,18 @@ uses one explicit rule snapshot; broader timeline/rounding transitions require s
 Run `bash scripts/agent-verify.sh quick` and the pinned JVM command in
 [Android](../../../apps/android/README.md). JVM/Swift domain tests do not establish Android UI,
 persistence/history, OCR, migration/restore, actual devices or App Store release readiness.
+
+
+## Native assessment v3 history fixture
+
+`native-assessment-v3.json` contains five original synthetic receipts emitted by compiling actual
+`614d360` sources. These are native-domain JSON wire records, not portable financial backup input.
+Three weekly-scoped matches demonstrate the old guard's limitations; they remain historical
+software behavior, not correct current paycheck conclusions. The 60-hour weekly case preserves its
+original review reason, and the nonweekly case is the negative control. Current Swift tests replay known v3 receipts against
+the original facts/snapshots and require exact equality, reject changed-fact replay, explicitly invoke v4 and retain
+identical known amounts/comparisons while affected verdicts become Needs review.
+
+See [ADR0025](../../../docs/adr/0025-versioned-weekly-assessment-safeguards.md). V4 does not implement
+weekly-paycheck allocation or certify legal coverage. Native App/runtime migration and cross-platform
+adoption remain separate gates. The resource is copied only into the native App test target.

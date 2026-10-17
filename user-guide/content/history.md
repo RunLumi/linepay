@@ -38,6 +38,10 @@ When sharing a report, make sure you have opened the intended current or histori
 
 Original files can be shared by several revisions. Removing a shared original removes access for all of them, even though the confirmed figures and calculation records remain.
 
+## Earlier weekly comparisons in the v2 candidate
+
+An **Earlier weekly comparison** note identifies a saved result that did not record verified workweek-to-paycheck mapping. Its original verdict and amounts remain unchanged. An explicit new review uses current safeguards and appends a revision; it does not reclassify the old record. Historical PDF copies disclose this scope beside the **Recorded verdict**. Native interaction/report acceptance of this candidate is pending.
+
 ## Delete only with a backup plan
 
 **Delete work period and its checks → Delete period** removes that period’s local work and confirmed facts. Originals that are not shared elsewhere are deleted or queued for cleanup. This is not the same as closing a period, and the guide does not assume a historical recycle bin exists.

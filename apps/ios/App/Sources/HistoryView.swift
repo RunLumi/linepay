@@ -59,6 +59,16 @@ struct HistoryView: View {
                                                 ).monospacedDigit()
                                             }
                                             AuditStatusView(status: model.auditStatus(for: period))
+                                            if AuditAssessment.legacyWeeklyScopeNote(
+                                                calculation: period.comparisonCalculation,
+                                                paystub: paid, agreement: period.agreement) != nil
+                                            {
+                                                Label(
+                                                    "Earlier weekly comparison",
+                                                    systemImage: "clock"
+                                                )
+                                                .font(.footnote)
+                                            }
                                         } else {
                                             Label("Awaiting paycheck", systemImage: "clock")
                                                 .foregroundStyle(LinePayColor.review)
@@ -130,6 +140,12 @@ struct HistoricalPeriodView: View {
                         Label("Awaiting paycheck", systemImage: "clock")
                     } else {
                         AuditStatusView(status: model.status(for: context))
+                        if let note = AuditAssessment.legacyWeeklyScopeNote(
+                            calculation: context.calculation, paystub: context.paystub,
+                            agreement: context.agreement)
+                        {
+                            Text(note).font(.footnote)
+                        }
                         NavigationLink("View paycheck result") {
                             LiveAuditView(
                                 model: model, subscriptionStore: subscriptionStore,

@@ -18,6 +18,16 @@ enum CalculationRevisionPolicy {
         return prices(saved) != prices(current)
     }
 
+    static func requiresAssessmentReview(
+        saved: PaycheckAssessment?, agreement: AgreementSnapshot, calculation: CalculationResult?
+    ) -> Bool {
+        guard let saved, saved.engineVersion < PaycheckAssessor.currentEngineVersion,
+            saved.expectedGross != nil
+        else { return false }
+        return PaycheckAssessor.requiresWeeklyMappingReview(
+            agreement: agreement, calculation: calculation)
+    }
+
     private static func prices(_ result: CalculationResult) -> [PriceKey: Decimal] {
         var values: [PriceKey: Decimal] = [:]
         for component in result.components {

@@ -93,11 +93,13 @@ final class AppModel {
 
     private func auditStatus(
         calculation: CalculationResult?, paystub: ConfirmedPaystub?,
-        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false
+        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false,
+        requiresAssessmentReview: Bool = false
     ) -> AuditDisplayStatus {
         AuditAssessment.evaluate(
             calculation: calculation, paystub: paystub, reconciliation: reconciliation,
-            requiresCalculationReview: requiresCalculationReview
+            requiresCalculationReview: requiresCalculationReview,
+            requiresAssessmentReview: requiresAssessmentReview
         ).status
     }
 
@@ -1048,6 +1050,9 @@ final class AppModel {
 
     func periodContext(id: UUID? = nil) -> PayPeriodContext? {
         if let active = state.activePeriod, id == nil || active.id == id {
+            let needsAssessmentReview = CalculationRevisionPolicy.requiresAssessmentReview(
+                saved: active.paystub?.assessment, agreement: active.agreement,
+                calculation: active.auditRevisions?.last?.calculation ?? calculation)
             let needsReview =
                 active.auditCompletedEpochSeconds != nil
                 && CalculationRevisionPolicy.requiresReview(
@@ -1064,7 +1069,8 @@ final class AppModel {
                 agreementChanges: active.agreementChanges,
                 calculationIssue: calculation == nil ? calculationError : nil,
                 resolutionEvents: state.resolutionEvents?.filter { $0.periodID == active.id } ?? [],
-                requiresCalculationReview: needsReview)
+                requiresCalculationReview: needsReview,
+                requiresAssessmentReview: needsAssessmentReview)
         }
         guard let period = state.history.first(where: { $0.id == id }) else { return nil }
         return PayPeriodContext(
@@ -1082,7 +1088,8 @@ final class AppModel {
         auditStatus(
             calculation: context.calculation, paystub: context.paystub,
             reconciliation: context.reconciliation,
-            requiresCalculationReview: context.requiresCalculationReview)
+            requiresCalculationReview: context.requiresCalculationReview,
+            requiresAssessmentReview: context.requiresAssessmentReview)
     }
 
     func saveSetupDraft(_ draft: PayProfileDraft?) throws {

@@ -116,6 +116,8 @@ targets:
       - path: AppTests/Resources
         type: group
         buildPhase: resources
+      - path: ../../shared/contracts/reconciliation/native-assessment-v3.json
+        buildPhase: resources
       - path: ../../shared/contracts/backup/encryption-v1.json
         buildPhase: resources
     settings:

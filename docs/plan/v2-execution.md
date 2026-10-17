@@ -23,7 +23,7 @@ An implementation, test result, upload, review submission and public release are
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Current native App/Simulator regression, physical timezone/provider checks and final release gate |
-| Weekly review correctness | V2 domain fixes and native source implemented; SDK checks passed | Native App/visual/accessibility execution, versioned paycheck-scope guard, physical scope acceptance, persistent weekly evidence and Android/PWA adoption remain pending |
+| Weekly review correctness | Weekly v2 and assessment v4 bypass guard implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native App/visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
@@ -1609,3 +1609,92 @@ created; describe and verify each property separately.
   152 domain tests/25 suites, `/private/tmp/linepay-v2-weekly-quick-checked.log`. Final1,061 local
   Markdown links,5 documentation-tool tests, legal active-copy/inventory, agent-harness and diff
   checks passed. Scope remains the corrected weekly reference, not full release approval.
+
+
+## Assessment v4 and preserved weekly comparison history
+
+- Previous turn was progress (`614d360`); resumed clean on `codex/v2-e2e`. Read-only Xcode
+  first-launch status still69; no setup/admin prompt, Simulator/runtime or SDK/license operation.
+  Addressed the known assessment bypass before continuing platform expansion. Full weekly mapping
+  is still unimplemented; the v4 guard prevents unsupported conclusions and does not claim mapping.
+- New bypass regressions ran against original v3:2 tests failed with40 issues,
+  `/private/tmp/linepay-v2-weekly-assessment-before.log`. Short/40h periods and unrelated attached
+  weekly results could produce match/shortfall/overpayment without mapping. New v4 retains known
+  amounts/comparisons but requires Needs review whenever the argument agreement, saved snapshots
+  or attached weekly result indicate weekly scope. Missing/empty snapshot arrays cannot hide the
+  argument's rule. No caller Boolean/arbitrary-result bypass is added. Nonweekly scope is unchanged;
+  incomplete work or unknown gross basis remains Not comparable.
+- New native schema9 admits producer4, while old1–8 records retain their original comparison
+  versions and values. Current-v4 validation refuses a forged weekly match or missing mapping reason.
+  A separate assessment-review flag marks active legacy weekly checks stale without repricing or
+  saving on load. Explicit review appends v4. Archived originals remain their recorded verdicts
+  with Earlier weekly comparison context; PDFs label Recorded verdict. Original comparison access
+  remains available through View recorded comparison when a frozen revision exists, before closing
+  the period. Calculation-precision review remains independent.
+- Propagated the flag through Pay, import, detail, report preparation and PDF generation. A Pro
+  amount claim additionally requires a current open Possible shortfall verdict; Needs review or
+  historical difference values cannot become that advertising claim. No worker records are hidden
+  behind a new subscription requirement or automatically sent anywhere.
+- Generated four original native v3 receipts by compiling/executing actual **614d360** domain
+  sources, `/private/tmp/linepay-v2-assessment-legacy-generation.log`, canonical fixture
+  `shared/contracts/reconciliation/native-assessment-v3.json`. Original matches/amounts/component
+  references remain intact; explicit v4 review changes the affected scope verdict/reasons, while
+  its no-weekly negative control still matches. These are historical synthetic software receipts,
+  not current legal pay conclusions or a cross-client financial backup format.
+- Pure focused final suite passed **4 tests** including five hour/scope argument cases and the four
+  actual legacy receipts, `/private/tmp/linepay-v2-weekly-assessment-final.log`. Existing ≤40h
+  acceptance was deliberately corrected after reproducing the defect, not weakened to hide it.
+- Added **five native App tests** for schema8-to9 shape admission, active legacy read without
+  writes, frozen-revision reading, append-only v4 correction, archive/backup/reload, legacy PDF
+  labels, unaffected scope, forged-v4 refusal and failed-save preservation. A further crew-origin
+  schema8 shape check preserves original bytes. These tests are typechecked, **not executed**;
+  the schema8 App seed is assembled from actual old domain receipts, not an old app runtime receipt.
+- XcodeGen2.46.0 generation passed. Inspected the generated project: the new canonical JSON
+  fixture is copied only by LinePayAppTests' resource phase, absent from LinePay's shipping resources.
+  Inventory check initially caught project.yml drift. Reviewed that test-only wiring and refreshed
+  only its mechanical hash; runtime resources, lockfile, permissions and dependencies are unchanged.
+  This bookkeeping is not source-rights/legal/release approval or an actual test bundle inspection.
+- Frozen-source SDK compilation/typechecking passed **109 production/test/support sources** with
+  language6/complete concurrency/warnings-as-errors, arm64 iOS18 Simulator target/installed27.1 SDK;
+  `/private/tmp/linepay-v2-assessment-sdk-checked.log`, receipt `.build/v2-assessment-typecheck/`,
+  source SHA256 `a23e3f1d0c801fc7f04028bb914fb333f4dc62140366485c352bb3bb540b1bec`.
+  No native source changed afterwards. This is module emission/typechecking, not link/bundle,
+  native App-test, Simulator, PDF-render or visual/VoiceOver acceptance.
+- Full quick gate passed **74 repository tests, strict format and156 domain tests/26 suites**,
+  `/private/tmp/linepay-v2-assessment-quick.log`. Candidate guide review updated the affected ten
+  source mappings without claiming a full release review. Pinned Hugo checks passed root and
+  `/linepay/`:24 HTML pages/21 search entries each, deterministic search,59 source reviews and4
+  screenshot-provenance checks, `/private/tmp/linepay-v2-assessment-guide.log`. Actual guide-browser
+  evidence follows; it cannot substitute for native interaction or new native screenshot evidence.
+- ADR0025 and BR097–099 own these controls. The weekly mapping/integration, source/applicability
+  #42, runtime/migration/PDF/visual/provider, remaining PWA/Android/library/localization and final
+  store gates remain required. No push/PR, archive/store write or public release occurred. The
+  original all-stage/manual-release objective stays active and incomplete.
+
+- History invariant review added explicit known-producer replay, rather than relying only on byte/
+  value retention: `reproduceRecorded` reuses original calculation/snapshot/facts and requires exact
+  equality to the recorded producer3/4 result. Unknown1/2 producers are not replayed by this API;
+  their preserved read behavior remains. Current `assess` still always produces4. A mismatched
+  original receipt/fact set refuses instead of silently applying current scope or changing it.
+- Expanded the actual614d360 generator to **five receipts**, adding a60-hour v3 Needs review case
+  that verifies the original warning text as well as the three old weekly matches and nonweekly
+  control. Final generation log `/private/tmp/linepay-v2-assessment-legacy-generation-final.log`.
+  New golden fixture is test-only; no app runtime resource or financial state is rewritten.
+  Final replay/domain/SDK checks follow; intermediate four-case validation logs above remain historical evidence, while the canonical fixture now contains five receipts.
+
+- Final replay check passed4 tests (including five hour/scope argument cases and five actual legacy
+  receipts), `/private/tmp/linepay-v2-assessment-replay.log`. Full current quick passed **74 script
+  tests/strict format/156 domain tests in26 suites**,
+  `/private/tmp/linepay-v2-assessment-quick-final.log`. Original mismatch replay refuses, and v4
+  current results retain their new scope even though recorded v3 can be reproduced explicitly.
+- Final frozen-source SDK run exited0 with no diagnostics for109 production/test/support sources:
+  `/private/tmp/linepay-v2-assessment-sdk-replay.log`, source SHA256
+  `b14a2d54ca0b1d10ee8495ec241074d435a6e8e46304a10df43b19f2c8b290e0`.
+  Receipt `.build/v2-assessment-typecheck/compiler-receipt.json`. No native source changed after
+  this check; five new App tests and existing affected tests are typechecked, not executed.
+- Actual guide-browser run passed **42 page/configuration checks**,
+  `/private/tmp/linepay-v2-assessment-guide-browser.log`, including new result/history/report pages
+  and navigation/search/no-JS/keyboard/print. This is documentation-browser evidence, not native UI.
+  Last1,063 local Markdown links,5 doc-tool tests, legal active-copy/inventory, harness and diff checks
+  passed. Complete weekly mapping, native runtime/visual/provider and remaining roadmap/release
+  gates stay open. No App Store submission/public release; the original goal remains active.

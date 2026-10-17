@@ -33,3 +33,5 @@
 - [0023-native-crew-drafts-and-retained-adoption](0023-native-crew-drafts-and-retained-adoption.md)
 
 - [0024-weekly-review-admission-and-exact-boundaries](0024-weekly-review-admission-and-exact-boundaries.md)
+
+- [0025-versioned-weekly-assessment-safeguards](0025-versioned-weekly-assessment-safeguards.md)

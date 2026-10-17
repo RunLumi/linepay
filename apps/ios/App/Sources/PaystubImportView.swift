@@ -37,6 +37,12 @@ struct PaystubImportView: View {
                             "Add the paycheck for this work period. Paystubs are read on this iPhone, and you confirm every value before anything is compared."
                         )
                         .foregroundStyle(LinePayColor.textSecondary)
+                        if context.requiresAssessmentReview {
+                            Text(
+                                "Weekly comparison safeguards changed. This review creates a new check while retaining the earlier comparison and amounts."
+                            )
+                            .font(.footnote).accessibilityIdentifier("paystub.assessment-review")
+                        }
                         if context.requiresCalculationReview
                             || context.calculation?.provenance?.engine != "linepay.configured-pay/3"
                         {

@@ -59,6 +59,14 @@ struct CrewRuleWorkflowTests {
         let archive = BackupArchive(createdAt: UnitFixture.start, state: state, files: [])
         let restored = try BackupArchive.decode(archive.encoded())
         #expect(restored.state.crewRuleOrigins == state.crewRuleOrigins)
+        var oldShape = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        oldShape["schemaVersion"] = 8
+        let upgraded = try JSONDecoder().decode(
+            AppPersistentState.self, from: JSONSerialization.data(withJSONObject: oldShape))
+        #expect(upgraded.schemaVersion == 9 && upgraded.crewRuleOrigins == state.crewRuleOrigins)
+        #expect(upgraded.activePeriod == state.activePeriod)
+
         #expect(restored.state.activePeriod == state.activePeriod)
         try AppStateValidation.validate(restored.state)
         let reloaded = AppModel(store: store)

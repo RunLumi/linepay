@@ -78,3 +78,9 @@ Its internal behavior/evidence is recorded in `docs/adr/0023-native-crew-drafts-
 Native App/runtime, Files-provider and visual acceptance is pending; no public crew instructions or
 successful-release/transfer claim is added from SDK compilation. Review publication guidance after
 those gates pass. Existing manual rule scopes, privacy/billing/support and benefits steps are unchanged.
+
+
+October17 assessment-v4 candidate review: result/history/import/report/expected-pay guidance now
+covers active legacy weekly re-review, retained frozen comparisons and Recorded verdict context.
+Source and SDK checks do not prove native migration, rendering, PDF or VoiceOver behavior; no new
+native screenshot was substituted for those missing receipts.

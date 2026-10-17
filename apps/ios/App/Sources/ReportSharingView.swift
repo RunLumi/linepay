@@ -22,7 +22,8 @@ struct ReportSharingView: View {
                     agreement: context.agreement, calculation: calculation,
                     paystub: context.paystub, reconciliation: context.reconciliation,
                     findings: [], resolutionEvents: context.resolutionEvents, privacy: privacy,
-                    requiresCalculationReview: context.requiresCalculationReview)
+                    requiresCalculationReview: context.requiresCalculationReview,
+                    requiresAssessmentReview: context.requiresAssessmentReview)
             })
     }
 

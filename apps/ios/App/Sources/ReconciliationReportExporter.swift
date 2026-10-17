@@ -16,17 +16,18 @@ struct ReconciliationReportExporter {
         findings: [AuditFinding],
         resolutionEvents: [ResolutionEvent] = [],
         privacy: ReportPrivacyOptions = ReportPrivacyOptions(),
-        requiresCalculationReview: Bool = false
+        requiresCalculationReview: Bool = false, requiresAssessmentReview: Bool = false
     ) throws -> URL {
         let created = Date()
         let url = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
         let pageBounds = CGRect(x: 0, y: 0, width: 612, height: 792)
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)
         let assessment = paystub?.assessment
-        let isCurrent = AuditAssessment.evaluate(
+        let presentation = AuditAssessment.evaluate(
             calculation: calculation, paystub: paystub, reconciliation: reconciliation,
-            requiresCalculationReview: requiresCalculationReview
-        ).isCurrent
+            requiresCalculationReview: requiresCalculationReview,
+            requiresAssessmentReview: requiresAssessmentReview, agreement: agreement)
+        let isCurrent = presentation.isCurrent
 
         let data = renderer.pdfData { context in
             var writer = PDFTextWriter(context: context, pageBounds: pageBounds)
@@ -62,7 +63,10 @@ struct ReconciliationReportExporter {
                 writer.row("Confirmed paystub gross", LinePayFormat.money(paystub.grossPay))
                 writer.row("Gross basis", paystub.confirmation?.grossBasis.title ?? "Not recorded")
                 if isCurrent, let assessment {
-                    writer.row("Verdict", AuditDisplayStatus.assessment(assessment).title)
+                    if let note = presentation.legacyScopeNote { writer.caption(note) }
+                    writer.row(
+                        presentation.legacyScopeNote == nil ? "Verdict" : "Recorded verdict",
+                        AuditDisplayStatus.assessment(assessment).title)
                     if let comparable = assessment.expectedGross {
                         writer.row("Expected on the same basis", LinePayFormat.money(comparable))
                     }
@@ -73,6 +77,7 @@ struct ReconciliationReportExporter {
                     for note in assessment.scopeNotes { writer.caption(note) }
                     writer.caption("Comparison engine version: \(assessment.engineVersion)")
                 } else {
+                    writer.text(presentation.explanation)
                     writer.text(
                         "Needs review. This audit has no current evidence-aware comparison. Do not treat the recorded gross difference as a verified shortfall."
                     )

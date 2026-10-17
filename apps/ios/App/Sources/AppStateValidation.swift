@@ -213,9 +213,18 @@ enum AppStateValidation {
 
         // Legacy audits remain review-only.
         guard let assessment = paystub.assessment else { return }
-        guard (1...3).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,
+        guard (1...PaycheckAssessor.currentEngineVersion).contains(assessment.engineVersion),
+            assessment.paidGross == paystub.grossPay,
             Set(assessment.comparisons.map(\.id)).count == assessment.comparisons.count
         else { throw invalid() }
+        if assessment.engineVersion >= 4, assessment.expectedGross != nil,
+            PaycheckAssessor.requiresWeeklyMappingReview(
+                agreement: agreement, calculation: calculation)
+        {
+            guard assessment.verdict == .needsReview,
+                assessment.reviewReasons.contains(PaycheckAssessor.weeklyMappingReviewReason)
+            else { throw invalid() }
+        }
         for comparison in assessment.comparisons {
             guard
                 [comparison.expected, comparison.paid, comparison.difference].allSatisfy({

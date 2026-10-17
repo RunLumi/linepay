@@ -48,11 +48,14 @@ struct LiveAuditView: View {
     /// Names what the free check found, only while that result is current and only as a possible
     /// shortfall; otherwise states plainly what Pro adds.
     private var offerNote: String {
-        if let context = model.periodContext(id: periodID), let paid = context.paystub,
+        if let context = model.periodContext(id: periodID), !context.isClosed,
+            let paid = context.paystub,
+            paid.assessment?.verdict == .possibleShortfall,
             let calculation = context.calculation,
             AuditAssessment.evaluate(
                 calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
-                requiresCalculationReview: context.requiresCalculationReview
+                requiresCalculationReview: context.requiresCalculationReview,
+                requiresAssessmentReview: context.requiresAssessmentReview
             ).isCurrent,
             let difference = paid.assessment?.difference, difference.amount > 0
         {
@@ -75,17 +78,41 @@ struct AuditDetailView: View {
             if let paid = context.paystub, let calculation = context.calculation {
                 let presentation = AuditAssessment.evaluate(
                     calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
-                    requiresCalculationReview: context.requiresCalculationReview)
+                    requiresCalculationReview: context.requiresCalculationReview,
+                    requiresAssessmentReview: context.requiresAssessmentReview,
+                    agreement: context.agreement)
                 Section {
                     Text(
                         LinePayFormat.payPeriod(
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.subheadline)
+                    if let note = presentation.legacyScopeNote {
+                        Label("Earlier weekly comparison", systemImage: "clock")
+                        Text(note).font(.footnote).accessibilityIdentifier(
+                            "audit.legacy-weekly-scope")
+                    }
                     if !presentation.isCurrent {
                         AuditStatusView(status: .needsReview)
                         Text(
-                            "Work, rules or calculation changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
+                            "This comparison needs a new review. Earlier audit revisions remain recorded."
                         )
+                        Text(presentation.explanation).font(.footnote)
+                        if context.requiresAssessmentReview,
+                            let original = context.revisions.last(where: {
+                                $0.paystub.id == paid.id
+                            })
+                        {
+                            NavigationLink("View recorded comparison") {
+                                AuditDetailView(
+                                    model: model,
+                                    context: original.context(
+                                        periodID: context.id,
+                                        resolutionEvents: context.resolutionEvents.filter {
+                                            $0.paystubID == original.paystub.id
+                                        }))
+                            }
+                            .accessibilityIdentifier("audit.recorded-comparison")
+                        }
                     } else if let assessment = paid.assessment {
                         // Verdict first, then the one number that answers "by how much?".
                         AuditStatusView(status: .assessment(assessment))

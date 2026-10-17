@@ -295,7 +295,7 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 8
+    static let currentSchemaVersion = 9
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -337,7 +337,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1–v7 migration. Historical calculations and sources are not recalculated.
+        // V1–v8 admission preserves recorded calculations and comparison versions unchanged.
         schemaVersion = Self.currentSchemaVersion
         crewRuleOrigins = try values.decodeIfPresent(
             [CrewRuleOrigin].self, forKey: .crewRuleOrigins)
@@ -397,6 +397,7 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     var calculationIssue: String? = nil
     var resolutionEvents: [ResolutionEvent] = []
     var requiresCalculationReview = false
+    var requiresAssessmentReview = false
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {

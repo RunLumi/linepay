@@ -162,3 +162,12 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-094 | Weekly remuneration and premium treatment are explicit facts. | Unknown credit treatment refuses; confirmed non-overtime work premiums are included without credit. Clock work does not fill remuneration or determine exclusions. |
 | BR-095 | Collect the actual portion of recorded work in the reviewed interval. | Clip both tails, remove intersecting breaks, preserve seconds/dated rates and original records; unrelated old scope does not block, relevant mixed scope requires review. |
 | BR-096 | New weekly arithmetic has a new version; old receipts remain recorded. | V2 revalidates decoded inputs and uses deterministic allocation IDs; a new review does not rewrite v1 or silently clear paycheck warnings. |
+
+
+## Versioned weekly paycheck review
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-097 | Period hours and an attached weekly result do not establish paycheck coverage. | Assessment v4 retains Needs review for any indicated weekly scope, including short periods; no arbitrary payload clears missing mapping. |
+| BR-098 | Comparison-scope corrections do not rewrite saved history. | Active legacy checks need explicit re-review; archived verdicts/amounts remain recorded with an earlier-scope note. A correction appends v4. |
+| BR-099 | Review amounts are not directional marketing evidence. | A Pro message names a possible shortfall only for a current open comparison with that actual verdict. |

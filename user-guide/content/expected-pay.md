@@ -36,6 +36,8 @@ New estimates keep recorded time precise through money rounding. For a synthetic
 
 Earlier saved estimates and audit revisions retain their recorded values and calculation version. If updated precision changes an active check’s ledger, the app requires a new review instead of relabelling the old result as current. An explicit review of a closed period uses current precision and appends a new audit revision while keeping the original estimate and earlier checks. This is a calculation correction, not evidence that money has been recovered or that every pay obligation was checked.
 
+The v2 candidate also requires a new review when weekly comparison safeguards change, even if the configured amount stays the same. This changes whether an active comparison can be relied on; it does not rewrite the earlier verdict or expected-pay record. See [weekly safeguards]({{< relref "/audit-results" >}}). Native interaction and migration acceptance remains pending.
+
 ## An unavailable result is not zero
 
 A missing or unsafe calculation can show a problem requiring review instead of an amount. Examples include work outside agreement effective dates or an ambiguous guarantee across a rule change. Read the message and correct the underlying facts or rule coverage.

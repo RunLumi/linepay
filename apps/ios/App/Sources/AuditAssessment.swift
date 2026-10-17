@@ -7,10 +7,12 @@ struct AuditAssessment {
     let explanation: String
     let hours: [PaycheckComparison]
     let isCurrent: Bool
+    var legacyScopeNote: String? = nil
 
     static func evaluate(
         calculation: CalculationResult?, paystub: ConfirmedPaystub?,
-        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false
+        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false,
+        requiresAssessmentReview: Bool = false, agreement: AgreementSnapshot? = nil
     ) -> AuditAssessment {
         guard let paystub else {
             return AuditAssessment(
@@ -20,6 +22,11 @@ struct AuditAssessment {
         if requiresCalculationReview {
             return review(
                 "Calculation precision changed. Re-run this check; earlier audit revisions are retained."
+            )
+        }
+        if requiresAssessmentReview {
+            return review(
+                "Weekly comparison safeguards changed. Review this paycheck again; the earlier comparison and its amounts remain recorded."
             )
         }
         let amounts = [
@@ -55,10 +62,28 @@ struct AuditAssessment {
                 "Work, rules or calculation changed. Re-run the audit before relying on this comparison."
             )
         }
+        let legacy = legacyWeeklyScopeNote(
+            calculation: calculation, paystub: paystub, agreement: agreement)
         return AuditAssessment(
             status: .assessment(assessment),
-            explanation: (assessment.reviewReasons + assessment.scopeNotes).joined(separator: "\n"),
-            hours: assessment.comparisons.filter { $0.unit == .hours }, isCurrent: true)
+            explanation: (assessment.reviewReasons + assessment.scopeNotes
+                + [legacy].compactMap { $0 }).joined(separator: "\n"),
+            hours: assessment.comparisons.filter { $0.unit == .hours }, isCurrent: true,
+            legacyScopeNote: legacy)
+    }
+
+    static func legacyWeeklyScopeNote(
+        calculation: CalculationResult?, paystub: ConfirmedPaystub?,
+        agreement: AgreementSnapshot? = nil
+    ) -> String? {
+        guard let saved = paystub?.assessment,
+            saved.engineVersion < PaycheckAssessor.currentEngineVersion,
+            saved.expectedGross != nil,
+            PaycheckAssessor.requiresWeeklyMappingReview(
+                agreement: agreement, calculation: calculation)
+        else { return nil }
+        return
+            "Earlier weekly comparison: values remain as recorded. That comparison did not record verified workweek-to-paycheck mapping. An explicit new review uses current safeguards and keeps the earlier check."
     }
 
     private static func review(_ reason: String) -> AuditAssessment {
