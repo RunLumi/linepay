@@ -16,6 +16,7 @@ import {
 } from "./rule-template.mjs";
 import { validateResolutionEvent } from "./resolution.mjs";
 import { validateTimeline } from "./payroll-v2.mjs";
+import { validateWeeklyReview } from "./weekly.mjs";
 import {
   currentCalculation,
   reproduceSavedCalculation,
@@ -23,7 +24,7 @@ import {
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 6,
+  version: 7,
   revision: 0,
   profiles: [],
   periods: [],
@@ -33,6 +34,7 @@ export const emptyState = () => ({
   ruleTimelines: [],
   paycycleSchedules: [],
   paycheckScopes: [],
+  weeklyReviews: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -134,9 +136,10 @@ export function validateState(state) {
     "ruleTimelines",
     "paycycleSchedules",
     "paycheckScopes",
+    "weeklyReviews",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 6,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 7,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -227,6 +230,20 @@ export function validateState(state) {
     validateTimeline(period.rule, timeline);
   }
   need(
+    Array.isArray(state.weeklyReviews) && state.weeklyReviews.length <= 128,
+    "Too many weekly review records.",
+  );
+  for (const review of state.weeklyReviews) {
+    validateWeeklyReview(review);
+    unique(review.id);
+    for (const source of review.source.periods) {
+      admitRule(source.rule);
+      for (const change of source.timeline?.changes ?? [])
+        admitRule(change.agreement);
+      totalWork += source.work.length;
+    }
+  }
+  need(
     Array.isArray(state.paycycleSchedules) &&
       state.paycycleSchedules.length <= 100 &&
       Array.isArray(state.paycheckScopes) &&
@@ -263,7 +280,11 @@ export function validateState(state) {
     const period = state.periods.find((p) => p.id === scope.periodID),
       audit = period?.audits.find((a) => a.id === scope.auditID);
     need(
-      audit && audit.assessment.engine === "linepay.web.configured-gross/2",
+      audit &&
+        [
+          "linepay.web.configured-gross/2",
+          "linepay.web.configured-gross/3",
+        ].includes(audit.assessment.engine),
       "Reported-period facts have no compatible saved comparison.",
     );
   }
@@ -528,6 +549,16 @@ export function validateState(state) {
     validateResolutionEvent(event, state);
     unique(event.id);
   }
+  need(
+    encoder.encode(
+      JSON.stringify({
+        format: "com.streamentry.linepay.web.snapshot",
+        version: 1,
+        state,
+      }),
+    ).byteLength <= 8388608,
+    "Financial state exceeds the restorable 8 MiB web snapshot limit.",
+  );
   return state;
 }
 // Known prior schemas add only empty missing metadata; retain every existing record.
@@ -622,6 +653,29 @@ export function decodeState(state) {
       version: 6,
       paycycleSchedules: [],
       paycheckScopes: [],
+    };
+  }
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 6
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+      "templateOrigins",
+      "resolutionEvents",
+      "ruleTimelines",
+      "paycycleSchedules",
+      "paycheckScopes",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 7,
+      weeklyReviews: [],
     };
   }
   return validateState(candidate);

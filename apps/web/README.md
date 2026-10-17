@@ -72,7 +72,7 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 6. Known v1/v2/v3/v4/v5 schemas migrate explicitly
+version 1 with `com.streamentry.linepay.web.state` version 7. Known v1/v2/v3/v4/v5/v6 schemas migrate explicitly
 by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
@@ -108,7 +108,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 133 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+The 155 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
 fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
@@ -205,8 +205,31 @@ comparison, subject to complete work, basis and rule-review guards. Editing date
 re-confirmation. Legacy configured-gross v1 results stay as recorded and disclose missing separate
 source facts; new guarded reviews use v2.
 
-Web state v6 atomically retains schedule/source-period metadata with its owner. Old schema1–5
+Web state v6 introduced schedule/source-period metadata; v7 retains it with its owner. Old schema1–5
 imports add no inferred cadence or source dates. The v5 fixture was generated/validated using actual
 `ddfc768` source. Protected reset/recovery preserves wrong/unknown/matching reviews distinctly.
 This browser record flow is not the native App confirmation path, native runtime/device proof or
 legal verification; final release and physical/provider delivery gates remain open.
+
+
+## Complete-workweek references (development preview)
+
+Open Workweeks, choose the employer's source periods, enter its exact start instant/offset and
+payroll timezone, and review the fixed168-hour end. Confirm one employer and complete actual work.
+Enter reviewed straight-time remuneration and every other cash payment/classification separately;
+clock records do not invent those amounts or classify premium credit. An extra-premium credit is
+only the eligible already-paid portion above base. Unknown treatment prevents calculation.
+
+Preview saves nothing. Material changes clear review; Save reviewed workweek appends frozen clock/
+rate/remuneration evidence to local history. Later work changes preserve it. Protected manual backup
+includes these records and private reference notes. Selected unworked periods remain linked, not
+silently discarded. Representation limits:128 reviews,2000 source/slice facts and100 payment facts
+per review; amounts up to10,000,000 with8 fractional digits, and2000–2099 clock representation. They
+are engineering bounds, not legal wage limits. State commits must fit the restorable8MiB snapshot.
+
+Statev7 adds weekly reviews; v1–6 migrate only with empty missing metadata. Actual928d58c modules
+produced the retained v6 fixture. Comparison engine3 captures the known weekly-review prefix and
+references so a new check cannot waive indicated weekly scope. Older checks remain exactly saved,
+with an earlier-context note after new evidence. No weekly amount is added to Pay or automatically
+mapped/cleared against a paycheck. Native financial-state portability, full platform parity, actual
+OS provider transfer, physical/installed PWA and public deployment remain separate requirements.

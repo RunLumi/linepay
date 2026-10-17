@@ -171,3 +171,13 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-097 | Period hours and an attached weekly result do not establish paycheck coverage. | Assessment v4 retains Needs review for any indicated weekly scope, including short periods; no arbitrary payload clears missing mapping. |
 | BR-098 | Comparison-scope corrections do not rewrite saved history. | Active legacy checks need explicit re-review; archived verdicts/amounts remain recorded with an earlier-scope note. A correction appends v4. |
 | BR-099 | Review amounts are not directional marketing evidence. | A Pro message names a possible shortfall only for a current open comparison with that actual verdict. |
+
+
+## Browser weekly evidence
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-100 | One employer's workweek must be selected and confirmed explicitly. | No employer inference or automatic aggregation from rate/profile/currency; boundary, work and remuneration confirmations remain independent. |
+| BR-101 | Weekly references retain frozen original inputs and reproduce exactly. | Preview writes nothing; later ledger changes do not rewrite saved clock/rule/payment facts or results. |
+| BR-102 | Later evidence does not silently reclassify earlier checks. | New engine3 checks retain the weekly prefix/references known then; related evidence keeps new verdicts in review and old copies explicitly historical. |
+| BR-103 | Financial state must remain manually recoverable within its declared format. | v7 preserves old1–6 metadata, rejects unknown/future fields and checks the8MiB protected-snapshot budget before committing. |

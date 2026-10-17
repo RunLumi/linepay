@@ -1,5 +1,6 @@
 import { localCandidates, localDate } from "./payroll.mjs";
-import { assessForPeriod } from "./assessment-period.mjs";
+import { assessWithWeeklyContext } from "./assessment-period.mjs";
+import { renderWeeklyUI } from "./weekly-ui.mjs";
 import { bindPeriodSetup } from "./period-setup-ui.mjs";
 import {
   currentCalculation,
@@ -102,6 +103,20 @@ function render() {
   else if (tab === "history") renderHistory();
   else if (tab === "backup") renderBackup();
   else if (tab === "benefits") renderBenefits();
+  else if (tab === "weekly")
+    renderWeeklyUI({
+      container: main,
+      state,
+      run,
+      uid,
+      now,
+      onSave: async (review) => {
+        await commit((s) => s.weeklyReviews.push(review));
+        message(
+          "Weekly review saved separately from wages; paycheck mapping remains unchecked.",
+        );
+      },
+    });
   else renderPay();
   bind();
 }
@@ -192,7 +207,7 @@ function renderPay() {
           .toReversed()
           .map(
             (a) =>
-              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${auditUsesEarlierContext(state, period, a) ? '<p class="rule-note">This saved check retains an earlier work/rule plan. Later changes did not rewrite it; review a new check for the current estimate.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
+              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${auditUsesEarlierContext(state, period, a) ? '<p class="rule-note">This saved check retains an earlier work/rule/review context. Later changes did not rewrite it; review a new check for the current estimate.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
           )
           .join("")}`
       : ""
@@ -301,7 +316,7 @@ function bind() {
   );
   main
     .querySelectorAll(
-      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned]):not([data-timeline-owned]):not([data-period-owned])",
+      "form:not(#fund-form):not([data-rule-template]):not([data-audit-owned]):not([data-timeline-owned]):not([data-period-owned]):not([data-weekly-owned])",
     )
     .forEach((form) =>
       form.addEventListener("submit", (event) => {
@@ -468,12 +483,13 @@ async function submit(form) {
       work: structuredClone(p.work),
       facts,
       calculation,
-      assessment: assessForPeriod(
+      assessment: assessWithWeeklyContext(
         calculation,
         facts,
         p.rule.rounding,
         p,
         pendingPaycheckScope,
+        state.weeklyReviews,
       ),
     };
     main.querySelector("#audit-preview").innerHTML =

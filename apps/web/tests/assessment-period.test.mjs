@@ -147,7 +147,7 @@ test("actual historical schema1–5 fixtures retain every prior record and gain 
     const original = prior(version),
       copy = structuredClone(original),
       current = decodeState(original);
-    assert.equal(current.version, 6);
+    assert.equal(current.version, 7);
     assert.deepEqual(current.paycheckScopes, []);
     assert.deepEqual(current.paycycleSchedules, []);
     for (const key of ["profiles", "periods"])

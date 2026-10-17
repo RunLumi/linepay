@@ -551,6 +551,133 @@ with sync_playwright() as pw:
             assert calendar_after[key] == calendar_before[key]
         calendar_context.close()
         checks.append('actual encrypted reset/inspect/replace retains all three source-period reviews and fixed DST calendar metadata without inventing source dates')
+        weekly_context = browser.new_context(accept_downloads=True, timezone_id='Asia/Tokyo')
+        observe_context(weekly_context)
+        weekly_context.on('request', lambda r: requests.append((r.url, r.method)))
+        weekly_page = weekly_context.new_page()
+        weekly_page.on('pageerror', lambda e: errors.append(str(e)))
+        weekly_page.goto(origin + '/')
+        expect(weekly_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        profile(weekly_page, '50', diem='')
+        weekly_page.get_by_label('First work date', exact=True).fill('2026-09-07')
+        weekly_page.get_by_label('Last work date (included)', exact=True).fill('2026-09-13')
+        weekly_page.get_by_label('Payroll timezone', exact=True).fill('UTC')
+        weekly_page.get_by_role('button', name='Review pay period', exact=True).click()
+        weekly_page.get_by_role('button', name='Start period', exact=True).click()
+        for day in range(7,13):
+            weekly_page.locator('#work-form [name=start]').fill(f'2026-09-{day:02d}T08:00')
+            weekly_page.locator('#work-form [name=end]').fill(f'2026-09-{day:02d}T16:00')
+            weekly_page.get_by_role('button', name='Save work', exact=True).click()
+            expect(weekly_page.locator('.answer')).to_have_text(f'USD {(day-6)*400}.00')
+        def weekly_paycheck():
+            weekly_page.get_by_label('Confirmed paycheck gross', exact=True).fill('2400')
+            weekly_page.get_by_label('What does gross include?', exact=True).select_option('wagesOnly')
+            weekly_page.get_by_label('All work for this paycheck period is recorded.', exact=True).check()
+            weekly_page.get_by_label('Reported first work date', exact=True).fill('2026-09-07')
+            weekly_page.get_by_label('Reported last work date (included)', exact=True).fill('2026-09-13')
+            weekly_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
+            weekly_page.get_by_role('button', name='Review comparison', exact=True).click()
+        weekly_paycheck()
+        weekly_page.get_by_role('button', name='Save this check', exact=True).click()
+        old_weekly_audit = read_state(weekly_page)['periods'][0]['audits'][0]
+        weekly_page.get_by_role('button', name='Workweeks', exact=True).click()
+        wf = weekly_page.locator('#weekly-form')
+        wf.locator('[name=weekly-start]').fill('2026-09-07T00:00:00Z')
+        wf.locator('[name=weekly-zone]').fill('UTC')
+        wf.locator('[name=weekly-applicability]').select_option('coveredNonexemptHourly')
+        wf.locator('[name=weekly-period]').check()
+        wf.locator('[name=weekly-base]').fill('2400')
+        def confirm_weekly():
+            for name in ['weekly-boundary','weekly-employer','weekly-complete','weekly-payments-confirmed']:
+                wf.locator(f'[name={name}]').check()
+        confirm_weekly()
+        weekly_page.get_by_role('button', name='Review complete workweek', exact=True).click()
+        expect(weekly_page.locator('#weekly-preview')).to_contain_text('USD 2600.00')
+        assert read_state(weekly_page)['weeklyReviews'] == []
+        wf.locator('[name=weekly-base]').fill('2401')
+        assert not wf.locator('[name=weekly-boundary]').is_checked()
+        assert weekly_page.locator('#weekly-save').count() == 0
+        wf.locator('[name=weekly-base]').fill('2400')
+        weekly_page.locator('#weekly-add-payment').click()
+        payment = weekly_page.locator('[data-weekly-payment]')
+        payment.locator('[name=payment-amount]').fill('240')
+        payment.locator('[name=payment-kind]').select_option('extraPremium')
+        payment.locator('[name=payment-credit]').select_option('unknown')
+        confirm_weekly()
+        weekly_page.get_by_role('button', name='Review complete workweek', exact=True).click()
+        expect(weekly_page.locator('#status')).to_contain_text('Unknown premium treatment')
+        assert read_state(weekly_page)['weeklyReviews'] == []
+        payment.locator('[name=payment-credit]').select_option('ineligible')
+        wf.locator('[name=weekly-reference]').fill('PRIVATE SYNTHETIC weekly source <script>plain text</script>')
+        confirm_weekly()
+        weekly_page.get_by_role('button', name='Review complete workweek', exact=True).click()
+        expect(weekly_page.locator('#weekly-preview')).to_contain_text('USD 2860.00')
+        weekly_page.locator('#weekly-preview').screenshot(path=str(OUTPUT / 'weekly-review-preview.png'))
+        payment.get_by_role('button', name='Remove payment', exact=True).click()
+        assert weekly_page.locator('#weekly-save').count() == 0
+        assert not wf.locator('[name=weekly-payments-confirmed]').is_checked()
+        assert read_state(weekly_page)['weeklyReviews'] == []
+        weekly_page.locator('#weekly-add-payment').click()
+        payment = weekly_page.locator('[data-weekly-payment]')
+        payment.locator('[name=payment-amount]').fill('240')
+        payment.locator('[name=payment-kind]').select_option('extraPremium')
+        payment.locator('[name=payment-credit]').select_option('ineligible')
+        confirm_weekly()
+        weekly_page.get_by_role('button', name='Review complete workweek', exact=True).click()
+        expect(weekly_page.locator('#weekly-preview')).to_contain_text('USD 2860.00')
+        weekly_page.locator('#weekly-save').click()
+        expect(weekly_page.locator('.weekly-saved-result')).to_contain_text('USD 2860.00')
+        saved_weekly = read_state(weekly_page)['weeklyReviews'][0]
+        assert saved_weekly['result']['qualifyingSeconds'] == '172800'
+        assert saved_weekly['result']['endExclusiveUTC'] == '2026-09-14T00:00:00Z'
+        checks.append('weekly preview writes nothing, material edits clear confirmation, unknown premium refuses, and confirmed noncreditable work premium gives2860 from48h/2640 remuneration')
+        weekly_page.get_by_role('button', name='Pay', exact=True).click()
+        expect(weekly_page.locator('.answer')).to_have_text('USD 2400.00')
+        assert read_state(weekly_page)['periods'][0]['audits'][0] == old_weekly_audit
+        expect(weekly_page.locator(f'[data-paycheck-audit="{old_weekly_audit["id"]}"]')).to_contain_text('earlier work/rule/review context')
+        weekly_paycheck()
+        expect(weekly_page.locator('#audit-preview')).to_contain_text('Needs review')
+        weekly_page.get_by_role('button', name='Save this check', exact=True).click()
+        recorded = read_state(weekly_page)
+        assert recorded['periods'][0]['audits'][-1]['assessment']['weeklyReviewReferences'] == [saved_weekly['id']]
+        assert recorded['periods'][0]['audits'][-1]['facts']['weeklyReviewPending'] is False
+        assert recorded['periods'][0]['audits'][0] == old_weekly_audit
+        checks.append('retained weekly evidence is separate from Pay and automatically keeps new paycheck review open, while original pre-evidence comparison remains frozen')
+        weekly_page.locator('[data-remove]').first.click()
+        weekly_page.get_by_role('button', name='Confirm removal', exact=True).click()
+        expect(weekly_page.locator('.answer')).to_have_text('USD 2000.00')
+        assert read_state(weekly_page)['weeklyReviews'] == [saved_weekly]
+        weekly_page.get_by_role('button', name='Workweeks', exact=True).click()
+        weekly_page.set_viewport_size({'width':320,'height':900})
+        weekly_page.emulate_media(color_scheme='dark', reduced_motion='reduce')
+        weekly_page.evaluate("document.documentElement.style.fontSize='26px'")
+        weekly_page.screenshot(path=str(OUTPUT / 'weekly-history-dark-large.png'), full_page=True)
+        (OUTPUT / 'weekly-overflow.json').write_text(json.dumps(weekly_page.evaluate("() => [...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth).map(e=>({tag:e.tagName,name:e.getAttribute('name'),text:e.textContent.slice(0,90),width:e.getBoundingClientRect().width,min:getComputedStyle(e).minWidth})).slice(0,30)"),indent=2))
+        assert weekly_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        weekly_page.screenshot(path=str(OUTPUT / 'weekly-history-dark-large.png'), full_page=True)
+        weekly_page.get_by_role('button', name='Backup', exact=True).click()
+        weekly_page.get_by_label('New backup password', exact=True).fill(PASSWORD)
+        weekly_page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
+        with weekly_page.expect_download() as weekly_event:
+            weekly_page.get_by_role('button', name='Download encrypted backup', exact=True).click()
+        weekly_backup = OUTPUT / 'synthetic-weekly.linepaybackup'
+        weekly_event.value.save_as(weekly_backup)
+        weekly_before = read_state(weekly_page)
+        weekly_page.get_by_role('button', name='Review removal', exact=True).click()
+        weekly_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        assert read_state(weekly_page)['weeklyReviews'] == []
+        weekly_page.get_by_label('Protected web backup', exact=True).set_input_files(weekly_backup)
+        weekly_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
+        weekly_page.get_by_role('button', name='Unlock and inspect', exact=True).click()
+        assert read_state(weekly_page)['weeklyReviews'] == []
+        weekly_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
+        weekly_after = read_state(weekly_page)
+        for key in ['periods','profiles','weeklyReviews','paycheckScopes']:
+            assert weekly_after[key] == weekly_before[key]
+        weekly_page.evaluate('() => navigator.serviceWorker.ready.then(() => true)')
+        weekly_page.reload()
+        weekly_page.wait_for_function('() => !!navigator.serviceWorker.controller')
+        checks.append('later ledger removal leaves saved48h weekly evidence unchanged; actual encrypted export/reset/inspect/replace preserves original inputs, classifications and paycheck context')
         page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_label('New backup password', exact=True).fill(PASSWORD)
         page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
@@ -608,7 +735,7 @@ with sync_playwright() as pw:
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
         # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2, 3, 4, 5]:
+        for old_version in [1, 2, 3, 4, 5, 6]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -631,7 +758,8 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 6 and migrated['paycheckScopes'] == [] and migrated['paycycleSchedules'] == []
+            assert migrated['version'] == 7 and migrated['weeklyReviews'] == []
+            assert migrated['paycheckScopes'] == prior.get('paycheckScopes', []) and migrated['paycycleSchedules'] == prior.get('paycycleSchedules', [])
             assert migrated['ruleTimelines'] == prior.get('ruleTimelines', [])
             assert migrated['resolutionEvents'] == prior.get('resolutionEvents', [])
             assert migrated['templateOrigins'] == prior.get('templateOrigins', [])
@@ -653,7 +781,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2/v3/v4/v5 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3/v4/v5/v6 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')
@@ -686,6 +814,14 @@ with sync_playwright() as pw:
         page.locator('[data-fund-revision="2"]').get_by_text('Expected employer contribution', exact=True).scroll_into_view_if_needed()
         page.screenshot(path=str(OUTPUT / 'fund-precision-dark-viewport.png'))
         checks.append('origin stopped: worker-served app/history reload succeeds; fresh no-worker control fails')
+        weekly_response = weekly_page.reload()
+        assert weekly_response.from_service_worker
+        expect(weekly_page.locator('.answer')).to_have_text('USD 2000.00')
+        weekly_page.get_by_role('button', name='Workweeks', exact=True).click()
+        expect(weekly_page.locator('.weekly-saved-result')).to_contain_text('USD 2860.00')
+        assert read_state(weekly_page)['weeklyReviews'] == [saved_weekly]
+        weekly_context.close()
+        checks.append('stopped-origin reload serves the real cached weekly modules and preserves saved weekly cash/clock facts without a backend')
         # Percentage quantity is eligible earnings, not a percentage or worked-hour count.
         # Exercise the actual editor offline and leave the preview unsaved.
         page.get_by_role('button', name='New fund check', exact=True).click()

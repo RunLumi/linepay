@@ -35,3 +35,5 @@
 - [0024-weekly-review-admission-and-exact-boundaries](0024-weekly-review-admission-and-exact-boundaries.md)
 
 - [0025-versioned-weekly-assessment-safeguards](0025-versioned-weekly-assessment-safeguards.md)
+
+- [0026-browser-weekly-reviews-and-frozen-evidence](0026-browser-weekly-reviews-and-frozen-evidence.md)

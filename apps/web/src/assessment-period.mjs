@@ -1,5 +1,6 @@
 import { assess } from "./assessment.mjs";
 import { calendarDate } from "./paycycle.mjs";
+import { relatedWeeklyReviews, weeklyMappingReason } from "./weekly.mjs";
 export function validatePaycheckScope(scope) {
   const expected = [
     "auditID",
@@ -80,7 +81,12 @@ export function assessForPeriod(calculation, facts, rounding, period, scope) {
 export function reproduceAssessment(state, period, audit, calculation) {
   if (audit.assessment.engine === "linepay.web.configured-gross/1")
     return assess(calculation, audit.facts, period.rule.rounding);
-  if (audit.assessment.engine === "linepay.web.configured-gross/2") {
+  if (
+    [
+      "linepay.web.configured-gross/2",
+      "linepay.web.configured-gross/3",
+    ].includes(audit.assessment.engine)
+  ) {
     const scope = state.paycheckScopes.find(
       (s) => s.periodID === period.id && s.auditID === audit.id,
     );
@@ -88,6 +94,23 @@ export function reproduceAssessment(state, period, audit, calculation) {
       throw Error(
         "Saved check has no retained reported-period facts. Nothing was replaced.",
       );
+    if (audit.assessment.engine === "linepay.web.configured-gross/3") {
+      const count = audit.assessment.weeklyContextCount;
+      if (
+        !Number.isSafeInteger(count) ||
+        count < 0 ||
+        count > state.weeklyReviews.length
+      )
+        throw Error("Invalid retained weekly context.");
+      return assessWithWeeklyContext(
+        calculation,
+        audit.facts,
+        period.rule.rounding,
+        period,
+        scope,
+        state.weeklyReviews.slice(0, count),
+      );
+    }
     return assessForPeriod(
       calculation,
       audit.facts,
@@ -97,4 +120,28 @@ export function reproduceAssessment(state, period, audit, calculation) {
     );
   }
   throw Error("Unsupported saved comparison version. Nothing was replaced.");
+}
+export function assessWithWeeklyContext(
+  calculation,
+  facts,
+  rounding,
+  period,
+  scope,
+  reviews,
+) {
+  const result = assessForPeriod(calculation, facts, rounding, period, scope);
+  const references = relatedWeeklyReviews(reviews, period.id).map((r) => r.id);
+  return {
+    ...result,
+    engine: "linepay.web.configured-gross/3",
+    weeklyContextCount: reviews.length,
+    weeklyReviewReferences: references,
+    verdict:
+      references.length && result.gross !== null
+        ? "needsReview"
+        : result.verdict,
+    reasons: references.length
+      ? [...result.reasons, weeklyMappingReason]
+      : result.reasons,
+  };
 }

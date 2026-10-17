@@ -1698,3 +1698,84 @@ created; describe and verify each property separately.
   Last1,063 local Markdown links,5 doc-tool tests, legal active-copy/inventory, harness and diff checks
   passed. Complete weekly mapping, native runtime/visual/provider and remaining roadmap/release
   gates stay open. No App Store submission/public release; the original goal remains active.
+
+
+## Browser complete-workweek evidence and scope context
+
+- Resumed clean928d58c; previous turn was progress. Implemented the missing PWA weekly-reference
+  surface using corrected native semantics: explicit fixed168-hour boundary, chosen employer periods,
+  complete work, payment and applicability review. No rate/currency-based employer inference.
+- Added exact rational monetary engine, clipped clock/break/date-rate collector, frozen source/
+  remuneration/result storage and independent history. v7 adds weeklyReviews; actual928d58c web
+  modules generated/validated v6 fixture with retained calendar/source-period metadata. New engine3
+  paycheck assessments retain an append-only weekly prefix/reference set, so later evidence does
+  not rewrite earlier verdicts and a new check cannot uncheck away related weekly scope. No cash
+  is added to Pay; verified weekly premium/paycheck mapping and full platform parity remain pending.
+- Shared reference-v2 corpus:7 independent prices/allocations and10 refusals in JavaScript/Swift,
+  including caller boundary/employer/payment admission. Initial Node tests found overlapping
+  synthetic source periods in the existing fixture; corrected the test to explicitly select its
+  one intended employer period, matching the new UI choice. No source records or overlap guard
+  were weakened. Node suite now includes155 tests; native quick count158/27 suites. Final receipts
+  follow; do not infer current E2E completion from intermediate logs.
+- npm's no-install invocation still tried registry metadata and failed DNS; used the already present
+  pinned3.9.10 binary directly after checking its package metadata. No dependency install. A quoted
+  diagnostic command triggered the package hook falsely; a narrower process query resolved it.
+- First Chromium run reached saved weekly evidence/actual encrypted recovery but its test wait used
+  a CSP-disallowed string predicate. Switched to function form; next wait exposed the intentional
+  no-clients-claim lifecycle. Wait for ready and use normal reload before requiring controller,
+  without changing worker activation or forcing a reload over unsaved input.
+- WebKit's strict320px/enlarged-text assertion found actual horizontal overflow. Initial bounding-box
+  checks missed painted select text; restored the real synthetic encrypted backup through UI in a
+  focused diagnostic and measured scroll/client widths: a long native rounding option painted321px
+  inside a286px select, making document width338 versus320. Shortened labels and kept full rounding/
+  credit explanations beside the controls. Same26px text now measures320/320 with zero overflowing
+  elements. No clipping, font reduction or assertion relaxation. First repeated context also exposed
+  a click-before-hydration test race; wait for actual app heading before starting profile entry.
+- Final runtime sources are being verified in both engines. Source-bound screenshots, real stopped-
+  origin negative controls and failure receipts remain under .build/web-e2e. No App Store/native
+  runtime or public release claim; full v2/manual-release objective stays active.
+
+- Both first final-source browser runs passed38 checks at hashd20720dd5195d36b8b97f8e6b8b9b1ed56bc085b11df1cb538a1de426f2b14c6.
+  Final code review then found a material-edit defect: programmatic payment removal cleared the
+  preview but returned before clearing confirmations. Corrected the no-event invalidation branch
+  and added an actual remove/re-add/re-review assertion before saving. Final checked source runs
+  follow; do not treat the earlier hash as the final current artifact.
+
+- Checked runs passed38 browser checks per engine after the payment-removal regression at
+  hashb8564719a5f3a571c900af77c4ed5541a51d8870ab95e0e0ae3e8d4d32ac5a3c. Final API review removed
+  the collector's implicit all-period default too: callers must supply the selected employer-period
+  IDs. Added a refusal assertion for omitted selection; the UI already supplied explicit choices.
+  Final source-bound runs are refreshed below. No visual/pay behavior was changed by that API guard.
+- Node suite passed **155 tests**, zero failures/skips,
+  `/private/tmp/linepay-v2-web-weekly-node-final-explicit.log`. Swift's2 shared-consumer tests pass
+  all7 prices/10 refusals; the required quick gate passed74 repository tests/strict format/**158
+  domain tests in27 suites**, `/private/tmp/linepay-v2-web-weekly-quick.log`.
+
+- Final explicit-selection runtime completed with terminal exit0 in both engines: **38 E2E checks
+  each**, identical source SHA256
+  `9d6b65a0263cf3fc091344fc5130c3280e6fda2494a239de6a46c41f35a6fa9e`.
+  Logs `/private/tmp/linepay-v2-web-weekly-chromium-explicit.log` and
+  `/private/tmp/linepay-v2-web-weekly-webkit-explicit.log`; receipts/screenshots under
+  `.build/web-e2e/{chromium,webkit}/`. This includes explicit employer choice, preview/no-write,
+  confirmation invalidation on amount/removal, unknown credit refusal,2860 scoped cash, no Pay
+  addition, no unchecked-away weekly guard, original comparison retention, later ledger removal,
+  actual encrypted reset/inspect/replace, real v1–6 recovery and stopped-origin weekly modules.
+- Last pure suites passed **155 Node tests**, `/private/tmp/linepay-v2-web-weekly-node-report-final.log`,
+  including the historical-report weekly-context branch and private-note exclusion. Explicit corpus
+  format/version admission also passed the final quick:74 repository tests/strict format/**158
+  domain tests/27 suites**, `/private/tmp/linepay-v2-web-weekly-quick-final.log`. No native App code
+  changed; no new native SDK/App/Simulator run is implied by the shared consumer.
+- Inspected actual weekly preview and enlarged dark form captures. The actual downloaded minimized
+  report HTML was printed with Chromium to3-page PDF; pypdf confirms the weekly-unchecked disclosure,
+  saved1.00 difference and absence of private notes. Rendered/inspected page1 with Poppler.
+  `.build/web-e2e/chromium/synthetic-weekly-context-report.{pdf,txt}` uses the actual downloaded
+  `synthetic-minimized-report.html`, not an OS/Files/native delivery receipt.
+- Final1,065 local Markdown links,5 doc-tool tests, legal active-copy/inventory, harness and diff
+  checks passed. No runtime source changed after the final matched hash. Complete weekly allocation,
+  wider PWA/native/Android/source/library/localization/device and final store gates remain open.
+  No push, PR, website publication, archive/store submission or public release. Goal stays active.
+
+- Pre-commit scanner flagged an inline synthetic test passphrase as a generic credential. Replaced
+  that literal with the existing explicitly public shared encryption vector, without bypassing the
+  hook. Final Node suite again passed155 tests, `/private/tmp/linepay-v2-web-weekly-node-fixture.log`.
+  Runtime assets/hash are unchanged; no production credential was introduced or used.

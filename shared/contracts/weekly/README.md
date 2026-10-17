@@ -16,3 +16,18 @@ calculates a new v2 result from its retained input. No workweek instant/timezone
 the old receipt. Its allocation UUID is the actual public synthetic UUID emitted by v1, not a new
 stable identity claim. The wire fixture is native-domain history evidence, not cross-client financial
 backup admission. PWA/Android consumers and complete weekly evidence storage remain pending.
+
+
+## Restricted reference v2
+
+`reference-v2.json`: seven independently stated prices/allocations and ten refusals consumed by
+JavaScript and Swift. EX10/12/13/14/35 cover ordinary 48h, bonus, unequal rates, eligible credit and
+noncreditable work premium. Exact-second fragments and a 1.67/195.83 residual allocation protect
+precision/determinism. Unknown boundary/employer/payment/applicability, incomplete week, unknown
+premium, duplicate facts, mixed currency, invalid rounding and remuneration without hours refuse.
+
+The Swift consumer translates exact seconds into its native input and explicitly enforces the
+boundary/employer/payment confirmation protocol before calling the pure calculator. This proves
+neither native UI collection nor device execution. Native and browser wire/state formats remain
+separate. No verified weekly-paycheck mapping, country/CBA applicability or source approval follows.
+See [browser evidence](../../../docs/adr/0026-browser-weekly-reviews-and-frozen-evidence.md).

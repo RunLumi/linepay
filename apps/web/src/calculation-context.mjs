@@ -1,5 +1,6 @@
 import { calculate } from "./payroll.mjs";
 import { calculateTimeline } from "./payroll-v2.mjs";
+import { relatedWeeklyReviews } from "./weekly.mjs";
 export function currentTimeline(state, periodID) {
   return (
     state.ruleTimelines.filter((t) => t.periodID === periodID).at(-1) ?? null
@@ -28,6 +29,9 @@ export function reproduceSavedCalculation(state, period, work, saved) {
 }
 export function auditUsesEarlierContext(state, period, audit) {
   return (
+    relatedWeeklyReviews(state.weeklyReviews, period.id).some(
+      (r) => !(audit.assessment.weeklyReviewReferences ?? []).includes(r.id),
+    ) ||
     JSON.stringify(audit.work) !== JSON.stringify(period.work) ||
     (audit.calculation.ruleTimelineID ?? null) !==
       (currentTimeline(state, period.id)?.id ?? null)

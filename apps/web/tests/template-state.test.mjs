@@ -53,7 +53,7 @@ test("v1/v2 recovery adds only empty origin metadata and preserves original wage
     const original = prior(version),
       before = structuredClone(original),
       state = decodeState(original);
-    assert.equal(state.version, 6);
+    assert.equal(state.version, 7);
     assert.equal(state.revision, original.revision);
     assert.deepEqual(state.templateOrigins, original.templateOrigins ?? []);
     assert.deepEqual(state.resolutionEvents, []);
