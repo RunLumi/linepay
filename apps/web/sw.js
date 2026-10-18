@@ -1,5 +1,5 @@
 // Cache only the versioned app shell, never user records, exports or arbitrary fetches.
-const CACHE = "linepaycheck-web-shell-v9";
+const CACHE = "linepaycheck-web-shell-v10";
 const FILES = [
   "./",
   "index.html",
@@ -15,6 +15,8 @@ const FILES = [
   "src/calculation-context.mjs",
   "src/rule-timeline-ui.mjs",
   "src/assessment.mjs",
+  "src/assessment-lines.mjs",
+  "src/assessment-lines-ui.mjs",
   "src/assessment-period.mjs",
   "src/paycycle.mjs",
   "src/period-setup-ui.mjs",

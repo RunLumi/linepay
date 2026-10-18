@@ -54,7 +54,7 @@ production rounding. Baseline v1 and versioned effective-date v2 calculations pr
 historical inputs; broader weekly/agreement interactions remain unsupported.
 Daily tier boundaries must resolve to whole elapsed seconds; smaller boundaries need review.
 Work instants are whole seconds from 2000–2099; each entry is at most 72 elapsed hours. It does not
-implement weekly entitlement, complete CBA coverage, paid-equivalent/hourly paystub mapping, complete benefit/eligibility rules,
+implement weekly entitlement, complete CBA coverage, complete benefit/eligibility rules,
 OCR/agreement imports, voice, evidence originals, complete report/physical print parity, commerce or localization.
 These remain part of the full v2 objective, not silently waived by this preview.
 
@@ -72,7 +72,7 @@ receipts without overwriting them.
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 7. Known v1/v2/v3/v4/v5/v6 schemas migrate explicitly
+version 1 with `com.streamentry.linepay.web.state` version 8. Known v1/v2/v3/v4/v5/v6/v7 schemas migrate explicitly
 by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
@@ -108,7 +108,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 155 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
+The 179 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
 fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
 Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
@@ -233,3 +233,27 @@ references so a new check cannot waive indicated weekly scope. Older checks rema
 with an earlier-context note after new evidence. No weekly amount is added to Pay or automatically
 mapped/cleared against a paycheck. Native financial-state portability, full platform parity, actual
 OS provider transfer, physical/installed PWA and public deployment remain separate requirements.
+
+
+## Confirmed paycheck earnings and hours
+
+New reviews can compare regular/overtime/double-time earnings and hours plus separate callout pay.
+Choose each source layout explicitly: full rates versus base plus extra premium, actual work versus
+paid equivalents, and guarantees separate versus included in hourly lines. Enter only values
+identified on the source; blank remains unknown. A complete-breakdown assertion checks the entered
+nonoverlapping earnings against gross and its stated allowance basis. Missing/unusual mapping and
+weekly context can keep the result in review even with matching gross.
+
+Premium-only base retains exact seconds through bucket rounding; hours never feed cash math.
+Displayed expected hours and independent half-up hour differences use four decimals, regardless
+of the wage rounding policy. The original work/rule plan and component references explain the
+quantity. Preview writes nothing; changes remove the pending save consent. A later confirmation
+appends a receipt and its line facts. Historical reviewed reports preserve that mapping and label
+hours separately from currency.
+
+State8 validates/reproduces line receipts and refuses changed/missing evidence. Schemas1–7 add
+only empty line metadata without repricing. The synthetic v7 migration fixture was generated and
+validated by actual3312c73 sources; it retains weekly evidence and its original producer3 receipt.
+Both browser engines exercise actual encrypted migration/recovery, including those older records.
+This is browser history compatibility; native/Android financial-state interchange remains pending.
+See [ADR0028](../../docs/adr/0028-browser-confirmed-paycheck-lines-and-hours.md).

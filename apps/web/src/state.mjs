@@ -1,3 +1,4 @@
+import { validateLineScope } from "./assessment-lines.mjs";
 import { calculate, localDate, epoch } from "./payroll.mjs";
 import {
   reproduceAssessment,
@@ -24,7 +25,7 @@ import {
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 7,
+  version: 8,
   revision: 0,
   profiles: [],
   periods: [],
@@ -35,6 +36,7 @@ export const emptyState = () => ({
   paycycleSchedules: [],
   paycheckScopes: [],
   weeklyReviews: [],
+  paycheckLineScopes: [],
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -137,9 +139,10 @@ export function validateState(state) {
     "paycycleSchedules",
     "paycheckScopes",
     "weeklyReviews",
+    "paycheckLineScopes",
   ]);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 7,
+    state.format === "com.streamentry.linepay.web.state" && state.version === 8,
     "This web app cannot open this state format. Native app backups are not yet supported.",
   );
   need(
@@ -284,9 +287,27 @@ export function validateState(state) {
         [
           "linepay.web.configured-gross/2",
           "linepay.web.configured-gross/3",
+          "linepay.web.configured-lines/4",
         ].includes(audit.assessment.engine),
       "Reported-period facts have no compatible saved comparison.",
     );
+  }
+  need(
+    Array.isArray(state.paycheckLineScopes) &&
+      state.paycheckLineScopes.length <= 1000,
+    "Too many retained paycheck line scopes.",
+  );
+  const lineAudits = new Set();
+  for (const lines of state.paycheckLineScopes) {
+    validateLineScope(lines);
+    const p = state.periods.find((x) => x.id === lines.periodID),
+      audit = p?.audits.find((x) => x.id === lines.auditID);
+    need(
+      audit?.assessment.engine === "linepay.web.configured-lines/4" &&
+        !lineAudits.has(lines.auditID),
+      "Line facts need one compatible retained paycheck check.",
+    );
+    lineAudits.add(lines.auditID);
   }
   need(
     state.periods.filter((p) => !p.closed).length <= 1,
@@ -676,6 +697,30 @@ export function decodeState(state) {
       ...structuredClone(candidate),
       version: 7,
       weeklyReviews: [],
+    };
+  }
+  if (
+    candidate?.format === "com.streamentry.linepay.web.state" &&
+    candidate.version === 7
+  ) {
+    keys(candidate, [
+      "format",
+      "version",
+      "revision",
+      "profiles",
+      "periods",
+      "benefitChecks",
+      "templateOrigins",
+      "resolutionEvents",
+      "ruleTimelines",
+      "paycycleSchedules",
+      "paycheckScopes",
+      "weeklyReviews",
+    ]);
+    candidate = {
+      ...structuredClone(candidate),
+      version: 8,
+      paycheckLineScopes: [],
     };
   }
   return validateState(candidate);

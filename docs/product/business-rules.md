@@ -192,3 +192,15 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-106 | A comparison correction preserves earlier receipts. | Active pre-v5 premium-only line checks require explicit review; archives/replay retain old producers and disclose their earlier scope. |
 
 See [ADR0027](../adr/0027-exact-base-time-and-versioned-premium-comparisons.md).
+
+
+### Browser confirmed earnings and hours (v2 candidate)
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-107 | Compare optional earnings/hours only with explicit source mappings. | Blank is unknown, and guarantees cannot be counted twice or treated as worked time. |
+| BR-108 | Hours and money have independent precision. | Hour differences use half-up four-decimal rounding from exact seconds; wage rounding never changes that policy. |
+| BR-109 | Gross equality does not cancel differing confirmed lines. | Conflicting/overlapping earnings, unresolved weekly scope and unsupported multipliers retain review. |
+| BR-110 | New line evidence does not retrofit old browser receipts. | Schema8 adds only empty metadata for old1–7; explicit new producer4 checks retain their own facts and reproduce under recovery. |
+
+See [ADR0028](../adr/0028-browser-confirmed-paycheck-lines-and-hours.md).

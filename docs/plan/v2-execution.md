@@ -23,7 +23,7 @@ An implementation, test result, upload, review submission and public release are
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Current native App/Simulator regression, physical timezone/provider checks and final release gate |
-| Weekly review correctness | Weekly v2 and assessment v4 bypass guard implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native App/visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
+| Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native App/visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
@@ -34,7 +34,7 @@ An implementation, test result, upload, review submission and public release are
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
-| Full PWA | Local wage/fund, dated rules, reports and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
+| Full PWA | Local wage/fund, dated rules, confirmed earnings/hours, reports and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
@@ -1838,3 +1838,62 @@ created; describe and verify each property separately.
   corrected crew assertion reverted; evidence is retained under
   `.build/v2-native-base-20261018/{compiled-CrewRuleWorkflowTests.swift,compiler-bound-source-hashes.json}`.
   Do not present the old compiler hash as the corrected test's runtime result.
+
+## Browser confirmed earnings/hours checkpoint, October 18
+
+- Continued the complete v2 objective after3312c73; the native production sources are unchanged
+  in this slice. Added a complete local browser path for optional regular/OT/DT pay and hours,
+  separate callout pay, explicit full-rate/premium-only, work/paid-equivalent/guarantee mappings and
+  complete-breakdown review. Blank remains unknown; preview writes nothing; editing clears the
+  pending save action. Explicit save atomically appends line facts and an immutable receipt.
+- Producer `linepay.web.configured-lines/4` preserves all old gross producers1–3. Exact line evidence
+  is derived from frozen work/rules through retained calculation2 and correlated with the complete
+  recorded monetary component basis before use. It never reconstructs cash from rounded hours.
+  Baseline60seconds at58.50 with1.5x gives1.46 gross,0.98 base,0.48 extra. Different1second rates1+17
+  share a0.005 base rounding bucket. Full-rate, unknown layout, unusual multipliers, guarantee
+  separation, mismatched source periods, conflicting earnings and weekly-review guards retain scope.
+- Added accessible per-line work/rule disclosures and numbered report ledger references. Original
+  observations remain exact; expected hours display four decimals, with an independent half-up
+  four-decimal difference from exact seconds. Three focused tests first failed under wage up/down/
+  bankers modes, then passed with the independent hours policy. Not a new native payroll defect.
+- Web state8 adds bounded `paycheckLineScopes`; known1–7 schemas add only empty line metadata,
+  without writes/repricing/invented confirmation. Actual3312c73 code generated/validated the v7
+  fixture with frozen weekly evidence and its original producer3 receipt. Recovery rejects missing,
+  changed, orphaned or duplicated line evidence and retains the8MiB restorable budget. Shell cachev10
+  includes both new modules. This remains web-format recovery; no native/Android migration claim.
+- Final Node suite passed **179 tests**, no failures/skips,
+  `/private/tmp/linepay-v2-web-lines-node-trace.log`. The24 new tests include independently priced
+  boundaries, missing/conflicting evidence, recovery tampering and original v7 history; one test
+  correlates all19 shared configured-pay ledgers with the exact line-evidence path.
+- Both actual browser runs completed with terminal exit0 and **43 checks each**. Chromium155 and
+  WebKit26 match runtime SHA256
+  `1629429358636b6dd01abb1ea91f53f0984a0fb28abfd728dd64490275873816`:
+  `/private/tmp/linepay-v2-web-lines-{chromium,webkit}-trace.log`, receipts under
+  `.build/web-e2e/{chromium,webkit}/report.json`. Includes visible exact-rate/time disclosure,
+  offsetting-line review with equal gross, immutable earlier receipt, actual reviewed report download,
+  encrypted export/reset/inspect/replace, original1–7 recovery and stopped-origin line-module reload.
+- Initial Chromium run found an implicit-select label issue; replaced with explicit labels/IDs.
+  A later assertion caught the test remaining on Backup after restore; it now navigates to Pay
+  explicitly. The enlarged320px open ledger then exposed an existing date/time work-form column
+  stretching to337px. A zero-minimum mobile grid column fixes it without reducing text/hiding content.
+  Diagnostic actual restored state now has page320/viewport320 and no overflowing element; inspected
+  the enlarged dark form. Final two-browser runs include this corrected runtime.
+- Printed the actual downloaded `synthetic-line-report.html` with Chromium:3letter-size PDF pages,
+  `.build/web-e2e/chromium/synthetic-line-report.{pdf,txt}`. Inspected rendered pages1–2: explicit
+  mapping,0.98/0.48 lines,0.0167h expectations, original12-decimal observations, separate hours units
+  and source ledger rows are legible. This is browser report/print evidence, not OS delivery,
+  physical printing, PDF accessibility certification or native report execution.
+- Required quick passed74 repository tests, strict Swift format and162 domain tests/28suites,
+  `/private/tmp/linepay-v2-web-lines-quick.log`. Docs links/tools, active-copy/inventory and harness
+  checks passed. ADR0028, BR107–110 and the browser README describe the candidate boundaries.
+- Native session12515 remains live in `.build/v2-native-base-20261018/` with log
+  `/private/tmp/linepay-v2-native-base-20261018.log`. Twenty-plus UI journeys have passed, including
+  encrypted local Files save/wrong-password/unlock/restore and the actual report share destination.
+  Its App pass had344 tests/50suites and the known single crew-ID assertion failure. The corrected
+  assertion is committed in3312c73 but still needs execution after this job finishes. Do not start
+  another native job on the same device, restart from an observation timeout, skip commerce/Files or
+  describe this full gate as green before resolving its terminal result.
+- Remaining original all-stage work stays open: weekly/paycheck integration, complete PWA/native/
+  Android parity and interchange, verified sources/library, referrals, localization, independent
+  document/physical-device/provider evidence and the final signed/manual App Store/public-release
+  chain. No source/counsel approval, deployment, upload, version bump or store write was made.

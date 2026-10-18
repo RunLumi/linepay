@@ -279,7 +279,7 @@ hr {
     padding: 0 16px;
   }
   .fields {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   header {
     padding-top: 20px;
@@ -338,5 +338,9 @@ hr {
 }
 .resolution-history .note {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comparison-evidence {
   overflow-wrap: anywhere;
 }

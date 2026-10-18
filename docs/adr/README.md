@@ -39,3 +39,5 @@
 - [0026-browser-weekly-reviews-and-frozen-evidence](0026-browser-weekly-reviews-and-frozen-evidence.md)
 
 - [0027-exact-base-time-and-versioned-premium-comparisons](0027-exact-base-time-and-versioned-premium-comparisons.md)
+
+- [0028-browser-confirmed-paycheck-lines-and-hours](0028-browser-confirmed-paycheck-lines-and-hours.md)

@@ -734,8 +734,110 @@ with sync_playwright() as pw:
         assert saved['profiles'][-1]['hourlyRate'] == '30' and len(saved['profiles']) == 3
         checks.append('stale-tab save aborts without overwriting the newer committed state')
         second.close()
+        # New optional earnings/hour mapping runs in an isolated real browser database.
+        line_context = browser.new_context(viewport={'width':390,'height':844}, accept_downloads=True)
+        observe_context(line_context)
+        line_context.on('request', lambda r: requests.append((r.url,r.method)))
+        line_page = line_context.new_page()
+        line_page.on('pageerror',lambda e: errors.append(str(e)))
+        line_page.goto(origin + '/')
+        expect(line_page.get_by_role('heading',name='Your work. Your expected pay.')).to_be_visible()
+        profile(line_page,'58.50',diem='',threshold='0')
+        line_page.get_by_label('First work date',exact=True).fill('2026-10-01')
+        line_page.get_by_label('Last work date (included)',exact=True).fill('2026-10-14')
+        line_page.get_by_label('Payroll timezone',exact=True).fill('UTC')
+        line_page.get_by_role('button',name='Review pay period',exact=True).click()
+        line_page.get_by_role('button',name='Start period',exact=True).click()
+        line_page.get_by_label('Start',exact=True).fill('2026-10-01T08:00')
+        line_page.get_by_label('End',exact=True).fill('2026-10-01T08:01')
+        line_page.get_by_role('button',name='Save work',exact=True).click()
+        expect(line_page.locator('.answer')).to_have_text('USD 1.46')
+        def fill_lines(regular='0.98',premium='0.48'):
+            line_page.get_by_text('Hours and earnings lines (optional)',exact=True).click()
+            line_page.get_by_label('Earnings layout',exact=True).select_option('basePlusPremium')
+            line_page.get_by_label('Hours mean',exact=True).select_option('actualWork')
+            line_page.get_by_label('Regular/base pay',exact=True).fill(regular)
+            line_page.get_by_label('Overtime pay',exact=True).fill(premium)
+            line_page.get_by_label('Regular/base hours',exact=True).fill('0.016666666667')
+            line_page.get_by_label('Overtime hours',exact=True).fill('0.016666666667')
+            line_page.locator('[name="complete-earnings"]').check()
+            line_page.get_by_label('Confirmed paycheck gross',exact=True).fill('1.46')
+            line_page.get_by_label('What does gross include?',exact=True).select_option('wagesOnly')
+            line_page.get_by_label('All work for this paycheck period is recorded.',exact=True).check()
+            line_page.get_by_label('Reported first work date',exact=True).fill('2026-10-01')
+            line_page.get_by_label('Reported last work date (included)',exact=True).fill('2026-10-14')
+            line_page.get_by_label('I confirmed these work-period dates and timezone against the source.',exact=True).check()
+            line_page.get_by_role('button',name='Review comparison',exact=True).click()
+        fill_lines()
+        expect(line_page.locator('#audit-preview .badge')).to_have_text('Compared values match')
+        expect(line_page.locator('#audit-preview [data-comparison-field="regularPay"]')).to_contain_text('expected USD 0.98')
+        expect(line_page.locator('#audit-preview [data-comparison-field="regularHours"]')).to_contain_text('expected 0.0167 h')
+        line_page.locator('#audit-preview [data-comparison-evidence="regularPay"] summary').click()
+        expect(line_page.locator('#audit-preview [data-comparison-evidence="regularPay"]')).to_contain_text('60.00000000 paid seconds at 1.5×')
+        expect(line_page.locator('#audit-preview [data-comparison-evidence="regularPay"]')).to_contain_text('58.50/hour')
+        assert read_state(line_page)['periods'][0]['audits'] == []
+        line_page.get_by_label('Regular/base pay',exact=True).fill('1.00')
+        expect(line_page.locator('#confirm-audit')).to_have_count(0)
+        assert read_state(line_page)['paycheckLineScopes'] == []
+        line_page.get_by_label('Regular/base pay',exact=True).fill('0.98')
+        line_page.get_by_role('button',name='Review comparison',exact=True).click()
+        line_page.get_by_role('button',name='Save this check',exact=True).click()
+        first_line = read_state(line_page)['periods'][0]['audits'][0]
+        assert first_line['assessment']['engine'] == 'linepay.web.configured-lines/4'
+        assert first_line['assessment']['verdict'] == 'matches'
+        checks.append('premium-only exact one-minute base0.98 and extra0.48 with explicit hours/mapping; preview writes nothing and editing clears save consent')
+        fill_lines('0.97','0.49')
+        expect(line_page.locator('#audit-preview .badge')).to_have_text('Needs review')
+        line_page.get_by_role('button',name='Save this check',exact=True).click()
+        line_saved = read_state(line_page)
+        assert len(line_saved['paycheckLineScopes']) == 2
+        assert line_saved['periods'][0]['audits'][0] == first_line
+        assert line_saved['periods'][0]['audits'][1]['assessment']['verdict'] == 'needsReview'
+        checks.append('offsetting premium-only differences require review despite matching gross; appending retains exact earlier line receipt')
+        detail=line_page.locator('[data-paycheck-audit="'+first_line['id']+'"]')
+        if not detail.evaluate('(element)=>element.open'): detail.locator('summary').first.click()
+        line_tools=detail.locator('[data-audit-tools]')
+        line_tools.get_by_role('button',name='Review evidence report',exact=True).click()
+        line_frame=line_tools.frame_locator('iframe')
+        expect(line_frame.locator('body')).to_contain_text('Base plus extra premium')
+        expect(line_frame.locator('tr').filter(has_text='Regular/base hours')).to_contain_text('0.0167 h')
+        with line_page.expect_download() as line_report_event:
+            line_tools.get_by_role('button',name='Download reviewed report (HTML)',exact=True).click()
+        line_report_event.value.save_as(OUTPUT/'synthetic-line-report.html')
+        line_page.screenshot(path=str(OUTPUT/'line-report-review.png'),full_page=True)
+        checks.append('reviewed historical HTML report retains base mapping, component links and hours units separately from currency')
+        line_page.get_by_role('button',name='Backup',exact=True).click()
+        line_page.get_by_label('New backup password',exact=True).fill(PASSWORD)
+        line_page.get_by_label('Repeat password',exact=True).fill(PASSWORD)
+        with line_page.expect_download() as line_backup_event:
+            line_page.get_by_role('button',name='Download encrypted backup',exact=True).click()
+        line_backup=OUTPUT/'synthetic-lines.linepaybackup'
+        line_backup_event.value.save_as(line_backup)
+        line_page.get_by_role('button',name='Review removal',exact=True).click()
+        line_page.get_by_role('button',name='Confirm remove all local records',exact=True).click()
+        assert read_state(line_page)['paycheckLineScopes'] == []
+        line_page.get_by_label('Protected web backup',exact=True).set_input_files(line_backup)
+        line_page.get_by_label('Backup password',exact=True).fill(PASSWORD)
+        line_page.get_by_role('button',name='Unlock and inspect',exact=True).click()
+        assert read_state(line_page)['paycheckLineScopes'] == []
+        line_page.get_by_role('button',name='Replace with inspected backup',exact=True).click()
+        line_restored=read_state(line_page)
+        assert line_restored['paycheckLineScopes'] == line_saved['paycheckLineScopes']
+        assert line_restored['periods'] == line_saved['periods']
+        line_page.get_by_role('button',name='Pay',exact=True).click()
+        line_page.get_by_text('Hours and earnings lines (optional)',exact=True).click()
+        line_page.emulate_media(color_scheme='dark',reduced_motion='reduce')
+        line_page.set_viewport_size({'width':320,'height':900})
+        line_page.evaluate("document.documentElement.style.fontSize='26px'")
+        assert line_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        line_page.screenshot(path=str(OUTPUT/'lines-dark-large.png'),full_page=True)
+        line_page.evaluate('() => navigator.serviceWorker.ready.then(() => true)')
+        line_page.reload()
+        line_page.wait_for_function('() => !!navigator.serviceWorker.controller')
+        checks.append('actual encrypted line export/reset/inspect/restore preserves both receipts; 320px enlarged dark form remains within viewport')
+
         # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2, 3, 4, 5, 6]:
+        for old_version in [1, 2, 3, 4, 5, 6, 7]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -758,7 +860,7 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 7 and migrated['weeklyReviews'] == []
+            assert migrated['version'] == 8 and migrated['weeklyReviews'] == prior.get('weeklyReviews', []) and migrated['paycheckLineScopes'] == []
             assert migrated['paycheckScopes'] == prior.get('paycheckScopes', []) and migrated['paycycleSchedules'] == prior.get('paycycleSchedules', [])
             assert migrated['ruleTimelines'] == prior.get('ruleTimelines', [])
             assert migrated['resolutionEvents'] == prior.get('resolutionEvents', [])
@@ -781,7 +883,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2/v3/v4/v5/v6 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3/v4/v5/v6/v7 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')
@@ -859,6 +961,11 @@ with sync_playwright() as pw:
         assert not errors, errors
         assert all((url.startswith(origin + '/') or url.startswith('blob:' + origin + '/')) and method == 'GET' for url, method in requests), requests
         checks.append('network traffic is same-origin asset GETs; report Blob views stay local and no pay data is sent')
+        line_page.reload()
+        expect(line_page.get_by_role('heading',name='Expected cash wages')).to_be_visible()
+        assert read_state(line_page)['paycheckLineScopes'] == line_saved['paycheckLineScopes']
+        assert read_state(line_page)['periods'][0]['audits'][0] == first_line
+        checks.append('stopped-origin reload serves actual cached line modules and preserves exact earlier earnings/hour evidence')
         assert runtime_hash() == source_hash, 'Runtime source changed during browser verification'
         report = {'passed': True, 'runtimeSHA256': source_hash, 'browser': ENGINE, 'browserVersion': browser.version, 'checks': checks,
                   'scope': 'Synthetic local browser workflow. No deployment, actual OS Files delivery, native snapshot migration, installed-PWA/physical-device or App Store release proof.'}

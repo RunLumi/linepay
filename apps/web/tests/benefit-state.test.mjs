@@ -54,7 +54,7 @@ test("actual v1 source fixture migrates without writes, repricing or invented fu
   const original = old(),
     before = structuredClone(original),
     migrated = decodeState(original);
-  assert.equal(migrated.version, 7);
+  assert.equal(migrated.version, 8);
   assert.equal(migrated.revision, 8);
   assert.deepEqual(migrated.benefitChecks, []);
   assert.deepEqual(migrated.periods, original.periods);

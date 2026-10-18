@@ -1,5 +1,12 @@
+import {
+  lineFields,
+  readLineScope,
+  comparisonNames,
+  mappingSummary,
+  comparisonEvidence,
+} from "./assessment-lines-ui.mjs";
 import { localCandidates, localDate } from "./payroll.mjs";
-import { assessWithWeeklyContext } from "./assessment-period.mjs";
+import { assessWithLines } from "./assessment-period.mjs";
 import { renderWeeklyUI } from "./weekly-ui.mjs";
 import { bindPeriodSetup } from "./period-setup-ui.mjs";
 import {
@@ -30,6 +37,7 @@ let state,
   busy = false,
   pendingAudit = null,
   pendingPaycheckScope = null,
+  pendingLineScope = null,
   pendingRestore = null;
 const main = document.querySelector("main"),
   status = document.querySelector("#status");
@@ -76,16 +84,16 @@ const verdicts = {
   needsReview: "Needs review",
   notComparable: "Not comparable",
 };
-function resultView(result, currency) {
+function resultView(result, currency, calculation, rule) {
   return `<p class="badge">${esc(verdicts[result.verdict])}</p>${result.reportedPeriod ? `<p class="context">Reported work period: ${result.reportedPeriod.startDate === null ? "not stated" : esc(result.reportedPeriod.startDate) + " through " + esc(result.reportedPeriod.endDate)} · ${esc(result.reportedPeriod.timeZone)} · ${result.reportedPeriod.confirmed ? "confirmed from source" : "not confirmed"}</p>` : '<p class="note">This legacy check did not retain separate reported-date facts. Its original result remains as recorded.</p>'}${result.gross === null ? "<p>No comparable expected gross.</p>" : `<ul class="ledger"><li><span>Expected gross in confirmed scope</span><strong class="money">${money(result.gross, currency)}</strong></li><li><span>Confirmed paycheck gross</span><span class="money">${money(result.paidGross, currency)}</span></li><li><span>Expected minus paid</span><strong class="money">${money(result.difference, currency)}</strong></li></ul>`}<ul>${result.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${result.comparisons
     .filter((c) => c.field !== "grossPay")
     .map(
       (c) =>
-        `<p>Separate per diem: expected ${money(c.expected, currency)}, confirmed ${money(c.paid, currency)}, difference ${money(c.difference, currency)}.</p>`,
+        `<p data-comparison-field="${esc(c.field)}">${esc(comparisonNames[c.field] ?? c.field)}: expected ${c.unit === "hours" ? esc(c.expected) + " h" : money(c.expected, currency)}, confirmed ${c.unit === "hours" ? esc(c.paid) + " h" : money(c.paid, currency)}, difference ${c.unit === "hours" ? esc(c.difference) + " h" : money(c.difference, currency)}.</p>${comparisonEvidence(c, calculation, rule, esc)}`,
     )
     .join(
       "",
-    )}<p class="note">Only configured rules and listed confirmed values were compared. Hours and other earnings lines were not verified. This does not establish legal entitlement or a debt.</p>`;
+    )}${mappingSummary(result.lineMapping, esc)}<p class="note">Only configured rules and the listed confirmed values were compared. Unlisted hours, earnings and entitlements remain unverified. This does not establish legal entitlement or a debt.</p>`;
 }
 function render() {
   if (!state) return;
@@ -93,6 +101,7 @@ function render() {
   disposeReports = () => {};
   pendingAudit = null;
   pendingPaycheckScope = null;
+  pendingLineScope = null;
   pendingRestore = null;
   document
     .querySelectorAll("[data-tab]")
@@ -207,7 +216,7 @@ function renderPay() {
           .toReversed()
           .map(
             (a) =>
-              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${auditUsesEarlierContext(state, period, a) ? '<p class="rule-note">This saved check retains an earlier work/rule/review context. Later changes did not rewrite it; review a new check for the current estimate.</p>' : ""}${resultView(a.assessment, period.rule.currency)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
+              `<details data-paycheck-audit="${esc(a.id)}" ${openAuditID === a.id ? "open" : ""}><summary>${esc(verdicts[a.assessment.verdict])} · ${esc(a.createdAt)}</summary>${auditUsesEarlierContext(state, period, a) ? '<p class="rule-note">This saved check retains an earlier work/rule/review context. Later changes did not rewrite it; review a new check for the current estimate.</p>' : ""}${resultView(a.assessment, period.rule.currency, a.calculation, period.rule)}<section data-audit-tools="${esc(a.id)}"></section></details>`,
           )
           .join("")}`
       : ""
@@ -260,7 +269,7 @@ function workForm() {
   return `<h2>Add actual work</h2><form id="work-form"><div class="fields">${label("Start", "start", 'type="datetime-local" required')}${label("End", "end", 'type="datetime-local" required')}<label>When the start clock repeats<select name="startOccurrence"><option value="">Choose if needed</option><option value="0">First occurrence</option><option value="1">Second occurrence</option></select></label><label>When the end clock repeats<select name="endOccurrence"><option value="">Choose if needed</option><option value="0">First occurrence</option><option value="1">Second occurrence</option></select></label><label>Work kind<select name="kind"><option value="regular">Regular work</option><option value="callout">Separate physical callout</option><option value="other">Other recorded work</option></select></label></div><details><summary>Unpaid break (optional actual times)</summary><div class="fields">${label("Break start", "breakStart", 'type="datetime-local"')}${label("Break end", "breakEnd", 'type="datetime-local"')}</div><p class="note">Only enter an unpaid break you explicitly classified. Repeated-clock break times require a separate reviewed entry.</p></details><button class="primary">Save work</button></form>`;
 }
 function auditForm(period) {
-  return `<h2>Check a paycheck</h2><form id="audit-form"><div class="fields">${label("Confirmed paycheck gross", "gross", 'inputmode="decimal" required')}<div><label for="gross-basis">What does gross include?</label><select id="gross-basis" name="basis"><option value="unconfirmed">Not confirmed</option><option value="wagesOnly">Cash wages only</option><option value="wagesAndPerDiem">Wages and per diem</option></select></div>${label("Separately confirmed per diem (optional)", "perdiem", 'inputmode="decimal"')}</div>${check("All work for this paycheck period is recorded.", "complete")}${check("Some paycheck fields still need review.", "unreviewed")}${check("Some applicable rules are not represented here.", "unsupported")}${check("A complete-workweek overtime review is pending.", "weekly")}<fieldset><legend>Paycheck source work-period dates</legend><p>Use the dates for work covered by this paycheck, not its payday. Blank dates remain unknown. The timezone is your review context, not an OCR extraction.</p><div class="fields">${label("Reported first work date", "reported-start", 'type="date"')}${label("Reported last work date (included)", "reported-end", 'type="date"')}${label("Paycheck date-context timezone", "reported-zone", `required value="${esc(period.zone)}"`)}</div>${check("I confirmed these work-period dates and timezone against the source.", "reported-confirmed")}</fieldset><p class="note">Enter gross earnings, not take-home pay or a bank deposit. No OCR or automatic rule interpretation is applied.</p><button>Review comparison</button></form><section id="audit-preview" aria-live="polite"></section>`;
+  return `<h2>Check a paycheck</h2><form id="audit-form"><div class="fields">${label("Confirmed paycheck gross", "gross", 'inputmode="decimal" required')}<div><label for="gross-basis">What does gross include?</label><select id="gross-basis" name="basis"><option value="unconfirmed">Not confirmed</option><option value="wagesOnly">Cash wages only</option><option value="wagesAndPerDiem">Wages and per diem</option></select></div>${label("Separately confirmed per diem (optional)", "perdiem", 'inputmode="decimal"')}</div>${lineFields()}${check("All work for this paycheck period is recorded.", "complete")}${check("Some paycheck fields still need review.", "unreviewed")}${check("Some applicable rules are not represented here.", "unsupported")}${check("A complete-workweek overtime review is pending.", "weekly")}<fieldset><legend>Paycheck source work-period dates</legend><p>Use the dates for work covered by this paycheck, not its payday. Blank dates remain unknown. The timezone is your review context, not an OCR extraction.</p><div class="fields">${label("Reported first work date", "reported-start", 'type="date"')}${label("Reported last work date (included)", "reported-end", 'type="date"')}${label("Paycheck date-context timezone", "reported-zone", `required value="${esc(period.zone)}"`)}</div>${check("I confirmed these work-period dates and timezone against the source.", "reported-confirmed")}</fieldset><p class="note">Enter gross earnings, not take-home pay or a bank deposit. No OCR or automatic rule interpretation is applied.</p><button>Review comparison</button></form><section id="audit-preview" aria-live="polite"></section>`;
 }
 function renderHistory() {
   main.innerHTML = `<h1>Pay history</h1><p>Saved checks retain their original work, rules and comparison. New profiles do not rewrite them.</p><ul class="ledger">${
@@ -360,6 +369,7 @@ function bind() {
       if (id === "audit-form") {
         pendingAudit = null;
         pendingPaycheckScope = null;
+        pendingLineScope = null;
         if (
           ["reported-start", "reported-end", "reported-zone"].includes(
             event.target.name,
@@ -477,23 +487,26 @@ async function submit(form) {
       timeZone: get("reported-zone"),
       confirmed: checked("reported-confirmed"),
     };
+    pendingLineScope = readLineScope(form, auditID, p.id);
     pendingAudit = {
       id: auditID,
       createdAt: now(),
       work: structuredClone(p.work),
       facts,
       calculation,
-      assessment: assessWithWeeklyContext(
+      assessment: assessWithLines(
         calculation,
         facts,
-        p.rule.rounding,
         p,
         pendingPaycheckScope,
         state.weeklyReviews,
+        pendingLineScope,
+        p.work,
+        currentTimeline(state, p.id),
       ),
     };
     main.querySelector("#audit-preview").innerHTML =
-      `<div class="preview"><h2>Review before saving</h2>${resultView(pendingAudit.assessment, p.rule.currency)}<button class="primary" id="confirm-audit">Save this check</button></div>`;
+      `<div class="preview"><h2>Review before saving</h2>${resultView(pendingAudit.assessment, p.rule.currency, pendingAudit.calculation, p.rule)}<button class="primary" id="confirm-audit">Save this check</button></div>`;
     document.querySelector("#confirm-audit").onclick = () =>
       run(async () => {
         if (!pendingAudit) throw Error("Review the current facts again.");
@@ -501,6 +514,7 @@ async function submit(form) {
         await commit((s) => {
           s.periods.find((x) => x.id === p.id).audits.push(pendingAudit);
           s.paycheckScopes.push(pendingPaycheckScope);
+          s.paycheckLineScopes.push(pendingLineScope);
         });
       });
   } else if (form.id === "export-form") {
