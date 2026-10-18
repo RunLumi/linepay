@@ -255,9 +255,9 @@
         "pay-rules",
         "supported-rules"
       ],
-      "disposition": "reviewed",
-      "blob": "7ba914debac3c3bbce8c627fd4e2bef67430637e",
-      "reason": "Targeted October17 weekly v2 review: updated pay-rules/supported-rules with explicit candidate labels, exact 168-hour boundary, remuneration/credit input and no saved/automatic paycheck clearance. Source and compiler review is not native runtime/accessibility or legal-profile approval."
+      "disposition": "reviewed-no-guide-change",
+      "blob": "963605687e97e3a5afd271d83c7b47ae16163572",
+      "reason": "Targeted October19 weekly engine3 review of pay-rules/supported-rules: residual cents skip zero-basis recipients while weekly cash, collection steps, scope warnings and frozen earlier results remain unchanged. Neither guide exposes allocation cents. Existing native interaction/accessibility, physical and release acceptance remain pending; this is not a complete guide/release review."
     },
     {
       "path": "apps/ios/App/Sources/AgreementDocumentsView.swift",
