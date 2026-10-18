@@ -1,7 +1,8 @@
 # ADR 0027: exact base-time evidence for premium-only comparisons
 
-Status: v2 candidate implementation, October 18, 2026. Native App migration/history/backup and PDF tests now pass; dedicated premium-only visual interaction
-and final release acceptance remain pending. This is a calculation-evidence correction, not a new pay rule.
+Status: v2 candidate implementation, October 18, 2026. Native App migration/history/backup, PDF
+and dedicated light/maximum-text dark correction/archive/relaunch journeys passed. Final release
+acceptance remains pending. This is a calculation-evidence correction, not a new pay rule.
 
 A one-minute synthetic shift at USD58.50/hour has a base of USD0.975, rounded half-up to0.98.
 Configured calculation producer3 already rounds its wage from exact rate × seconds. Assessment4

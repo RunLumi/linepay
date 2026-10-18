@@ -1,7 +1,8 @@
 # ADR 0023: native crew drafts and retained adoption
 
-Status: implemented for the owner's all-stage/local-only v2 request, October17,2026. Native runtime,
-Files-provider and visual/accessibility acceptance remain pending. Compilation is separate evidence.
+Status: implemented for the owner's all-stage/local-only v2 request, October17,2026. App tests and
+focused light/maximum-text dark Simulator Files/adoption/relaunch journeys passed on October18.
+Physical transfer, broader accessibility and final release acceptance remain separate gates.
 
 Use the existing [portable draft contract](../../shared/contracts/templates/README.md). The native
 Settings entry prepares an exact reviewed in-memory file for the system Files exporter. A new public
@@ -44,3 +45,11 @@ No account, remote lookup/collector, bundle identity change, new dependency, nam
 library or automatic send is introduced. Android adoption and broader platform parity remain pending.
 Pure tests, SDK compilation, native App tests, actual Simulator/Files interaction, physical transfer,
 crew usage, source rights and App Store release are independent evidence layers.
+
+
+October18 native QA also places export/inspection/preparation feedback beside its action and
+combines status icon/text for accessibility. Imported future-only scope is a read-only review value;
+ordinary manual editing keeps its existing scope menu. Actual local Files tests exercise amount
+omission, missing-rate refusal, renewed recipient confirmation and final future-only save. They
+retain the75 own-rate reference and old550 paycheck through relaunch. These are synthetic simulator
+results, not real crew usage, source rights or two-device/iCloud delivery. See the execution record.

@@ -430,33 +430,38 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Menu {
-                        Button("Future work periods only") { draft.editScope = .futurePeriods }
-                            .accessibilityIdentifier("pay-profile.scope.future")
-                        if draft.crewRuleAdoption == nil {
+                    if draft.crewRuleAdoption != nil {
+                        LabeledContent("Scope", value: editScopeTitle)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("Scope")
+                            .accessibilityValue(editScopeTitle)
+                            .accessibilityIdentifier("pay-profile.fixed-scope")
+                    } else {
+                        Menu {
+                            Button("Future work periods only") { draft.editScope = .futurePeriods }
+                                .accessibilityIdentifier("pay-profile.scope.future")
                             Button("New rules from a date") { draft.editScope = .datedChange }
                                 .accessibilityIdentifier("pay-profile.scope.dated")
                             Button("Recalculate this entire current period") {
                                 draft.editScope = .currentPeriod
                             }
                             .accessibilityIdentifier("pay-profile.scope.current")
+                        } label: {
+                            HStack {
+                                Text("Scope")
+                                Spacer()
+                                Text(editScopeTitle).foregroundStyle(LinePayColor.actionText)
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(LinePayColor.actionText)
+                            }
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                    } label: {
-                        HStack {
-                            Text("Scope")
-                            Spacer()
-                            Text(editScopeTitle)
-                                .foregroundStyle(LinePayColor.actionText)
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(LinePayColor.actionText)
-                        }
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
+                        .accessibilityLabel("Scope")
+                        .accessibilityValue(editScopeTitle)
+                        .accessibilityIdentifier("pay-profile.change-scope")
                     }
-                    .accessibilityLabel("Scope")
-                    .accessibilityValue(editScopeTitle)
-                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",

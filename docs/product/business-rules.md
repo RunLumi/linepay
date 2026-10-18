@@ -204,3 +204,11 @@ See [ADR0027](../adr/0027-exact-base-time-and-versioned-premium-comparisons.md).
 | BR-110 | New line evidence does not retrofit old browser receipts. | Schema8 adds only empty metadata for old1–7; explicit new producer4 checks retain their own facts and reproduce under recovery. |
 
 See [ADR0028](../adr/0028-browser-confirmed-paycheck-lines-and-hours.md).
+
+
+### Visible native review outcomes
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-111 | A newly confirmed live receipt opens at its current verdict. | Replace the live form's identity on receipt change; preserve the earlier immutable receipt for its own recorded view. |
+| BR-112 | Crew preparation feedback stays beside its action and carries its full accessibility text. | Inspection/preparation still does not activate rules; final imported scope remains future-only and explicitly confirmed. |

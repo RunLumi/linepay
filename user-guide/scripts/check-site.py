@@ -79,7 +79,8 @@ def validate(root: Path, base: str) -> None:
                 failures.append(f'Inline/external script: {relative}')
         for link in page.links: target(link, url)
     index = json.loads((root / 'index.json').read_text())
-    assert len(index) == 21, f'Expected 21 indexed guides, got {len(index)}'
+    assert len(index) == 22, f'Expected 22 indexed guides, got {len(index)}'
+    assert any(urlsplit(item['url']).path.rstrip('/').endswith('/crew-rule-drafts') for item in index), 'Crew draft guide is missing from search'
     assert len({item['url'] for item in index}) == len(index)
     for item in index:
         assert item['title'] and item['description'] and len(item['text']) > 300

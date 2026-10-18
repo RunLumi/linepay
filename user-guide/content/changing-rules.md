@@ -41,3 +41,8 @@ Closed periods and their calculation snapshots are not rewritten through this ed
 After **Confirm rule change**, return to Pay and inspect the relevant work dates, expected amounts, and rule provenance. **Settings → Pay profile** also shows dated rule versions when present. The latest entered profile is not proof that every historical component used that version.
 
 Next: [Read the expected-pay ledger]({{< relref "/expected-pay" >}}).
+
+
+## Imported crew drafts in the v2 candidate
+
+An imported [crew rule draft]({{< relref "/crew-rule-drafts" >}}) uses **Future work periods only** for an existing profile. The editor displays that fixed scope for review; the explicit save and change confirmation still apply. This restriction does not change the ordinary manual-edit choices above.

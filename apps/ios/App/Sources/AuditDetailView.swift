@@ -11,6 +11,7 @@ struct LiveAuditView: View {
         Group {
             if let context = model.periodContext(id: periodID) {
                 AuditDetailView(model: model, context: context, onCorrect: { correction = true })
+                    .id(context.paystub?.id)
             } else {
                 ContentUnavailableView("Period unavailable", systemImage: "doc")
             }
@@ -185,6 +186,7 @@ struct AuditDetailView: View {
                                             ? LinePayColor.difference : LinePayColor.textSecondary)
                                 }.monospacedDigit().padding(.vertical, 6)
                             }
+                            .accessibilityIdentifier("audit.line.\(comparison.field.rawValue)")
                         }
                     } header: {
                         Text("Line by line")

@@ -185,6 +185,7 @@ struct HistoricalPeriodView: View {
                                         $0.paystubID == revision.paystub.id
                                     }))
                         }
+                        .accessibilityIdentifier("history.revision.\(revision.id.uuidString)")
                     }
                     if let issue = context.calculationIssue {
                         Label(

@@ -72,6 +72,13 @@ def run():
                 page.screenshot(path=str(evidence / f'{name}-article.png'), full_page=True)
                 page.goto(base + 'search/')
                 field = page.get_by_label('Search the user guide', exact=True)
+                field.fill('crew')
+                crew = page.locator('#search-results a[href$="/crew-rule-drafts/"]')
+                crew.wait_for()
+                crew.click()
+                assert page.url.endswith('/crew-rule-drafts/')
+                page.goto(base + 'search/')
+                field = page.get_by_label('Search the user guide', exact=True)
                 field.fill('not-a-real-guide-xyz')
                 page.get_by_role('status').filter(has_text='No matching guides').wait_for()
                 field.fill('<img src=x onerror=alert(1)>')
@@ -87,7 +94,8 @@ def run():
             assert page.get_by_role('navigation', name='User guide', exact=True).is_visible()
             assert page.locator('main').inner_text().find('Set up your pay') >= 0
             page.goto(base + 'search/')
-            assert page.locator('.browse-list a').count() == 21
+            assert page.locator('.browse-list a').count() == 22
+            assert page.locator('.browse-list a[href$="/crew-rule-drafts/"]').count() == 1
             assert page.locator('main').inner_text().find('Browse all guides') >= 0
             context.close()
             context = browser.new_context(viewport={'width': 390, 'height': 844})

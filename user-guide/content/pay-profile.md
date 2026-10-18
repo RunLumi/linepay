@@ -51,3 +51,6 @@ Open the retained document and review every candidate clause. Inspect the origin
 Confirm applicability, currency and effective dates separately. Conditional, unsupported or conflicting clauses need your attention; the reader does not choose a classification or invent missing rules. If replacing daily overtime tiers, acknowledge that replacement. **Review complete rule setup** prepares a draft in the usual editor. Check every step and the change scope before its final save; importing or preparing alone never activates rules.
 
 The reader handles a bounded set of explicit clause formats. It can miss tables, cross-references, amendments and other layouts. Reading is limited to 25 MB, 128 pages, 250,000 text characters and 64 candidates; an incomplete-reading notice requires further manual review. The complete retained PDF can contain more than the reader examined. Empty or unresolved extraction is not evidence that the agreement has no additional obligations.
+
+
+In the v2 candidate, a [crew rule draft]({{< relref "/crew-rule-drafts" >}}) can prepare your own setup from selected parameters. Inspecting or preparing alone does not activate rules. Confirm your own amounts and applicability, review all four steps, and use the fixed future-period scope for an existing profile.

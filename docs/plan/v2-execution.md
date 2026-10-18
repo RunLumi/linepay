@@ -38,7 +38,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
-| Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Dedicated native Files/visual/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
+| Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Broader accessibility/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
 
 ## Initial verified state
@@ -1929,3 +1929,176 @@ created; describe and verify each property separately.
   review paths that were previously only typechecked. Dedicated crew Files/visual journeys, complete
   weekly-to-paycheck integration, physical microphone/Speech, two-device/provider evidence, the rest
   of the roadmap and final signed/manual release chain remain open. PWA work is committed0b246e6.
+
+## Dedicated native money and crew journey work in progress, October 18
+
+- Resumed2807f99 with a clean checkout. Added stable IDs to comparison/revision links and crew
+  controls. Added two light/large-dark premium-only tests and two light/large-dark crew Files tests.
+  Current uncommitted work is this focused UI/harness slice, not a new payroll algorithm.
+- Debug `premium-legacy` setup reads the existing actual3836154 synthetic producer4 resource from
+  the UI runner's environment, validates the constructed state, then writes the schema9 wire into
+  the isolated `LinePayUITest` directory. Reopening uses the real versioned store. It requires both
+  Debug and explicit UI-testing/reset paths; the resource is bundled only into the UI-test target.
+  The shipping app gains no legacy fixture resource or production data-loader API.
+- First premium light journey passed **1test**, terminal0,93.877seconds:
+  `.build/v2-native-premium-journey-first.xcresult`,
+  `/private/tmp/linepay-v2-native-premium-journey-first.log`. It reads original0.97, explicitly
+  reviews unchanged1.46 paid facts into0.98 base/0.48 extra, archives and relaunches, then reads the
+  original0.97 again. Largest-text companion still needs execution; helper visibility was adjusted
+  afterward to account for sheets without a hittable tab bar.
+- Crew initial driver failure: an edge-coordinate title tap had no keyboard focus. Direct field
+  tap with an explicit keyboard wait fixed it. A later failure recorded rights off and Review
+  disabled: the driver had tapped the combined switch label. It now taps the actual switch and
+  requires the0/1 value to change, and buttons require enabled prerequisites before tapping.
+- Actual synthetic stored profile independently exports through the pure domain with its hourly
+  amount omitted. Scratch command/source under `.build/v2-crew-preview-check/` reads only the
+  name-guarded synthetic state. No real worker data, rights claim or named pack is involved.
+- Failed native crew runs remain preserved (`first`, `focus`, `switch`, `inline-status` bundles).
+  The real Files save panel was reached, a unique synthetic filename entered and the local Move
+  destination returned. Full save/inspection/adoption/history acceptance is not yet proven.
+- The recording exposed status feedback above the worker's current position. Moved export,
+  inspection and setup feedback beside their corresponding controls, preserving copy and domain
+  guards. Material edits clear stale feedback for their area; async inspection tags its actual
+  completion. The next run found the status ID resolving to the Info icon; the label now combines
+  icon/text into one accessibility element. This is a real feedback/accessibility repair, not
+  relaxation of save, amount, rights, applicability or history assertions.
+- One failed run's Xcode process59525 stalled in simulator diagnostics after its52.825second failed
+  test. Process sampling proved `XCTHRunDestinationAllocator.collectSimulatorDiagnostics` waiting on
+  its own `simctl diagnose --timeout=600` child60361. Stopped only that positively identified child;
+  the parent finalized with65 and the failed result remains. No device/runtime/service reset.
+  Sample: `/private/tmp/linepay-v2-crew-xcode-finalization.sample`. Local focused retries use the
+  CLI-supported `-collect-test-diagnostics never`; assertions, recordings and screenshots remain.
+- **Live now: session71788**, same existing device7DE1B778-AB9B-478B-9E1A-027E1106814A, focused crew
+  normal journey after combined status. Log `/private/tmp/linepay-v2-native-crew-journey-combined-status.log`,
+  bundle `.build/v2-native-crew-journey-combined-status.xcresult`. Poll its handle before retrying;
+  do not equate a wait timeout or an unfinished result bundle with terminal failure.
+- Project inventory update is only UI-test resource wiring. Mapped audit/history guide entries
+  were reviewed for unchanged steps and fresh selector hashes. Crew feedback/source/test files are
+  still changing. Prior344-App/29-UI/Release receipts apply to2807f99 production, not all current
+  WIP: finish the new journeys, inspect light/dark-large captures, run appropriate native/quick,
+  release/config, guide and repository checks, then commit this slice. Full v2 remains active.
+
+## Native Files/feedback and dedicated UI follow-up
+
+- Premium light correction/archive/relaunch remains verified. Crew light actual Files export/import,
+  omitted-rate refusal, renewed75-rate confirmation, future-only adoption, retained source and
+  existing550 paycheck/relaunch passed108.483seconds in
+  `.build/v2-native-crew-journey-fixed-scope.xcresult` (terminal0). No cross-device/iCloud or real
+  agreement-verification claim. Added an additional retained-rate check after relaunch for the
+  expanded suite.
+- Constant-only Debug probes proved exporter→importer→reader-start→reader-admitted. There was no
+  confirmed file-callback/reader defect. All temporary probes were removed. Indexed filename-field
+  enumeration was racy during picker presentation; a live value predicate/wait fixes it. File
+  renaming now leaves the system-managed extension intact. Input controls assert enabled consent
+  and actual switch value changes, rather than relying on taps at combined labels.
+- Current production feedback fix places messages beside export, inspection or preparation, clears
+  stale messages after corresponding edits, and combines icon/text into one status accessibility
+  element. Raw packet/amount/title/path data was never logged by diagnostics.
+- Imported crew setups have one allowed scope already enforced by the model. The review now shows
+  that actual scope read-only, keeping final save/change confirmation. Ordinary manual scopes and
+  IDs remain unchanged. No scope restriction, history mutation or payroll representation was added.
+- One incremental runner produced assertion output inconsistent with the current value assertion.
+  Built/installed runner binaries matched. A fresh task-owned DerivedData build executed the current
+  assertion with recorded unchanged source hashes. Do not claim a proven cache cause. Earlier
+  window-race/multiline-edit diagnoses were incomplete; detailed evidence identified live filename
+  enumeration and the menu's hosted option behavior.
+- Expanded run `.build/v2-native-journeys-current-20261018/Tests.xcresult` completed with65: all344
+  App tests/50suites passed; both dedicated light journeys passed; both largest-text cases failed
+  in driver navigation (return to earlier offscreen switch; gross field wait before scroll). Its
+  Release/hash-verification steps therefore did not run. Preserve the failed bundle/log instead of
+  claiming a full native gate. Log `/private/tmp/linepay-v2-native-journeys-current.log`.
+- Added explicit search direction when returning to earlier crew controls and reveal-before-wait
+  for premium gross. Every consent, price, archive/relaunch and actual Files assertion remains.
+  **Live: session45275**, only the two largest-text dark cases, same existing device and fresh
+  DerivedData. Bundle `.build/v2-native-journeys-large-navigation.xcresult`, log
+  `/private/tmp/linepay-v2-native-journeys-large-navigation.log`. Poll this handle before another
+  native job. The quick check is also running, log
+  `/private/tmp/linepay-v2-native-new-journeys-quick.log`.
+- Added candidate `crew-rule-drafts` guide and links from profile/change instructions; mapped
+  CrewRulesView for future freshness checks. Exact search count changed21→22 with an explicit crew
+  index/no-JS route and real crew-search assertion. Hugo passed25pages/22entries at root and project
+  paths,60 source reviews and4 original screenshot-provenance checks. Actual guide browser smoke
+  passed42 configurations plus search/navigation/no-JS/keyboard/print. Not publication or approval.
+- Source work is still uncommitted after2807f99. Finish largest-text cases, inspect captures, refresh
+  current App/Release evidence as needed, validate and commit. Full original v2 remains active;
+  Android/PWA/library/localization/source/device/provider and signed manual release gates persist.
+
+- Handoff readback: quick terminal0 (74 repository tests, strict formatting,162 domain tests/28suites).
+  Guide browser session43242 terminal0; the earlier combined guide/browser command failed only at
+  its obsolete21-entry no-JS assertion, now replaced by exact22 plus explicit crew search/no-JS
+  discovery. Five docs-tool tests,1072 Markdown links, active-copy/inventory and diff checks passed.
+  Session45275 is still live at handoff; no current App/Release success is inferred from that wait.
+
+## Largest-text geometry follow-up
+
+- Resumed the same session45275, rather than restarting from a wait timeout. The largest saved-status
+  capture showed reading text taller than the usable viewport. The driver demanded that whole
+  element fit and could oscillate around long controls. This is different from a missing data,
+  consent or file guard.
+- Interrupted only the positively identified focused xcodebuild process92289 to repair that known
+  impossible visibility condition; session45275 returned75. Its partial result/log remain under
+  `v2-native-journeys-large-navigation`, not a passing result.
+- Both new drivers now use adaptive bounded scroll distances, permit viewport intersections for
+  oversized reading text, and require the actual midpoint of a tall switch to be inside the usable
+  viewport before its value-changing tap. Action controls still require hittability/enabled state;
+  all original pay, consent, actual Files, archive and relaunch assertions remain unchanged. No
+  production payroll or data behavior changed in this follow-up.
+- **Live: session11757**, only the two largest-text dark journeys. Log
+  `/private/tmp/linepay-v2-native-journeys-large-geometry.log`, result
+  `.build/v2-native-journeys-large-geometry.xcresult`, existing device unchanged. Poll this handle
+  before another native job. Do not claim success from the earlier light runs or this live wait.
+
+## Completed dedicated native journey slice
+
+- Geometry debug result `large-geometry` remained failed: the crew case exhausted XCTest's default
+  600second allowance; its premium successor initially could not see a newly saved verdict.
+  Name-guarded synthetic state proved producer5 Matches and two retained revisions. Recording showed
+  the live result inherited its old scroll position. The live child form now uses receipt identity,
+  so explicit new confirmation starts at the verdict; historical copies keep their own identity.
+- Reused the repository's established hittability-based navigation, with explicit search direction
+  for earlier controls and actual switch-point visibility/value-change checks. This removes
+  whole-label-fit requirements. Typed/selected money, consent, file and history assertions were
+  preserved. A later crew run reached saved75/unchanged550 but default600seconds ended it before
+  relaunch finished. Set the largest full-exchange case's explicit allowance to900; no business
+  assertion was skipped or changed into a pass. Its complete run finished220.718seconds, terminal0.
+- Current passing native evidence:
+  - App target: **344 tests/50suites passed**,0 failures/skips, terminal0,
+    `.build/v2-native-journeys-app-final.xcresult`,
+    `/private/tmp/linepay-v2-native-journeys-app-final.log`.
+  - Final current light journeys: **2 passed**,0 failures/skips, terminal0,
+    `.build/v2-native-journeys-light-final.xcresult`,
+    `/private/tmp/linepay-v2-native-journeys-light-final.log`.
+  - Largest-text dark crew: **1 passed**,0 failures/skips, terminal0,
+    `.build/v2-native-crew-largest-complete.xcresult`,
+    `/private/tmp/linepay-v2-native-crew-largest-complete.log`. Actual local file and retained rate
+    plus old550 paycheck survive relaunch. Source omission and own75 confirmation remain explicit.
+  - Largest-text dark premium: **its1 case passed139.207seconds** in
+    `.build/v2-native-journeys-large-hittable.xcresult`,
+    `/private/tmp/linepay-v2-native-journeys-large-hittable.log`. That mixed bundle still includes
+    the earlier failed crew driver case; do not label the mixed bundle green. Its successful case
+    verifies original0.97→explicit0.98/0.48 correction and retained old receipt after archive/relaunch.
+- Authoritative summaries and aggregate source-bound receipt are under
+  `.build/v2-native-journeys-current-20261018/`: `app-summary.json`, `light-summary.json`,
+  `crewLarge-summary.json`, `premiumLarge-summary.json`, `final-source-hashes.json` and
+  `current-verification-receipt.json`. All recorded Swift source hashes still match. Earlier failed,
+  interrupted and timed-out runs remain visible. This is component-level evidence, not one green
+  whole-command run or final release-candidate acceptance. Prior29 general UI passes remain separate.
+- Unsigned current generic Simulator Release passed terminal0, including source/resource/lockfile
+  preservation, bundled privacy/launch configuration and absence of the legacy receipt resource in
+  the shipping app. Receipt:
+  `.build/v2-native-journeys-release-verdict-20261018/verification-receipt.json`;
+  executable SHA256 `23595a7adad12e346ab3733eba48631638930e426864f34db530ec5b6572335b`.
+  Preserved earlier verified app under `v2-native-journeys-release-20261018/VerifiedApp/` before
+  incremental rebuild. No device archive/signing/upload or App Store action.
+- Inspected actual light recipient/retained-reference captures and largest dark consent/money
+  captures. Long text remains scrollable at maximum scale; switch controls and compared values are
+  available without reducing text. This verifies hierarchy/semantics/captures, not an auditory
+  VoiceOver run, physical peer transfer or cloud upload.
+- Guide validation:25HTML/22search entries at both base paths,60 mapped source reviews,4 existing
+  screenshot provenance entries;42 actual Chromium page/configuration checks plus new crew search
+  and no-JS discovery passed. Final quick:74 repository tests, strict Swift format,162 domain
+  tests/28suites, terminal0. Five docs-tool tests and active-copy/inventory/link/diff checks passed.
+- Native code changes remain limited to contextual feedback/accessibility, fixed imported-scope
+  presentation, current-result form identity, stable IDs and Debug-only synthetic setup. ADR0023/
+  0027, BR111–112 and candidate guide now match that behavior. All remaining original v2 stages and
+  final signed/manual App Store/public-release requirements remain open; goal stays active.

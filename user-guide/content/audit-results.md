@@ -73,7 +73,7 @@ backup. Deleting the period deletes its follow-ups.
 
 ## Premium-only precision in the v2 candidate
 
-**Development preview:** native interaction, migration and report acceptance remain pending.
+**Development preview:** final App Store release and physical-device acceptance remain pending.
 An older **Base + premium only** check may have reconstructed base pay from rounded decimal hours.
 At a half-cent this can change a line by one cent even when gross is correct. New checks use exact
 base-time evidence. An older active monetary-line check requires an explicit new review; its

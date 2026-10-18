@@ -25,7 +25,9 @@ struct CrewRulesView: View {
     @State private var showingSetup = false
     @State private var reading = false
     @State private var task: Task<Void, Never>?
+    private enum MessageArea: Equatable { case exportFile, inspectDraft, prepareSetup }
     @State private var message: String?
+    @State private var messageArea: MessageArea = .inspectDraft
 
     var body: some View {
         Form {
@@ -33,10 +35,6 @@ struct CrewRulesView: View {
                 Text(
                     "Exchange selected rules without copying work, paycheck history or original documents. A worker-provided draft is not an official agreement or a verified source."
                 )
-            }
-            if let message {
-                Section { Label(message, systemImage: "info.circle") }
-                    .accessibilityIdentifier("crew-rules.message")
             }
             if model.profile != nil { exportSection }
             Section("Inspect a rule draft") {
@@ -48,6 +46,7 @@ struct CrewRulesView: View {
                 )
                 .font(.footnote)
                 if reading { ProgressView("Reading selected draft") }
+                messageRow(.inspectDraft)
             }
             if let inspected { importSections(inspected) }
             if !model.crewRuleOrigins.isEmpty {
@@ -92,6 +91,7 @@ struct CrewRulesView: View {
             isPresented: $exporting, document: prepared, contentType: .data,
             defaultFilename: "Crew rules.linepayrules"
         ) { result in
+            messageArea = .exportFile
             switch result {
             case .success:
                 message =
@@ -101,6 +101,8 @@ struct CrewRulesView: View {
             }
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.data, .json]) { result in
+            messageArea = .inspectDraft
+            message = nil
             guard case .success(let url) = result else {
                 message =
                     "The file could not be selected. Saved rules and history are unchanged. Retry from Files."
@@ -123,9 +125,13 @@ struct CrewRulesView: View {
                     perDiemAmount = ""
                     perDiemChoice = packet.rules.perDiem.configured ? .unreviewed : .notConfigured
                     replaceDraft = false
+                    messageArea = .inspectDraft
                     message =
                         "Draft inspected. No pay rules or work records changed. Enter and confirm your own amounts."
-                } catch is CancellationError { return } catch {
+                } catch is CancellationError {
+                    return
+                } catch {
+                    messageArea = .inspectDraft
                     message =
                         "This draft could not be read safely. Saved rules and history are unchanged. Use a supported rule draft or enter confirmed rules manually."
                 }
@@ -135,9 +141,12 @@ struct CrewRulesView: View {
 
     private var exportSection: some View {
         Section("Prepare a rule draft") {
-            LabeledContent("Draft title") { TextField("Title", text: $title) }
+            LabeledContent("Draft title") {
+                TextField("Title", text: $title).accessibilityIdentifier("crew-rules.title")
+            }
             LabeledContent("Draft revision") {
                 TextField("Revision", text: $revision).textInputAutocapitalization(.never)
+                    .accessibilityIdentifier("crew-rules.revision")
             }
             Toggle("Include hourly and per-diem amounts", isOn: $includeAmounts)
                 .accessibilityIdentifier("crew-rules.include-amounts")
@@ -147,7 +156,9 @@ struct CrewRulesView: View {
             .font(.footnote)
             Toggle(
                 "I have permission to share these selected rules and this title",
-                isOn: $rightsConfirmed)
+                isOn: $rightsConfirmed
+            )
+            .accessibilityIdentifier("crew-rules.rights")
             Button("Review exact rule draft") { prepareExport() }
                 .linePayRowAction().disabled(!rightsConfirmed)
                 .accessibilityIdentifier("crew-rules.review-export")
@@ -161,11 +172,13 @@ struct CrewRulesView: View {
                     .linePayRowAction().disabled(!rightsConfirmed)
                     .accessibilityIdentifier("crew-rules.export")
             }
+            messageRow(.exportFile)
         }
     }
 
     @ViewBuilder private func importSections(_ packet: CrewRuleTemplate) -> some View {
         Section("Selected draft") { CrewRuleSummary(packet: packet) }
+            .accessibilityIdentifier("crew-rules.selected-summary")
         Section("Confirm for your own work") {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your confirmed hourly rate (\(packet.rules.currency)/hour)")
@@ -180,6 +193,7 @@ struct CrewRulesView: View {
                     Text("Not applicable to my work").tag(
                         CrewRuleTemplate.PerDiemChoice.notApplicable)
                 }
+                .accessibilityIdentifier("crew-rules.per-diem-choice")
                 if perDiemChoice == .confirmedAmount {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(
@@ -187,6 +201,7 @@ struct CrewRulesView: View {
                         )
                         TextField("Amount", text: $perDiemAmount).keyboardType(.decimalPad)
                             .accessibilityLabel("Your confirmed per-diem amount")
+                            .accessibilityIdentifier("crew-rules.per-diem-amount")
                     }
                 }
             }
@@ -196,15 +211,21 @@ struct CrewRulesView: View {
                     .never
                 )
                 .autocorrectionDisabled().accessibilityLabel("Payroll timezone")
+                .accessibilityIdentifier("crew-rules.time-zone")
             }
             Toggle(
                 "I checked these rules against my work, classification and dates",
-                isOn: $applicabilityConfirmed)
+                isOn: $applicabilityConfirmed
+            )
+            .accessibilityIdentifier("crew-rules.confirm-applicability")
             Toggle(
                 "I confirmed my amounts, currency, rounding and highest-premium rule",
-                isOn: $valuesConfirmed)
+                isOn: $valuesConfirmed
+            )
+            .accessibilityIdentifier("crew-rules.confirm-values")
             if model.setupDraft != nil {
                 Toggle("Replace my unfinished rule setup draft", isOn: $replaceDraft)
+                    .accessibilityIdentifier("crew-rules.replace-draft")
             }
             Text(
                 "This format includes no weekly overtime, schedule, holiday or effective-date coverage. Unconfigured obligations are not waived. The next editor reviews your period and save scope; existing history stays unchanged."
@@ -213,19 +234,31 @@ struct CrewRulesView: View {
             Button("Prepare my rule setup") { prepareImport() }
                 .linePayRowAction().disabled(!applicabilityConfirmed || !valuesConfirmed || reading)
                 .accessibilityIdentifier("crew-rules.prepare-setup")
+            messageRow(.prepareSetup)
+        }
+    }
+
+    @ViewBuilder private func messageRow(_ area: MessageArea) -> some View {
+        if messageArea == area, let message {
+            Label(message, systemImage: "info.circle")
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("crew-rules.message")
         }
     }
 
     private func invalidateExport() {
+        if messageArea == .exportFile { message = nil }
         prepared = nil
         exportPacket = nil
         rightsConfirmed = false
     }
     private func invalidateImportReview() {
+        if messageArea == .prepareSetup { message = nil }
         applicabilityConfirmed = false
         valuesConfirmed = false
     }
     private func prepareExport() {
+        messageArea = .exportFile
         do {
             guard rightsConfirmed, let agreement = model.profile?.agreement else { return }
             let packet = try CrewRuleTemplate.sharing(
@@ -242,6 +275,7 @@ struct CrewRulesView: View {
         }
     }
     private func prepareImport() {
+        messageArea = .prepareSetup
         do {
             guard let inspectedData else { return }
             let draft = try CrewRuleDraftBuilder.build(

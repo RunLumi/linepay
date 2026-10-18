@@ -59,6 +59,16 @@
                         evidenceStore: LocalEvidenceStore(
                             baseDirectory: base.appendingPathComponent("originals")))
                 }
+                if scenario == "premium-legacy" {
+                    try seedLegacyPremium(at: base)
+                    return AppSession(
+                        store: store,
+                        evidenceStore: LocalEvidenceStore(
+                            baseDirectory: base.appendingPathComponent("originals")),
+                        activity: LocalActivityLedger(
+                            store: FileLocalActivityStore(
+                                directory: base.appendingPathComponent("activity"))))
+                }
                 let model = session.model
                 if scenario.hasPrefix("store-week") {
                     try seedStoreWeek(model, scenario: scenario)
@@ -190,6 +200,79 @@
                 session.restoreNotice = "Synthetic UI fixture failed: \(error.localizedDescription)"
             }
             return session
+        }
+
+        /// Receipts arrive only from the UI runner's synthetic golden resource, never the app bundle.
+        private static func seedLegacyPremium(at base: URL) throws {
+            struct Fixture: Decodable {
+                struct Row: Decodable {
+                    let id: String
+                    let agreement: AgreementSnapshot
+                    let calculation: CalculationResult
+                    let assessment: PaycheckAssessment
+                }
+                let sourceCommit: String
+                let cases: [Row]
+            }
+            guard let text = ProcessInfo.processInfo.environment["LINEPAY_UI_PREMIUM_LEGACY"],
+                text.utf8.count <= 65_536
+            else { throw LocalStateStoreError.invalidState }
+            let fixture = try JSONDecoder().decode(Fixture.self, from: Data(text.utf8))
+            guard fixture.sourceCommit == "3836154",
+                let row = fixture.cases.first(where: { $0.id == "premium-half-cent" }),
+                row.assessment.engineVersion == 4,
+                let workID = row.calculation.components.first?.workIntervalID
+            else { throw LocalStateStoreError.invalidState }
+            let work = WorkEntry(
+                interval: try WorkInterval(
+                    id: workID,
+                    startEpochSeconds: 1_788_739_200, endEpochSeconds: 1_788_739_260,
+                    timeZoneIdentifier: "UTC"), note: "SYNTHETIC original premium-only check")
+            let window = PayPeriodWindow(
+                startEpochSeconds: 1_788_739_200,
+                endEpochSeconds: 1_789_344_000, cadence: .weekly)
+            let stub = ConfirmedPaystub(
+                id: UUID(uuidString: "74000000-0000-0000-0000-000000000001")!,
+                payPeriodStart: LocalDate(year: 2026, month: 9, day: 7),
+                payPeriodEnd: LocalDate(year: 2026, month: 9, day: 13),
+                grossPay: row.assessment.paidGross,
+                regularPay: Money(amount: Decimal(string: "0.98")!, currencyCode: "USD"),
+                overtimePay: Money(amount: Decimal(string: "0.48")!, currencyCode: "USD"),
+                confirmedEpochSeconds: 1_788_739_261,
+                confirmation: PaystubConfirmation(
+                    grossBasis: .wagesOnly, lineLayout: .basePlusPremium,
+                    hoursBasis: .unconfirmed, guaranteeLayout: .unconfirmed,
+                    reviewedFields: [
+                        .periodStart, .periodEnd, .grossPay, .regularPay, .overtimePay,
+                    ],
+                    suggestions: [:], hasAdditionalUnmappedPay: false, workComplete: true),
+                assessment: row.assessment)
+            let reconciliation = ReconciliationResult(
+                expectedGross: row.calculation.expectedWages,
+                actualGross: stub.grossPay, difference: .zero(currencyCode: "USD"),
+                direction: .matches)
+            let revision = AuditRevision(
+                id: stub.id, window: window, agreement: row.agreement,
+                timeZoneIdentifier: "UTC", workEntries: [work], calculation: row.calculation,
+                paystub: stub, reconciliation: reconciliation)
+            var state = AppPersistentState()
+            state.profile = PayProfile(
+                name: "SYNTHETIC legacy premium-only profile",
+                timeZoneIdentifier: "UTC", agreement: row.agreement)
+            state.activePeriod = ActivePayPeriod(
+                id: UUID(uuidString: "75000000-0000-0000-0000-000000000001")!,
+                window: window, agreement: row.agreement,
+                timeZoneIdentifier: "UTC", workEntries: [work], paystub: stub,
+                reconciliation: reconciliation,
+                auditCompletedEpochSeconds: stub.confirmedEpochSeconds,
+                hasConsumedAuditAccess: true, auditRevisions: [revision])
+            state.hasUsedFreeAudit = true
+            try AppStateValidation.validate(state)
+            // Exercise actual old-schema reading, rather than labelling a current in-memory model old.
+            state.schemaVersion = 9
+            try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+            try JSONEncoder().encode(state).write(
+                to: base.appendingPathComponent("state-v1.json"), options: .atomic)
         }
 
         private static func seedAgreement(_ model: AppModel) throws {
