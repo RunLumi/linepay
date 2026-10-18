@@ -45,10 +45,11 @@ public struct WeeklyWorkFact: Codable, Hashable, Sendable, Identifiable {
     public let hours: Decimal
     public let straightRate: Money
     public let qualifiesForWeeklyOvertime: Bool
+    public let workedSeconds: Int64?
 
     public init(
         id: UUID = UUID(), payPeriodID: UUID? = nil, hours: Decimal, straightRate: Money,
-        qualifiesForWeeklyOvertime: Bool = true
+        qualifiesForWeeklyOvertime: Bool = true, workedSeconds: Int64? = nil
     ) throws {
         guard hours >= 0, !hours.isNaN, !straightRate.amount.isNaN,
             straightRate.amount >= 0
@@ -58,11 +59,19 @@ public struct WeeklyWorkFact: Codable, Hashable, Sendable, Identifiable {
         self.hours = hours
         self.straightRate = straightRate
         self.qualifiesForWeeklyOvertime = qualifiesForWeeklyOvertime
+        if let workedSeconds {
+            guard workedSeconds >= 0, hours == Decimal(workedSeconds) / 3_600 else {
+                throw WeeklyRegularRateError.invalidWorkFact(id)
+            }
+        }
+        self.workedSeconds = workedSeconds
     }
 
     public var straightTimeAmount: Money {
-        straightRate.multiplied(by: hours)
+        Money(amount: straightNumerator / 3_600, currencyCode: straightRate.currencyCode)
     }
+    var seconds: Decimal { workedSeconds.map(Decimal.init) ?? hours * 3_600 }
+    var straightNumerator: Decimal { straightRate.amount * seconds }
 }
 
 public struct WeeklyRemunerationFact: Codable, Hashable, Sendable, Identifiable {
@@ -93,6 +102,7 @@ public struct WeeklyRemunerationFact: Codable, Hashable, Sendable, Identifiable 
 
     var isIncludable: Bool {
         kind == .straightTime || kind == .includableBonus
+            || (kind == .extraPremium && premiumCredit == .ineligible)
     }
 }
 
@@ -106,12 +116,15 @@ public struct WeeklyRegularRateInput: Codable, Hashable, Sendable {
     public let work: [WeeklyWorkFact]
     public let remuneration: [WeeklyRemunerationFact]
     public let rounding: MoneyRoundingRule
+    public let startEpochSeconds: Int64?
+    public let timeZoneIdentifier: String?
 
     public init(
         workweekID: UUID = UUID(), weekStart: LocalDate, workweekStart: Weekday,
         completeWorkweek: Bool, applicability: WeeklyOvertimeApplicability,
         thresholdHours: Decimal = 40, work: [WeeklyWorkFact],
-        remuneration: [WeeklyRemunerationFact], rounding: MoneyRoundingRule = MoneyRoundingRule()
+        remuneration: [WeeklyRemunerationFact], rounding: MoneyRoundingRule = MoneyRoundingRule(),
+        startEpochSeconds: Int64? = nil, timeZoneIdentifier: String? = nil
     ) throws {
         guard thresholdHours == 40 else {
             throw WeeklyRegularRateError.unsupportedThreshold(thresholdHours)
@@ -128,6 +141,8 @@ public struct WeeklyRegularRateInput: Codable, Hashable, Sendable {
         self.work = work
         self.remuneration = remuneration
         self.rounding = rounding
+        self.startEpochSeconds = startEpochSeconds
+        self.timeZoneIdentifier = timeZoneIdentifier
     }
 }
 
@@ -160,6 +175,9 @@ public struct WeeklyRegularRateResult: Codable, Hashable, Sendable {
     public let expectedCash: Money
     public let allocations: [WeeklyPremiumAllocation]
     public let engineVersion: String
+    public let startEpochSeconds: Int64?
+    public let endEpochSeconds: Int64?
+    public let timeZoneIdentifier: String?
 
     public var explanation: String {
         "Restricted weekly regular-rate calculation for a complete covered/nonexempt hourly workweek; applicability and source scope remain explicit."
@@ -174,6 +192,57 @@ public struct WeeklyRegularRateCalculator: Sendable {
         guard input.applicability == .coveredNonexemptHourly else {
             throw WeeklyRegularRateError.applicabilityUnknown
         }
+        // Codable bypasses validating initializers. Re-admit every fact at this public boundary.
+        _ = try WeeklyRegularRateInput(
+            workweekID: input.workweekID, weekStart: input.weekStart,
+            workweekStart: input.workweekStart, completeWorkweek: input.completeWorkweek,
+            applicability: input.applicability, thresholdHours: input.thresholdHours,
+            work: input.work, remuneration: input.remuneration, rounding: input.rounding,
+            startEpochSeconds: input.startEpochSeconds, timeZoneIdentifier: input.timeZoneIdentifier
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        let day = input.weekStart
+        guard (1...9999).contains(day.year),
+            let date = calendar.date(
+                from: DateComponents(year: day.year, month: day.month, day: day.day)),
+            calendar.component(.year, from: date) == day.year,
+            calendar.component(.month, from: date) == day.month,
+            calendar.component(.day, from: date) == day.day,
+            calendar.component(.weekday, from: date) == input.workweekStart.rawValue
+        else { throw WeeklyRegularRateError.invalidWorkweek }
+        if input.startEpochSeconds != nil || input.timeZoneIdentifier != nil {
+            guard let epoch = input.startEpochSeconds,
+                (-62_135_596_800...(253_402_300_799 - 604_800)).contains(epoch),
+                let identifier = input.timeZoneIdentifier,
+                let zone = TimeZone(identifier: identifier)
+            else { throw WeeklyRegularRateError.invalidWorkweek }
+            var local = Calendar(identifier: .gregorian)
+            local.timeZone = zone
+            let instant = Date(timeIntervalSince1970: TimeInterval(epoch))
+            guard local.component(.year, from: instant) == day.year,
+                local.component(.month, from: instant) == day.month,
+                local.component(.day, from: instant) == day.day
+            else { throw WeeklyRegularRateError.invalidWorkweek }
+        }
+        guard (0...8).contains(input.rounding.scale), input.rounding.scope == .payCategory else {
+            throw WeeklyRegularRateError.invalidRounding
+        }
+        for fact in input.work {
+            _ = try WeeklyWorkFact(
+                id: fact.id, payPeriodID: fact.payPeriodID, hours: fact.hours,
+                straightRate: fact.straightRate,
+                qualifiesForWeeklyOvertime: fact.qualifiesForWeeklyOvertime,
+                workedSeconds: fact.workedSeconds)
+        }
+        for fact in input.remuneration {
+            _ = try WeeklyRemunerationFact(
+                id: fact.id, amount: fact.amount, kind: fact.kind, premiumCredit: fact.premiumCredit
+            )
+            guard fact.premiumCredit != .unknown else {
+                throw WeeklyRegularRateError.unknownPremiumCredit
+            }
+        }
 
         let currencies = Set(
             input.work.map(\.straightRate.currencyCode)
@@ -182,10 +251,14 @@ public struct WeeklyRegularRateCalculator: Sendable {
         guard currencies.count == 1, let currency = currencies.first else {
             throw WeeklyRegularRateError.currencyMismatch
         }
-
-        let qualifyingHours = input.work.reduce(Decimal.zero) {
-            $0 + ($1.qualifiesForWeeklyOvertime ? $1.hours : 0)
+        guard currency.utf8.count == 3, currency.utf8.allSatisfy({ (65...90).contains($0) }) else {
+            throw WeeklyRegularRateError.currencyMismatch
         }
+
+        let qualifyingSeconds = input.work.reduce(Decimal.zero) {
+            $0 + ($1.qualifiesForWeeklyOvertime ? $1.seconds : 0)
+        }
+        let qualifyingHours = qualifyingSeconds / 3_600
         let includable = input.remuneration.filter(\.isIncludable).reduce(Decimal.zero) {
             $0 + $1.amount.amount
         }
@@ -193,14 +266,23 @@ public struct WeeklyRegularRateCalculator: Sendable {
         let eligibleCredit = input.remuneration.filter {
             $0.premiumCredit == .eligibleExtraPremium
         }.reduce(Decimal.zero) { $0 + $1.amount.amount }
+        guard !qualifyingHours.isNaN, !includable.isNaN, !cash.isNaN, !eligibleCredit.isNaN else {
+            throw WeeklyRegularRateError.arithmeticNotExact
+        }
         guard qualifyingHours > 0 || includable == 0 else {
             throw WeeklyRegularRateError.remunerationWithoutQualifyingHours
         }
 
-        let overtimeHours = max(Decimal.zero, qualifyingHours - input.thresholdHours)
+        let overtimeSeconds = max(Decimal.zero, qualifyingSeconds - input.thresholdHours * 3_600)
+        let overtimeHours = overtimeSeconds / 3_600
         let regularRate = qualifyingHours > 0 ? includable / qualifyingHours : nil
-        let statutory = (regularRate ?? 0) * Decimal(string: "0.5")! * overtimeHours
+        // Multiply before division: a rounded repeating rate must not decide a half-cent tie.
+        let statutory =
+            qualifyingSeconds > 0 ? includable * overtimeSeconds / (2 * qualifyingSeconds) : 0
         let remaining = max(Decimal.zero, statutory - eligibleCredit)
+        guard !statutory.isNaN, !remaining.isNaN, regularRate.map({ !$0.isNaN }) ?? true else {
+            throw WeeklyRegularRateError.arithmeticNotExact
+        }
         let rounding = input.rounding
         let statutoryMoney = Money(amount: statutory, currencyCode: currency).rounded(
             using: rounding)
@@ -212,7 +294,7 @@ public struct WeeklyRegularRateCalculator: Sendable {
         let rateMoney = regularRate.map {
             Money(amount: $0, currencyCode: currency).rounded(using: rounding)
         }
-        let allocations = allocate(
+        let allocations = try allocate(
             remaining: remainingMoney, work: input.work, currency: currency, rounding: rounding)
         let expectedCash = Money(
             amount: cashMoney.amount + remainingMoney.amount, currencyCode: currency)
@@ -226,29 +308,40 @@ public struct WeeklyRegularRateCalculator: Sendable {
             eligibleExtraPremiumCredit: creditMoney,
             remainingAdditionalPremium: remainingMoney, cashRemuneration: cashMoney,
             expectedCash: expectedCash, allocations: allocations,
-            engineVersion: "linepay.weekly-regular-rate/1")
+            engineVersion: "linepay.weekly-regular-rate/2",
+            startEpochSeconds: input.startEpochSeconds,
+            endEpochSeconds: input.startEpochSeconds.map { $0 + 604_800 },
+            timeZoneIdentifier: input.timeZoneIdentifier)
     }
 
     private func allocate(
         remaining: Money, work: [WeeklyWorkFact], currency: String,
         rounding: MoneyRoundingRule
-    ) -> [WeeklyPremiumAllocation] {
+    ) throws -> [WeeklyPremiumAllocation] {
         guard remaining.amount > 0 else { return [] }
         var bases: [UUID?: Decimal] = [:]
+        var identities: [UUID?: UUID] = [:]
         for fact in work where fact.qualifiesForWeeklyOvertime && fact.hours > 0 {
-            bases[fact.payPeriodID, default: 0] += fact.straightTimeAmount.amount
+            bases[fact.payPeriodID, default: 0] += fact.straightNumerator
+            if identities[fact.payPeriodID].map({ fact.id.uuidString < $0.uuidString }) ?? true {
+                identities[fact.payPeriodID] = fact.id
+            }
         }
-        if bases.values.reduce(Decimal.zero, +) == 0 { return [] }
         let total = bases.values.reduce(Decimal.zero, +)
+        guard total > 0, !total.isNaN else { throw WeeklyRegularRateError.allocationUnavailable }
         let floorRule = MoneyRoundingRule(scale: rounding.scale, mode: .down, scope: .payCategory)
-        var allocations = bases.map { key, basis in
-            WeeklyPremiumAllocation(
+        var allocations = try bases.map { key, basis in
+            guard let identity = identities[key] else {
+                throw WeeklyRegularRateError.allocationUnavailable
+            }
+            return WeeklyPremiumAllocation(
+                id: identity,
                 payPeriodID: key,
                 amount: Money(
                     amount: remaining.amount * basis / total, currencyCode: currency
                 )
                 .rounded(using: floorRule),
-                basis: Money(amount: basis, currencyCode: currency))
+                basis: Money(amount: basis / 3_600, currencyCode: currency))
         }
         let target = remaining.rounded(using: rounding).amount
         var residual = target - allocations.reduce(Decimal.zero) { $0 + $1.amount.amount }
@@ -262,6 +355,7 @@ public struct WeeklyRegularRateCalculator: Sendable {
                 basis: item.basis)
             residual -= unit
         }
+        guard residual == 0 else { throw WeeklyRegularRateError.arithmeticNotExact }
         return allocations
     }
 }
@@ -276,6 +370,10 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
     case invalidCreditClassification(UUID)
     case currencyMismatch
     case remunerationWithoutQualifyingHours
+    case invalidWorkweek, invalidRounding, unknownPremiumCredit, arithmeticNotExact,
+        allocationUnavailable
+    case remunerationIncomplete
+    case workweekBoundaryUnconfirmed
 
     public var errorDescription: String? {
         switch self {
@@ -297,6 +395,20 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
             "The weekly work and remuneration use different currencies."
         case .remunerationWithoutQualifyingHours:
             "Remuneration was provided without qualifying work hours. Review the workweek inputs."
+        case .invalidWorkweek:
+            "Review the exact workweek start instant, local date and declared weekday. A calendar paycycle is not a workweek."
+        case .invalidRounding:
+            "Review the weekly rounding scale and pay-category policy."
+        case .unknownPremiumCredit:
+            "A premium's regular-rate and credit treatment is unknown. Classify it before calculating."
+        case .arithmeticNotExact:
+            "The weekly arithmetic cannot be represented safely. No approximate result was produced."
+        case .allocationUnavailable:
+            "The additional premium cannot be allocated from the confirmed straight-time basis. Review the work facts."
+        case .remunerationIncomplete:
+            "Confirm the whole week's straight-time remuneration and every other cash payment and classification before calculating."
+        case .workweekBoundaryUnconfirmed:
+            "Confirm the employer's exact recurring 168-hour workweek boundary before calculating."
         }
     }
 }

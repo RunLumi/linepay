@@ -3,11 +3,17 @@ import SwiftUI
 struct AuditStatusView: View {
     let status: AuditDisplayStatus
     var body: some View {
-        Label(status.title, systemImage: status.systemImage)
-            .font(.subheadline.weight(.semibold))
-            .fixedSize(horizontal: false, vertical: true)
-            .foregroundStyle(color)
-            .accessibilityIdentifier("audit.status")
+        HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.compact) {
+            Image(systemName: status.systemImage)
+                .accessibilityHidden(true)
+            Text(status.title)
+                .font(.subheadline.weight(.semibold))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .foregroundStyle(color)
+        .accessibilityIdentifier("audit.status")
     }
     private var color: Color {
         switch status {

@@ -2,6 +2,8 @@ import Foundation
 
 struct ReportPrivacyOptions: Equatable, Sendable {
     var includeSourceDetails = false
+    var includeResolutionHistory = false
+    var includeBenefitNotes = false
 }
 
 /// The preview reads immutable bytes. A stale, replaced or deleted file cannot grant a share URL.

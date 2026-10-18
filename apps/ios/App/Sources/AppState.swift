@@ -32,6 +32,7 @@ struct PayProfile: Identifiable, Codable, Hashable, Sendable {
 enum PayPeriodCadence: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
     case weekly
     case biweekly
+    case semimonthly
     case manual
 
     var id: String { rawValue }
@@ -40,6 +41,7 @@ enum PayPeriodCadence: String, Codable, CaseIterable, Hashable, Sendable, Identi
         switch self {
         case .weekly: "Weekly"
         case .biweekly: "Every 2 weeks"
+        case .semimonthly: "Twice monthly (1–15, 16–end)"
         case .manual: "Choose dates manually"
         }
     }
@@ -242,6 +244,16 @@ struct CompletedPayPeriod: Codable, Hashable, Sendable, Identifiable {
     let auditRevisions: [AuditRevision]?
     let hasConsumedAuditAccess: Bool?
 
+    /// The original period estimate stays frozen; an explicit newer audit owns its own calculation.
+    var comparisonCalculation: CalculationResult? {
+        if let paid = paystub,
+            let revision = auditRevisions?.last(where: { $0.paystub.id == paid.id })
+        {
+            return revision.calculation
+        }
+        return calculation
+    }
+
     init(
         id: UUID,
         window: PayPeriodWindow,
@@ -283,12 +295,17 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 4
+    static let currentSchemaVersion = 11
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
     var history: [CompletedPayPeriod] = []
     var hasUsedFreeAudit = false
+    var resolutionEvents: [ResolutionEvent]?
+    var agreementDocuments: [ImportedAgreementDocument]?
+    var crewRuleOrigins: [CrewRuleOrigin]?
+    var benefitAudits: [BenefitAuditRecord]?
+    var benefitAuditDraft: BenefitAuditDraft?
     var onboardingProgress: OnboardingProgress?
     var setupDraft: PayProfileDraft?
     var workDraft: WorkDraft?
@@ -307,9 +324,11 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit
+        case schemaVersion, profile, activePeriod, history, hasUsedFreeAudit, resolutionEvents,
+            agreementDocuments, benefitAudits, benefitAuditDraft
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
+        case crewRuleOrigins
     }
 
     init(from decoder: any Decoder) throws {
@@ -318,8 +337,18 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // Additive v1/v2/v3 -> v4 migration. Historical calculations and sources are not recalculated.
+        // V1–v10 admission preserves recorded calculations and comparison versions unchanged.
         schemaVersion = Self.currentSchemaVersion
+        crewRuleOrigins = try values.decodeIfPresent(
+            [CrewRuleOrigin].self, forKey: .crewRuleOrigins)
+        agreementDocuments = try values.decodeIfPresent(
+            [ImportedAgreementDocument].self, forKey: .agreementDocuments)
+        benefitAudits = try values.decodeIfPresent(
+            [BenefitAuditRecord].self, forKey: .benefitAudits)
+        benefitAuditDraft = try values.decodeIfPresent(
+            BenefitAuditDraft.self, forKey: .benefitAuditDraft)
+        resolutionEvents = try values.decodeIfPresent(
+            [ResolutionEvent].self, forKey: .resolutionEvents)
         profile = try values.decodeIfPresent(PayProfile.self, forKey: .profile)
         activePeriod = try values.decodeIfPresent(ActivePayPeriod.self, forKey: .activePeriod)
         history = try values.decodeIfPresent([CompletedPayPeriod].self, forKey: .history) ?? []
@@ -366,6 +395,9 @@ struct PayPeriodContext: Identifiable, Hashable, Sendable {
     let isClosed: Bool
     var agreementChanges: [AgreementChange]?
     var calculationIssue: String? = nil
+    var resolutionEvents: [ResolutionEvent] = []
+    var requiresCalculationReview = false
+    var requiresAssessmentReview = false
 }
 
 enum AuditDisplayStatus: Hashable, Sendable {
@@ -408,4 +440,22 @@ struct AuditFinding: Identifiable, Hashable, Sendable {
     let paid: Money
     let difference: Money
     let explanation: String
+
+    static func contains(_ id: String, in paystub: ConfirmedPaystub) -> Bool {
+        paystub.assessment?.comparisons.contains { $0.unit == .money && $0.id == id } ?? false
+    }
+
+    static func from(paystub: ConfirmedPaystub) -> [AuditFinding] {
+        guard let assessment = paystub.assessment else { return [] }
+        return assessment.comparisons.filter { $0.unit == .money }.map { item in
+            AuditFinding(
+                id: item.id,
+                title: item.field.title,
+                expected: Money(amount: item.expected, currencyCode: item.currencyCode),
+                paid: Money(amount: item.paid, currencyCode: item.currencyCode),
+                difference: Money(amount: item.difference, currencyCode: item.currencyCode),
+                explanation: "Compared using the paystub layout and gross basis you confirmed."
+            )
+        }
+    }
 }

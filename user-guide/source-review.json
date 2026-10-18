@@ -1,23 +1,25 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted 1.0.4-1.0.5 review; see CONTENT-SOURCES.md. Update blobs with --record only after re-reviewing the mapped guides.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct. Targeted October17 native crew candidate review: existing mapped public steps unchanged; new candidate Files/adoption instructions remain internal pending native runtime, provider and visual acceptance. This is not a complete public-guide release review. Targeted October17 weekly correction: v2 candidate guidance for exact 168-hour boundary and remuneration classification; no automatic audit clearance or native runtime approval. Targeted October 17 assessment-v4/schema9 review: active weekly re-review, retained earlier comparisons, recorded historical PDF scope and no shortfall marketing from Needs review. Candidate native execution remains pending; no complete release/guide approval. Targeted October18 assessment5/schema10 review: exact base-time evidence for premium-only money lines, explicit active re-review and retained producer4 receipts; native execution and release approval remain pending. Targeted October18 native crew guide: documented the candidate Files workflow, status beside each action and fixed imported scope; ordinary manual changes remain available. Physical/cross-device and release acceptance remain pending. Targeted October 19 native follow-up review: audit-results, evidence-and-reports, and backup-and-restore now describe optional saved-line references, exact-revision report scope, explicit report opt-in, and schema-10 migration without inferred links. This is not a full-site or release-candidate freshness review.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
       "guides": [
         "getting-started"
       ],
-      "disposition": "reviewed",
-      "blob": "0e9da2e6d9045317b2a01e8d8668456559568d06"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "6dbae843f4fa49681736a3aa51f988af4bb90000",
+      "reason": "Targeted October17 review: an optional unreleased crew-draft inspection entry prepares the existing setup flow without activating rules. Existing manual/restore/agreement setup steps are unchanged. New crew instructions remain internal pending native runtime/Files/visual acceptance."
     },
     {
       "path": "apps/ios/App/Sources/OnboardingWelcomeView.swift",
       "guides": [
         "getting-started"
       ],
-      "disposition": "reviewed",
-      "blob": "6428be7533db4fedd34b105831e43ec05ae970e1"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "624e60ca7cbfb852466055212813f5357b9f5b5e",
+      "reason": "Targeted October17 review: an optional unreleased crew-draft inspection entry prepares the existing setup flow without activating rules. Existing manual/restore/agreement setup steps are unchanged. New crew instructions remain internal pending native runtime/Files/visual acceptance."
     },
     {
       "path": "apps/ios/App/Sources/FirstPayResultView.swift",
@@ -26,7 +28,7 @@
         "expected-pay"
       ],
       "disposition": "reviewed",
-      "blob": "6f625f8620bd8db141448c6cfc72dbf476ab7f77"
+      "blob": "8699fb7afed5684484d6ae79052090b12b56e817"
     },
     {
       "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
@@ -37,7 +39,8 @@
         "changing-rules"
       ],
       "disposition": "reviewed",
-      "blob": "c1cbdea37dd132c11ab1dc7153a27a6e711663af"
+      "blob": "caacabf200076c4c29d4ca401e59429dce0b851f",
+      "reason": "Targeted native crew candidate review October18: future-only imported scope is read-only, manual edit choices remain unchanged. Updated profile/change guidance and linked the explicit candidate crew workflow; release and physical acceptance remain pending."
     },
     {
       "path": "apps/ios/App/Sources/EntryDrafts.swift",
@@ -45,8 +48,9 @@
         "pay-profile",
         "recording-work"
       ],
-      "disposition": "reviewed",
-      "blob": "7dcad3dff8140a469038889a4029eadabee51dea"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "64acecb1269b72f33f78512d7237b454f2a2c0ca",
+      "reason": "Targeted October17 review: optional retained crew-adoption metadata adds no change to ordinary pay-profile or work-entry instructions. Native crew runtime and release acceptance remains pending."
     },
     {
       "path": "apps/ios/App/Sources/LinePayFormat.swift",
@@ -55,7 +59,7 @@
         "troubleshooting"
       ],
       "disposition": "reviewed",
-      "blob": "47e224779bc983adbfde4470013a0434dd22778c"
+      "blob": "ceafa64b830906284216850b817c81c4f4b319b7"
     },
     {
       "path": "apps/ios/App/Sources/TodayView.swift",
@@ -63,8 +67,9 @@
         "getting-started",
         "recording-work"
       ],
-      "disposition": "reviewed",
-      "blob": "d0b51e0fc43c725ea67ba9daf44d3202889b2ea6"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "01e4d98048b8d05eaabf4a85c3e64692dd67bd4b",
+      "reason": "Targeted October 19 review: work-row stacking and status layout adapt to large text; visible logging actions and work semantics in getting-started/recording-work are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/AddWorkView.swift",
@@ -72,7 +77,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "0a919655439ed2581ba1d37c1827934f41e37a61"
+      "blob": "a2597672525a8179c1d29492949fa18c635d38db"
     },
     {
       "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",
@@ -89,7 +94,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "649805fe794f1d9a028281aab3e267de281fe494"
+      "blob": "8a80855f0a0755a72e2cc55b6cfd2c34a0570970"
     },
     {
       "path": "apps/ios/App/Sources/PayLedgerView.swift",
@@ -99,7 +104,8 @@
         "pay-rules"
       ],
       "disposition": "reviewed",
-      "blob": "ad18d72562dd270412e2390b251bb8b97238734e"
+      "blob": "1412ac8b23ae95e1f894267b5b9ab9661ff6fda9",
+      "reason": "Targeted October 17 assessment v4 review: Forward the separate legacy-assessment review flag without repricing the ledger. Targeted expected-pay/audit guidance covers unchanged amounts and explicit re-review; cadence and weekly-reference steps are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/WeeklyOvertimeReviewView.swift",
@@ -108,7 +114,8 @@
         "supported-rules"
       ],
       "disposition": "reviewed",
-      "blob": "96bda954ea04dbfb135c60750180e1f550fe45bb"
+      "blob": "b0401aaf44555b43515eddaab942d941847a056d",
+      "reason": "Targeted October17 weekly v2 review: updated pay-rules/supported-rules with explicit candidate labels, exact 168-hour boundary, remuneration/credit input and no saved/automatic paycheck clearance. Source and compiler review is not native runtime/accessibility or legal-profile approval."
     },
     {
       "path": "apps/ios/App/Sources/HistoryView.swift",
@@ -116,8 +123,9 @@
         "history",
         "pay-periods"
       ],
-      "disposition": "reviewed",
-      "blob": "3530bdd95ef5a220b2880037d6dbebf951e39057"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "aeabfff0041862d7e17426eb94b78150d56b7c1d",
+      "reason": "Targeted October18 native journey review: added stable identifiers to existing comparison/revision links; mapped guide steps and candidate scope remain unchanged. Native premium light correction/archive/relaunch passed; remaining new journey acceptance is tracked separately, not release approval."
     },
     {
       "path": "apps/ios/App/Sources/PaystubImportView.swift",
@@ -127,7 +135,8 @@
         "paystub-layouts"
       ],
       "disposition": "reviewed",
-      "blob": "f60db100d18b082059a7b6097449b1f0eae2bf9f"
+      "blob": "1fa9703f5ff69c33c09c4fd3581645201bc16d10",
+      "reason": "Targeted October18 exact-base review: checked mapped guides; documented candidate premium-only precision, explicit active re-review and preserved earlier recorded comparisons. Weekly safeguards and existing intake/period steps remain applicable. Native runtime, migration and PDF acceptance remain pending; not a release approval."
     },
     {
       "path": "apps/ios/App/Sources/AuditDetailView.swift",
@@ -135,24 +144,28 @@
         "audit-results",
         "evidence-and-reports"
       ],
-      "disposition": "reviewed",
-      "blob": "5d55337b5a5d2acda26193e41c03cf2d1a372045"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "e411782fa118198ce220ffd55d18f23156ea8047",
+      "reason": "Targeted October18 native result review: comparison links retain stable IDs; a newly confirmed receipt resets the live form to its verdict. Existing guide steps remain valid. Largest-text premium correction/archive/relaunch passed; broader release and physical acceptance remain separate."
     },
     {
       "path": "apps/ios/App/Sources/AuditStatusView.swift",
       "guides": [
         "audit-results"
       ],
-      "disposition": "reviewed",
-      "blob": "6ee86eacdf5d9ac3d359e23fda025d580e7f319a"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "c389af7fbc6341e15262d1e23df7b3e5c36a8e0c",
+      "reason": "Targeted October 19 review: status icon/text can wrap at Dynamic Type; status names and meanings in audit-results are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/ReportSharingView.swift",
       "guides": [
-        "evidence-and-reports"
+        "evidence-and-reports",
+        "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "e7d426ddb454bf025a79d62c62886a313c8d1081"
+      "blob": "4a6a4df51f885df6ec2e6c7b4cf89ad0a5196ba6",
+      "reason": "Targeted October 19 review: report copies now bind follow-up notes and optional comparison-item labels to the selected paycheck revision. Updated evidence-and-reports; benefits exports use a separate flow."
     },
     {
       "path": "apps/ios/App/Sources/BackupRestoreView.swift",
@@ -160,17 +173,19 @@
         "backup-and-restore"
       ],
       "disposition": "reviewed",
-      "blob": "9515bb9d2659b9ebbbe07f673c507fd54f12aa4b"
+      "blob": "101cbc4406d85651f07b592e79c1d3d3fd2e9abf"
     },
     {
       "path": "apps/ios/App/Sources/SettingsView.swift",
       "guides": [
         "privacy-and-deletion",
         "pro-and-billing",
-        "support"
+        "support",
+        "benefits"
       ],
-      "disposition": "reviewed",
-      "blob": "2c5e40bda111f74a885ad6a248cb94260db540b3"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "7113f6e79713ee7aa1862891f87d81cef263cf15",
+      "reason": "Targeted October 19 guide review: rechecked privacy-and-deletion, pro-and-billing, support, and benefits against the Settings navigation and accessibility-title changes. Destination labels, actions, and public instructions remain accurate; no guide edit is needed."
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -202,8 +217,9 @@
       "guides": [
         "pro-and-billing"
       ],
-      "disposition": "reviewed",
-      "blob": "13984ca25868cda0a58dd556259d1a37a2b72aa9"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "89abecfca7eed5e296c565ab63e6112243eebd30",
+      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/TrialReminder.swift",
@@ -221,7 +237,8 @@
         "pay-rules"
       ],
       "disposition": "reviewed",
-      "blob": "0025ec9fe7d8295ce9313b5d9f77c70101b422fa"
+      "blob": "49ce527082163b7858f5d16b5e2978379e1ad4bc",
+      "reason": "Targeted October18 exact-base review: checked mapped guides; documented candidate premium-only precision, explicit active re-review and preserved earlier recorded comparisons. Weekly safeguards and existing intake/period steps remain applicable. Native runtime, migration and PDF acceptance remain pending; not a release approval."
     },
     {
       "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/StrictDecimal.swift",
@@ -239,7 +256,340 @@
         "supported-rules"
       ],
       "disposition": "reviewed",
-      "blob": "211d4f73a704bf6efe44b20855fa67e08f1a63dc"
+      "blob": "7ba914debac3c3bbce8c627fd4e2bef67430637e",
+      "reason": "Targeted October17 weekly v2 review: updated pay-rules/supported-rules with explicit candidate labels, exact 168-hour boundary, remuneration/credit input and no saved/automatic paycheck clearance. Source and compiler review is not native runtime/accessibility or legal-profile approval."
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementDocumentsView.swift",
+      "guides": [
+        "getting-started",
+        "pay-profile"
+      ],
+      "disposition": "reviewed",
+      "blob": "80a7a25c7bac1ebf3664f75b53afe065e9ba98df"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementDocumentReviewView.swift",
+      "guides": [
+        "pay-profile"
+      ],
+      "disposition": "reviewed",
+      "blob": "8a0f78f4f5aad27577f331bc8d67984ead24955c"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementOriginalView.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "5491b38181c53447d035de73350dfd4cf26a4338"
+    },
+    {
+      "path": "apps/ios/App/Sources/AgreementImportDraftBuilder.swift",
+      "guides": [
+        "pay-profile",
+        "changing-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "2b1934663ced6d00f402e5a8db625dd67e98335b"
+    },
+    {
+      "path": "apps/ios/App/Sources/BackupStateMapping.swift",
+      "guides": [
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "7c85932b732e5ddc9982a59a765d97dd8f0dcbda"
+    },
+    {
+      "path": "apps/ios/App/Sources/EvidenceReceiptView.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "af5fd475e9fdceb71cf8e158ef7f506ec75864af"
+    },
+    {
+      "path": "apps/ios/App/Sources/ReconciliationReportExporter.swift",
+      "guides": [
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "4cdea829618bd78cfaa92866fcd29fe4fc4d35cc",
+      "reason": "Targeted October 19 review: opted-in PDF follow-up history names its linked comparison item; default report privacy remains unchanged. Updated evidence-and-reports."
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditEditorView.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "9cbd28fe5021f7e5fb6c4002f3ba1e69b41f9952"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditsView.swift",
+      "guides": [
+        "benefits",
+        "history"
+      ],
+      "disposition": "reviewed",
+      "blob": "3e9f052f40d5813e1b0ac6e0be46e6468527bfea"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditModels.swift",
+      "guides": [
+        "benefits",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "b9eed29399ad5fa3a83da623c7562b4fd0353ce5"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditOperations.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "6074d9f9fc67d20829c4a74684ea6683ef27e2b4"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitSegmentEditor.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "cefea57a7616829b82f353a1ce5a3c715233fbd2"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitStatementOriginalView.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "6a286440e1b39274a487805e400b9dd106198f98"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitAuditPresentation.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed-no-guide-change",
+      "blob": "1006ba4f74e9a354454a55a48f8932a6f1ca363e",
+      "reason": "Targeted October17 review: capture the already configured calendar immutably in date bindings for current SDK concurrency checks. Benefit date semantics and visible instructions are unchanged."
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitReportSharingView.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "cd9973d316ccf51fa54934a80b87724b4428c20a"
+    },
+    {
+      "path": "apps/ios/App/Sources/BenefitReportExporter.swift",
+      "guides": [
+        "benefits",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "bd9940ca08b7a8be59dd880de5f2cad09ca5e1d7"
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/BenefitContributions.swift",
+      "guides": [
+        "benefits"
+      ],
+      "disposition": "reviewed",
+      "blob": "03de627c186f8860cee5444f44be628260ea4fcc"
+    },
+    {
+      "path": "apps/ios/App/Sources/TemporaryExports.swift",
+      "guides": [
+        "benefits",
+        "privacy-and-deletion",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "4b03c3346c9c9912dd30fa8ead20a50d1c977554"
+    },
+    {
+      "path": "apps/ios/App/Sources/ReportShareSession.swift",
+      "guides": [
+        "benefits",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "545595824297ab665a306abd6b8cfb88426f54f6"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalActivityLedger.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "6e67b89065516717b1e58da30056b5f528a236c7"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalActivityObservation.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "528cb9668290798abec65974ef261dd06edb971b"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalDiagnosticsView.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed-no-guide-change",
+      "blob": "373c47a7a400095df0b2916188384e584b6869f2",
+      "reason": "Targeted October 19 review: privacy disclosures use larger body text and sentence-case headings; local-only recording, export, retention, and backup boundaries are unchanged."
+    },
+    {
+      "path": "apps/ios/App/Sources/AppSession.swift",
+      "guides": [
+        "privacy-and-deletion",
+        "backup-and-restore"
+      ],
+      "disposition": "reviewed",
+      "blob": "1fee57694ffd62fb1bb600df20c350ce835ed80d"
+    },
+    {
+      "path": "apps/ios/App/Sources/VoiceWorkProposal.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "8e978e38aeed26cac49681ee77085c6b6a85f6fa"
+    },
+    {
+      "path": "apps/ios/App/Sources/VoiceWorkView.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "53d757f30baf124b1fc7926c49ff895796b46be8"
+    },
+    {
+      "path": "apps/ios/App/Sources/LocalVoiceCapture.swift",
+      "guides": [
+        "recording-work",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "bf72fc5ad2b65f6701a63af1e1990c144dd8a2e7"
+    },
+    {
+      "path": "apps/ios/App/Sources/BackupEncryption.swift",
+      "guides": [
+        "backup-and-restore",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "0527d3d290cde06ef6745147be6a1493c94a73e4"
+    },
+    {
+      "path": "apps/ios/App/Sources/BackupIO.swift",
+      "guides": [
+        "backup-and-restore",
+        "privacy-and-deletion"
+      ],
+      "disposition": "reviewed",
+      "blob": "94600b9ae1eed91ea6b4e5295d20627ed78cdde5"
+    },
+    {
+      "path": "apps/ios/App/Sources/CalculationRevisionPolicy.swift",
+      "guides": [
+        "expected-pay",
+        "audit-results"
+      ],
+      "disposition": "reviewed",
+      "blob": "a8de139d529f965040e8eb0c858ca8bfdda40867",
+      "reason": "Targeted October18 exact-base review: checked mapped guides; documented candidate premium-only precision, explicit active re-review and preserved earlier recorded comparisons. Weekly safeguards and existing intake/period steps remain applicable. Native runtime, migration and PDF acceptance remain pending; not a release approval."
+    },
+    {
+      "path": "apps/ios/App/Sources/AppStateValidation.swift",
+      "guides": [
+        "expected-pay",
+        "audit-results"
+      ],
+      "disposition": "reviewed-no-guide-change",
+      "blob": "007921c6d0e9004a822474e8541972d93edd4117",
+      "reason": "Targeted October 19 review: imported follow-ups now reject unknown or cross-revision comparison references; guide-described worker steps and audit meanings are unchanged."
+    },
+    {
+      "path": "apps/ios/App/Sources/AuditAssessment.swift",
+      "guides": [
+        "expected-pay",
+        "audit-results"
+      ],
+      "disposition": "reviewed",
+      "blob": "96f675c8f90b8f5c90b3dcea5cc72aefc2eecdc1",
+      "reason": "Targeted October18 exact-base review: checked mapped guides; documented candidate premium-only precision, explicit active re-review and preserved earlier recorded comparisons. Weekly safeguards and existing intake/period steps remain applicable. Native runtime, migration and PDF acceptance remain pending; not a release approval."
+    },
+    {
+      "path": "apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WeeklyRecordedWork.swift",
+      "guides": [
+        "pay-rules",
+        "supported-rules"
+      ],
+      "disposition": "reviewed",
+      "blob": "0e830fc714f3ad71c20f713d8b76e61aa8531798",
+      "reason": "New explicit-boundary collector: clips exact seconds/breaks/dated rates and refuses relevant scope/overlap. Native acceptance remains pending."
+    },
+    {
+      "path": "apps/ios/App/Sources/CrewRulesView.swift",
+      "guides": [
+        "crew-rule-drafts"
+      ],
+      "disposition": "reviewed",
+      "blob": "613c6722ccbed8ec26fc130d9a5432b8b3393b2e",
+      "reason": "Targeted October18 native Files candidate review: selected-parameter preview, default amount omission, explicit own values/rights/applicability, adjacent combined feedback and final future-only save. Light Files journey passed; expanded current acceptance is tracked separately. Not source/legal/release approval."
+    },
+    {
+      "path": "apps/ios/App/Sources/PaycheckResolutionView.swift",
+      "guides": [
+        "audit-results",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "314c938b1b7e179116a1ccaeeee657c7c843a068"
+    },
+    {
+      "path": "apps/ios/App/Sources/PaycheckResolution.swift",
+      "guides": [
+        "audit-results",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "f477560249d46f2df2b723b16ced725b1fc05430"
+    },
+    {
+      "path": "apps/ios/App/Sources/AppState.swift",
+      "guides": [
+        "backup-and-restore",
+        "audit-results",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "3c4a1599f0c3fb392e302f2906fe90ec9800212d"
+    },
+    {
+      "path": "apps/ios/App/Sources/AppModel.swift",
+      "guides": [
+        "audit-results",
+        "evidence-and-reports"
+      ],
+      "disposition": "reviewed",
+      "blob": "297de4dd98a7067de2d57f5eadeaa785316630fe"
     }
   ]
 }

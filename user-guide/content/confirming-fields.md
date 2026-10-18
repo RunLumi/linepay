@@ -16,6 +16,12 @@ The period dates must match the selected work period. Use the paycheck’s **cur
 
 The compare action stays unavailable until the dates and gross pay are confirmed. Editing a previously confirmed value removes its confirmation; confirm it again after correcting it.
 
+## Read the OCR evidence
+
+For a machine-read gross amount, **Original OCR reading**, **Source page**, and **Text recognition confidence** describe what was extracted. The score estimates text recognition; it does not verify the paycheck value or any pay rule. A high score still requires confirmation, and a corrected amount does not change the recorded original reading.
+
+Expand **How the dates were read** to inspect date suggestions. Low-confidence dates show a warning. In optional field review, the same evidence appears next to the source excerpt. Conflicting rows or ambiguous current/YTD columns can have **No safe suggestion**; enter and confirm the actual current-period value from the original.
+
 ## Inspect the original when available
 
 In a field’s review screen, an OCR suggestion can show the source excerpt and **View original field, page …**. Without a mapped region, use **View original paystub**. Compare the number with its label and column, not just nearby text.

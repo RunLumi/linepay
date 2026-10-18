@@ -193,7 +193,7 @@ struct ScreenContractTests {
             try text(PayLedgerView(model: model, subscriptionStore: commerce())).contains(
                 "Review or correct paycheck"))
         let detail = AuditDetailView(model: model, context: try #require(model.periodContext()))
-        #expect(try text(detail).contains("Work or rules changed"))
+        #expect(try text(detail).contains("Work, rules or calculation changed"))
         #expect(model.currentPaystub?.evidence == original && original != nil)
     }
 

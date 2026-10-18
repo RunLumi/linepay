@@ -69,3 +69,13 @@ EX-14 is not a rule that every amount labeled overtime is creditable. If the sup
 ## Turning examples into tests
 
 Each implemented vector records its EX ID, named input variant, test path, and the candidate SHA/result. Add just-before/at/after thresholds and contrary inputs where relevant. A mismatch requires investigating applicability, facts, and rounding before changing the expected value. Never edit a fixture merely to agree with a buggy implementation.
+
+
+## Weekly v2 synthetic correction
+
+EX-35 assumes a complete48-hour week with2400 straight-time wages and240 of confirmed non-overtime
+work premium that has no statutory overtime credit: includable2640, regular rate55, extra premium
+220 and cash2860. An unknown classification requires review. The historical v1 software instead
+returned2840; that saved receipt remains preserved, not promoted as a correct expectation. See
+[the actual old-code fixture](../../../shared/contracts/weekly/README.md) and
+[the v2 boundary](../../adr/0024-weekly-review-admission-and-exact-boundaries.md).

@@ -37,7 +37,7 @@ If the same period has an unfinished review, choose **Resume saved review**. Unf
 
 Only one paycheck review draft is active at a time. When it belongs to another period, resume it from that period, or explicitly choose **Discard the other unfinished review**. Confirmed audits remain; an original used only by the discarded draft can be removed or queued for cleanup.
 
-To correct a paycheck already saved, use **Correct existing facts, keep original** where offered. This changes reviewed values without requiring a new scan.
+In the v2 candidate, a message about changed paycheck comparison safeguards (weekly mapping or premium-only precision) asks for a new review while retaining the earlier check. Native interaction/migration acceptance remains pending. To correct a paycheck already saved, use **Correct existing facts, keep original** where offered. This changes reviewed values without requiring a new scan.
 
 ## What happens next
 

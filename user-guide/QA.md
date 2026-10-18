@@ -55,3 +55,54 @@ Cloudflare Pages deployment for that commit, inspect the deployed URL and header
 then append the new production deployment ID and response status here or in the PR.
 
 GitHub Pages remains disabled because the current private-repository plan does not support it. Cloudflare Git integration is the selected host; future content changes become public only after the automatic production build succeeds.
+
+
+## October17,2026 local v2 candidate check
+
+The candidate now builds with workspace-extracted official Hugo0.165.0 (verified package checksum;
+no installer/global installation). `scripts/check.sh` passed both `/` and `/linepay/`:24 HTML pages,
+21 search entries, internal fragments/assets, deterministic search,58 source reviews and4 retained
+screenshot-provenance checks. Support copy now distinguishes optional v2 backup protection from
+unprotected copies and says never to send a backup password. This is a local candidate, not deployment.
+
+The real Chromium smoke run first failed the old no-JavaScript browse-count assertion of20; the
+new benefits page makes the current count21. Corrected that specific inventory expectation, added
+benefits/support pages in each viewport, asserted the new password guidance, and remove stale success
+receipts before each run. Final **21 page/configuration checks passed**, with desktop/mobile/small-dark
+overflow checks, mobile navigation, search, persisted dark preference, no-JS reading, keyboard skip
+link and print layout. Synthetic artifacts: `.qa/browser/`; log
+`/private/tmp/linepay-v2-crew-guide-browser-final.log`. No network success response was mocked.
+
+Native crew-file source and SDK compilation do not verify the actual iOS/Files workflow. Its new
+instructions remain internal until native App tests, Simulator/physical provider transfer and visual/
+accessibility acceptance. This paragraph does not revise the historical September deployment receipts.
+
+
+## October17 weekly-review candidate guidance
+
+Updated pay-rules/supported-rules with a development-preview label, fixed168-hour employer-boundary
+review, explicit remuneration/credit classification and the fact that the review is unsaved/separate
+from Pay. Source freshness now covers59 mapped files. Root/project builds remain24 HTML pages and
+21 search entries each. This is candidate guidance; native interaction and accessibility acceptance
+is pending and no new native screenshot was invented.
+
+Expanded actual Chromium checks to both weekly guidance pages in desktop/mobile/small-dark layouts.
+The first new assertion differed only on Hugo's typographic apostrophe; normalize that character
+before asserting the same visible statement. Final **27 page/configuration checks passed**, with
+navigation/search/no-JS/keyboard/print controls, log
+`/private/tmp/linepay-v2-weekly-guide-browser-final.log`. Source/policy text and guide rendering do not
+establish native App/weekly-to-paycheck mapping or public release.
+
+
+## October 17 assessment-v4 candidate guidance
+
+Candidate audit/history/report/expected-pay/import guidance distinguishes active re-review from
+preserved earlier weekly comparisons. View recorded comparison is described only where a saved
+revision exists. No new native screenshot or successful native PDF/migration receipt is claimed.
+
+Pinned Hugo root/project checks pass24 HTML pages/21 search entries each,59 targeted source
+reviews and4 existing screenshot-provenance checks. Actual local Chromium now checks the changed
+pages as well: **42 page/configuration checks passed**, including mobile/dark overflow, real
+navigation/search, no-JS, keyboard skip and print controls. Log
+`/private/tmp/linepay-v2-assessment-guide-browser.log`; no publication occurred. Source/SDK checks
+and guide rendering do not establish native App/VoiceOver/PDF or verified weekly allocation.

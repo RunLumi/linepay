@@ -14,22 +14,31 @@ struct ReconciliationReportExporter {
         paystub: ConfirmedPaystub?,
         reconciliation: ReconciliationResult?,
         findings: [AuditFinding],
-        privacy: ReportPrivacyOptions = ReportPrivacyOptions()
+        resolutionEvents: [ResolutionEvent] = [],
+        privacy: ReportPrivacyOptions = ReportPrivacyOptions(),
+        requiresCalculationReview: Bool = false, requiresAssessmentReview: Bool = false
     ) throws -> URL {
         let created = Date()
         let url = try TemporaryExports.destination(name: "LinePaycheck-audit", extension: "pdf")
         let pageBounds = CGRect(x: 0, y: 0, width: 612, height: 792)
         let renderer = UIGraphicsPDFRenderer(bounds: pageBounds)
         let assessment = paystub?.assessment
-        let isCurrent = AuditAssessment.evaluate(
-            calculation: calculation, paystub: paystub, reconciliation: reconciliation
-        ).isCurrent
+        let presentation = AuditAssessment.evaluate(
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation,
+            requiresCalculationReview: requiresCalculationReview,
+            requiresAssessmentReview: requiresAssessmentReview, agreement: agreement)
+        let isCurrent = presentation.isCurrent
 
         let data = renderer.pdfData { context in
             var writer = PDFTextWriter(context: context, pageBounds: pageBounds)
             writer.beginPage()
             writer.title("LinePaycheck paycheck reconciliation")
             writer.text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
+            if calculation.provenance?.engine != PayCalculator.currentEngine {
+                writer.caption(
+                    "Saved calculation: amounts remain as recorded. A new paycheck review uses current precision."
+                )
+            }
             writer.caption("Payroll timezone: \(timeZoneIdentifier)")
             writer.caption("Report created: \(ISO8601DateFormatter().string(from: created))")
 
@@ -54,7 +63,10 @@ struct ReconciliationReportExporter {
                 writer.row("Confirmed paystub gross", LinePayFormat.money(paystub.grossPay))
                 writer.row("Gross basis", paystub.confirmation?.grossBasis.title ?? "Not recorded")
                 if isCurrent, let assessment {
-                    writer.row("Verdict", AuditDisplayStatus.assessment(assessment).title)
+                    if let note = presentation.legacyScopeNote { writer.caption(note) }
+                    writer.row(
+                        presentation.legacyScopeNote == nil ? "Verdict" : "Recorded verdict",
+                        AuditDisplayStatus.assessment(assessment).title)
                     if let comparable = assessment.expectedGross {
                         writer.row("Expected on the same basis", LinePayFormat.money(comparable))
                     }
@@ -65,12 +77,39 @@ struct ReconciliationReportExporter {
                     for note in assessment.scopeNotes { writer.caption(note) }
                     writer.caption("Comparison engine version: \(assessment.engineVersion)")
                 } else {
+                    writer.text(presentation.explanation)
                     writer.text(
                         "Needs review. This audit has no current evidence-aware comparison. Do not treat the recorded gross difference as a verified shortfall."
                     )
                 }
             } else {
                 writer.text("Awaiting paycheck. No paid amount has been confirmed.")
+            }
+
+            if privacy.includeResolutionHistory, !resolutionEvents.isEmpty {
+                writer.section("Worker-recorded follow-up")
+                writer.caption(
+                    "These notes do not change the calculation or establish money owed or recovered."
+                )
+                for event in resolutionEvents {
+                    writer.text(event.status.title)
+                    writer.caption("Paycheck revision: \(event.paystubID.uuidString)")
+                    if let findingID = event.findingID {
+                        if let finding = findings.first(where: { $0.id == findingID }) {
+                            writer.caption("Related comparison item: \(finding.title)")
+                        } else {
+                            writer.caption(
+                                "Related comparison item is unavailable in this report copy.")
+                        }
+                    } else {
+                        writer.caption("Follow-up scope: whole paycheck comparison.")
+                    }
+                    writer.caption(
+                        ISO8601DateFormatter().string(
+                            from: Date(
+                                timeIntervalSince1970: TimeInterval(event.recordedEpochSeconds))))
+                    writer.text(event.note)
+                }
             }
 
             writer.section(ComparisonScopeDisclosure.title)
@@ -84,11 +123,10 @@ struct ReconciliationReportExporter {
                 writer.text(
                     "\(LinePayFormat.localDate(component.localDate))  \(componentTitle(component))  \(LinePayFormat.money(component.amount))"
                 )
-                if let hours = component.hours {
+                if let hours = component.hours, let multiplier = component.multiplier {
                     let rate = component.baseRate ?? agreement.hourlyRate
-                    let multiplier = component.multiplier ?? 1
                     writer.caption(
-                        "\(LinePayFormat.hours(hours)) \(component.category == .calloutGuarantee ? "paid-hour equivalent" : "hours") x \(LinePayFormat.money(rate)) x \(LinePayFormat.decimal(multiplier))"
+                        "\(LinePayFormat.workDuration(hours)) \(component.category == .calloutGuarantee ? "paid equivalent" : "worked") at \(LinePayFormat.money(rate))/h × \(LinePayFormat.decimal(multiplier))"
                     )
                 }
                 writer.caption(component.explanation)
@@ -113,6 +151,9 @@ struct ReconciliationReportExporter {
                         if privacy.includeSourceDetails { writer.caption(suggestion.sourceText) }
                     } else {
                         writer.caption("Source: value entered and confirmed by the worker.")
+                    }
+                    if let finding = findings.first(where: { $0.id == comparison.id }) {
+                        writer.caption(finding.explanation)
                     }
                 }
             }
@@ -139,6 +180,15 @@ struct ReconciliationReportExporter {
                             "\(source.ruleKey?.title ?? "Agreement-level source"): \(source.title)")
                         if !source.url.isEmpty { writer.caption(source.url) }
                         if let section = source.section { writer.caption(section) }
+                        if let page = source.documentPage {
+                            writer.caption("Physical PDF page: \(page + 1)")
+                        }
+                        if let digest = source.documentSHA256 {
+                            writer.caption("Recorded PDF fingerprint: \(digest)")
+                        }
+                        if let quote = source.quotedText {
+                            writer.caption("Recorded agreement excerpt: \(quote)")
+                        }
                     }
                 } else if !agreement.sources.isEmpty {
                     writer.caption(
@@ -182,7 +232,7 @@ struct ReconciliationReportExporter {
 /// TextKit supplies real line wrapping. Each line is paginated independently, so a long note or
 /// URL can span pages rather than being clipped or shrinking to unreadable text.
 @MainActor
-private struct PDFTextWriter {
+struct PDFTextWriter {
     let context: UIGraphicsPDFRendererContext
     let pageBounds: CGRect
     private var y: CGFloat = 48

@@ -43,7 +43,7 @@ The absence of a backend also removes a large class of operational and security 
                        │
         ┌──────────────┼──────────────┐
         │              │              │
-     SwiftUI        SwiftData      StoreKit 2
+     SwiftUI     versioned files   StoreKit 2
         │              │              │
         │         local history     subscription
         │              │              │
@@ -102,7 +102,7 @@ Do not create a backend only to mirror App Store subscription state unless a fut
 
 ## Local persistence
 
-When persistence is introduced, store locally:
+The current native implementation uses `VersionedLocalStateStore` with atomic versioned JSON state and separate retained evidence files, rather than SwiftData. The v2 candidate uses pay-data schema 10; historical schemas 1–9 remain readable without silently repricing records. Store locally:
 
 - pay profiles and immutable rule snapshots;
 - work intervals;
@@ -113,9 +113,15 @@ When persistence is introduced, store locally:
 - reconciliation results;
 - preferences.
 
-Persistence models remain adapters. The deterministic domain model remains independent from SwiftData.
+Persistence remains an adapter. The deterministic domain model remains independent from file storage and platform frameworks.
 
 Historical results must retain the exact rule version and source facts needed to reproduce what the worker saw at the time.
+
+## Device-local observations in v2
+
+The owner retained the no-account/no-collector boundary for all v2 stages. A separate versioned local activity file records only closed milestones, counts and UTC usage days. It supports opt-out, explicit activity-only clearing and previewed manual diagnostic export through Files. No arbitrary attributes or financial/document content enter the recording API. Internal hashed deduplication identities stay local and are excluded from export; usage patterns are still personal, not anonymous.
+
+The ledger is excluded from pay backups and is not backfilled by a restore. Diagnostic failures cannot roll back committed pay data. Neither first observed open nor verified commerce observations establish App Store installs, new subscribers or global cohort conversion. [ADR 0013](../adr/0013-local-activity-and-diagnostic-export.md) owns retention, failure and deletion details.
 
 ## Paystub processing
 

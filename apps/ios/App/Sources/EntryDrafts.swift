@@ -75,11 +75,16 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
     var additionalWeekdayPremiums: [WeekdayPremiumDraft] = []
     var additionalSources: [RuleSourceDraft] = []
     var sourceRuleKey: PayRuleKey?
+    var sourceDocumentID: UUID?
+    var sourceDocumentSHA256: String?
+    var sourceDocumentPage: Int?
+    var sourceQuotedText: String?
     var unsupportedRuleNotes = ""
     var changeEffectiveDate: Date?
     var editScope: RuleEditScope = .futurePeriods
     var setupStep = 0
     var roundingRule: MoneyRoundingRule?
+    var crewRuleAdoption: CrewRuleAdoption?
     var sourceTitle = ""
     var sourceURL = ""
     var sourceSection = ""
@@ -112,6 +117,10 @@ struct PayProfileDraft: Codable, Hashable, Sendable {
         }
         additionalSources = agreement.sources.dropFirst().map { RuleSourceDraft(source: $0) }
         sourceRuleKey = agreement.sources.first?.ruleKey
+        sourceDocumentID = agreement.sources.first?.documentID
+        sourceDocumentSHA256 = agreement.sources.first?.documentSHA256
+        sourceDocumentPage = agreement.sources.first?.documentPage
+        sourceQuotedText = agreement.sources.first?.quotedText
         name = profile.name
         hourlyRate = LinePayFormat.entry(agreement.hourlyRate.amount)
         currencyCode = agreement.hourlyRate.currencyCode
@@ -289,12 +298,20 @@ struct RuleSourceDraft: Identifiable, Codable, Hashable, Sendable {
     var url = ""
     var section = ""
     var ruleKey: PayRuleKey?
+    var documentID: UUID?
+    var documentSHA256: String?
+    var documentPage: Int?
+    var quotedText: String?
     init() {}
     init(source: AgreementSource) {
         title = source.title
         url = source.url
         section = source.section ?? ""
         ruleKey = source.ruleKey
+        documentID = source.documentID
+        documentSHA256 = source.documentSHA256
+        documentPage = source.documentPage
+        quotedText = source.quotedText
     }
 }
 

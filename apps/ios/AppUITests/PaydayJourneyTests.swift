@@ -85,7 +85,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["pay.check-paycheck"].waitForExistence(timeout: 10))
     }
 
-    func testOnboardingEndsWithDismissibleTrialOffer() {
+    func testOnboardingEndsWithDismissibleTrialOffer() throws {
         launch(scenario: "profile", commerce: true, store: "trial")
         tap("activation.skip-work")
         XCTAssertTrue(app.staticTexts["paywall.trial-headline"].waitForExistence(timeout: 10))
@@ -117,7 +117,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(addWork.waitForExistence(timeout: 10))
     }
 
-    func testTrialOfferKeepsTermsAndFreeExitReachableAtLargestText() {
+    func testTrialOfferKeepsTermsAndFreeExitReachableAtLargestText() throws {
         launch(scenario: "work", commerce: true, store: "trial", largeText: true)
         tab("Settings")
         tap("settings.view-pro")
@@ -132,7 +132,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["settings.view-pro"].firstMatch.waitForExistence(timeout: 10))
     }
 
-    func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() {
+    func testUnresolvedPeriodClosesAndNextPeriodRemainsIndependent() throws {
         launch(scenario: "unresolved")
         tab("Pay")
         let finish = app.buttons["pay.finish-period"]
@@ -176,7 +176,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Calculation needs review"].waitForExistence(timeout: 10))
     }
 
-    func testAuditVerdictsAndEvidenceRoutes() {
+    func testAuditVerdictsAndEvidenceRoutes() throws {
         for (scenario, verdict) in [
             ("matches", "Gross total matches"),
             ("shortfall", "Possible shortfall"),
@@ -195,6 +195,60 @@ final class PaydayJourneyTests: XCTestCase {
             }
             app.terminate()
         }
+    }
+
+    func testPaycheckFollowUpPersistsWithoutChangingVerdict() throws {
+        followUpJourney(largeText: false)
+    }
+
+    func testPaycheckFollowUpAtLargestText() throws {
+        followUpJourney(largeText: true)
+    }
+
+    private func followUpJourney(largeText: Bool) {
+        launch(scenario: "shortfall", largeText: largeText)
+        tab("Pay")
+        tap("View paycheck result")
+        XCTAssertTrue(
+            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+        tap("audit.follow-up")
+        let findingPicker = app.descendants(matching: .any)
+            .matching(identifier: "resolution.finding").firstMatch
+        scrollTo(findingPicker)
+        XCTAssertTrue(findingPicker.waitForExistence(timeout: 10))
+        findingPicker.tap()
+        let grossOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Gross pay")).firstMatch
+        XCTAssertTrue(grossOption.waitForExistence(timeout: 10))
+        grossOption.tap()
+        let note = app.textFields["resolution.note"].firstMatch
+        scrollTo(note)
+        XCTAssertTrue(note.waitForExistence(timeout: 10))
+        note.tap()
+        note.typeText("Synthetic payroll question reviewed")
+        dismissKeyboard()
+        tap("resolution.save")
+        let saved = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
+        scrollTo(saved)
+        XCTAssertTrue(saved.waitForExistence(timeout: 10))
+        let scope = app.staticTexts["resolution.history-scope"].firstMatch
+        scrollTo(scope)
+        XCTAssertEqual(scope.label, "Comparison item: Gross pay")
+        capture(largeText ? "v2-follow-up-largest-text" : "v2-follow-up")
+        app.terminate()
+        launch(reset: false, scenario: "shortfall", largeText: largeText)
+        tab("Pay")
+        tap("View paycheck result")
+        XCTAssertTrue(
+            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+        tap("audit.follow-up")
+        let restored = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
+        scrollTo(restored)
+        XCTAssertTrue(restored.waitForExistence(timeout: 10))
+        let restoredScope = app.staticTexts["resolution.history-scope"].firstMatch
+        scrollTo(restoredScope)
+        XCTAssertEqual(restoredScope.label, "Comparison item: Gross pay")
+        capture("v2-follow-up-restored")
     }
 
     /// Captures the App Store set from the `store-week` sample paycheck
@@ -247,7 +301,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("store-08-history")
     }
 
-    func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() {
+    func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() throws {
         launch(scenario: "matches")
         tab("Pay")
         tap("pay.open-audit")
@@ -262,7 +316,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(value.value as? String, "550")
     }
 
-    func testCancellingWorkSheetsNeverLeavesABlockingDraft() {
+    func testCancellingWorkSheetsNeverLeavesABlockingDraft() throws {
         launch(scenario: "work")
         // Untouched repeat: Cancel leaves nothing behind.
         tap("today.repeat-shift")
@@ -300,7 +354,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.buttons["today.repeat-shift"].firstMatch.isEnabled)
     }
 
-    func testDraftRecoveryAndUnsupportedRulePresentation() {
+    func testDraftRecoveryAndUnsupportedRulePresentation() throws {
         launch(scenario: "work")
         tap("today.add-work")
         // Multiline TextField uses a different accessibility type across OS releases.
@@ -322,7 +376,7 @@ final class PaydayJourneyTests: XCTestCase {
         capture("unsupported-rule-settings")
     }
 
-    func testLargeTextDarkSettingsAndRecovery() {
+    func testLargeTextDarkSettingsAndRecovery() throws {
         XCUIDevice.shared.appearance = .dark
         launch(scenario: "review", largeText: true)
         capture("large-dark-today")
@@ -349,7 +403,7 @@ final class PaydayJourneyTests: XCTestCase {
             app.buttons["recovery.retry"].exists, "Unreadable data must not silently reset")
     }
 
-    func testEditedWorkDraftResumesItsOriginalEntry() {
+    func testEditedWorkDraftResumesItsOriginalEntry() throws {
         launch(scenario: "work")
         tap("today.edit-work")
         let note = app.descendants(matching: .any).matching(identifier: "work.note").firstMatch
@@ -374,7 +428,133 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(app.buttons["today.add-work"].label, "Add work")
     }
 
-    func testInterruptedPaycheckReviewRetainsSourceAndCorrection() {
+    func testAgreementImportCanStartBeforeEnteringARate() throws {
+        launch()
+        tap("onboarding.import-agreement")
+        XCTAssertTrue(app.buttons["agreements.choose-pdf"].waitForExistence(timeout: 10))
+        capture("v2-agreement-first-run")
+    }
+
+    func testAgreementReviewKeepsSourceAndRequiresExplicitActivation() throws {
+        launch(scenario: "agreement")
+        openAgreementReview()
+        tap("agreement.candidate.baseRate")
+        tap("agreement.candidate-source")
+        XCTAssertTrue(app.staticTexts["agreement.original-checked"].waitForExistence(timeout: 15))
+        capture("v2-agreement-original")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let rate = app.textFields["agreement.candidate-value"].firstMatch
+        scrollTo(rate)
+        XCTAssertTrue(rate.waitForExistence(timeout: 10))
+        rate.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        rate.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5) + "60.50")
+        dismissKeyboard()
+        tap("agreement.decision.confirmed")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        for kind in ["dailyOvertime", "effectiveStart", "mealPremium"] {
+            tap("agreement.candidate.\(kind)")
+            tap(
+                kind == "mealPremium"
+                    ? "agreement.decision.unresolved" : "agreement.decision.confirmed")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        for id in [
+            "agreement.confirm-applicability", "agreement.confirm-currency",
+            "agreement.confirm-no-end", "agreement.confirm-dates",
+            "agreement.confirm-tier-replacement",
+        ] {
+            let control = app.switches[id].firstMatch
+            scrollTo(control)
+            XCTAssertTrue(control.waitForExistence(timeout: 10))
+            // SwiftUI exposes the whole labelled row; the native switch ends before its
+            // trailing padding. Target the switch, rather than that padding or the label.
+            control.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+            XCTAssertEqual(control.value as? String, "1", "Confirmation did not turn on: \(id)")
+        }
+        capture("v2-agreement-reviewed")
+        tap("agreement.prepare-setup")
+        let preparedRate = app.textFields["pay-profile.hourly-rate"].firstMatch
+        XCTAssertTrue(preparedRate.waitForExistence(timeout: 10))
+        XCTAssertEqual(preparedRate.value as? String, "60.50")
+        capture("v2-agreement-prepared-draft")
+        advanceSetupStep(to: "Step 2 of 4")
+        advanceSetupStep(to: "Step 3 of 4")
+        advanceSetupStep(to: "Step 4 of 4")
+        tapSetupSave()
+        tap("pay-profile.confirm-change")
+        tab("Today")
+        XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.waitForExistence(timeout: 10))
+        tab("Pay")
+        tap("pay.finish-period")
+        tap("period.confirm-close")
+        tab("Today")
+        tap("today.add-work")
+        tap("work.save")
+        XCTAssertTrue(app.staticTexts["$484.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("v2-agreement-confirmed-next-period")
+    }
+
+    func testAgreementCandidateAtLargestText() throws {
+        launch(scenario: "agreement", largeText: true)
+        openAgreementReview()
+        tap("agreement.candidate.baseRate")
+        tap("agreement.decision.unresolved")
+        capture("v2-agreement-candidate-largest-text")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.terminate()
+        launch(reset: false, scenario: "agreement", largeText: true)
+        openAgreementReview()
+        XCTAssertTrue(
+            app.buttons["agreement.candidate.baseRate"].label.contains("Keep as unresolved"))
+    }
+
+    private func openAgreementReview() {
+        tab("Settings")
+        tap("settings.agreements")
+        tap("agreements.document")
+        let base = app.buttons["agreement.candidate.baseRate"]
+        if !base.waitForExistence(timeout: 15) || !base.isHittable { scrollTo(base) }
+        XCTAssertTrue(base.exists)
+    }
+
+    func testOCRConfidenceStaysAnUnconfirmedReadingWithSourceEvidence() throws {
+        ocrConfidenceJourney(largeText: false)
+    }
+
+    func testOCRConfidenceAtLargestText() throws {
+        ocrConfidenceJourney(largeText: true)
+    }
+
+    private func ocrConfidenceJourney(largeText: Bool) {
+        launch(scenario: "ocr-confidence", largeText: largeText)
+        tab("Pay")
+        tap("pay.check-paycheck")
+        tap("paystub.resume")
+        let receipt = app.descendants(matching: .any)["paystub.ocr-provenance"].firstMatch
+        scrollTo(receipt)
+        XCTAssertTrue(receipt.waitForExistence(timeout: 10))
+        let score = app.descendants(matching: .any)["paystub.ocr-confidence"].firstMatch
+        scrollTo(score)
+        XCTAssertTrue(score.waitForExistence(timeout: 10))
+        scrollClearOfPinnedAction(score, pinned: app.buttons["paystub.audit"])
+        XCTAssertTrue(score.label.contains("72%"), "Recognition score label: \(score.label)")
+        capture("v2-ocr-confidence")
+        tapAbovePinnedAction("paystub.view-original", pinned: "paystub.audit")
+        XCTAssertTrue(app.navigationBars["Paystub evidence"].waitForExistence(timeout: 10))
+        let crop = app.descendants(matching: .any)["evidence.source-crop"].firstMatch
+        XCTAssertTrue(
+            crop.waitForExistence(timeout: 15), "The original field crop must actually load")
+        XCTAssertTrue(app.buttons["evidence.open-original"].exists)
+        XCTAssertTrue(app.staticTexts["Recognized source text"].exists)
+        capture("v2-ocr-original-field")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let audit = app.buttons["paystub.audit"].firstMatch
+        scrollTo(audit)
+        XCTAssertTrue(audit.waitForExistence(timeout: 10))
+        XCTAssertFalse(audit.isEnabled, "An OCR score cannot confirm the dates or gross value")
+    }
+
+    func testInterruptedPaycheckReviewRetainsSourceAndCorrection() throws {
         launch(scenario: "intake")
         tab("Pay")
         tap("pay.check-paycheck")

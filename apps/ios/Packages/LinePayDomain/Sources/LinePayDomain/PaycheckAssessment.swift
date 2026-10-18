@@ -101,6 +101,19 @@ public struct PaycheckAssessment: Codable, Hashable, Sendable {
 }
 
 public struct PaycheckAssessor: Sendable {
+    public static let currentEngineVersion = 5
+    public static let exactBaseReviewReason =
+        "This saved calculation lacks an exact base-time trace for premium-only earnings. Recalculate from the original work and rules before interpreting those line differences."
+    public static let weeklyMappingReviewReason =
+        "Complete workweek coverage and any additional weekly premium are not mapped into this paycheck comparison. A pay-period hour total or a separate weekly result does not establish that mapping. Review the complete workweek before relying on the gross difference."
+
+    public static func requiresWeeklyMappingReview(
+        agreement: AgreementSnapshot?, calculation: CalculationResult?
+    ) -> Bool {
+        agreement?.weeklyOvertime != nil || calculation?.weeklyRegularRate != nil
+            || calculation?.agreementSnapshots?.contains(where: { $0.weeklyOvertime != nil })
+                == true
+    }
     public init() {}
 
     /// Records paycheck facts without inventing an expected amount when the saved work
@@ -117,7 +130,7 @@ public struct PaycheckAssessor: Sendable {
             facts.hours.values.allSatisfy({ !$0.isNaN && $0 >= 0 })
         else { throw PaycheckAssessmentError.invalidFact }
         return PaycheckAssessment(
-            engineVersion: 3, verdict: .notComparable, scope: .grossOnly,
+            engineVersion: Self.currentEngineVersion, verdict: .notComparable, scope: .grossOnly,
             expectedGross: nil, paidGross: facts.grossPay, difference: nil,
             comparisons: [],
             reviewReasons: [reason],
@@ -128,6 +141,33 @@ public struct PaycheckAssessor: Sendable {
 
     public func assess(
         calculation: CalculationResult, agreement: AgreementSnapshot, facts: PaycheckFacts
+    ) throws -> PaycheckAssessment {
+        try assess(
+            calculation: calculation, agreement: agreement, facts: facts,
+            producerVersion: Self.currentEngineVersion)
+    }
+
+    /// Verify a recorded comparison using its original facts/snapshot and known producer.
+    /// This does not create a new current assessment or authenticate the source record.
+    public func reproduceRecorded(
+        _ recorded: PaycheckAssessment, calculation: CalculationResult,
+        agreement: AgreementSnapshot, facts: PaycheckFacts
+    ) throws -> PaycheckAssessment {
+        guard [3, 4, 5].contains(recorded.engineVersion) else {
+            throw PaycheckAssessmentError.unsupportedRecordedVersion(recorded.engineVersion)
+        }
+        let reproduced = try assess(
+            calculation: calculation, agreement: agreement, facts: facts,
+            producerVersion: recorded.engineVersion)
+        guard reproduced == recorded else {
+            throw PaycheckAssessmentError.recordedComparisonMismatch
+        }
+        return reproduced
+    }
+
+    private func assess(
+        calculation: CalculationResult, agreement: AgreementSnapshot, facts: PaycheckFacts,
+        producerVersion: Int
     ) throws -> PaycheckAssessment {
         let currency = agreement.hourlyRate.currencyCode
         guard facts.grossPay.currencyCode == currency,
@@ -190,18 +230,22 @@ public struct PaycheckAssessor: Sendable {
             reasons.append(
                 "An agreement rule is not represented. The expected amount may be incomplete.")
         }
-        // The restricted weekly layer is a separate review (issue #67, review-only contract): it
-        // is never added to this expected amount. Once more than 40 hours are logged a workweek
-        // can carry additional weekly premium, so the result cannot read as a clean match.
-        if calculation.weeklyRegularRate == nil,
-            (calculation.agreementSnapshots ?? [agreement]).contains(where: {
-                $0.weeklyOvertime != nil
-            }),
-            wageComponents.compactMap(\.hours).reduce(0, +) > 40
-        {
-            reasons.append(
-                "Weekly overtime is turned on but is not included in this expected amount. Review each complete workweek before relying on this result."
-            )
+        // A short paycheck period can be part of an overtime workweek. The separate weekly
+        // reference has no verified paycheck mapping and cannot clear this review requirement.
+        if producerVersion == 3 {
+            // Frozen v3 scope semantics for explicit recorded-result verification only.
+            if calculation.weeklyRegularRate == nil,
+                (calculation.agreementSnapshots ?? [agreement]).contains(where: {
+                    $0.weeklyOvertime != nil
+                }),
+                wageComponents.compactMap(\.hours).reduce(0, +) > 40
+            {
+                reasons.append(
+                    "Weekly overtime is turned on but is not included in this expected amount. Review each complete workweek before relying on this result."
+                )
+            }
+        } else if Self.requiresWeeklyMappingReview(agreement: agreement, calculation: calculation) {
+            reasons.append(Self.weeklyMappingReviewReason)
         }
         if facts.hasUnreviewedFields {
             reasons.append(
@@ -223,6 +267,19 @@ public struct PaycheckAssessor: Sendable {
             facts.amounts.keys.contains(where: {
                 [.regularPay, .overtimePay, .doubleTimePay, .calloutPay].contains($0)
             }) || !facts.hours.isEmpty
+        let baseParts = wageComponents.filter {
+            $0.category == .workedHours || facts.guaranteeLayout == .includedInHourlyLines
+        }
+        let missingBaseTrace =
+            producerVersion >= 5 && facts.lineLayout == .basePlusPremium
+            && facts.amounts.keys.contains(where: {
+                [.regularPay, .overtimePay, .doubleTimePay].contains($0)
+            })
+            && baseParts.contains {
+                $0.baseTimeNumerator == nil || $0.baseTimeNumerator!.isNaN
+                    || $0.baseTimeNumerator! < 0
+            }
+        if missingBaseTrace { reasons.append(Self.exactBaseReviewReason) }
         let guaranteeMappingKnown = guarantees.isEmpty || facts.guaranteeLayout != .unconfirmed
         if hasHourlyFacts && !guaranteeMappingKnown {
             reasons.append(
@@ -255,13 +312,14 @@ public struct PaycheckAssessor: Sendable {
                     (facts.lineLayout == .basePlusPremium && field == .regularPay)
                         || ($0.multiplier ?? 1) == multiplier
                 }
-                if let paid = facts.amounts[field] {
+                if let paid = facts.amounts[field], !missingBaseTrace {
                     let expected: Decimal
                     if facts.lineLayout == .fullRateBuckets {
                         expected = selected.reduce(0) { $0 + $1.amount.amount }
                     } else {
-                        let base = normalizedBase(
-                            selected, calculation: calculation, agreement: agreement)
+                        let base = try normalizedBase(
+                            selected, calculation: calculation, agreement: agreement,
+                            producerVersion: producerVersion)
                         expected =
                             field == .regularPay
                             ? base
@@ -372,7 +430,7 @@ public struct PaycheckAssessor: Sendable {
             verdict = .matches
         }
         return PaycheckAssessment(
-            engineVersion: 3, verdict: verdict, scope: scope,
+            engineVersion: producerVersion, verdict: verdict, scope: scope,
             expectedGross: expectedGross, paidGross: facts.grossPay,
             difference: grossDifference.map { Money(amount: $0, currencyCode: currency) },
             comparisons: comparisons, reviewReasons: reasons, scopeNotes: notes
@@ -382,8 +440,40 @@ public struct PaycheckAssessor: Sendable {
     /// For a premium-only statement, split each rounded gross bucket into base and extra.
     /// Summing those bases and extras reconstructs the same gross, including cent allocation.
     private func normalizedBase(
-        _ selected: [PayComponent], calculation: CalculationResult, agreement: AgreementSnapshot
-    ) -> Decimal {
+        _ selected: [PayComponent], calculation: CalculationResult, agreement: AgreementSnapshot,
+        producerVersion: Int
+    ) throws -> Decimal {
+        if producerVersion >= 5 {
+            var groups: [PayComponentRounding.Key: Decimal] = [:]
+            var value = Decimal.zero
+            for part in selected {
+                guard let numerator = part.baseTimeNumerator, !numerator.isNaN, numerator >= 0
+                else {
+                    throw PaycheckAssessmentError.invalidFact
+                }
+                let snapshot =
+                    (calculation.agreementSnapshots ?? [agreement]).first {
+                        AgreementReference($0) == part.appliedAgreement
+                    } ?? agreement
+                if snapshot.rounding.scope == .legacySegments {
+                    value +=
+                        Money(amount: numerator / 3600, currencyCode: part.amount.currencyCode)
+                        .rounded(using: snapshot.rounding).amount
+                } else {
+                    let key = PayComponentRounding.Key(
+                        category: part.category, multiplier: part.multiplier,
+                        rule: snapshot.rounding, currency: part.amount.currencyCode)
+                    groups[key, default: 0] += numerator
+                }
+            }
+            for (key, numerator) in groups {
+                value +=
+                    Money(amount: numerator / 3600, currencyCode: key.currency).rounded(
+                        using: key.rule
+                    ).amount
+            }
+            return value
+        }
         var groups: [PayComponentRounding.Key: Decimal] = [:]
         var result = Decimal.zero
         for part in selected {
@@ -429,6 +519,8 @@ public struct PaycheckAssessor: Sendable {
 
 public enum PaycheckAssessmentError: Error, Equatable, Sendable {
     case currencyMismatch, invalidFact
+    case unsupportedRecordedVersion(Int)
+    case recordedComparisonMismatch
 }
 
 extension CalculationResult {

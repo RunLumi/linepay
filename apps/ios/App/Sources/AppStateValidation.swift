@@ -16,6 +16,40 @@ enum AppStateValidation {
             state.profile != nil || ids.isEmpty,
             state.schemaVersion == AppPersistentState.currentSchemaVersion
         else { throw invalid() }
+        try BenefitAuditValidation.validate(
+            records: state.benefitAudits ?? [], draft: state.benefitAuditDraft)
+        try AgreementImportValidation.validate(state.agreementDocuments ?? [])
+        try CrewRuleDraftBuilder.validate(state.crewRuleOrigins ?? [])
+        if let adoption = state.setupDraft?.crewRuleAdoption {
+            _ = try adoption.proposedAgreement(newAgreementID: UUID())
+        }
+        let events = state.resolutionEvents ?? []
+        guard events.count <= 10_000, Set(events.map(\.id)).count == events.count else {
+            throw invalid()
+        }
+        for event in events {
+            let paystubs: [ConfirmedPaystub]
+            if let active = state.activePeriod, active.id == event.periodID {
+                paystubs =
+                    [active.paystub].compactMap { $0 }
+                    + (active.auditRevisions ?? []).map(\.paystub)
+            } else if let period = state.history.first(where: { $0.id == event.periodID }) {
+                paystubs =
+                    [period.paystub].compactMap { $0 }
+                    + (period.auditRevisions ?? []).map(\.paystub)
+            } else {
+                throw invalid()
+            }
+            guard let paystub = paystubs.first(where: { $0.id == event.paystubID }),
+                !event.note.isEmpty,
+                event.note.count <= 4_000,
+                (-62_135_596_800...253_402_300_799).contains(event.recordedEpochSeconds)
+            else { throw invalid() }
+            if let findingID = event.findingID {
+                guard AuditFinding.contains(findingID, in: paystub)
+                else { throw invalid() }
+            }
+        }
         if let profile = state.profile {
             guard TimeZone(identifier: profile.timeZoneIdentifier) != nil else { throw invalid() }
             try validate(profile.agreement)
@@ -45,8 +79,9 @@ enum AppStateValidation {
                 state.history.contains(where: { $0.id == draft.periodID && $0.calculation == nil })
             else { throw invalid() }
         }
-        if let draft = state.paystubDraft, !ids.contains(draft.targetPeriodID ?? UUID()) {
-            throw invalid()
+        if let draft = state.paystubDraft {
+            guard ids.contains(draft.targetPeriodID ?? UUID()) else { throw invalid() }
+            try validate(suggestions: draft.suggestions)
         }
         let revisions =
             (state.activePeriod?.auditRevisions ?? [])
@@ -75,7 +110,7 @@ enum AppStateValidation {
                 try validate(calculation: calculation, agreement: period.agreement)
             } else {
                 guard let issue = period.calculationIssue, !issue.isEmpty,
-                    period.reconciliation == nil
+                    period.comparisonCalculation != nil || period.reconciliation == nil
                 else { throw invalid() }
             }
             for revision in period.workCorrections ?? [] {
@@ -87,7 +122,7 @@ enum AppStateValidation {
             if let paystub = period.paystub {
                 try validate(
                     paystub: paystub,
-                    calculation: period.reconciliation == nil ? nil : period.calculation,
+                    calculation: period.reconciliation == nil ? nil : period.comparisonCalculation,
                     agreement: period.agreement)
             }
         }
@@ -105,6 +140,19 @@ enum AppStateValidation {
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_ ."))
         return !value.isEmpty && value.count <= 150 && !value.contains("..")
             && value != "." && value.unicodeScalars.allSatisfy { allowed.contains($0) }
+    }
+
+    private static func validate(suggestions: [PaystubField: OCRFieldSuggestion]) throws {
+        for suggestion in suggestions.values {
+            let region = suggestion.region
+            guard suggestion.confidence.isFinite, (0...1).contains(suggestion.confidence),
+                region.page >= 0, region.page < 10_000,
+                [region.x, region.y, region.width, region.height].allSatisfy({
+                    $0.isFinite && (0...1).contains($0)
+                }),
+                region.x + region.width <= 1.000001, region.y + region.height <= 1.000001
+            else { throw invalid() }
+        }
     }
 
     private static func validate(calculation: CalculationResult, agreement: AgreementSnapshot)
@@ -126,6 +174,17 @@ enum AppStateValidation {
         ).rounded(using: agreement.rounding)
         guard sum == calculation.total else { throw invalid() }
         for component in calculation.components {
+            if let base = component.baseTimeNumerator {
+                guard !base.isNaN, base >= 0 else { throw invalid() }
+            }
+            if calculation.provenance?.engine == PayCalculator.currentEngine,
+                component.category != .perDiem
+            {
+                guard let base = component.baseTimeNumerator,
+                    let raw = component.unroundedAmount,
+                    raw.amount == base * (component.multiplier ?? 1) / 3_600
+                else { throw invalid() }
+            }
             if let raw = component.unroundedAmount {
                 guard !raw.amount.isNaN, raw.amount >= 0,
                     raw.currencyCode == calculation.total.currencyCode
@@ -133,8 +192,13 @@ enum AppStateValidation {
             }
         }
         if let provenance = calculation.provenance {
-            guard provenance.engine == "linepay.configured-pay/2",
-                provenance.rounding == "explicit-snapshot-rounding/1",
+            let supportedPrecision =
+                (provenance.engine == "linepay.configured-pay/2"
+                    && provenance.rounding == "explicit-snapshot-rounding/1")
+                || (["linepay.configured-pay/3", PayCalculator.currentEngine].contains(
+                    provenance.engine)
+                    && provenance.rounding == "exact-seconds-snapshot-rounding/2")
+            guard supportedPrecision,
                 provenance.callout == "confirmed-event-isolated-minimum/1"
             else { throw invalid() }
         }
@@ -161,22 +225,42 @@ enum AppStateValidation {
             throw invalid()
         }
         if let confirmation = paystub.confirmation {
-            for suggestion in confirmation.suggestions.values {
-                let region = suggestion.region
-                guard suggestion.confidence.isFinite, (0...1).contains(suggestion.confidence),
-                    region.page >= 0, region.page < 10_000,
-                    [region.x, region.y, region.width, region.height].allSatisfy({
-                        $0.isFinite && (0...1).contains($0)
-                    }),
-                    region.x + region.width <= 1.000001, region.y + region.height <= 1.000001
+            try validate(suggestions: confirmation.suggestions)
+        }
+
+        // Legacy audits remain review-only.
+        guard let assessment = paystub.assessment else { return }
+        guard (1...PaycheckAssessor.currentEngineVersion).contains(assessment.engineVersion),
+            assessment.paidGross == paystub.grossPay,
+            Set(assessment.comparisons.map(\.id)).count == assessment.comparisons.count
+        else { throw invalid() }
+        if assessment.engineVersion >= 4, assessment.expectedGross != nil,
+            PaycheckAssessor.requiresWeeklyMappingReview(
+                agreement: agreement, calculation: calculation)
+        {
+            guard assessment.verdict == .needsReview,
+                assessment.reviewReasons.contains(PaycheckAssessor.weeklyMappingReviewReason)
+            else { throw invalid() }
+        }
+        if assessment.engineVersion >= 5, assessment.expectedGross != nil,
+            paystub.confirmation?.lineLayout == .basePlusPremium, let calculation
+        {
+            let included = calculation.components.filter {
+                $0.category == .workedHours
+                    || ($0.category == .calloutGuarantee
+                        && paystub.confirmation?.guaranteeLayout == .includedInHourlyLines)
+            }
+            let hasMoneyLines = [paystub.regularPay, paystub.overtimePay, paystub.doubleTimePay]
+                .contains { $0 != nil }
+            if hasMoneyLines && included.contains(where: { $0.baseTimeNumerator == nil }) {
+                guard assessment.verdict == .needsReview,
+                    assessment.reviewReasons.contains(PaycheckAssessor.exactBaseReviewReason),
+                    !assessment.comparisons.contains(where: {
+                        [.regularPay, .overtimePay, .doubleTimePay].contains($0.field)
+                    })
                 else { throw invalid() }
             }
         }
-        // Legacy audits remain review-only.
-        guard let assessment = paystub.assessment else { return }
-        guard (1...3).contains(assessment.engineVersion), assessment.paidGross == paystub.grossPay,
-            Set(assessment.comparisons.map(\.id)).count == assessment.comparisons.count
-        else { throw invalid() }
         for comparison in assessment.comparisons {
             guard
                 [comparison.expected, comparison.paid, comparison.difference].allSatisfy({
@@ -234,6 +318,8 @@ enum AppStateValidation {
     }
 
     private static func validate(_ agreement: AgreementSnapshot) throws {
+        for source in agreement.sources { try AgreementImportValidation.validate(source) }
+
         guard !agreement.hourlyRate.amount.isNaN, agreement.hourlyRate.amount > 0,
             agreement.hourlyRate.amount <= 10_000_000,
             agreement.hourlyRate.currencyCode.utf8.count == 3,

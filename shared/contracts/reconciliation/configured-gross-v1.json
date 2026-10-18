@@ -1,0 +1,479 @@
+{
+  "format": "com.streamentry.linepay.configured-gross-fixtures",
+  "version": 1,
+  "currency": "USD",
+  "hourlyRate": "50",
+  "work": {
+    "id": "40000000-0000-0000-0000-000000000001",
+    "startUTC": "2026-10-01T13:00:00Z",
+    "endUTC": "2026-10-01T21:00:00Z",
+    "timeZone": "America/Chicago"
+  },
+  "cases": [
+    {
+      "id": "gross-match",
+      "note": "Eight hours times 50 equals 400; no hours or individual wage lines verified.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "matches",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "gross-shortfall",
+      "note": "400 minus 375 equals 25 possible difference.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "375",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "25",
+        "verdict": "possibleShortfall",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "375",
+            "difference": "25"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "gross-overpayment",
+      "note": "400 minus 425 equals -25 possible difference.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "425",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "-25",
+        "verdict": "possibleOverpayment",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "425",
+            "difference": "-25"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "gross-subcent-rounding",
+      "note": "Gross difference -0.004 rounds once to zero at two decimals. Paid evidence remains 400.004.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400.004",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "matches",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400.004",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "gross-halfcent-rounding",
+      "note": "400 minus 399.995 equals 0.005, rounded half-up to 0.01.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "399.995",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0.01",
+        "verdict": "possibleShortfall",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "399.995",
+            "difference": "0.01"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "incomplete-work",
+      "note": "Unconfirmed work completeness cannot establish full-period expected gross.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": false,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": null,
+        "difference": null,
+        "verdict": "notComparable",
+        "comparisons": []
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "unconfirmed-gross-basis",
+      "note": "Do not guess whether gross includes per diem.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "unconfirmed",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": null,
+        "difference": null,
+        "verdict": "notComparable",
+        "comparisons": []
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "unreviewed-fields",
+      "note": "Matching total cannot override unresolved source review.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": true,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "needsReview",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "unsupported-rule",
+      "note": "Matching configured total does not waive an unsupported rule.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": true,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "needsReview",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "pending-weekly-review",
+      "note": "A pending weekly review prevents a clean configured-gross match.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": true,
+        "paidGross": "2400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "2400",
+        "difference": "0",
+        "verdict": "needsReview",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "2400",
+            "paid": "2400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-03T13:00:00Z"
+    },
+    {
+      "id": "legacy-rounding",
+      "note": "A new comparison using legacy segment rounding requires review.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "legacySegments",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "needsReview",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "per-diem-excluded",
+      "note": "400 cash wages excludes the separate 100 allowance.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": "100",
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "400",
+        "difference": "0",
+        "verdict": "matches",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "per-diem-included",
+      "note": "400 cash wages plus explicitly included 100 allowance equals 500.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": "100",
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesAndPerDiem",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "500",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "500",
+        "difference": "0",
+        "verdict": "matches",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "500",
+            "paid": "500",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "per-diem-offset",
+      "note": "Gross 500 matches but separately confirmed allowance 90 differs from 100; review offsetting lines.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": "100",
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesAndPerDiem",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "500",
+        "paidPerDiem": "90"
+      },
+      "expected": {
+        "gross": "500",
+        "difference": "0",
+        "verdict": "needsReview",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "500",
+            "paid": "500",
+            "difference": "0"
+          },
+          {
+            "field": "perDiemPay",
+            "expected": "100",
+            "paid": "90",
+            "difference": "10"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "per-diem-unknown",
+      "note": "No paid allowance value means no allowance comparison, not a paid zero.",
+      "hasCalculation": true,
+      "perDiemPerWorkDate": "100",
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesAndPerDiem",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "500",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": "500",
+        "difference": "0",
+        "verdict": "matches",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "expected": "500",
+            "paid": "500",
+            "difference": "0"
+          }
+        ]
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    },
+    {
+      "id": "no-calculation",
+      "note": "A failed/missing expected calculation cannot create a zero expectation or directional verdict.",
+      "hasCalculation": false,
+      "perDiemPerWorkDate": null,
+      "roundingScope": "payCategory",
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false,
+        "paidGross": "400",
+        "paidPerDiem": null
+      },
+      "expected": {
+        "gross": null,
+        "difference": null,
+        "verdict": "notComparable",
+        "comparisons": []
+      },
+      "workEndUTC": "2026-10-01T21:00:00Z"
+    }
+  ]
+}

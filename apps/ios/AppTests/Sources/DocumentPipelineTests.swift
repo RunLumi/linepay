@@ -21,6 +21,43 @@ struct DocumentPipelineTests {
             #expect((0...1).contains(suggestion.confidence))
         }
     }
+    @Test(
+        arguments: [
+            ("Gross pay $0.00", "0"),
+            ("Current gross pay $1,000.00", "1000"),
+            ("Gross pay: Current $1,250.50 YTD $12,000.00", "1250.5"),
+            ("Gross pay $0.01", "0.01"),
+        ], [1, 2])
+    func clearSyntheticPDFsProduceExactCurrentGrossOnTheCorrectPage(
+        _ sample: (String, String), _ pages: Int
+    ) async throws {
+        let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+        let original = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+            for page in 0..<pages {
+                context.beginPage()
+                UIColor.white.setFill()
+                context.fill(bounds)
+                ("SYNTHETIC PAYSTUB" as NSString).draw(
+                    at: CGPoint(x: 40, y: 60),
+                    withAttributes: [
+                        .font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.black,
+                    ])
+                let text = page == pages - 1 ? sample.0 : "Supplemental work details"
+                (text as NSString).draw(
+                    at: CGPoint(x: 40, y: 120),
+                    withAttributes: [
+                        .font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.black,
+                    ])
+            }
+        }
+        let result = try await PaystubOCRService().recognize(data: original, fileExtension: "pdf")
+        let suggestion = try #require(result.suggestions[.grossPay])
+        #expect(suggestion.value == sample.1)
+        #expect(suggestion.region.page == pages - 1)
+        #expect(result.pageCount == pages)
+        #expect(PDFDocument(data: original)?.pageCount == pages)
+    }
+
     @Test func pageLimitIsExplicitAndOriginalDataIsUnmodified() async throws {
         let original = document(pages: 9, line: "Gross pay $400.00")
         let result = try await PaystubOCRService().recognize(data: original, fileExtension: "pdf")

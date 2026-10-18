@@ -38,9 +38,9 @@ struct HistoryView: View {
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(periodLabel).font(.headline)
-                                        if let calculation = period.calculation {
+                                        if let calculation = period.comparisonCalculation {
                                             Text(
-                                                "Expected \(LinePayFormat.money(calculation.expectedWages))"
+                                                "Saved expected \(LinePayFormat.money(calculation.expectedWages))"
                                             ).monospacedDigit()
                                         } else {
                                             Label(
@@ -59,6 +59,16 @@ struct HistoryView: View {
                                                 ).monospacedDigit()
                                             }
                                             AuditStatusView(status: model.auditStatus(for: period))
+                                            if AuditAssessment.legacyScopeNote(
+                                                calculation: period.comparisonCalculation,
+                                                paystub: paid, agreement: period.agreement) != nil
+                                            {
+                                                Label(
+                                                    "Earlier recorded comparison",
+                                                    systemImage: "clock"
+                                                )
+                                                .font(.footnote)
+                                            }
                                         } else {
                                             Label("Awaiting paycheck", systemImage: "clock")
                                                 .foregroundStyle(LinePayColor.review)
@@ -117,6 +127,12 @@ struct HistoricalPeriodView: View {
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.headline)
                     PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
+                    if context.calculation?.provenance?.engine != PayCalculator.currentEngine {
+                        Text(
+                            "This is a saved calculation. A new paycheck review uses current precision; earlier records are kept."
+                        )
+                        .font(.footnote)
+                    }
                     Text(
                         "\(LinePayFormat.timeZoneName(context.timeZoneIdentifier)) · rules version \(context.agreement.version)"
                     ).font(.footnote)
@@ -124,6 +140,12 @@ struct HistoricalPeriodView: View {
                         Label("Awaiting paycheck", systemImage: "clock")
                     } else {
                         AuditStatusView(status: model.status(for: context))
+                        if let note = AuditAssessment.legacyScopeNote(
+                            calculation: context.calculation, paystub: context.paystub,
+                            agreement: context.agreement)
+                        {
+                            Text(note).font(.footnote)
+                        }
                         NavigationLink("View paycheck result") {
                             LiveAuditView(
                                 model: model, subscriptionStore: subscriptionStore,
@@ -147,7 +169,7 @@ struct HistoricalPeriodView: View {
                 if let calculation = context.calculation {
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
-                        work: context.workEntries)
+                        work: context.workEntries, model: model)
                 }
                 Section("Saved paycheck checks") {
                     if context.revisions.isEmpty { Text("No saved paycheck checks yet.") }
@@ -156,8 +178,14 @@ struct HistoricalPeriodView: View {
                             "Checked \(Date(timeIntervalSince1970: TimeInterval(revision.paystub.confirmedEpochSeconds)).formatted(date: .abbreviated, time: .shortened))"
                         ) {
                             AuditDetailView(
-                                model: model, context: revision.context(periodID: periodID))
+                                model: model,
+                                context: revision.context(
+                                    periodID: periodID,
+                                    resolutionEvents: context.resolutionEvents.filter {
+                                        $0.paystubID == revision.paystub.id
+                                    }))
                         }
+                        .accessibilityIdentifier("history.revision.\(revision.id.uuidString)")
                     }
                     if let issue = context.calculationIssue {
                         Label(
@@ -168,7 +196,9 @@ struct HistoricalPeriodView: View {
                     }
                 }
                 Section {
-                    NavigationLink("Rule sources") { RuleSourcesView(agreement: context.agreement) }
+                    NavigationLink("Rule sources") {
+                        RuleSourcesView(agreement: context.agreement, model: model)
+                    }
                     Button("Delete work period and its checks", role: .destructive) {
                         showingDelete = true
                     }
@@ -221,12 +251,12 @@ struct HistoricalPeriodView: View {
 }
 
 extension AuditRevision {
-    func context(periodID: UUID) -> PayPeriodContext {
+    func context(periodID: UUID, resolutionEvents: [ResolutionEvent] = []) -> PayPeriodContext {
         PayPeriodContext(
             id: periodID, window: window, agreement: agreement,
             timeZoneIdentifier: timeZoneIdentifier, workEntries: workEntries,
             calculation: calculation,
             paystub: paystub, reconciliation: reconciliation, revisions: [], isClosed: true,
-            agreementChanges: agreementChanges)
+            agreementChanges: agreementChanges, resolutionEvents: resolutionEvents)
     }
 }

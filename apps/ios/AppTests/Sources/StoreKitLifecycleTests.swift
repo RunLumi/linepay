@@ -150,6 +150,8 @@ struct StoreKitLifecycleTests {
         let session = try await session()
         defer { session.clearTransactions() }
         let store = SubscriptionStore(commerceEnabled: true)
+        let activity = LocalActivityLedger()
+        store.localActivity = activity
         await store.start()
         let annual = try #require(store.product(id: SubscriptionStore.yearlyProductID))
         #expect(store.annualTrialDuration == "7 days")
@@ -164,11 +166,17 @@ struct StoreKitLifecycleTests {
         #expect(store.canPresentOffer)
         #expect(await store.purchase(annual))
         await expectTrial(true, store: store)
+        #expect(activity.count(.verifiedTrialObserved) >= 1)
+        #expect(activity.count(.purchaseVerified) == 1)
         #expect(!store.canPresentOffer, "An active trial is never offered Pro again")
         #expect(store.renewalDate != nil)
         try session.forceRenewalOfSubscription(productIdentifier: annual.id)
         await expectTrial(false, store: store)
         #expect(store.isPro)
+        #expect(activity.count(.verifiedPaidObserved) >= 1)
+        let observed = activity.count(.verifiedPaidObserved)
+        await store.refreshEntitlements()
+        #expect(activity.count(.verifiedPaidObserved) == observed)
         await store.load()
         #expect(store.annualTrialDuration == nil)
         #expect(

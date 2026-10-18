@@ -12,16 +12,30 @@ struct ReportSharingView: View {
     @State private var showingPreview = false
 
     init(context: PayPeriodContext) {
+        var selectedContext = context
+        if let paystubID = context.paystub?.id {
+            selectedContext.resolutionEvents = context.resolutionEvents.filter {
+                $0.paystubID == paystubID
+            }
+        } else {
+            selectedContext.resolutionEvents = []
+        }
+        let findings = selectedContext.paystub.map { AuditFinding.from(paystub: $0) } ?? []
         _session = State(
             initialValue: ReportShareSession { privacy in
-                guard let calculation = context.calculation else {
+                guard let calculation = selectedContext.calculation else {
                     throw AppModelError.calculationUnavailable
                 }
                 return try ReconciliationReportExporter().export(
-                    window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
-                    agreement: context.agreement, calculation: calculation,
-                    paystub: context.paystub, reconciliation: context.reconciliation,
-                    findings: [], privacy: privacy)
+                    window: selectedContext.window,
+                    timeZoneIdentifier: selectedContext.timeZoneIdentifier,
+                    agreement: selectedContext.agreement, calculation: calculation,
+                    paystub: selectedContext.paystub,
+                    reconciliation: selectedContext.reconciliation,
+                    findings: findings, resolutionEvents: selectedContext.resolutionEvents,
+                    privacy: privacy,
+                    requiresCalculationReview: selectedContext.requiresCalculationReview,
+                    requiresAssessmentReview: selectedContext.requiresAssessmentReview)
             })
     }
 
@@ -30,13 +44,24 @@ struct ReportSharingView: View {
             Form {
                 Section("Choose what to share") {
                     Text(
-                        "The default copy includes pay amounts, dates, calculations and source page references. Original paystub pages, optional OCR source text, profile names and source identifiers are excluded. It is not anonymous."
+                        "The default copy includes pay amounts, dates, calculations and source page references. Original paystub pages, optional OCR source text, profile names, source identifiers and follow-up notes are excluded. It is not anonymous."
                     )
                     Toggle("Include optional source details", isOn: $privacy.includeSourceDetails)
                         .accessibilityIdentifier("report.include-source-details")
+                    Toggle(
+                        "Include follow-up history and notes",
+                        isOn: $privacy.includeResolutionHistory
+                    )
+                    .accessibilityIdentifier("report.include-resolution")
+                    if privacy.includeResolutionHistory {
+                        Text(
+                            "Your follow-up notes may contain personal information. Review the entire report before sharing."
+                        )
+                        .font(.footnote)
+                    }
                     if privacy.includeSourceDetails {
                         Label(
-                            "This adds profile identity, source names and URLs, private rule notes and OCR source lines. Those lines may include unrelated personal information. Review every page before sharing.",
+                            "This adds profile identity, source names and URLs, agreement excerpts and file fingerprints, private rule notes and OCR source lines. Those lines may include unrelated personal information. Review every page before sharing.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .foregroundStyle(LinePayColor.review)
@@ -83,7 +108,7 @@ struct ReportSharingView: View {
     }
 }
 
-private struct ReportPreviewView: View {
+struct ReportPreviewView: View {
     let report: PreparedReport
     @Binding var session: ReportShareSession
     @Environment(\.dismiss) private var dismiss
@@ -93,6 +118,7 @@ private struct ReportPreviewView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Sensitive pay information. Review this exact copy before sharing.")
                     .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
                     .accessibilityIdentifier("report.preview-warning")
                 if let document = PDFDocument(data: report.data), document.pageCount > 0 {

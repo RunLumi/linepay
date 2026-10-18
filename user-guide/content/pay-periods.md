@@ -29,7 +29,7 @@ This corrects an open period. It does not unlock arbitrary editing of already cl
 
 Choose **Keep period open** or **Cancel** to return without closing. Closing preserves the work and rule snapshot. An unresolved close is visibly marked **Calculation needs review** in History; add the paycheck or correct the rules later rather than treating the period as a priced result.
 
-For weekly and biweekly cadence, the next period is created as part of closing. For manual cadence, use **Today → Start pay period** and choose the next actual range. Check that new range before entering work.
+For weekly, biweekly, and unchanged twice-monthly cadence, the next period is created as part of closing. Twice-monthly periods start on the 1st or 16th. If you changed to that cadence while an older period ended on another day, closing preserves the old period and asks you to choose the next valid start instead of inventing a partial cycle. For manual cadence, use **Today → Start pay period** and choose the next actual range. Check that new range before entering work.
 
 ## Add the earlier paycheck
 

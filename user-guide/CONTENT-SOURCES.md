@@ -25,9 +25,9 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Get started; pay profile | `apps/ios/App/Sources/OnboardingFlowView.swift`, `PayProfileSetupView.swift`, `TodayView.swift` |
 | Work periods; history | `PayLedgerView.swift`, `HistoryView.swift`, `AppSession.swift`, `SettingsView.swift`, `AppState.swift`, `AppStateValidation.swift`; `UnresolvedPeriodLifecycleTests.swift` |
 | Recording work | `AddWorkView.swift`, `CalloutEntryWorkflow.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; app regressions in `CalloutEntryWorkflowTests.swift` / `RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
-| Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
+| Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `WeeklyRecordedWork.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
-| Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `AppState.swift`, domain `PaycheckAssessment.swift` |
+| Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift`, `ReconciliationReportExporter.swift`, `ReportSharingView.swift`, `AppState.swift`, `AppStateValidation.swift`, domain `PaycheckAssessment.swift` |
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
 | Pro and billing | `SubscriptionStore.swift`, `SettingsView.swift`, `AuditDetailView.swift`, `docs/pricing.md` |
 | Support addresses | `apps/ios/App/Sources/AppLinks.swift` |
@@ -60,3 +60,34 @@ The machine-readable form of this map is [`source-review.json`](source-review.js
 For each release, review changed visible labels, rule shapes, audit prerequisites, scope language, data-deletion/restore behavior, billing copy, Repeat Shift time semantics, weekly review behavior, and callout event/guarantee semantics against these guides. Update the full-site reviewed date/commit only after that complete review. Add real screenshots only from a verified build and synthetic fixtures, with build/device provenance; do not publish generated app mockups as product captures. Help screenshots live in `assets/screenshots/`, are placed with the `screenshot` shortcode, and need a complete provenance entry in `data/screenshots.json` (app commit and version, iOS, device, appearance, text size, locale, synthetic fixture, source test and attachment, alt text); `scripts/check-screenshots.py` and the build enforce this. They are taken from the UI journeys' named `capture(...)` attachments, never from `assets/app-stores/concepts/`. When the freshness check flags a source mapped to a guide that shows a screenshot, re-capture it from the same journey.
 
 No public guide exports this source map, root AGENTS.md, internal docs, private repository links, or code snapshots. Hosting URLs and screenshots in QA artifacts are website test data only.
+
+V2 paycycle review (2026-10-16, release pending): `PayPeriodSchedule.swift` and `PayProfileSetupView.swift` add explicit twice-monthly calendar periods. Updated pay-profile and getting-started; reviewed pay-rules and changing-rules without further changes.
+
+V2 follow-up review (2026-10-16, release pending): `AuditDetailView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift` and `ReportSharingView.swift` inform audit-results and evidence-and-reports. Follow-up notes are local, revision-bound, and excluded from reports unless opted in.
+
+Targeted native follow-up extension (October 19, 2026): a worker can associate a note with one
+monetary comparison from the exact saved paycheck revision or keep it paycheck-level. The
+comparison label is included only with the separate follow-up-history report opt-in. Old notes
+remain paycheck-level. Updated audit-results, evidence-and-reports and backup guidance; no
+employer receipt, correction or recovery is inferred. Full-site release-candidate review remains
+pending.
+
+V2 OCR evidence review (2026-10-16, release pending): `OCRFieldProvenanceView.swift`, `PaystubImportView.swift`, and `PaystubTextParser.swift` inform confirming-fields. Re-reviewed importing-paychecks and paystub-layouts; their steps and scope remain unchanged. Recognition scores do not establish correctness.
+
+V2 agreement review (2026-10-16, release pending): local agreement import, saved candidate review, exact-file page citations, rule editor handoff and backup metadata were reviewed against getting-started, pay-profile, evidence-and-reports, privacy-and-deletion and backup-and-restore. Source metadata passed through existing ledger/history screens without changing expected-pay or work-entry instructions. No source rights, legal applicability or broad extraction-accuracy claim is made.
+
+V2 benefits review (2026-10-16, release pending): reviewed the fund/period editor, immutable revisions, statement originals, exact calculation breakdown, report opt-ins and backup mapping against the new benefits guide and the affected backup, privacy, history and report guides. Employer contributions remain separate from wages, allowances and employee deductions; no fund eligibility or legal/project compliance is inferred. Existing Pro, Support, wage-report and work-entry instructions remain unchanged.
+
+
+Native crew-draft candidate (October17,2026): `CrewRulesView.swift`, `CrewRuleFileIO.swift`,
+`CrewRuleDraft.swift` and `CrewRuleWorkflowTests.swift` implement the proposed local exchange path.
+Its internal behavior/evidence is recorded in `docs/adr/0023-native-crew-drafts-and-retained-adoption.md`.
+Native App/runtime, Files-provider and visual acceptance is pending; no public crew instructions or
+successful-release/transfer claim is added from SDK compilation. Review publication guidance after
+those gates pass. Existing manual rule scopes, privacy/billing/support and benefits steps are unchanged.
+
+
+October17 assessment-v4 candidate review: result/history/import/report/expected-pay guidance now
+covers active legacy weekly re-review, retained frozen comparisons and Recorded verdict context.
+Source and SDK checks do not prove native migration, rendering, PDF or VoiceOver behavior; no new
+native screenshot was substituted for those missing receipts.

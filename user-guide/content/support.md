@@ -26,7 +26,7 @@ For an import problem, describe whether you used Scan, Photo, PDF, or manual ent
 
 Do not send passwords, payment-card details, Apple account credentials, or unredacted personal identifiers. Remove names, addresses, employee numbers, bank details, and unrelated pay information from screenshots.
 
-A complete backup can contain originals and sensitive structured data and is not password-encrypted by LinePaycheck. Do not upload it publicly. Share source material only through an appropriate channel when its need and handling are clear.
+A complete backup can contain originals and sensitive structured data. The v2 development build offers optional password protection; unprotected copies remain readable without a password. Protection does not make a backup appropriate to send publicly or routinely to support. Never send the backup password. Share only the minimum source material through an appropriate channel when its need and handling are clear.
 
 ## Preserve evidence before troubleshooting
 

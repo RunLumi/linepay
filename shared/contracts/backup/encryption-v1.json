@@ -1,0 +1,13 @@
+{
+  "purpose": "Synthetic interoperability vector; the password, salt and nonce are public fixture inputs. Never reuse fixture randomness in production.",
+  "version": 1,
+  "password": "SYNTHETIC café backup phrase 2026",
+  "normalizedPassword": "SYNTHETIC café backup phrase 2026",
+  "saltHex": "000102030405060708090a0b0c0d0e0f",
+  "nonceHex": "101112131415161718191a1b",
+  "plaintextUTF8": "{\"example\":\"SYNTHETIC PAY DATA ONLY\",\"amount\":\"400.00\",\"currency\":\"USD\"}",
+  "keyHex": "a934a19c9b10a312c96ec097d22f6ef17f40a79d3f75bacbc4c6eb3c5f2bd7d6",
+  "encodedHex": "4c5042454e433031000927c0000102030405060708090a0b0c0d0e0f101112131415161718191a1b000000484c0f9286ce008d77fb21dacef66ab4146ad3bf7eb185741400b186bb983a680897da48377147bf7970d61b585b66602676af53cffb4f844f7aa467d065b224ac9cf6ab9d6dd5d347b0210f66cf06afce2f5410ab0a07eb05",
+  "uiPhraseASCII": "SYNTHETIC backup phrase 2026",
+  "uiPhrasePurpose": "Public synthetic ASCII phrase for deterministic native UI keyboard entry; not a credential."
+}

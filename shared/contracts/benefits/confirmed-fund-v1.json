@@ -1,0 +1,889 @@
+{
+  "format": "com.streamentry.linepay.confirmed-benefit-fixtures",
+  "version": 1,
+  "purpose": "Independent synthetic arithmetic and refusal-to-infer comparison scope; no real worker or agreement data.",
+  "cases": [
+    {
+      "id": "missing-statement",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "c98d22e8-cd7c-5ea0-921c-6037fa13b562",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "92d78c23-082f-5961-870e-abffb5f87376",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": null,
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "notVerified",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "hourly-difference",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "7daaaff7-391b-5155-a5d7-25824cc46eb6",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "e26114c5-d828-5d0c-92f7-7d3661ea39ec",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "310.63",
+        "quantity": "35.5",
+        "quantityBasis": "eligibleHour",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "possibleDifference",
+        "paid": "310.63",
+        "difference": "39.37",
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": "4.5"
+      }
+    },
+    {
+      "id": "confirmed-precision-preserved",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "eb05f9a1-f820-5f26-9abc-26dc82c69481",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "aa6f4802-709e-5e55-bb1c-50476a54394c",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "350.001",
+        "quantity": "40",
+        "quantityBasis": "eligibleHour",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "possibleDifference",
+        "paid": "350.001",
+        "difference": "-0.001",
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": "0"
+      }
+    },
+    {
+      "id": "eligible-days",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "323d4e53-4d43-5ac5-92ae-e425b14b8532",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "727ec4f8-0b52-5b5e-aa6d-5eef2c78741e",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleDay",
+            "rate": "25",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "5",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "125",
+        "quantity": "5",
+        "quantityBasis": "eligibleDay",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "125.00",
+        "currency": "USD",
+        "components": [
+          "125"
+        ],
+        "status": "comparedValuesMatch",
+        "paid": "125",
+        "difference": "0",
+        "eligibleQuantity": "5",
+        "quantityBasis": "eligibleDay",
+        "quantityDifference": "0"
+      }
+    },
+    {
+      "id": "eligible-earnings-percent",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "deb92179-34dc-52f6-a9c2-573342a7907a",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "9bbe9103-1060-5116-8e63-a784ed918c27",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "percentOfEligibleEarnings",
+            "rate": "5",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "1234.56",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "61.73",
+        "quantity": "1234.56",
+        "quantityBasis": "percentOfEligibleEarnings",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "61.73",
+        "currency": "USD",
+        "components": [
+          "61.728"
+        ],
+        "status": "comparedValuesMatch",
+        "paid": "61.73",
+        "difference": "0",
+        "eligibleQuantity": "1234.56",
+        "quantityBasis": "percentOfEligibleEarnings",
+        "quantityDifference": "0"
+      }
+    },
+    {
+      "id": "fixed-period",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "0dc718ce-48d1-5348-845f-b2d2c4ce348f",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "ede142a1-d7a6-5d5f-b948-a4d65f8a99df",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "fixedPeriod",
+            "rate": "120",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "1",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "120",
+        "quantity": null,
+        "quantityBasis": null,
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "120.00",
+        "currency": "USD",
+        "components": [
+          "120"
+        ],
+        "status": "comparedValuesMatch",
+        "paid": "120",
+        "difference": "0",
+        "eligibleQuantity": "1",
+        "quantityBasis": "fixedPeriod",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "one-fund-rounding",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "5617eb55-7728-51e3-9815-03b6f9a62f97",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-10-16",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "0d8313be-10be-5562-82c9-e4a42c3504f6",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "0.005",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "1",
+          "eligibilityConfirmed": true
+        },
+        {
+          "id": "f2c883e1-fb2b-54e4-981b-084c7d6e9b2c",
+          "period": {
+            "start": "2026-10-16",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "0d8313be-10be-5562-82c9-e4a42c3504f6",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "0.005",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "1",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": null,
+      "expected": {
+        "amount": "0.01",
+        "currency": "USD",
+        "components": [
+          "0.005",
+          "0.005"
+        ],
+        "status": "notVerified",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "2",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "other-fund-not-compared",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "d66643df-31fa-5dd5-811c-6ff840c2b827",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "801b4eab-927e-528f-9498-c903723846ad",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000002",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "350.00",
+        "quantity": "40",
+        "quantityBasis": "eligibleHour",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "notComparable",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "units-only",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "e1987b92-60fc-5757-82dc-6eaf8301112f",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "cac5bc35-fea1-5bc0-a899-9e708b305eaf",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": null,
+        "quantity": "39",
+        "quantityBasis": "eligibleHour",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "possibleDifference",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": "1"
+      }
+    },
+    {
+      "id": "different-unit-basis",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "512a0ac3-5b49-5e3c-a26c-36379993d206",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "eba2a35d-a1d0-5f60-9dc2-fbd7eed76246",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "350",
+        "quantity": "5",
+        "quantityBasis": "eligibleDay",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "comparedValuesMatch",
+        "paid": "350",
+        "difference": "0",
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "unconfirmed-statement",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "5d829bd1-edbd-57c0-aeab-20f9b429fd00",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "e807b283-d36f-5c3b-a78f-8d0f5abefcee",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "350.00",
+        "quantity": "40",
+        "quantityBasis": "eligibleHour",
+        "confirmed": false
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "notVerified",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "different-period",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "6e6579b7-a146-5918-b6ae-70bed2be9533",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "3056cce0-0b14-5926-90df-897b43a448c9",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "40",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-02",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "350.00",
+        "quantity": "40",
+        "quantityBasis": "eligibleHour",
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "350.00",
+        "currency": "USD",
+        "components": [
+          "350.00"
+        ],
+        "status": "notComparable",
+        "paid": null,
+        "difference": null,
+        "eligibleQuantity": "40",
+        "quantityBasis": "eligibleHour",
+        "quantityDifference": null
+      }
+    },
+    {
+      "id": "mixed-bases-not-added",
+      "scope": "Synthetic explicitly confirmed employer contributions only; separate from wages and legal eligibility.",
+      "period": {
+        "start": "2026-10-01",
+        "endExclusive": "2026-11-01",
+        "timeZone": "America/Chicago"
+      },
+      "completeEligibilityConfirmed": true,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "segments": [
+        {
+          "id": "23286358-40ac-5277-ac05-f9022d01cdda",
+          "period": {
+            "start": "2026-10-01",
+            "endExclusive": "2026-10-16",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "5eb414c4-9ac3-5576-befd-78574beb6526",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleHour",
+            "rate": "8.75",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "20",
+          "eligibilityConfirmed": true
+        },
+        {
+          "id": "618b8837-5aae-596c-bd57-56fd04ca6ff0",
+          "period": {
+            "start": "2026-10-16",
+            "endExclusive": "2026-11-01",
+            "timeZone": "America/Chicago"
+          },
+          "rule": {
+            "id": "a27c6e31-308f-53ff-8842-a5b53d682337",
+            "fundID": "30000000-0000-0000-0000-000000000001",
+            "version": "1",
+            "basis": "eligibleDay",
+            "rate": "25",
+            "currency": "USD",
+            "effectivePeriod": {
+              "start": "2026-10-01",
+              "endExclusive": "2026-11-01",
+              "timeZone": "America/Chicago"
+            }
+          },
+          "quantity": "2",
+          "eligibilityConfirmed": true
+        }
+      ],
+      "statement": {
+        "fundID": "30000000-0000-0000-0000-000000000001",
+        "currency": "USD",
+        "period": {
+          "start": "2026-10-01",
+          "endExclusive": "2026-11-01",
+          "timeZone": "America/Chicago"
+        },
+        "employerContribution": "225",
+        "quantity": null,
+        "quantityBasis": null,
+        "confirmed": true
+      },
+      "expected": {
+        "amount": "225.00",
+        "currency": "USD",
+        "components": [
+          "175",
+          "50"
+        ],
+        "status": "comparedValuesMatch",
+        "paid": "225",
+        "difference": "0",
+        "eligibleQuantity": null,
+        "quantityBasis": null,
+        "quantityDifference": null
+      }
+    }
+  ]
+}

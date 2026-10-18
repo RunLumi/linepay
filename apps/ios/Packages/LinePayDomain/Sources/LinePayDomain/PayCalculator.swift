@@ -17,6 +17,7 @@ public struct PayCalculationPolicy: Hashable, Sendable {
 }
 
 public struct PayCalculator: Sendable {
+    public static let currentEngine = "linepay.configured-pay/4"
     public init() {}
 
     public func calculate(
@@ -35,7 +36,8 @@ public struct PayCalculator: Sendable {
         }
         rawSegments.sort { $0.startEpochSeconds < $1.startEpochSeconds }
 
-        var cumulativeHoursByDay: [DayKey: Decimal] = [:]
+        var cumulativeSecondsByDay: [DayKey: Decimal] = [:]
+        var exactTimeNumerators: [UUID: Decimal] = [:]
         var components: [PayComponent] = []
 
         for segment in rawSegments {
@@ -46,14 +48,14 @@ public struct PayCalculator: Sendable {
                 date: segment.localDate,
                 timeZoneIdentifier: segment.timeZoneIdentifier
             )
-            let startingDailyHours = cumulativeHoursByDay[dayKey, default: 0]
+            let startingDailySeconds = cumulativeSecondsByDay[dayKey, default: 0]
             let slices = overtimeSlices(
-                hours: segment.durationHours,
-                startingDailyHours: startingDailyHours,
+                seconds: segment.durationSeconds,
+                startingDailySeconds: startingDailySeconds,
                 tiers: agreement.dailyOvertimeTiers
             )
 
-            var hoursConsumed: Decimal = 0
+            var secondsConsumed: Decimal = 0
             for slice in slices {
                 let baseMultiplier = applicableBaseMultiplier(
                     for: segment,
@@ -61,47 +63,49 @@ public struct PayCalculator: Sendable {
                     overtimeMultiplier: slice.multiplier,
                     policy: policy
                 )
-                let amount = agreement.hourlyRate
-                    .multiplied(by: slice.hours)
-                    .multiplied(by: baseMultiplier)
-
-                components.append(
-                    PayComponent(
-                        category: .workedHours,
-                        workIntervalID: segment.workIntervalID,
-                        localDate: segment.localDate,
-                        hours: slice.hours,
-                        multiplier: baseMultiplier,
-                        amount: amount,
-                        explanation: explanation(
-                            for: segment,
-                            overtimeMultiplier: slice.multiplier,
-                            finalMultiplier: baseMultiplier,
-                            agreement: agreement
-                        ),
-                        ruleKeys: appliedRuleKeys(
-                            segment: segment, overtimeMultiplier: slice.multiplier,
-                            finalMultiplier: baseMultiplier, agreement: agreement
-                        ),
-                        baseRate: agreement.hourlyRate,
-                        appliedAgreement: AgreementReference(agreement)
-                    )
+                let numerator = agreement.hourlyRate.amount * slice.seconds * baseMultiplier
+                let amount = Money(
+                    amount: numerator / 3_600,
+                    currencyCode: agreement.hourlyRate.currencyCode)
+                let part = PayComponent(
+                    category: .workedHours,
+                    workIntervalID: segment.workIntervalID,
+                    localDate: segment.localDate,
+                    hours: slice.hours,
+                    multiplier: baseMultiplier,
+                    amount: amount,
+                    explanation: explanation(
+                        for: segment,
+                        overtimeMultiplier: slice.multiplier,
+                        finalMultiplier: baseMultiplier,
+                        agreement: agreement
+                    ),
+                    ruleKeys: appliedRuleKeys(
+                        segment: segment, overtimeMultiplier: slice.multiplier,
+                        finalMultiplier: baseMultiplier, agreement: agreement
+                    ),
+                    baseRate: agreement.hourlyRate,
+                    appliedAgreement: AgreementReference(agreement),
+                    baseTimeNumerator: agreement.hourlyRate.amount * slice.seconds
                 )
-                hoursConsumed += slice.hours
+                components.append(part)
+                exactTimeNumerators[part.id] = numerator
+                secondsConsumed += slice.seconds
             }
 
-            cumulativeHoursByDay[dayKey] = startingDailyHours + hoursConsumed
+            cumulativeSecondsByDay[dayKey] = startingDailySeconds + secondsConsumed
         }
 
         components += try calloutGuarantees(
             work: work,
             existingComponents: components,
-            timeline: timeline
+            timeline: timeline, exactTimeNumerators: &exactTimeNumerators
         )
         components += try perDiemComponents(segments: rawSegments)
 
         components = try PayComponentRounding.apply(
-            components, snapshots: [agreement] + timeline.changes.map(\.agreement))
+            components, snapshots: [agreement] + timeline.changes.map(\.agreement),
+            exactTimeNumerators: exactTimeNumerators)
         let zero = Money.zero(currencyCode: agreement.hourlyRate.currencyCode)
         let total = try components.reduce(zero) {
             try $0.adding($1.amount)
@@ -118,8 +122,8 @@ public struct PayCalculator: Sendable {
             total: total.rounded(using: agreement.rounding),
             agreementSnapshots: snapshots.isEmpty ? [agreement] : snapshots,
             provenance: CalculationProvenance(
-                engine: "linepay.configured-pay/2",
-                rounding: "explicit-snapshot-rounding/1",
+                engine: Self.currentEngine,
+                rounding: "exact-seconds-snapshot-rounding/2",
                 callout: "confirmed-event-isolated-minimum/1"),
             weeklyRegularRate: try weekly.map { try WeeklyRegularRateCalculator().calculate($0) }
         )
@@ -285,34 +289,34 @@ public struct PayCalculator: Sendable {
     }
 
     private func overtimeSlices(
-        hours: Decimal,
-        startingDailyHours: Decimal,
+        seconds: Decimal,
+        startingDailySeconds: Decimal,
         tiers: [DailyOvertimeTier]
     ) -> [OvertimeSlice] {
-        guard hours > 0 else {
+        guard seconds > 0 else {
             return []
         }
 
         var result: [OvertimeSlice] = []
-        var remaining = hours
-        var position = startingDailyHours
+        var remaining = seconds
+        var position = startingDailySeconds
 
         while remaining > 0 {
-            let activeTiers = tiers.filter { $0.afterHours <= position }
+            let activeTiers = tiers.filter { $0.afterHours * 3_600 <= position }
             let currentMultiplier = activeTiers.last?.multiplier ?? 1
-            let futureThresholds = tiers.map(\.afterHours).filter { $0 > position }
+            let futureThresholds = tiers.map { $0.afterHours * 3_600 }.filter { $0 > position }
             let nextThreshold = futureThresholds.min()
 
-            let sliceHours: Decimal
+            let sliceSeconds: Decimal
             if let nextThreshold {
-                sliceHours = min(remaining, nextThreshold - position)
+                sliceSeconds = min(remaining, nextThreshold - position)
             } else {
-                sliceHours = remaining
+                sliceSeconds = remaining
             }
 
-            result.append(OvertimeSlice(hours: sliceHours, multiplier: currentMultiplier))
-            remaining -= sliceHours
-            position += sliceHours
+            result.append(OvertimeSlice(seconds: sliceSeconds, multiplier: currentMultiplier))
+            remaining -= sliceSeconds
+            position += sliceSeconds
         }
 
         return result
@@ -321,7 +325,8 @@ public struct PayCalculator: Sendable {
     private func calloutGuarantees(
         work: [WorkInterval],
         existingComponents: [PayComponent],
-        timeline: AgreementTimeline
+        timeline: AgreementTimeline,
+        exactTimeNumerators: inout [UUID: Decimal]
     ) throws -> [PayComponent] {
         var result: [PayComponent] = []
         let calls = work.filter { $0.kind == .callout }.sorted {
@@ -364,19 +369,24 @@ public struct PayCalculator: Sendable {
             else {
                 throw CalloutReviewError.unsupportedInteraction(first.calloutEventID ?? first.id)
             }
-            let workedHours = group.reduce(Decimal.zero) { $0 + $1.durationHours }
+            let workedSeconds = group.reduce(Decimal.zero) { total, entry in
+                total + Decimal(entry.endEpochSeconds - entry.startEpochSeconds)
+                    - entry.unpaidBreaks.reduce(Decimal.zero) {
+                        $0 + Decimal($1.endEpochSeconds - $1.startEpochSeconds)
+                    }
+            }
             let crossed = timeline.changes.filter {
                 $0.effectiveDate > startDate && $0.effectiveDate <= endDate
             }
             let minima = ([agreement] + crossed.map(\.agreement)).compactMap {
                 $0.calloutMinimum?.minimumHours
             }
-            if !crossed.isEmpty && minima.contains(where: { $0 > workedHours }) {
+            if !crossed.isEmpty && minima.contains(where: { $0 * 3_600 > workedSeconds }) {
                 throw AgreementTimelineError.calloutGuaranteeNeedsReview(first.id)
             }
             guard let rule = agreement.calloutMinimum else { continue }
-            let missingHours = rule.minimumHours - workedHours
-            guard missingHours > 0 else { continue }
+            let missingSeconds = rule.minimumHours * 3_600 - workedSeconds
+            guard missingSeconds > 0 else { continue }
             let ids = Set(group.map(\.id))
             let paid = existingComponents.filter {
                 $0.category == .workedHours && $0.workIntervalID.map(ids.contains) == true
@@ -394,16 +404,20 @@ public struct PayCalculator: Sendable {
             else {
                 throw CalloutReviewError.unsupportedInteraction(first.calloutEventID ?? first.id)
             }
-            let amount = agreement.hourlyRate.multiplied(by: missingHours).multiplied(
-                by: multiplier)
-            result.append(
-                PayComponent(
-                    category: .calloutGuarantee, workIntervalID: first.id, localDate: startDate,
-                    hours: missingHours, multiplier: multiplier, amount: amount,
-                    explanation:
-                        "one isolated minimum for the confirmed callout event; actual work is unchanged",
-                    ruleKeys: [.callout], baseRate: agreement.hourlyRate,
-                    appliedAgreement: AgreementReference(agreement)))
+            let numerator = agreement.hourlyRate.amount * missingSeconds * multiplier
+            let amount = Money(
+                amount: numerator / 3_600,
+                currencyCode: agreement.hourlyRate.currencyCode)
+            let part = PayComponent(
+                category: .calloutGuarantee, workIntervalID: first.id, localDate: startDate,
+                hours: missingSeconds / 3_600, multiplier: multiplier, amount: amount,
+                explanation:
+                    "one isolated minimum for the confirmed callout event; actual work is unchanged",
+                ruleKeys: [.callout], baseRate: agreement.hourlyRate,
+                appliedAgreement: AgreementReference(agreement),
+                baseTimeNumerator: agreement.hourlyRate.amount * missingSeconds)
+            result.append(part)
+            exactTimeNumerators[part.id] = numerator
         }
         return result
     }
@@ -587,14 +601,13 @@ private struct RawSegment: Sendable {
     let weekday: Weekday
     let isWithinRegularSchedule: Bool
 
-    var durationHours: Decimal {
-        Decimal(Int(endEpochSeconds - startEpochSeconds)) / 3_600
-    }
+    var durationSeconds: Decimal { Decimal(endEpochSeconds - startEpochSeconds) }
 }
 
 private struct OvertimeSlice: Sendable {
-    let hours: Decimal
+    let seconds: Decimal
     let multiplier: Decimal
+    var hours: Decimal { seconds / 3_600 }
 }
 
 private struct DayKey: Hashable, Sendable, Comparable {

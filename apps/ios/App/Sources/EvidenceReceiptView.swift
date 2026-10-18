@@ -5,6 +5,7 @@ struct EvidenceReceiptView: View {
     let component: PayComponent
     let agreement: AgreementSnapshot
     let work: [WorkEntry]
+    var model: AppModel? = nil
     var body: some View {
         List {
             Section {
@@ -17,7 +18,7 @@ struct EvidenceReceiptView: View {
                     Text(LinePayFormat.shiftTimes(entry.interval))
                     LabeledContent(
                         "Actual work",
-                        value: "\(LinePayFormat.hours(entry.interval.durationHours)) h")
+                        value: LinePayFormat.workDuration(entry.interval.durationHours))
                     if let text = LinePayFormat.breakDuration(entry.interval) { Text(text) }
                     Text(
                         "Payroll timezone: \(LinePayFormat.timeZoneName(entry.interval.timeZoneIdentifier))"
@@ -33,21 +34,20 @@ struct EvidenceReceiptView: View {
                 Text(component.explanation)
                 if component.category == .calloutGuarantee, let rule = agreement.calloutMinimum {
                     LabeledContent(
-                        "Minimum", value: "\(LinePayFormat.hours(rule.minimumHours)) paid h")
+                        "Minimum",
+                        value: "\(LinePayFormat.workDuration(rule.minimumHours)) paid equivalent")
                     Text(
                         "Actual clock time remains unchanged. The amount below is a derived top-up."
                     )
                     .font(.footnote)
                 }
-                if let hours = component.hours, let multiplier = component.multiplier {
+                if let hours = component.hours, component.multiplier != nil {
                     LabeledContent(
                         component.category == .calloutGuarantee
-                            ? "Additional paid equivalent" : "Worked hours",
-                        value: "\(LinePayFormat.hours(hours)) h")
-                    Text(
-                        "\(LinePayFormat.decimal(hours)) × \(LinePayFormat.money(component.baseRate ?? agreement.hourlyRate)) × \(LinePayFormat.decimal(multiplier))"
-                    )
-                    .monospacedDigit().textSelection(.enabled)
+                            ? "Additional paid equivalent" : "Worked time",
+                        value: LinePayFormat.workDuration(hours))
+                    Text(componentFormula(component, fallbackRate: agreement.hourlyRate) ?? "")
+                        .monospacedDigit().textSelection(.enabled)
                 }
                 LabeledContent("Rounded amount", value: LinePayFormat.money(component.amount))
                 Text(
@@ -58,7 +58,7 @@ struct EvidenceReceiptView: View {
             Section("Rule evidence") {
                 RuleSnapshotSummary(agreement: agreement)
                 NavigationLink("Sources for this amount") {
-                    RuleSourcesView(agreement: agreement, keys: component.ruleKeys)
+                    RuleSourcesView(agreement: agreement, keys: component.ruleKeys, model: model)
                 }
             }
         }
@@ -94,6 +94,7 @@ struct RuleSnapshotSummary: View {
 struct RuleSourcesView: View {
     let agreement: AgreementSnapshot
     var keys: [PayRuleKey]? = nil
+    var model: AppModel? = nil
     var body: some View {
         List {
             if keys == nil {
@@ -120,6 +121,24 @@ struct RuleSourcesView: View {
                         )
                         .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                         if let section = source.section { Text(section) }
+                        if let quote = source.quotedText {
+                            Text("Recorded source excerpt").font(.caption.weight(.semibold))
+                            Text(quote).textSelection(.enabled)
+                        }
+                        if let documentID = source.documentID, let page = source.documentPage,
+                            let model
+                        {
+                            NavigationLink("Open cited PDF page \(page + 1)") {
+                                AgreementOriginalView(
+                                    model: model, documentID: documentID, page: page,
+                                    expectedSHA256: source.documentSHA256)
+                            }
+                            .accessibilityIdentifier("rules.open-agreement-source")
+                        }
+                        if let digest = source.documentSHA256 {
+                            Text("Recorded PDF fingerprint: \(digest)")
+                                .font(.caption.monospaced()).textSelection(.enabled)
+                        }
                         if let url = AppModel.safeSourceURL(source.url) {
                             Link("Open source link", destination: url).frame(minHeight: 44)
                         }
@@ -141,6 +160,7 @@ struct PayLedgerRows: View {
     let calculation: CalculationResult
     let agreement: AgreementSnapshot
     let work: [WorkEntry]
+    var model: AppModel? = nil
     var body: some View {
         let dates = Array(Set(calculation.components.map(\.localDate))).sorted()
         ForEach(dates, id: \.self) { date in
@@ -150,7 +170,8 @@ struct PayLedgerRows: View {
                         EvidenceReceiptView(
                             component: component,
                             agreement: appliedSnapshot(
-                                for: component, in: calculation, fallback: agreement), work: work)
+                                for: component, in: calculation, fallback: agreement), work: work,
+                            model: model)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(alignment: .firstTextBaseline) {

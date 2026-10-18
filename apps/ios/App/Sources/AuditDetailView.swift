@@ -11,6 +11,7 @@ struct LiveAuditView: View {
         Group {
             if let context = model.periodContext(id: periodID) {
                 AuditDetailView(model: model, context: context, onCorrect: { correction = true })
+                    .id(context.paystub?.id)
             } else {
                 ContentUnavailableView("Period unavailable", systemImage: "doc")
             }
@@ -48,10 +49,14 @@ struct LiveAuditView: View {
     /// Names what the free check found, only while that result is current and only as a possible
     /// shortfall; otherwise states plainly what Pro adds.
     private var offerNote: String {
-        if let context = model.periodContext(id: periodID), let paid = context.paystub,
+        if let context = model.periodContext(id: periodID), !context.isClosed,
+            let paid = context.paystub,
+            paid.assessment?.verdict == .possibleShortfall,
             let calculation = context.calculation,
             AuditAssessment.evaluate(
-                calculation: calculation, paystub: paid, reconciliation: context.reconciliation
+                calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
+                requiresCalculationReview: context.requiresCalculationReview,
+                requiresAssessmentReview: context.requiresAssessmentReview
             ).isCurrent,
             let difference = paid.assessment?.difference, difference.amount > 0
         {
@@ -73,17 +78,42 @@ struct AuditDetailView: View {
         List {
             if let paid = context.paystub, let calculation = context.calculation {
                 let presentation = AuditAssessment.evaluate(
-                    calculation: calculation, paystub: paid, reconciliation: context.reconciliation)
+                    calculation: calculation, paystub: paid, reconciliation: context.reconciliation,
+                    requiresCalculationReview: context.requiresCalculationReview,
+                    requiresAssessmentReview: context.requiresAssessmentReview,
+                    agreement: context.agreement)
                 Section {
                     Text(
                         LinePayFormat.payPeriod(
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.subheadline)
+                    if let note = presentation.legacyScopeNote {
+                        Label("Earlier recorded comparison", systemImage: "clock")
+                        Text(note).font(.footnote).accessibilityIdentifier(
+                            "audit.legacy-weekly-scope")
+                    }
                     if !presentation.isCurrent {
                         AuditStatusView(status: .needsReview)
                         Text(
-                            "Work or rules changed since this audit. Review the paycheck again; earlier audit revisions remain in History."
+                            "This comparison needs a new review. Earlier audit revisions remain recorded."
                         )
+                        Text(presentation.explanation).font(.footnote)
+                        if context.requiresAssessmentReview,
+                            let original = context.revisions.last(where: {
+                                $0.paystub.id == paid.id
+                            })
+                        {
+                            NavigationLink("View recorded comparison") {
+                                AuditDetailView(
+                                    model: model,
+                                    context: original.context(
+                                        periodID: context.id,
+                                        resolutionEvents: context.resolutionEvents.filter {
+                                            $0.paystubID == original.paystub.id
+                                        }))
+                            }
+                            .accessibilityIdentifier("audit.recorded-comparison")
+                        }
                     } else if let assessment = paid.assessment {
                         // Verdict first, then the one number that answers "by how much?".
                         AuditStatusView(status: .assessment(assessment))
@@ -156,6 +186,7 @@ struct AuditDetailView: View {
                                             ? LinePayColor.difference : LinePayColor.textSecondary)
                                 }.monospacedDigit().padding(.vertical, 6)
                             }
+                            .accessibilityIdentifier("audit.line.\(comparison.field.rawValue)")
                         }
                     } header: {
                         Text("Line by line")
@@ -179,7 +210,7 @@ struct AuditDetailView: View {
                 }
                 Section("Rule snapshot") {
                     NavigationLink("Rules used · version \(context.agreement.version)") {
-                        RuleSourcesView(agreement: context.agreement)
+                        RuleSourcesView(agreement: context.agreement, model: model)
                     }
                 }
                 Section("Share with payroll") {
@@ -189,6 +220,15 @@ struct AuditDetailView: View {
                     Text(
                         "Preview a short PDF of this comparison before you share it. It contains sensitive pay data. Your records and exports stay available without Pro."
                     ).font(.footnote)
+                }
+            }
+            if let paystub = context.paystub {
+                Section("Follow up") {
+                    NavigationLink("Track this paycheck question") {
+                        PaycheckResolutionView(
+                            model: model, periodID: context.id, paystubID: paystub.id)
+                    }
+                    .accessibilityIdentifier("audit.follow-up")
                 }
             }
             if let errorMessage {
@@ -251,7 +291,7 @@ struct PaycheckComparisonDetail: View {
                                 component: component,
                                 agreement: appliedSnapshot(
                                     for: component, in: calculation, fallback: context.agreement),
-                                work: context.workEntries)
+                                work: context.workEntries, model: model)
                         }
                     }
                 }

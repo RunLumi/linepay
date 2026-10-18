@@ -1,10 +1,18 @@
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     enum Destination: Hashable { case today, pay, history, settings }
     let model: AppModel
     let subscriptionStore: SubscriptionStore
     @State private var selection: Destination = .today
+
+    init(model: AppModel, subscriptionStore: SubscriptionStore) {
+        self.model = model
+        self.subscriptionStore = subscriptionStore
+        UITabBar.appearance().unselectedItemTintColor = LinePayColor.tabBarUnselected
+    }
+
     var body: some View {
         TabView(selection: $selection) {
             TodayView(
@@ -22,6 +30,9 @@ struct MainTabView: View {
                 Destination.history)
             SettingsView(model: model, subscriptionStore: subscriptionStore)
                 .tabItem { Label("Settings", systemImage: "gearshape") }.tag(Destination.settings)
-        }.tint(LinePayColor.actionText)
+        }
+        .tint(LinePayColor.actionText)
+        .toolbarBackground(LinePayColor.canvas, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }

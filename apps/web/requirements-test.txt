@@ -1,0 +1,2 @@
+# Developer/CI browser harness only; no runtime app dependency.
+playwright==1.55.0

@@ -41,7 +41,10 @@
             let session = AppSession(
                 store: store,
                 evidenceStore: LocalEvidenceStore(
-                    baseDirectory: base.appendingPathComponent("originals")))
+                    baseDirectory: base.appendingPathComponent("originals")),
+                activity: LocalActivityLedger(
+                    store: FileLocalActivityStore(
+                        directory: base.appendingPathComponent("activity"))))
             guard reset, let scenario = ProcessInfo.processInfo.environment["LINEPAY_UI_SCENARIO"],
                 scenario != "empty"
             else { return session }
@@ -56,6 +59,16 @@
                         evidenceStore: LocalEvidenceStore(
                             baseDirectory: base.appendingPathComponent("originals")))
                 }
+                if scenario == "premium-legacy" {
+                    try seedLegacyPremium(at: base)
+                    return AppSession(
+                        store: store,
+                        evidenceStore: LocalEvidenceStore(
+                            baseDirectory: base.appendingPathComponent("originals")),
+                        activity: LocalActivityLedger(
+                            store: FileLocalActivityStore(
+                                directory: base.appendingPathComponent("activity"))))
+                }
                 let model = session.model
                 if scenario.hasPrefix("store-week") {
                     try seedStoreWeek(model, scenario: scenario)
@@ -63,7 +76,7 @@
                 }
                 var profile = PayProfileDraft()
                 profile.name = "SAMPLE - synthetic work"
-                profile.hourlyRate = "50"
+                profile.hourlyRate = scenario == "precision-profile" ? "58.50" : "50"
                 profile.timeZoneIdentifier = "America/Chicago"
                 profile.useDailyOvertime = true
                 profile.overtimeAfterHours = "8"
@@ -77,7 +90,7 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
-                if scenario == "profile" { return session }
+                if scenario == "profile" || scenario == "precision-profile" { return session }
                 if scenario == "unresolved" {
                     let boundary = profile.periodStartDate.addingTimeInterval(86_400)
                     var changed = profile
@@ -91,16 +104,55 @@
                     try model.completeFirstResult()
                     return session
                 }
+                if scenario.hasPrefix("benefits") {
+                    for offset in 0..<5 {
+                        let day = calendar.date(
+                            byAdding: .day, value: offset, to: profile.periodStartDate)!
+                        let start = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: day)!
+                        try model.addWork(
+                            start: start, end: start.addingTimeInterval(8 * 3_600),
+                            kind: .regular, note: "Synthetic eight-hour benefits fixture")
+                    }
+                    try model.completeFirstResult()
+                    if scenario.hasPrefix("benefits-review") {
+                        var draft = model.makeBenefitDraft()
+                        draft.fundName = "SYNTHETIC PENSION"
+                        let comma = scenario.hasSuffix("comma")
+                        draft.decimalSeparator = comma ? "," : "."
+                        draft.segments[0].rate = comma ? "8,75" : "8.75"
+                        draft.segments[0].quantity = "40"
+                        draft.hasStatement = true
+                        draft.statementMatchesFund = true
+                        draft.statementAmount = comma ? "310,63" : "310.63"
+                        draft.statementQuantity = comma ? "35,5" : "35.5"
+                        try model.keepBenefitDraft(draft)
+                        let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+                        let data = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                            context.beginPage()
+                            ("SYNTHETIC BENEFITS STATEMENT\nEmployer contribution: USD 310.63\nEligible hours: 35.5"
+                                as NSString).draw(
+                                    in: CGRect(x: 48, y: 80, width: 500, height: 300),
+                                    withAttributes: [.font: UIFont.systemFont(ofSize: 18)])
+                        }
+                        try model.retainBenefitStatement(
+                            data: data, filename: "synthetic-benefits.pdf", draftID: draft.id)
+                    }
+                    return session
+                }
                 let start = profile.periodStartDate.addingTimeInterval(7 * 3600)
                 try model.addWork(
                     start: start, end: start.addingTimeInterval(10 * 3600), kind: .regular,
                     note: "Synthetic test shift")
                 try model.completeFirstResult()
+                if scenario == "agreement" {
+                    try seedAgreement(model)
+                    return session
+                }
                 if scenario == "work" || scenario == "unsupported" { return session }
                 guard let id = model.activePeriod?.id else {
                     throw AppModelError.missingActivePayPeriod
                 }
-                if scenario == "intake" {
+                if scenario == "intake" || scenario == "ocr-confidence" {
                     let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
                     let bytes = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
                         context.beginPage()
@@ -113,6 +165,16 @@
                         mediaType: "application/pdf", kind: .file, periodID: id)
                     draft.grossPay = "550"
                     draft.notes = "Synthetic staged source; no OCR confirmation is assumed."
+                    if scenario == "ocr-confidence" {
+                        let source = RecognizedPaystubLine(
+                            text: "Gross pay $550.00",
+                            region: SourceRegion(
+                                page: 0, x: 0.07, y: 0.82, width: 0.8, height: 0.1),
+                            confidence: 0.72)
+                        draft.suggestions = PaystubTextParser.parse([source])
+                        draft.recognizedText = source.text
+                        draft.sourcePageCount = 1
+                    }
                     try model.savePaystubDraft(draft)
                     return session
                 }
@@ -138,6 +200,112 @@
                 session.restoreNotice = "Synthetic UI fixture failed: \(error.localizedDescription)"
             }
             return session
+        }
+
+        /// Receipts arrive only from the UI runner's synthetic golden resource, never the app bundle.
+        private static func seedLegacyPremium(at base: URL) throws {
+            struct Fixture: Decodable {
+                struct Row: Decodable {
+                    let id: String
+                    let agreement: AgreementSnapshot
+                    let calculation: CalculationResult
+                    let assessment: PaycheckAssessment
+                }
+                let sourceCommit: String
+                let cases: [Row]
+            }
+            guard let text = ProcessInfo.processInfo.environment["LINEPAY_UI_PREMIUM_LEGACY"],
+                text.utf8.count <= 65_536
+            else { throw LocalStateStoreError.invalidState }
+            let fixture = try JSONDecoder().decode(Fixture.self, from: Data(text.utf8))
+            guard fixture.sourceCommit == "3836154",
+                let row = fixture.cases.first(where: { $0.id == "premium-half-cent" }),
+                row.assessment.engineVersion == 4,
+                let workID = row.calculation.components.first?.workIntervalID
+            else { throw LocalStateStoreError.invalidState }
+            let work = WorkEntry(
+                interval: try WorkInterval(
+                    id: workID,
+                    startEpochSeconds: 1_788_739_200, endEpochSeconds: 1_788_739_260,
+                    timeZoneIdentifier: "UTC"), note: "SYNTHETIC original premium-only check")
+            let window = PayPeriodWindow(
+                startEpochSeconds: 1_788_739_200,
+                endEpochSeconds: 1_789_344_000, cadence: .weekly)
+            let stub = ConfirmedPaystub(
+                id: UUID(uuidString: "74000000-0000-0000-0000-000000000001")!,
+                payPeriodStart: LocalDate(year: 2026, month: 9, day: 7),
+                payPeriodEnd: LocalDate(year: 2026, month: 9, day: 13),
+                grossPay: row.assessment.paidGross,
+                regularPay: Money(amount: Decimal(string: "0.98")!, currencyCode: "USD"),
+                overtimePay: Money(amount: Decimal(string: "0.48")!, currencyCode: "USD"),
+                confirmedEpochSeconds: 1_788_739_261,
+                confirmation: PaystubConfirmation(
+                    grossBasis: .wagesOnly, lineLayout: .basePlusPremium,
+                    hoursBasis: .unconfirmed, guaranteeLayout: .unconfirmed,
+                    reviewedFields: [
+                        .periodStart, .periodEnd, .grossPay, .regularPay, .overtimePay,
+                    ],
+                    suggestions: [:], hasAdditionalUnmappedPay: false, workComplete: true),
+                assessment: row.assessment)
+            let reconciliation = ReconciliationResult(
+                expectedGross: row.calculation.expectedWages,
+                actualGross: stub.grossPay, difference: .zero(currencyCode: "USD"),
+                direction: .matches)
+            let revision = AuditRevision(
+                id: stub.id, window: window, agreement: row.agreement,
+                timeZoneIdentifier: "UTC", workEntries: [work], calculation: row.calculation,
+                paystub: stub, reconciliation: reconciliation)
+            var state = AppPersistentState()
+            state.profile = PayProfile(
+                name: "SYNTHETIC legacy premium-only profile",
+                timeZoneIdentifier: "UTC", agreement: row.agreement)
+            state.activePeriod = ActivePayPeriod(
+                id: UUID(uuidString: "75000000-0000-0000-0000-000000000001")!,
+                window: window, agreement: row.agreement,
+                timeZoneIdentifier: "UTC", workEntries: [work], paystub: stub,
+                reconciliation: reconciliation,
+                auditCompletedEpochSeconds: stub.confirmedEpochSeconds,
+                hasConsumedAuditAccess: true, auditRevisions: [revision])
+            state.hasUsedFreeAudit = true
+            try AppStateValidation.validate(state)
+            // Exercise actual old-schema reading, rather than labelling a current in-memory model old.
+            state.schemaVersion = 9
+            try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+            try JSONEncoder().encode(state).write(
+                to: base.appendingPathComponent("state-v1.json"), options: .atomic)
+        }
+
+        private static func seedAgreement(_ model: AppModel) throws {
+            guard let next = model.activePeriod?.window.endDate,
+                let zone = model.profile?.timeZoneIdentifier
+            else {
+                throw AppModelError.missingActivePayPeriod
+            }
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(identifier: zone)
+            formatter.dateFormat = "yyyy-MM-dd"
+            let lines = [
+                "SYNTHETIC AGREEMENT",
+                "Base hourly rate: USD 60.00 per hour",
+                "Daily overtime: after 8 hours at 1.5x",
+                "Effective from: \(formatter.string(from: next))",
+                "Meal premium: USD 25.00 per missed meal",
+            ]
+            let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+            let data = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                context.beginPage()
+                UIColor.white.setFill()
+                context.fill(bounds)
+                for (index, line) in lines.enumerated() {
+                    (line as NSString).draw(
+                        at: CGPoint(x: 36, y: 60 + index * 34),
+                        withAttributes: [
+                            .font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.black,
+                        ])
+                }
+            }
+            try model.retainAgreement(data: data, filename: "synthetic-agreement.pdf")
         }
 
         /// The App Store sample paycheck `store-week-2026-08-v1` from

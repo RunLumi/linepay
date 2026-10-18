@@ -28,7 +28,10 @@ enum PayComponentRounding {
         let currency: String
     }
 
-    static func apply(_ source: [PayComponent], snapshots: [AgreementSnapshot]) throws
+    static func apply(
+        _ source: [PayComponent], snapshots: [AgreementSnapshot],
+        exactTimeNumerators: [UUID: Decimal] = [:]
+    ) throws
         -> [PayComponent]
     {
         var result = source
@@ -53,9 +56,21 @@ enum PayComponentRounding {
             }
         }
         for (key, indices) in groups {
-            let sum = Money(
-                amount: indices.reduce(0) { $0 + source[$1].amount.amount },
-                currencyCode: key.currency)
+            let numerators = indices.compactMap { exactTimeNumerators[source[$0].id] }
+            let sumAmount: Decimal
+            if numerators.isEmpty {
+                sumAmount = indices.reduce(0) { $0 + source[$1].amount.amount }
+            } else {
+                guard numerators.count == indices.count,
+                    numerators.allSatisfy({ !$0.isNaN && $0 >= 0 })
+                else {
+                    throw PayCalculationError.invalidRoundingInput
+                }
+                // Sum exact rate × seconds × multiplier first. Decimal hours can sit just
+                // below a mathematical half-cent and cannot define the rounded target.
+                sumAmount = numerators.reduce(0, +) / 3_600
+            }
+            let sum = Money(amount: sumAmount, currencyCode: key.currency)
             let target = sum.rounded(using: key.rule)
             let floorRule = MoneyRoundingRule(scale: key.rule.scale, mode: .down)
             let floors = indices.map { source[$0].amount.rounded(using: floorRule) }
@@ -63,8 +78,15 @@ enum PayComponentRounding {
             var unit = Decimal(1)
             for _ in 0..<key.rule.scale { unit /= 10 }
             let ranked = indices.indices.sorted {
-                let a = source[indices[$0]].amount.amount - floors[$0].amount
-                let b = source[indices[$1]].amount.amount - floors[$1].amount
+                let a: Decimal
+                let b: Decimal
+                if numerators.count == indices.count {
+                    a = numerators[$0] - floors[$0].amount * 3_600
+                    b = numerators[$1] - floors[$1].amount * 3_600
+                } else {
+                    a = source[indices[$0]].amount.amount - floors[$0].amount
+                    b = source[indices[$1]].amount.amount - floors[$1].amount
+                }
                 return a == b ? indices[$0] < indices[$1] : a > b
             }
             var allocated = floors
@@ -89,6 +111,6 @@ enum PayComponentRounding {
             localDate: part.localDate, hours: part.hours, multiplier: part.multiplier,
             amount: amount, explanation: part.explanation, ruleKeys: part.ruleKeys,
             baseRate: part.baseRate, appliedAgreement: part.appliedAgreement,
-            unroundedAmount: part.amount)
+            unroundedAmount: part.amount, baseTimeNumerator: part.baseTimeNumerator)
     }
 }

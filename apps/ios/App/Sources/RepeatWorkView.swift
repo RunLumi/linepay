@@ -173,7 +173,7 @@ struct RepeatWorkView: View {
                         Text(workKindTitle(draft.kind)).font(.headline)
                         Text("\(clock(draft.start)) to \(clock(draft.end))")
                         Text(
-                            "\(LinePayFormat.hours(worked)) worked hours, excluding the recorded breaks."
+                            "\(LinePayFormat.workDuration(worked)) worked, excluding the recorded breaks."
                         )
                         DatePicker(
                             "New date",
@@ -251,7 +251,7 @@ struct RepeatWorkView: View {
 
                 Section("Preview") {
                     LabeledContent(
-                        "Actual worked time", value: "\(LinePayFormat.hours(worked)) h")
+                        "Actual worked time", value: LinePayFormat.workDuration(worked))
                     if conflict == nil, withinCurrentPeriod, draft.templateUnresolved != true,
                         draft.end > draft.start,
                         let change = model.expectedWagesChange(saving: draft)

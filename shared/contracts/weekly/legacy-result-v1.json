@@ -1,0 +1,107 @@
+{
+  "format" : "com.streamentry.linepay.weekly-legacy-result",
+  "input" : {
+    "applicability" : "coveredNonexemptHourly",
+    "completeWorkweek" : true,
+    "remuneration" : [
+      {
+        "amount" : {
+          "amount" : 2400,
+          "currencyCode" : "USD"
+        },
+        "id" : "51000000-0000-0000-0000-000000000002",
+        "kind" : "straightTime",
+        "premiumCredit" : "notApplicable"
+      },
+      {
+        "amount" : {
+          "amount" : 240,
+          "currencyCode" : "USD"
+        },
+        "id" : "51000000-0000-0000-0000-000000000003",
+        "kind" : "extraPremium",
+        "premiumCredit" : "ineligible"
+      }
+    ],
+    "rounding" : {
+      "mode" : "halfUp",
+      "scale" : 2,
+      "scope" : "payCategory"
+    },
+    "thresholdHours" : 40,
+    "weekStart" : {
+      "day" : 7,
+      "month" : 9,
+      "year" : 2026
+    },
+    "work" : [
+      {
+        "hours" : 48,
+        "id" : "51000000-0000-0000-0000-000000000001",
+        "qualifiesForWeeklyOvertime" : true,
+        "straightRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        }
+      }
+    ],
+    "workweekID" : "51000000-0000-0000-0000-000000000004",
+    "workweekStart" : 2
+  },
+  "result" : {
+    "allocations" : [
+      {
+        "amount" : {
+          "amount" : 200,
+          "currencyCode" : "USD"
+        },
+        "basis" : {
+          "amount" : 2400,
+          "currencyCode" : "USD"
+        },
+        "id" : "A2AEC9A0-3B30-47DF-B42A-90343B68856A"
+      }
+    ],
+    "cashRemuneration" : {
+      "amount" : 2640,
+      "currencyCode" : "USD"
+    },
+    "eligibleExtraPremiumCredit" : {
+      "amount" : 0,
+      "currencyCode" : "USD"
+    },
+    "engineVersion" : "linepay.weekly-regular-rate\/1",
+    "expectedCash" : {
+      "amount" : 2840,
+      "currencyCode" : "USD"
+    },
+    "includableRemuneration" : {
+      "amount" : 2400,
+      "currencyCode" : "USD"
+    },
+    "overtimeHours" : 8,
+    "qualifyingHours" : 48,
+    "regularRate" : {
+      "amount" : 50,
+      "currencyCode" : "USD"
+    },
+    "remainingAdditionalPremium" : {
+      "amount" : 200,
+      "currencyCode" : "USD"
+    },
+    "statutoryAdditionalPremium" : {
+      "amount" : 200,
+      "currencyCode" : "USD"
+    },
+    "weekStart" : {
+      "day" : 7,
+      "month" : 9,
+      "year" : 2026
+    },
+    "workweekID" : "51000000-0000-0000-0000-000000000004",
+    "workweekStart" : 2
+  },
+  "scope" : "Synthetic v1 result with known excluded-premium defect; preserve history, not a current pay expectation",
+  "sourceCommit" : "f4dd8e1",
+  "version" : 1
+}

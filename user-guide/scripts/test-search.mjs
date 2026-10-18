@@ -16,7 +16,7 @@ assert.deepEqual(rank(pages, '<img src=x onerror=alert(1)>'), []);
 assert.deepEqual(rank(pages, '$400.00'), []);
 assert.equal(rank(pages, 'backup backup')[0].url, '/linepay/backup/');
 const real = JSON.parse(readFileSync(new URL('../.qa/project/linepay/index.json', import.meta.url)));
-for (const [query, suffix] of [['backup', '/backup-and-restore/'], ['per diem', '/pay-rules/'], ['gross', '/paystub-layouts/'], ['trial', '/pro-and-billing/']]) {
+for (const [query, suffix] of [['backup', '/backup-and-restore/'], ['per diem', '/pay-rules/'], ['gross', '/paystub-layouts/'], ['trial', '/pro-and-billing/'], ['benefits', '/benefits/']]) {
   assert(rank(real, query).some(page => page.url.endsWith(suffix)), `Missing relevant result for ${query}`);
 }
 console.log('PASS: deterministic search ranking, multiple terms, case/diacritics, empty/no-match/literal input, real index relevance');

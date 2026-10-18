@@ -152,3 +152,13 @@ This is a **PRODUCT approval protocol**, not a legal source. Each rule/profile n
 Promotion states: `candidate → applicability reviewed → semantics reviewed → fixtures approved → implementation verified → released`. A source URL, worker confirmation, passing unit test, and legal/domain review are distinct evidence. None substitutes for the others.
 
 For updates, recheck amendments and effective dates, create a new version, assess affected prior periods without rewriting them, and record what changed. Stop promotion when applicability or a financially material interaction remains unresolved. Narrowly scoped configured calculations can remain useful, but their limitation must be visible.
+
+
+## Targeted weekly engineering recheck, October17,2026
+
+Rechecked primary eCFR [§778.105](https://www.ecfr.gov/current/title-29/section-778.105) and
+[§778.207](https://www.ecfr.gov/current/title-29/section-778.207) for the
+[weekly v2 correction](../../adr/0024-weekly-review-admission-and-exact-boundaries.md).
+The displayed title29 currency dates were October14 and October15 respectively. This targeted
+workweek/premium check does not refresh the entire September register or close #42/applicability,
+state/CBA, alternative-method or professional-review gates.

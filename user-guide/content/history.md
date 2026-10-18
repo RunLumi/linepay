@@ -18,6 +18,8 @@ Select the pending period and choose **Add this paycheck**. Import or enter its 
 
 The closed period’s work and rules stay frozen. A late audit or later rule correction does not recalculate old work using the latest profile rate unless you explicitly review and confirm it.
 
+In the v2 development build, an explicit new paycheck review uses current calculation precision with the closed period’s saved rules and clock facts. The original estimate and earlier audit revisions remain intact. The period’s **Saved expected** amount follows its current recorded paycheck comparison; open an earlier revision to inspect the earlier answer.
+
 ## Correct paycheck facts
 
 Open the period and choose **Correct paycheck facts**, or open its live audit and choose **Review or correct paycheck facts**. To keep the same source, choose **Correct existing facts, keep original** where offered.
@@ -28,11 +30,17 @@ This is a paycheck-fact correction, not arbitrary editing of frozen work. If alr
 
 ## Read an earlier revision
 
-Under **Audit revisions**, select the timestamped audit you need. Its saved work, rules, calculation, and confirmed facts explain what was assessed at that time. A later correction does not make that earlier record the current answer.
+Under **Saved paycheck checks**, select the timestamped audit you need. Its saved work, rules, calculation, and confirmed facts explain what was assessed at that time. A later correction does not make that earlier record the current answer.
+
+Use **Track this paycheck question** from the intended audit revision to record a follow-up about that exact paycheck. Notes for a different revision are labelled, and a report for an older revision includes only that revision’s follow-ups when you opt in.
 
 When sharing a report, make sure you have opened the intended current or historical revision. Keep the period and revision context with any explanation you send.
 
 Original files can be shared by several revisions. Removing a shared original removes access for all of them, even though the confirmed figures and calculation records remain.
+
+## Earlier weekly comparisons in the v2 candidate
+
+An **Earlier recorded comparison** note identifies a saved result that did not record verified workweek-to-paycheck mapping. Its original verdict and amounts remain unchanged. An explicit new review uses current safeguards and appends a revision; it does not reclassify the old record. Historical PDF copies disclose this scope beside the **Recorded verdict**. Native interaction/report acceptance of this candidate is pending.
 
 ## Delete only with a backup plan
 
@@ -41,3 +49,17 @@ Original files can be shared by several revisions. Removing a shared original re
 Export a complete backup first when those records may be needed later. Local deletion does not delete copies already exported to Files, iCloud Drive, email, or another destination. It also does not cancel a subscription.
 
 Next: [Back up and restore safely]({{< relref "/backup-and-restore" >}}).
+
+In the v2 development workflow, [benefits checks]({{< relref "/benefits" >}}) are independent fund/period records. Deleting a wage work period does not delete those separate benefits checks.
+
+
+## Premium-only precision in the v2 candidate
+
+**Development preview:** final App Store release and physical-device acceptance remain pending.
+An older **Base + premium only** check may have reconstructed base pay from rounded decimal hours.
+At a half-cent this can change a line by one cent even when gross is correct. New checks use exact
+base-time evidence. An older active monetary-line check requires an explicit new review; its
+original values remain in the earlier revision. **Earlier recorded comparison** and a premium-only
+scope note identify preserved historical results, including their **Recorded verdict** in reports.
+Missing exact evidence keeps a new line comparison in review until recalculated from original work
+and rules. This does not verify missing weekly or agreement coverage.

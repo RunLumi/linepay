@@ -55,7 +55,9 @@ private actor SuspendedBackupIO: BackupHandling {
         await withCheckedContinuation { startedWaiter = $0 }
     }
 
-    func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data {
+    func create(state: AppPersistentState, sources: [BackupSource], password: String?) async throws
+        -> Data
+    {
         await withCheckedContinuation { continuation in
             pending = continuation
             started = true
@@ -71,12 +73,18 @@ private actor SuspendedBackupIO: BackupHandling {
         pending = nil
     }
 
-    func open(_ url: URL) async throws -> BackupArchive { throw BackupError.unavailableFile }
+    func open(_ url: URL, password: String?) async throws -> BackupArchive {
+        throw BackupError.unavailableFile
+    }
 }
 
 private struct FailingBackupIO: BackupHandling {
-    func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data {
+    func create(state: AppPersistentState, sources: [BackupSource], password: String?) async throws
+        -> Data
+    {
         throw BackupError.unavailableFile
     }
-    func open(_ url: URL) async throws -> BackupArchive { throw BackupError.unavailableFile }
+    func open(_ url: URL, password: String?) async throws -> BackupArchive {
+        throw BackupError.unavailableFile
+    }
 }

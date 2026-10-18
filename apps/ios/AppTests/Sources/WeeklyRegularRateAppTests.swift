@@ -7,7 +7,7 @@ import Testing
 @Suite("Weekly regular-rate application boundaries")
 @MainActor
 struct WeeklyRegularRateAppTests {
-    private let start = Date(timeIntervalSince1970: 1_800_000_000)
+    private let start = Date(timeIntervalSince1970: 1_788_739_200)
 
     @Test("A complete workweek can span two stored pay periods")
     func completeWeekAcrossPayPeriods() throws {
@@ -40,11 +40,36 @@ struct WeeklyRegularRateAppTests {
         }
 
         let result = try model.calculateWeeklyRegularRate(
-            weekStart: start, completeWorkweek: true)
+            weekStart: start, completeWorkweek: true,
+            straightTimeRemuneration: Money(amount: 2400, currencyCode: "USD"),
+            remunerationComplete: true, workweekBoundaryConfirmed: true)
         #expect(result.qualifyingHours == 48)
         #expect(result.remainingAdditionalPremium.amount == 200)
         #expect(result.expectedCash.amount == 2_600)
         #expect(result.allocations.count == 2)
+        let before = model.activePeriod
+        let premium = try WeeklyRemunerationFact(
+            amount: Money(amount: 240, currencyCode: "USD"),
+            kind: .extraPremium, premiumCredit: .ineligible)
+        let withPremium = try model.calculateWeeklyRegularRate(
+            weekStart: start, completeWorkweek: true,
+            straightTimeRemuneration: Money(amount: 2400, currencyCode: "USD"),
+            additionalRemuneration: [premium], remunerationComplete: true,
+            workweekBoundaryConfirmed: true)
+        #expect(
+            withPremium.includableRemuneration.amount == 2640
+                && withPremium.expectedCash.amount == 2860)
+        #expect(model.activePeriod == before)
+        #expect(throws: WeeklyRegularRateError.workweekBoundaryUnconfirmed) {
+            try model.calculateWeeklyRegularRate(
+                weekStart: start, completeWorkweek: true,
+                straightTimeRemuneration: Money(amount: 2400, currencyCode: "USD"),
+                remunerationComplete: true)
+        }
+        #expect(throws: WeeklyRegularRateError.remunerationIncomplete) {
+            try model.calculateWeeklyRegularRate(
+                weekStart: start, completeWorkweek: true, workweekBoundaryConfirmed: true)
+        }
     }
 
     @Test("The application does not turn an incomplete week into zero entitlement")
@@ -73,5 +98,25 @@ struct WeeklyRegularRateAppTests {
             message == expected
         )
         #expect(!message.contains("(error.localizedDescription)"))
+    }
+
+    @Test func aShiftCrossingTheWorkweekIsClippedWithoutRewritingItsSavedFacts() throws {
+        let model = AppModel(store: UnitStateStore())
+        var profile = UnitFixture.profile(cadence: .manual)
+        profile.periodStartDate = start.addingTimeInterval(-86_400)
+        profile.manualPeriodEndDate = start.addingTimeInterval(7 * 86_400)
+        profile.useWeeklyOvertime = true
+        profile.weeklyApplicabilityConfirmed = true
+        try model.saveProfile(profile)
+        try model.addWork(
+            start: start.addingTimeInterval(-3_600),
+            end: start.addingTimeInterval(4 * 3_600), kind: .regular)
+        let original = model.activePeriod
+        let result = try model.calculateWeeklyRegularRate(
+            weekStart: start, completeWorkweek: true,
+            straightTimeRemuneration: Money(amount: 200, currencyCode: "USD"),
+            remunerationComplete: true, workweekBoundaryConfirmed: true)
+        #expect(result.qualifyingHours == 4 && result.expectedCash.amount == 200)
+        #expect(model.activePeriod == original && model.workIntervals.first?.durationHours == 5)
     }
 }

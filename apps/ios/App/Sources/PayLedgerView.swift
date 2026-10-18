@@ -25,21 +25,23 @@ struct PayLedgerView: View {
                         } else {
                             PayAmount(
                                 label: "Expected wages", money: context.calculation?.expectedWages,
-                                prominent: true)
+                                prominent: true
+                            )
+                            .onAppear { model.observedExpectedPay(periodID: context.id) }
                             if let value = context.calculation?.expectedAllowances,
                                 value.amount > 0
                             {
                                 PayAmount(label: "Expected per diem", money: value)
                             }
                             Text(
-                                "\(LinePayFormat.hours(model.totalHours)) h worked · rules version \(context.agreement.version)"
+                                "\(LinePayFormat.workDuration(model.totalHours)) worked · rules version \(context.agreement.version)"
                             ).font(.footnote).monospacedDigit()
                         }
                         if let error = model.calculationError {
                             CalculationProblemView(message: error)
                         }
                         NavigationLink("Rules used for this estimate") {
-                            RuleSourcesView(agreement: context.agreement)
+                            RuleSourcesView(agreement: context.agreement, model: model)
                         }
                         if context.agreement.weeklyOvertime != nil {
                             Text(
@@ -80,7 +82,9 @@ struct PayLedgerView: View {
                                 AuditStatusView(status: model.status(for: context))
                                 let presentation = AuditAssessment.evaluate(
                                     calculation: context.calculation, paystub: paystub,
-                                    reconciliation: context.reconciliation)
+                                    reconciliation: context.reconciliation,
+                                    requiresCalculationReview: context.requiresCalculationReview,
+                                    requiresAssessmentReview: context.requiresAssessmentReview)
                                 if !presentation.isCurrent {
                                     Text(presentation.explanation).font(.footnote)
                                 } else if let assessment = paystub.assessment {
@@ -119,7 +123,7 @@ struct PayLedgerView: View {
                     if let calculation = context.calculation {
                         PayLedgerRows(
                             calculation: calculation, agreement: context.agreement,
-                            work: context.workEntries)
+                            work: context.workEntries, model: model)
                     }
                     if !context.workEntries.isEmpty {
                         Section {

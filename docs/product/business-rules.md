@@ -82,6 +82,133 @@
 | BR-056 | Reports are scoped evidence receipts. | Include period, comparable basis, creation time, rule/engine references, confirmation state, and limitations; originals are included only through an explicit option. |
 | BR-057 | Errors and accessibility are product behavior, not cleanup work. | Key actions work with large text/assistive technology; errors say what to do next; private paystub data is not logged or uploaded for diagnosis. |
 
+## Employer benefit contribution checks (v2)
+
+These requirements do not establish end-to-end implementation or legal/project coverage.
+
+| ID | Rule | Acceptance condition |
+|---|---|---|
+| BR-060 | Employer contributions, cash wages, allowances and employee deductions remain distinct. | A benefits difference never changes wage gross, take-home pay or the wage verdict. |
+| BR-061 | Fund identity, eligible units, basis, currency, effective dates and source snapshots are explicit. | No fund membership, OT unit multiplier, qualifying earnings or legal obligation is inferred. |
+| BR-062 | Statement comparison is scoped to the same fund and work period. | Missing statement is unverified; incompatible fund, period, timezone or currency is not comparable. A unit-only result cannot imply an amount match. |
+| BR-063 | Benefits history remains reproducible. | Corrections append revisions; exact eligibility facts, rule snapshots, original observations, engine version and rounding survive backup/restore. |
+| BR-064 | Comparison language preserves unknown coverage. | A match concerns only the confirmed contribution values; caps, eligibility exceptions, contribution timing, project/fringe compliance and employee deductions remain separately identified when unsupported. |
+
 ## Change protocol
 
 A behavioral change cites the affected BR ID and [example](payroll/worked-examples.md), updates scope/evidence when needed, and receives the narrowest meaningful regression test. A new legal rule additionally passes [source approval](payroll/sources.md). Changes to money, history, migration, or subscription boundaries require tests on the candidate code; documentation is not a substitute.
+
+
+## Manual worker-provided rule drafts (v2)
+
+[Portable contract](../../shared/contracts/templates/README.md) owns the v1 wire shape and limits.
+These are worker-provided selected parameters, not verified agreement packs or complete pay coverage.
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-070 | Export sharing is explicit and minimizes personal pay data. | Work/paycheck/fund/evidence records and private ledger IDs are never copied; wage/allowance amounts are omitted unless explicitly included and reviewed. Titles/conditions may still identify a group. |
+| BR-071 | Inspection is not adoption or source verification. | Unknown/incompatible/ambiguous files refuse; inspected drafts create no profiles and confer no official/union/professional approval. |
+| BR-072 | Recipient monetary values and applicability require confirmation. | Omitted values never become zero. Configured allowance needs an own-amount/not-applicable decision. Unconfigured remains unconfigured, not waived. |
+| BR-073 | Sharing never rewrites historical rules. | Confirmed import creates a fresh profile for future periods; old work/rules/calculations/checks remain unchanged. |
+| BR-074 | Retain reproducible import provenance. | Original admitted packet, identity/revision and recipient choices/confirmation survive backup/recovery; changed profile values require a new profile/choice. |
+
+
+## Worker follow-up and reviewed report copies
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-075 | A resolution status is the worker's report, separate from payroll arithmetic. | Corrected/explained/shared does not rewrite an audit verdict, prove payment/recovery or send a message. Corrections append events. |
+| BR-076 | Follow-up belongs to an exact saved paycheck revision and may target one of its compared money lines. | Unknown/orphaned revision or line references refuse; older or unrelated revision notes never appear in the selected report. |
+| BR-077 | A report uses the selected saved snapshot and explicit privacy choices. | New profiles do not reprice it. Notes, detailed clocks and draft text are omitted by default; unknown gross is never zero. |
+| BR-078 | Export follows exact-copy review. | Changing privacy options invalidates preview/actions. Downloaded HTML uses the reviewed bytes; oversized reports refuse without truncating a tail. |
+| BR-079 | Printing/exporting is not delivery or external verification. | Local Blob review, browser PDF rendering, OS/provider save, recipient transfer and release remain separate evidence claims. |
+
+
+## Effective-date plan ownership
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-080 | Changes use explicit payroll-local dates and immutable compatible snapshots. | No device-timezone/rate inference, duplicate date/version choice, currency conversion or incompatible rounding policy. |
+| BR-081 | A revised open-period plan does not rewrite a saved comparison. | Earlier audit retains its engine/work/baseline or exact plan ID; a missing reference refuses rather than reprice. |
+| BR-082 | Price aggregation does not round independently at a rate-version boundary. | Compatible category/multiplier numerators sum first; one second each at 18 and 54/hour totals 0.02, not 0.03. |
+| BR-083 | Binding guarantee uncertainty stops price selection. | A physical callout spanning an effective change requires review when a minimum could bind; no guessed split/top-up. |
+| BR-084 | Saving must not discard the next work entry. | Existing controls are visibly unavailable while a mutation commits, after values are captured; errors retain entered values and old state. |
+
+
+## Calendar windows and reported paycheck periods
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-085 | Paycycle means explicit local calendar boundaries, not fixed elapsed hours. | Seven/fourteen date labels, true half-months and custom inclusive bounds retain their timezone and UTC boundaries through DST/leap/year and whole-date changes. Explicit nonexistent boundaries refuse. No statutory workweek is inferred. |
+| BR-086 | Source work-period dates are distinct from selected ledger dates and payday. | New comparison fields start blank; prefilled timezone is a review context, not an extracted fact. |
+| BR-087 | Unknown/unconfirmed/mismatched source scope stops directional comparison. | Paid facts remain; expected comparison/difference are null, never zero or an inferred shortfall. |
+| BR-088 | Retain the evidence basis of each comparison version. | New source facts commit with the review; source edits clear confirmation. Legacy dates/cadence remain explicitly unretained rather than backfilled. |
+| BR-089 | New calendar corrections do not rewrite history. | The native calendar helper affects new windows only; existing window instants and saved comparisons remain unchanged. |
+
+## Native crew-draft adoption
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-090 | Native crew-draft adoption is inspection → recipient review → setup draft → final save. | Opening/preparing never activates rules. Existing profiles adopt only into a new future-period version; incompatible currency/rounding and changed imported terms refuse. |
+| BR-091 | Retain original crew-draft bytes and recipient choices with the adopted version. | Native schema8 saves provenance atomically; old schemas invent no origins. No file/UUID/rights checkbox confers official source approval. |
+| BR-092 | Explicit zero per diem remains distinct from no configuration. | Native setup may confirm a zero amount without converting absent or unreviewed allowance data to zero. |
+
+
+## Restricted weekly review
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-093 | A statutory-reference workweek is independent of calendar paycycles. | Review exact start time and a fixed168-hour end; no inferred anchor from weekday or paycheck dates. DST local end times can differ. |
+| BR-094 | Weekly remuneration and premium treatment are explicit facts. | Unknown credit treatment refuses; confirmed non-overtime work premiums are included without credit. Clock work does not fill remuneration or determine exclusions. |
+| BR-095 | Collect the actual portion of recorded work in the reviewed interval. | Clip both tails, remove intersecting breaks, preserve seconds/dated rates and original records; unrelated old scope does not block, relevant mixed scope requires review. |
+| BR-096 | New weekly arithmetic has a new version; old receipts remain recorded. | V2 revalidates decoded inputs and uses deterministic allocation IDs; a new review does not rewrite v1 or silently clear paycheck warnings. |
+
+
+## Versioned weekly paycheck review
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-097 | Period hours and an attached weekly result do not establish paycheck coverage. | Assessment v4 retains Needs review for any indicated weekly scope, including short periods; no arbitrary payload clears missing mapping. |
+| BR-098 | Comparison-scope corrections do not rewrite saved history. | Active legacy checks need explicit re-review; archived verdicts/amounts remain recorded with an earlier-scope note. A correction appends v4. |
+| BR-099 | Review amounts are not directional marketing evidence. | A Pro message names a possible shortfall only for a current open comparison with that actual verdict. |
+
+
+## Browser weekly evidence
+
+| ID | Rule | Observable consequence |
+|---|---|---|
+| BR-100 | One employer's workweek must be selected and confirmed explicitly. | No employer inference or automatic aggregation from rate/profile/currency; boundary, work and remuneration confirmations remain independent. |
+| BR-101 | Weekly references retain frozen original inputs and reproduce exactly. | Preview writes nothing; later ledger changes do not rewrite saved clock/rule/payment facts or results. |
+| BR-102 | Later evidence does not silently reclassify earlier checks. | New engine3 checks retain the weekly prefix/references known then; related evidence keeps new verdicts in review and old copies explicitly historical. |
+| BR-103 | Financial state must remain manually recoverable within its declared format. | v7 preserves old1–6 metadata, rejects unknown/future fields and checks the8MiB protected-snapshot budget before committing. |
+
+
+### Exact base-time comparison evidence (v2 candidate)
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-104 | Premium-only base uses exact rate × paid seconds through the original rounding bucket. | Repeating Decimal hours are display/comparison quantities, never a substitute for exact base-time evidence. |
+| BR-105 | Missing exact trace cannot produce new premium-only money expectations. | Retain independently known gross; omit unsupported earnings comparisons and require review. |
+| BR-106 | A comparison correction preserves earlier receipts. | Active pre-v5 premium-only line checks require explicit review; archives/replay retain old producers and disclose their earlier scope. |
+
+See [ADR0027](../adr/0027-exact-base-time-and-versioned-premium-comparisons.md).
+
+
+### Browser confirmed earnings and hours (v2 candidate)
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-107 | Compare optional earnings/hours only with explicit source mappings. | Blank is unknown, and guarantees cannot be counted twice or treated as worked time. |
+| BR-108 | Hours and money have independent precision. | Hour differences use half-up four-decimal rounding from exact seconds; wage rounding never changes that policy. |
+| BR-109 | Gross equality does not cancel differing confirmed lines. | Conflicting/overlapping earnings, unresolved weekly scope and unsupported multipliers retain review. |
+| BR-110 | New line evidence does not retrofit old browser receipts. | Schema8 adds only empty metadata for old1–7; explicit new producer4 checks retain their own facts and reproduce under recovery. |
+
+See [ADR0028](../adr/0028-browser-confirmed-paycheck-lines-and-hours.md).
+
+
+### Visible native review outcomes
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-111 | A newly confirmed live receipt opens at its current verdict. | Replace the live form's identity on receipt change; preserve the earlier immutable receipt for its own recorded view. |
+| BR-112 | Crew preparation feedback stays beside its action and carries its full accessibility text. | Inspection/preparation still does not activate rules; final imported scope remains future-only and explicitly confirmed. |

@@ -10,6 +10,7 @@ final class AppSession {
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
     @ObservationIgnored private let io: any BackupHandling
 
+    let localActivity: LocalActivityLedger
     private(set) var model: AppModel
     private(set) var revision = UUID()
     private(set) var isBusy = false
@@ -18,24 +19,38 @@ final class AppSession {
     init(
         store: any AppStateStoring,
         evidenceStore: any EvidenceStoring,
-        io: any BackupHandling = BackupIO()
+        io: any BackupHandling = BackupIO(),
+        activity: LocalActivityLedger? = nil
     ) {
         self.io = io
         self.store = store
         self.evidenceStore = evidenceStore
-        model = AppModel(store: store, evidenceStore: evidenceStore)
+        localActivity = activity ?? LocalActivityLedger()
+        model = AppModel(store: store, evidenceStore: evidenceStore, activity: localActivity)
     }
 
     static func production() -> AppSession {
+        LocalVoiceAudioFiles.removeAbandoned()
+        let session: AppSession
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
-                return UITestFixtures.session()
+                session = UITestFixtures.session()
+            } else {
+                session = AppSession(
+                    store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore(),
+                    activity: LocalActivityLedger(store: FileLocalActivityStore()))
             }
+        #else
+            session = AppSession(
+                store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore(),
+                activity: LocalActivityLedger(store: FileLocalActivityStore()))
         #endif
-        return AppSession(store: VersionedLocalStateStore(), evidenceStore: LocalEvidenceStore())
+        session.localActivity.record(.firstObservedOpen, once: .once)
+        session.localActivity.record(.appOpened)
+        return session
     }
 
-    func prepareBackup() async throws -> Data {
+    func prepareBackup(password: String? = nil) async throws -> Data {
         guard !isBusy else { throw BackupError.operationInProgress }
         isBusy = true
         defer { isBusy = false }
@@ -48,14 +63,14 @@ final class AppSession {
             }
             return BackupSource(id: reference.id, url: url)
         }
-        return try await io.create(state: state, sources: sources)
+        return try await io.create(state: state, sources: sources, password: password)
     }
 
-    func inspectBackup(at url: URL) async throws -> BackupArchive {
+    func inspectBackup(at url: URL, password: String? = nil) async throws -> BackupArchive {
         guard !isBusy else { throw BackupError.operationInProgress }
         isBusy = true
         defer { isBusy = false }
-        return try await io.open(url)
+        return try await io.open(url, password: password)
     }
 
     /// Call only after the worker confirms the replace-not-merge preview.
@@ -116,7 +131,8 @@ final class AppSession {
         }
 
         // The state is now committed; retain a retryable queue for failed old-file cleanup.
-        model = AppModel(store: store, evidenceStore: evidenceStore)
+        model = AppModel(store: store, evidenceStore: evidenceStore, activity: localActivity)
+        localActivity.record(.backupRestored)
         var cleanupFailed = false
         if model.pendingDeletionCount > 0 {
             do { try model.retryEvidenceDeletion() } catch { cleanupFailed = true }

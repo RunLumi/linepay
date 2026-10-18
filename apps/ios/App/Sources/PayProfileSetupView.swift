@@ -52,6 +52,14 @@ struct PayProfileSetupView: View {
                     }
                     .padding(.vertical, 4)
                 }
+                if draft.crewRuleAdoption != nil {
+                    Section("Worker-provided draft") {
+                        Text(
+                            "The original draft and your reviewed amount choices will be retained with the new rule version. For an existing profile these rules apply only to future periods. To change the imported terms, return to Crew rule drafts and prepare them again."
+                        )
+                        .font(.footnote)
+                    }
+                }
                 switch step {
                 case 0: basics
                 case 1: period
@@ -113,6 +121,7 @@ struct PayProfileSetupView: View {
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
+        .onAppear { model.localActivity.record(.profileStarted, once: .once) }
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
             do { try model.saveSetupDraft(value) } catch {
@@ -421,30 +430,38 @@ struct PayProfileSetupView: View {
             .labeledContentStyle(LinePayValueStyle())
             if editing {
                 Section("Apply this change") {
-                    Menu {
-                        Button("Future work periods only") { draft.editScope = .futurePeriods }
-                            .accessibilityIdentifier("pay-profile.scope.future")
-                        Button("New rules from a date") { draft.editScope = .datedChange }
-                            .accessibilityIdentifier("pay-profile.scope.dated")
-                        Button("Recalculate this entire current period") {
-                            draft.editScope = .currentPeriod
+                    if draft.crewRuleAdoption != nil {
+                        LabeledContent("Scope", value: editScopeTitle)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("Scope")
+                            .accessibilityValue(editScopeTitle)
+                            .accessibilityIdentifier("pay-profile.fixed-scope")
+                    } else {
+                        Menu {
+                            Button("Future work periods only") { draft.editScope = .futurePeriods }
+                                .accessibilityIdentifier("pay-profile.scope.future")
+                            Button("New rules from a date") { draft.editScope = .datedChange }
+                                .accessibilityIdentifier("pay-profile.scope.dated")
+                            Button("Recalculate this entire current period") {
+                                draft.editScope = .currentPeriod
+                            }
+                            .accessibilityIdentifier("pay-profile.scope.current")
+                        } label: {
+                            HStack {
+                                Text("Scope")
+                                Spacer()
+                                Text(editScopeTitle).foregroundStyle(LinePayColor.actionText)
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(LinePayColor.actionText)
+                            }
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                        .accessibilityIdentifier("pay-profile.scope.current")
-                    } label: {
-                        HStack {
-                            Text("Scope")
-                            Spacer()
-                            Text(editScopeTitle)
-                                .foregroundStyle(LinePayColor.actionText)
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(LinePayColor.actionText)
-                        }
-                        .frame(minHeight: 44)
+                        .accessibilityLabel("Scope")
+                        .accessibilityValue(editScopeTitle)
+                        .accessibilityIdentifier("pay-profile.change-scope")
                     }
-                    .accessibilityLabel("Scope")
-                    .accessibilityValue(editScopeTitle)
-                    .accessibilityIdentifier("pay-profile.change-scope")
                     if draft.editScope == .datedChange {
                         DatePicker(
                             "New rules start",
@@ -594,19 +611,17 @@ struct PayProfileSetupView: View {
         ).sorted()
     }
     private var periodPreview: String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = zone
-        let end =
-            draft.preferredCadence == .manual
-            ? draft.manualPeriodEndDate
-            : calendar.date(
-                byAdding: .day, value: draft.preferredCadence == .weekly ? 6 : 13,
-                to: draft.periodStartDate) ?? draft.periodStartDate
+        guard
+            let window = try? PayPeriodSchedule.window(
+                cadence: draft.preferredCadence, startDate: draft.periodStartDate,
+                manualEndDate: draft.manualPeriodEndDate,
+                timeZoneIdentifier: draft.timeZoneIdentifier)
+        else { return "Choose valid dates; twice-monthly periods start on the 1st or 16th." }
         let formatter = DateIntervalFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         formatter.timeZone = zone
-        return formatter.string(from: draft.periodStartDate, to: end)
+        return formatter.string(from: window.startDate, to: window.displayEndDate)
     }
     private func rebase(from old: String, to new: String) {
         guard let oldZone = TimeZone(identifier: old), let newZone = TimeZone(identifier: new)

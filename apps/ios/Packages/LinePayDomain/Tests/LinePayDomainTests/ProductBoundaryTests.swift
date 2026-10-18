@@ -76,7 +76,7 @@ struct ProductBoundaryTests {
         let calculated = try PayCalculator().calculate(
             work: parts, agreement: rules, policy: .highestApplicable)
         #expect(calculated.total.amount == decimal("1.66"))
-        #expect(calculated.provenance?.engine == "linepay.configured-pay/2")
+        #expect(calculated.provenance?.engine == PayCalculator.currentEngine)
         let old = try JSONDecoder().decode(
             CalculationResult.self, from: JSONEncoder().encode(LegacyCalculationResult(calculated)))
         #expect(

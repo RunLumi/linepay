@@ -30,6 +30,8 @@ struct BackupArchive: Sendable {
     let createdAt: Date
     let state: AppPersistentState
     let files: [EvidenceFile]
+    /// Transport metadata, never a source of pay facts or persisted entitlement.
+    var wasPasswordProtected = false
 
     var workCount: Int {
         (state.activePeriod?.workEntries.count ?? 0)
@@ -174,7 +176,7 @@ struct BackupArchive: Sendable {
                 else { throw BackupError.invalidArchive }
             } else {
                 guard let issue = period.calculationIssue, !issue.isEmpty,
-                    period.reconciliation == nil
+                    period.comparisonCalculation != nil || period.reconciliation == nil
                 else { throw BackupError.invalidArchive }
             }
             try validate(
@@ -281,6 +283,7 @@ struct BackupArchive: Sendable {
 }
 
 enum BackupError: LocalizedError, Equatable {
+    case passwordRequired, passwordRejected, passwordPolicy, encryptionFailed
     case operationInProgress
     case tooLarge
     case invalidArchive
@@ -294,6 +297,14 @@ enum BackupError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
+        case .passwordRequired:
+            "This backup is password-protected. Enter its password to unlock it before reviewing or replacing data."
+        case .passwordRejected:
+            "The password did not unlock this backup, or the file is damaged. No local data changed."
+        case .passwordPolicy:
+            "Use at least 12 characters and at most 1,024 UTF-8 bytes. Spaces are kept; passwords are not recoverable by LinePaycheck."
+        case .encryptionFailed:
+            "The password-protected backup could not be prepared. No file was exported; try again."
         case .operationInProgress:
             "A backup operation is already running."
         case .tooLarge:

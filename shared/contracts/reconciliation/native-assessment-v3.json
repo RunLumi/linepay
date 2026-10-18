@@ -1,0 +1,985 @@
+{
+  "cases" : [
+    {
+      "agreement" : {
+        "dailyOvertimeTiers" : [
+
+        ],
+        "datePremiums" : [
+
+        ],
+        "displayName" : "Synthetic weekly assessment",
+        "hourlyRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        },
+        "id" : "SYNTHETIC-LEGACY",
+        "outsideScheduleMultiplier" : 1,
+        "regularSchedule" : [
+
+        ],
+        "rounding" : {
+          "mode" : "halfUp",
+          "scale" : 2,
+          "scope" : "payCategory"
+        },
+        "sources" : [
+
+        ],
+        "version" : "1",
+        "weekdayPremiums" : [
+
+        ],
+        "weeklyOvertime" : {
+          "applicability" : "coveredNonexemptHourly",
+          "thresholdHours" : 40,
+          "workweekStart" : 2
+        }
+      },
+      "assessment" : {
+        "comparisons" : [
+          {
+            "componentIDs" : [
+              "6F9BA523-357C-4D36-AA61-C56D48D94ABA"
+            ],
+            "currencyCode" : "USD",
+            "difference" : 0,
+            "expected" : 400,
+            "field" : "grossPay",
+            "paid" : 400,
+            "unit" : "money"
+          }
+        ],
+        "difference" : {
+          "amount" : 0,
+          "currencyCode" : "USD"
+        },
+        "engineVersion" : 3,
+        "expectedGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "paidGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "reviewReasons" : [
+
+        ],
+        "scope" : "grossOnly",
+        "scopeNotes" : [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Gross total only. Hours and individual earnings lines were not verified."
+        ],
+        "verdict" : "matches"
+      },
+      "calculation" : {
+        "agreementID" : "SYNTHETIC-LEGACY",
+        "agreementSnapshots" : [
+          {
+            "dailyOvertimeTiers" : [
+
+            ],
+            "datePremiums" : [
+
+            ],
+            "displayName" : "Synthetic weekly assessment",
+            "hourlyRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "id" : "SYNTHETIC-LEGACY",
+            "outsideScheduleMultiplier" : 1,
+            "regularSchedule" : [
+
+            ],
+            "rounding" : {
+              "mode" : "halfUp",
+              "scale" : 2,
+              "scope" : "payCategory"
+            },
+            "sources" : [
+
+            ],
+            "version" : "1",
+            "weekdayPremiums" : [
+
+            ],
+            "weeklyOvertime" : {
+              "applicability" : "coveredNonexemptHourly",
+              "thresholdHours" : 40,
+              "workweekStart" : 2
+            }
+          }
+        ],
+        "agreementVersion" : "1",
+        "components" : [
+          {
+            "amount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 8,
+            "id" : "6F9BA523-357C-4D36-AA61-C56D48D94ABA",
+            "localDate" : {
+              "day" : 7,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "E550D15A-35BF-4972-A319-A1CFF95DAB0F"
+          }
+        ],
+        "provenance" : {
+          "callout" : "confirmed-event-isolated-minimum\/1",
+          "engine" : "linepay.configured-pay\/3",
+          "rounding" : "exact-seconds-snapshot-rounding\/2"
+        },
+        "total" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        }
+      },
+      "id" : "configured-eight-hours"
+    },
+    {
+      "agreement" : {
+        "dailyOvertimeTiers" : [
+
+        ],
+        "datePremiums" : [
+
+        ],
+        "displayName" : "Synthetic weekly assessment",
+        "hourlyRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        },
+        "id" : "SYNTHETIC-LEGACY",
+        "outsideScheduleMultiplier" : 1,
+        "regularSchedule" : [
+
+        ],
+        "rounding" : {
+          "mode" : "halfUp",
+          "scale" : 2,
+          "scope" : "payCategory"
+        },
+        "sources" : [
+
+        ],
+        "version" : "1",
+        "weekdayPremiums" : [
+
+        ],
+        "weeklyOvertime" : {
+          "applicability" : "coveredNonexemptHourly",
+          "thresholdHours" : 40,
+          "workweekStart" : 2
+        }
+      },
+      "assessment" : {
+        "comparisons" : [
+          {
+            "componentIDs" : [
+              "760A621B-DCC3-4185-884B-119250452B35"
+            ],
+            "currencyCode" : "USD",
+            "difference" : 0,
+            "expected" : 400,
+            "field" : "grossPay",
+            "paid" : 400,
+            "unit" : "money"
+          }
+        ],
+        "difference" : {
+          "amount" : 0,
+          "currencyCode" : "USD"
+        },
+        "engineVersion" : 3,
+        "expectedGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "paidGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "reviewReasons" : [
+
+        ],
+        "scope" : "grossOnly",
+        "scopeNotes" : [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Gross total only. Hours and individual earnings lines were not verified."
+        ],
+        "verdict" : "matches"
+      },
+      "calculation" : {
+        "agreementID" : "SYNTHETIC-LEGACY",
+        "agreementSnapshots" : [
+          {
+            "dailyOvertimeTiers" : [
+
+            ],
+            "datePremiums" : [
+
+            ],
+            "displayName" : "Synthetic weekly assessment",
+            "hourlyRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "id" : "SYNTHETIC-LEGACY",
+            "outsideScheduleMultiplier" : 1,
+            "regularSchedule" : [
+
+            ],
+            "rounding" : {
+              "mode" : "halfUp",
+              "scale" : 2,
+              "scope" : "payCategory"
+            },
+            "sources" : [
+
+            ],
+            "version" : "1",
+            "weekdayPremiums" : [
+
+            ],
+            "weeklyOvertime" : {
+              "applicability" : "coveredNonexemptHourly",
+              "thresholdHours" : 40,
+              "workweekStart" : 2
+            }
+          }
+        ],
+        "agreementVersion" : "1",
+        "components" : [
+          {
+            "amount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 8,
+            "id" : "760A621B-DCC3-4185-884B-119250452B35",
+            "localDate" : {
+              "day" : 7,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "698B8B19-9152-4D58-BD4A-CBDB67FC8DDC"
+          }
+        ],
+        "provenance" : {
+          "callout" : "confirmed-event-isolated-minimum\/1",
+          "engine" : "linepay.configured-pay\/3",
+          "rounding" : "exact-seconds-snapshot-rounding\/2"
+        },
+        "total" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "weeklyRegularRate" : {
+          "allocations" : [
+            {
+              "amount" : {
+                "amount" : 200,
+                "currencyCode" : "USD"
+              },
+              "basis" : {
+                "amount" : 2400,
+                "currencyCode" : "USD"
+              },
+              "id" : "217A8E3E-F578-4ABA-957B-DDFC65DC247E",
+              "payPeriodID" : "CB938A0B-F71D-49E0-AFCF-592AAA477885"
+            }
+          ],
+          "cashRemuneration" : {
+            "amount" : 2400,
+            "currencyCode" : "USD"
+          },
+          "eligibleExtraPremiumCredit" : {
+            "amount" : 0,
+            "currencyCode" : "USD"
+          },
+          "engineVersion" : "linepay.weekly-regular-rate\/2",
+          "expectedCash" : {
+            "amount" : 2600,
+            "currencyCode" : "USD"
+          },
+          "includableRemuneration" : {
+            "amount" : 2400,
+            "currencyCode" : "USD"
+          },
+          "overtimeHours" : 8,
+          "qualifyingHours" : 48,
+          "regularRate" : {
+            "amount" : 50,
+            "currencyCode" : "USD"
+          },
+          "remainingAdditionalPremium" : {
+            "amount" : 200,
+            "currencyCode" : "USD"
+          },
+          "statutoryAdditionalPremium" : {
+            "amount" : 200,
+            "currencyCode" : "USD"
+          },
+          "weekStart" : {
+            "day" : 7,
+            "month" : 9,
+            "year" : 2026
+          },
+          "workweekID" : "72704068-E9B7-4307-BB5D-3425731E78C1",
+          "workweekStart" : 2
+        }
+      },
+      "id" : "configured-unmapped-weekly"
+    },
+    {
+      "agreement" : {
+        "dailyOvertimeTiers" : [
+
+        ],
+        "datePremiums" : [
+
+        ],
+        "displayName" : "Synthetic weekly assessment",
+        "hourlyRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        },
+        "id" : "SYNTHETIC-LEGACY",
+        "outsideScheduleMultiplier" : 1,
+        "regularSchedule" : [
+
+        ],
+        "rounding" : {
+          "mode" : "halfUp",
+          "scale" : 2,
+          "scope" : "payCategory"
+        },
+        "sources" : [
+
+        ],
+        "version" : "1",
+        "weekdayPremiums" : [
+
+        ]
+      },
+      "assessment" : {
+        "comparisons" : [
+          {
+            "componentIDs" : [
+              "B80EB40A-58F8-4418-8BE4-DE6EBD5DC43B"
+            ],
+            "currencyCode" : "USD",
+            "difference" : 0,
+            "expected" : 400,
+            "field" : "grossPay",
+            "paid" : 400,
+            "unit" : "money"
+          }
+        ],
+        "difference" : {
+          "amount" : 0,
+          "currencyCode" : "USD"
+        },
+        "engineVersion" : 3,
+        "expectedGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "paidGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "reviewReasons" : [
+
+        ],
+        "scope" : "grossOnly",
+        "scopeNotes" : [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Gross total only. Hours and individual earnings lines were not verified."
+        ],
+        "verdict" : "matches"
+      },
+      "calculation" : {
+        "agreementID" : "SYNTHETIC-LEGACY",
+        "agreementSnapshots" : [
+          {
+            "dailyOvertimeTiers" : [
+
+            ],
+            "datePremiums" : [
+
+            ],
+            "displayName" : "Synthetic weekly assessment",
+            "hourlyRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "id" : "SYNTHETIC-LEGACY",
+            "outsideScheduleMultiplier" : 1,
+            "regularSchedule" : [
+
+            ],
+            "rounding" : {
+              "mode" : "halfUp",
+              "scale" : 2,
+              "scope" : "payCategory"
+            },
+            "sources" : [
+
+            ],
+            "version" : "1",
+            "weekdayPremiums" : [
+
+            ]
+          }
+        ],
+        "agreementVersion" : "1",
+        "components" : [
+          {
+            "amount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 8,
+            "id" : "B80EB40A-58F8-4418-8BE4-DE6EBD5DC43B",
+            "localDate" : {
+              "day" : 7,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "0137313C-C954-445F-A26C-B723DA917858"
+          }
+        ],
+        "provenance" : {
+          "callout" : "confirmed-event-isolated-minimum\/1",
+          "engine" : "linepay.configured-pay\/3",
+          "rounding" : "exact-seconds-snapshot-rounding\/2"
+        },
+        "total" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "weeklyRegularRate" : {
+          "allocations" : [
+            {
+              "amount" : {
+                "amount" : 200,
+                "currencyCode" : "USD"
+              },
+              "basis" : {
+                "amount" : 2400,
+                "currencyCode" : "USD"
+              },
+              "id" : "C5F1DFAD-7478-4C1A-9DBA-5BF4F265C8CF",
+              "payPeriodID" : "C57E0EB0-D266-4CC0-8096-13ED32C9F454"
+            }
+          ],
+          "cashRemuneration" : {
+            "amount" : 2400,
+            "currencyCode" : "USD"
+          },
+          "eligibleExtraPremiumCredit" : {
+            "amount" : 0,
+            "currencyCode" : "USD"
+          },
+          "engineVersion" : "linepay.weekly-regular-rate\/2",
+          "expectedCash" : {
+            "amount" : 2600,
+            "currencyCode" : "USD"
+          },
+          "includableRemuneration" : {
+            "amount" : 2400,
+            "currencyCode" : "USD"
+          },
+          "overtimeHours" : 8,
+          "qualifyingHours" : 48,
+          "regularRate" : {
+            "amount" : 50,
+            "currencyCode" : "USD"
+          },
+          "remainingAdditionalPremium" : {
+            "amount" : 200,
+            "currencyCode" : "USD"
+          },
+          "statutoryAdditionalPremium" : {
+            "amount" : 200,
+            "currencyCode" : "USD"
+          },
+          "weekStart" : {
+            "day" : 7,
+            "month" : 9,
+            "year" : 2026
+          },
+          "workweekID" : "DD419720-54DD-400D-869F-C415193D5939",
+          "workweekStart" : 2
+        }
+      },
+      "id" : "unconfigured-attached-weekly"
+    },
+    {
+      "agreement" : {
+        "dailyOvertimeTiers" : [
+
+        ],
+        "datePremiums" : [
+
+        ],
+        "displayName" : "Synthetic weekly assessment",
+        "hourlyRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        },
+        "id" : "SYNTHETIC-LEGACY",
+        "outsideScheduleMultiplier" : 1,
+        "regularSchedule" : [
+
+        ],
+        "rounding" : {
+          "mode" : "halfUp",
+          "scale" : 2,
+          "scope" : "payCategory"
+        },
+        "sources" : [
+
+        ],
+        "version" : "1",
+        "weekdayPremiums" : [
+
+        ]
+      },
+      "assessment" : {
+        "comparisons" : [
+          {
+            "componentIDs" : [
+              "3F1628FA-D4E4-4765-A526-E26CCBDE7CC5"
+            ],
+            "currencyCode" : "USD",
+            "difference" : 0,
+            "expected" : 400,
+            "field" : "grossPay",
+            "paid" : 400,
+            "unit" : "money"
+          }
+        ],
+        "difference" : {
+          "amount" : 0,
+          "currencyCode" : "USD"
+        },
+        "engineVersion" : 3,
+        "expectedGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "paidGross" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        },
+        "reviewReasons" : [
+
+        ],
+        "scope" : "grossOnly",
+        "scopeNotes" : [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Gross total only. Hours and individual earnings lines were not verified."
+        ],
+        "verdict" : "matches"
+      },
+      "calculation" : {
+        "agreementID" : "SYNTHETIC-LEGACY",
+        "agreementSnapshots" : [
+          {
+            "dailyOvertimeTiers" : [
+
+            ],
+            "datePremiums" : [
+
+            ],
+            "displayName" : "Synthetic weekly assessment",
+            "hourlyRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "id" : "SYNTHETIC-LEGACY",
+            "outsideScheduleMultiplier" : 1,
+            "regularSchedule" : [
+
+            ],
+            "rounding" : {
+              "mode" : "halfUp",
+              "scale" : 2,
+              "scope" : "payCategory"
+            },
+            "sources" : [
+
+            ],
+            "version" : "1",
+            "weekdayPremiums" : [
+
+            ]
+          }
+        ],
+        "agreementVersion" : "1",
+        "components" : [
+          {
+            "amount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 8,
+            "id" : "3F1628FA-D4E4-4765-A526-E26CCBDE7CC5",
+            "localDate" : {
+              "day" : 7,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 400,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "CA043A7A-8251-4425-B969-39675B759E08"
+          }
+        ],
+        "provenance" : {
+          "callout" : "confirmed-event-isolated-minimum\/1",
+          "engine" : "linepay.configured-pay\/3",
+          "rounding" : "exact-seconds-snapshot-rounding\/2"
+        },
+        "total" : {
+          "amount" : 400,
+          "currencyCode" : "USD"
+        }
+      },
+      "id" : "no-weekly-scope"
+    },
+    {
+      "agreement" : {
+        "dailyOvertimeTiers" : [
+
+        ],
+        "datePremiums" : [
+
+        ],
+        "displayName" : "Synthetic weekly assessment",
+        "hourlyRate" : {
+          "amount" : 50,
+          "currencyCode" : "USD"
+        },
+        "id" : "SYNTHETIC-LEGACY",
+        "outsideScheduleMultiplier" : 1,
+        "regularSchedule" : [
+
+        ],
+        "rounding" : {
+          "mode" : "halfUp",
+          "scale" : 2,
+          "scope" : "payCategory"
+        },
+        "sources" : [
+
+        ],
+        "version" : "1",
+        "weekdayPremiums" : [
+
+        ],
+        "weeklyOvertime" : {
+          "applicability" : "coveredNonexemptHourly",
+          "thresholdHours" : 40,
+          "workweekStart" : 2
+        }
+      },
+      "assessment" : {
+        "comparisons" : [
+          {
+            "componentIDs" : [
+              "B7BE0F1A-F029-4598-A79F-AD3EE4D681B3",
+              "DED5A0FD-A283-4394-94BF-29BCE77368C4",
+              "AA8B04FA-0F24-454F-BFDA-CA70C4C609EB"
+            ],
+            "currencyCode" : "USD",
+            "difference" : 0,
+            "expected" : 3000,
+            "field" : "grossPay",
+            "paid" : 3000,
+            "unit" : "money"
+          }
+        ],
+        "difference" : {
+          "amount" : 0,
+          "currencyCode" : "USD"
+        },
+        "engineVersion" : 3,
+        "expectedGross" : {
+          "amount" : 3000,
+          "currencyCode" : "USD"
+        },
+        "paidGross" : {
+          "amount" : 3000,
+          "currencyCode" : "USD"
+        },
+        "reviewReasons" : [
+          "Weekly overtime is turned on but is not included in this expected amount. Review each complete workweek before relying on this result."
+        ],
+        "scope" : "grossOnly",
+        "scopeNotes" : [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Gross total only. Hours and individual earnings lines were not verified."
+        ],
+        "verdict" : "needsReview"
+      },
+      "calculation" : {
+        "agreementID" : "SYNTHETIC-LEGACY",
+        "agreementSnapshots" : [
+          {
+            "dailyOvertimeTiers" : [
+
+            ],
+            "datePremiums" : [
+
+            ],
+            "displayName" : "Synthetic weekly assessment",
+            "hourlyRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "id" : "SYNTHETIC-LEGACY",
+            "outsideScheduleMultiplier" : 1,
+            "regularSchedule" : [
+
+            ],
+            "rounding" : {
+              "mode" : "halfUp",
+              "scale" : 2,
+              "scope" : "payCategory"
+            },
+            "sources" : [
+
+            ],
+            "version" : "1",
+            "weekdayPremiums" : [
+
+            ],
+            "weeklyOvertime" : {
+              "applicability" : "coveredNonexemptHourly",
+              "thresholdHours" : 40,
+              "workweekStart" : 2
+            }
+          }
+        ],
+        "agreementVersion" : "1",
+        "components" : [
+          {
+            "amount" : {
+              "amount" : 1200,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 24,
+            "id" : "B7BE0F1A-F029-4598-A79F-AD3EE4D681B3",
+            "localDate" : {
+              "day" : 7,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 1200,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "494808E6-99D8-4297-BE9B-084C5AC07962"
+          },
+          {
+            "amount" : {
+              "amount" : 1200,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 24,
+            "id" : "DED5A0FD-A283-4394-94BF-29BCE77368C4",
+            "localDate" : {
+              "day" : 8,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 1200,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "494808E6-99D8-4297-BE9B-084C5AC07962"
+          },
+          {
+            "amount" : {
+              "amount" : 600,
+              "currencyCode" : "USD"
+            },
+            "appliedAgreement" : {
+              "hourlyRate" : {
+                "amount" : 50,
+                "currencyCode" : "USD"
+              },
+              "id" : "SYNTHETIC-LEGACY",
+              "version" : "1"
+            },
+            "baseRate" : {
+              "amount" : 50,
+              "currencyCode" : "USD"
+            },
+            "category" : "workedHours",
+            "explanation" : "regular scheduled hours",
+            "hours" : 12,
+            "id" : "AA8B04FA-0F24-454F-BFDA-CA70C4C609EB",
+            "localDate" : {
+              "day" : 9,
+              "month" : 9,
+              "year" : 2026
+            },
+            "multiplier" : 1,
+            "ruleKeys" : [
+              "base"
+            ],
+            "unroundedAmount" : {
+              "amount" : 600,
+              "currencyCode" : "USD"
+            },
+            "workIntervalID" : "494808E6-99D8-4297-BE9B-084C5AC07962"
+          }
+        ],
+        "provenance" : {
+          "callout" : "confirmed-event-isolated-minimum\/1",
+          "engine" : "linepay.configured-pay\/3",
+          "rounding" : "exact-seconds-snapshot-rounding\/2"
+        },
+        "total" : {
+          "amount" : 3000,
+          "currencyCode" : "USD"
+        }
+      },
+      "id" : "configured-sixty-hours"
+    }
+  ],
+  "format" : "com.streamentry.linepay.native-assessment-legacy-fixtures",
+  "scope" : "Synthetic actual v3 receipts; known weekly-mapping limitations are preserved, not certified as current pay conclusions",
+  "sourceCommit" : "614d360",
+  "version" : 1
+}

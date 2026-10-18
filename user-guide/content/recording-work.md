@@ -14,6 +14,16 @@ Selecting Callout identifies the work type; it does not invent a minimum-hours r
 
 Review **Actual worked time** and **Payroll timezone**, then choose **Save work**. Your entry should appear in the work log and update expected pay. If saving fails, the error is not confirmation that the entry was recorded.
 
+## Voice work drafts in the v2 development build
+
+In **Add work**, choose **Use a voice work draft**. Select **Work starts on** and check the payroll timezone. Choose **Record work**, grant permissions if you want to use the microphone, speak for up to one minute, then choose **Stop and read on this device**. If on-device English recognition is unavailable or permission is denied, type the reading or use the ordinary work editor; the app does not switch to server recognition.
+
+For example: “Regular from seven AM to three PM. No unpaid breaks.” For an unpaid break, say “Unpaid break from noon to twelve thirty PM.” State every unpaid break or explicitly say there were none. Use AM/PM or 24-hour clock times. Add “next day” after an overnight end time, and after each break endpoint that belongs to that next date.
+
+Edit any misheard text, then choose **Review clock facts**. Review both dates and times, work type and every break. Confirm the facts and choose **Use reviewed facts**. This replaces those fields in the work editor while keeping your note; it does not save a shift. Check the ordinary preview, overlaps and any callout-event choice, then choose **Save work** yourself. Changing the reading or selected date clears confirmation.
+
+Unclear wording, extra instructions, missing break facts and daylight-saving gaps or repeated clock times require manual entry. Voice does not decide pay rates, overtime or callout guarantees. The recording and un-applied reading are not a restorable draft: leaving this screen can discard them. Temporary audio is excluded from pay backups; cancellation/completion removes it, with cleanup retried next launch if interrupted or storage removal fails.
+
 ## Keep one physical callout as one event
 
 In LinePaycheck 1.0, **one saved Callout row represents one physical callout event**. This matters because a configured callout minimum is evaluated once per physical event, not once merely because the work was split into more rows.

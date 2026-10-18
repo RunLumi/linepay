@@ -1,0 +1,301 @@
+{
+  "cases": [
+    {
+      "agreement": {
+        "dailyOvertimeTiers": [],
+        "datePremiums": [],
+        "displayName": "Synthetic",
+        "hourlyRate": {
+          "amount": 58.5,
+          "currencyCode": "USD"
+        },
+        "id": "synthetic-base-precision",
+        "outsideScheduleMultiplier": 1,
+        "regularSchedule": [],
+        "rounding": {
+          "mode": "halfUp",
+          "scale": 2,
+          "scope": "payCategory"
+        },
+        "sources": [],
+        "version": "1",
+        "weekdayPremiums": []
+      },
+      "assessment": {
+        "comparisons": [
+          {
+            "componentIDs": ["71C33776-DF8E-455B-B9B4-7C0F2F7F7572"],
+            "currencyCode": "USD",
+            "difference": 0,
+            "expected": 0.98,
+            "field": "grossPay",
+            "paid": 0.98,
+            "unit": "money"
+          },
+          {
+            "componentIDs": ["71C33776-DF8E-455B-B9B4-7C0F2F7F7572"],
+            "currencyCode": "USD",
+            "difference": -0.01,
+            "expected": 0.97,
+            "field": "regularPay",
+            "paid": 0.98,
+            "unit": "money"
+          }
+        ],
+        "difference": {
+          "amount": 0,
+          "currencyCode": "USD"
+        },
+        "engineVersion": 4,
+        "expectedGross": {
+          "amount": 0.98,
+          "currencyCode": "USD"
+        },
+        "paidGross": {
+          "amount": 0.98,
+          "currencyCode": "USD"
+        },
+        "reviewReasons": [
+          "Gross total matches, but confirmed components differ. Review the listed lines."
+        ],
+        "scope": "confirmedLines",
+        "scopeNotes": [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Only the listed confirmed lines were compared. A matching total can hide offsetting differences."
+        ],
+        "verdict": "needsReview"
+      },
+      "calculation": {
+        "agreementID": "synthetic-base-precision",
+        "agreementSnapshots": [
+          {
+            "dailyOvertimeTiers": [],
+            "datePremiums": [],
+            "displayName": "Synthetic",
+            "hourlyRate": {
+              "amount": 58.5,
+              "currencyCode": "USD"
+            },
+            "id": "synthetic-base-precision",
+            "outsideScheduleMultiplier": 1,
+            "regularSchedule": [],
+            "rounding": {
+              "mode": "halfUp",
+              "scale": 2,
+              "scope": "payCategory"
+            },
+            "sources": [],
+            "version": "1",
+            "weekdayPremiums": []
+          }
+        ],
+        "agreementVersion": "1",
+        "components": [
+          {
+            "amount": {
+              "amount": 0.98,
+              "currencyCode": "USD"
+            },
+            "appliedAgreement": {
+              "hourlyRate": {
+                "amount": 58.5,
+                "currencyCode": "USD"
+              },
+              "id": "synthetic-base-precision",
+              "version": "1"
+            },
+            "baseRate": {
+              "amount": 58.5,
+              "currencyCode": "USD"
+            },
+            "category": "workedHours",
+            "explanation": "regular scheduled hours",
+            "hours": 0.016666666666666666666666666666666666666,
+            "id": "71C33776-DF8E-455B-B9B4-7C0F2F7F7572",
+            "localDate": {
+              "day": 7,
+              "month": 9,
+              "year": 2026
+            },
+            "multiplier": 1,
+            "ruleKeys": ["base"],
+            "unroundedAmount": {
+              "amount": 0.975,
+              "currencyCode": "USD"
+            },
+            "workIntervalID": "BAD32329-0474-47C2-9BD9-8E45299622C1"
+          }
+        ],
+        "provenance": {
+          "callout": "confirmed-event-isolated-minimum\/1",
+          "engine": "linepay.configured-pay\/3",
+          "rounding": "exact-seconds-snapshot-rounding\/2"
+        },
+        "total": {
+          "amount": 0.98,
+          "currencyCode": "USD"
+        }
+      },
+      "id": "straight-half-cent"
+    },
+    {
+      "agreement": {
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": 0,
+            "multiplier": 1.5
+          }
+        ],
+        "datePremiums": [],
+        "displayName": "Synthetic",
+        "hourlyRate": {
+          "amount": 58.5,
+          "currencyCode": "USD"
+        },
+        "id": "synthetic-base-precision",
+        "outsideScheduleMultiplier": 1,
+        "regularSchedule": [],
+        "rounding": {
+          "mode": "halfUp",
+          "scale": 2,
+          "scope": "payCategory"
+        },
+        "sources": [],
+        "version": "1",
+        "weekdayPremiums": []
+      },
+      "assessment": {
+        "comparisons": [
+          {
+            "componentIDs": ["F7017BC9-725F-4492-91E8-1A6089523180"],
+            "currencyCode": "USD",
+            "difference": 0,
+            "expected": 1.46,
+            "field": "grossPay",
+            "paid": 1.46,
+            "unit": "money"
+          },
+          {
+            "componentIDs": ["F7017BC9-725F-4492-91E8-1A6089523180"],
+            "currencyCode": "USD",
+            "difference": -0.01,
+            "expected": 0.97,
+            "field": "regularPay",
+            "paid": 0.98,
+            "unit": "money"
+          },
+          {
+            "componentIDs": ["F7017BC9-725F-4492-91E8-1A6089523180"],
+            "currencyCode": "USD",
+            "difference": 0.01,
+            "expected": 0.49,
+            "field": "overtimePay",
+            "paid": 0.48,
+            "unit": "money"
+          }
+        ],
+        "difference": {
+          "amount": 0,
+          "currencyCode": "USD"
+        },
+        "engineVersion": 4,
+        "expectedGross": {
+          "amount": 1.46,
+          "currencyCode": "USD"
+        },
+        "paidGross": {
+          "amount": 1.46,
+          "currencyCode": "USD"
+        },
+        "reviewReasons": [
+          "Gross total matches, but confirmed components differ. Review the listed lines."
+        ],
+        "scope": "confirmedLines",
+        "scopeNotes": [
+          "Only the work and rules you confirmed are covered. This is not a legal finding.",
+          "Only the listed confirmed lines were compared. A matching total can hide offsetting differences."
+        ],
+        "verdict": "needsReview"
+      },
+      "calculation": {
+        "agreementID": "synthetic-base-precision",
+        "agreementSnapshots": [
+          {
+            "dailyOvertimeTiers": [
+              {
+                "afterHours": 0,
+                "multiplier": 1.5
+              }
+            ],
+            "datePremiums": [],
+            "displayName": "Synthetic",
+            "hourlyRate": {
+              "amount": 58.5,
+              "currencyCode": "USD"
+            },
+            "id": "synthetic-base-precision",
+            "outsideScheduleMultiplier": 1,
+            "regularSchedule": [],
+            "rounding": {
+              "mode": "halfUp",
+              "scale": 2,
+              "scope": "payCategory"
+            },
+            "sources": [],
+            "version": "1",
+            "weekdayPremiums": []
+          }
+        ],
+        "agreementVersion": "1",
+        "components": [
+          {
+            "amount": {
+              "amount": 1.46,
+              "currencyCode": "USD"
+            },
+            "appliedAgreement": {
+              "hourlyRate": {
+                "amount": 58.5,
+                "currencyCode": "USD"
+              },
+              "id": "synthetic-base-precision",
+              "version": "1"
+            },
+            "baseRate": {
+              "amount": 58.5,
+              "currencyCode": "USD"
+            },
+            "category": "workedHours",
+            "explanation": "daily overtime tier",
+            "hours": 0.016666666666666666666666666666666666666,
+            "id": "F7017BC9-725F-4492-91E8-1A6089523180",
+            "localDate": {
+              "day": 7,
+              "month": 9,
+              "year": 2026
+            },
+            "multiplier": 1.5,
+            "ruleKeys": ["base", "dailyOvertime"],
+            "unroundedAmount": {
+              "amount": 1.4625,
+              "currencyCode": "USD"
+            },
+            "workIntervalID": "A75601E0-80B5-4F53-B26E-A6B61D773F02"
+          }
+        ],
+        "provenance": {
+          "callout": "confirmed-event-isolated-minimum\/1",
+          "engine": "linepay.configured-pay\/3",
+          "rounding": "exact-seconds-snapshot-rounding\/2"
+        },
+        "total": {
+          "amount": 1.46,
+          "currencyCode": "USD"
+        }
+      },
+      "id": "premium-half-cent"
+    }
+  ],
+  "scope": "Synthetic original producer-4 receipts retain a known half-cent base-mapping defect; not current expected pay.",
+  "sourceCommit": "3836154"
+}

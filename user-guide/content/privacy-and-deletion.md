@@ -1,5 +1,5 @@
 ---
-title: Control your data and original paystubs
+title: Control your data and original documents
 linkTitle: Privacy and deletion
 weight: 150
 group: Keep control
@@ -12,13 +12,31 @@ The app does not require a LinePaycheck account or employer connection. Work, pa
 
 App Store purchases use Apple’s services. A Files provider can use the network to retrieve or store a selected document. You choose report exports and manual iCloud Drive backups, and iOS may also back up app data according to device settings.
 
+The v2 development build offers optional password protection for complete backup copies. Unprotected copies remain readable without a password. The app cannot recover or store your backup password; keep it separately and check the selected file before relying on it. Manual reports and diagnostic exports have their own sharing scope and are not automatically protected by a backup password.
+
 “Local by default” does not mean exported copies cannot leave the phone, that all services work offline, or that a lost phone’s records can be recovered without a backup. Keep your device and storage accounts appropriately protected.
+
+## Voice input in the v2 development build
+
+Voice work drafts request microphone and speech permission only when you choose to record. English recognition must run on this device; if it is unavailable, use manual entry. A short protected temporary recording is excluded from pay backups and removed on completion/cancellation; abandoned cleanup is retried at next launch. Cleanup problems are disclosed, and **Delete all local data** also retries owned-audio removal. The app adds no background microphone mode or server-recognition fallback. Review the reading and all proposed clock facts before applying them, then save work separately.
+
+## Device-local activity in the v2 development build
+
+Open **Settings → Device-local activity** to inspect or disable local milestone counts. This ledger records closed event labels, counts and UTC usage days; it does not record pay amounts, payroll dates, names, document text or arbitrary attributes. Nothing is sent to a collector. Existing subscriptions and renewals are observations, not new-customer conversion evidence.
+
+**Preview local diagnostic file** shows the exact JSON before you choose a Files destination. Usage days and counts can still be personal; the file is not anonymous. Share it only deliberately. **Clear only local activity** removes these observations while keeping the recording preference and your pay records. Exported copies remain in their selected locations.
+
+The daily breakdown retains up to 400 observed UTC days. Disabled recording, failures and bounded deduplication can make counts incomplete. A pay-data backup does not include or restore this ledger. **Delete all local data** also clears activity observations while preserving your recording preference.
 
 ## Review or remove retained originals
 
-Go to **Settings → Privacy and local data → Original paystubs**. Choose **Remove original** for the selected document, then read and confirm the consequence. An audit’s **Remove this original** action provides the same kind of source removal.
+Go to **Settings → Privacy and local data → Original documents**. Choose **Remove original** for the selected document, then read and confirm the consequence. An audit’s **Remove this original** action provides the same kind of source removal.
 
 Every audit revision sharing that original loses access to its document and associated OCR excerpts. Confirmed figures and calculation records remain. This is different from deleting the entire period.
+
+For a v2 benefits statement, removing its original keeps saved observations and comparisons; every revision sharing that original loses access to its bytes. Benefits checks remain separate from wage-period records.
+
+For an imported agreement, removing its original keeps saved review decisions and rule-snapshot citations. Reattach only the exact same PDF when you need to restore that source; a changed document is a separate import. An import referenced by a saved draft or rule history cannot be deleted as unused.
 
 Files already exported elsewhere are not removed. A removed original is also absent from future backups, although an earlier backup may still contain it.
 

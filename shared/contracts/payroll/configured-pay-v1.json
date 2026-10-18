@@ -1,0 +1,1076 @@
+{
+  "format": "com.streamentry.linepay.configured-pay-fixtures",
+  "version": 1,
+  "purpose": "Synthetic independent arithmetic for native client parity; not a legal/payroll applicability audit.",
+  "premiumCombination": "highestApplicable",
+  "cases": [
+    {
+      "id": "straight-time",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "8 × 50 = 400.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.straight-time",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "400.00",
+        "allowances": "0.00",
+        "workedAmount": "400.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 28800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.straight-time",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "daily-overtime",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "8 × 50 + 2 × 75 = 550.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.daily-overtime",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T17:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "5c0b4533-3bc2-5b45-b2e5-93bd7f6a785a"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "550.00",
+        "allowances": "0.00",
+        "workedAmount": "550.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 36000,
+        "multipliers": [
+          "1",
+          "1.5"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.daily-overtime",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "daily-double-time",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "8 × 50 + 4 × 75 + 2 × 100 = 900.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          },
+          {
+            "afterHours": "12",
+            "multiplier": "2"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.daily-double-time",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T21:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "856b9ff7-24c3-5935-991b-7027547498d3"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "900.00",
+        "allowances": "0.00",
+        "workedAmount": "900.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 50400,
+        "multipliers": [
+          "1",
+          "1.5",
+          "2"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.daily-double-time",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "unpaid-break",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "8.5 elapsed hours less 0.5 unpaid = 8 worked; 8 × 50 = 400.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.unpaid-break",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T15:30:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [
+            {
+              "startUTC": "2026-10-16T12:00:00Z",
+              "endUTC": "2026-10-16T12:30:00Z",
+              "id": "edecc4e4-9e12-549f-8f1c-d50a52ec47ed"
+            }
+          ],
+          "id": "ad28171c-621e-5625-9e39-e9e30c90578b"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "400.00",
+        "allowances": "0.00",
+        "workedAmount": "400.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 28800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.unpaid-break",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "midnight-daily-reset",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "5 hours before midnight + 7 after = 12; neither local day exceeds configured 8h tier; 12 × 50 = 600.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.midnight-daily-reset",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T19:00:00Z",
+          "endUTC": "2026-10-17T07:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "43c3c66a-01c3-599a-b7f4-70072c743f17"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "600.00",
+        "allowances": "0.00",
+        "workedAmount": "600.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 43200,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16",
+          "2026-10-17"
+        ],
+        "reference": {
+          "id": "synthetic.midnight-daily-reset",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "spring-forward",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "New York 01:30 EST to 04:30 EDT = 2 elapsed hours; 2 × 50 = 100.",
+      "timeZone": "America/New_York",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.spring-forward",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-03-08T06:30:00Z",
+          "endUTC": "2026-03-08T08:30:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "ed0f0ff6-53b3-520d-a779-502cd74372b5"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "100.00",
+        "allowances": "0.00",
+        "workedAmount": "100.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 7200,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-03-08"
+        ],
+        "reference": {
+          "id": "synthetic.spring-forward",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "fall-back",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "New York 00:30 EDT to 02:30 EST = 3 elapsed hours; 3 × 50 = 150.",
+      "timeZone": "America/New_York",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.fall-back",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-11-01T04:30:00Z",
+          "endUTC": "2026-11-01T07:30:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "a32a904c-1539-5c1d-bfed-7a69d779e291"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "150.00",
+        "allowances": "0.00",
+        "workedAmount": "150.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 10800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-11-01"
+        ],
+        "reference": {
+          "id": "synthetic.fall-back",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "isolated-callout-minimum",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "1 worked × 50 + 3 guaranteed × 50 = 200; guarantee adds no worked time.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.isolated-callout-minimum",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T01:00:00Z",
+          "endUTC": "2026-10-16T02:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "10000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": [],
+          "id": "48a531f0-1a15-5708-9654-79666f81076c"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "200.00",
+        "allowances": "0.00",
+        "workedAmount": "50.00",
+        "calloutGuarantee": "150.00",
+        "actualWorkedSeconds": 3600,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.isolated-callout-minimum",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "split-same-callout",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Two adjacent 1h segments of the same event: 2 × 50 worked + 2 × 50 guarantee = 200 once.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.split-same-callout",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T01:00:00Z",
+          "endUTC": "2026-10-16T02:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "10000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": [],
+          "id": "0dd4c673-1aaa-5da7-bc4b-bcea0905cd98"
+        },
+        {
+          "startUTC": "2026-10-16T02:00:00Z",
+          "endUTC": "2026-10-16T03:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "10000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": [],
+          "id": "a6be19c7-a9dc-5af4-b534-8a11dad5d536"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "200.00",
+        "allowances": "0.00",
+        "workedAmount": "100.00",
+        "calloutGuarantee": "100.00",
+        "actualWorkedSeconds": 7200,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.split-same-callout",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "separate-callouts",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Two explicitly separate isolated 1h events: each receives 4 × 50, totaling 400.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.separate-callouts",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T01:00:00Z",
+          "endUTC": "2026-10-16T02:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "10000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": [],
+          "id": "0bd86ab2-f060-54a0-9dd4-86969102daef"
+        },
+        {
+          "startUTC": "2026-10-16T06:00:00Z",
+          "endUTC": "2026-10-16T07:00:00Z",
+          "kind": "callout",
+          "calloutEventID": "10000000-0000-0000-0000-000000000002",
+          "unpaidBreaks": [],
+          "id": "e677baaf-ba7c-5540-9238-56a148b47d74"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "400.00",
+        "allowances": "0.00",
+        "workedAmount": "100.00",
+        "calloutGuarantee": "300.00",
+        "actualWorkedSeconds": 7200,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.separate-callouts",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "separate-per-diem",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Two 8h work dates: wages 16 × 50 = 800; configured allowance 2 × 100 = 200, kept separate.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "100.00",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.separate-per-diem",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "9354c3ac-438c-574f-bcd3-fa64cf432fe3"
+        },
+        {
+          "startUTC": "2026-10-17T07:00:00Z",
+          "endUTC": "2026-10-17T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "6c149ca8-2e09-52b0-a965-9a2941659963"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "800.00",
+        "allowances": "200.00",
+        "workedAmount": "800.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 57600,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16",
+          "2026-10-17"
+        ],
+        "reference": {
+          "id": "synthetic.separate-per-diem",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "highest-not-stacked",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Sunday multiplier 2 beats configured 1.5 tier; 8 × 50 × 2 = 800, not compounded.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "0",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [
+          {
+            "weekday": "sunday",
+            "multiplier": "2"
+          }
+        ],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.highest-not-stacked",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-18T07:00:00Z",
+          "endUTC": "2026-10-18T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "435fab5b-2cc2-553c-866b-43d8dbf335b5"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "800.00",
+        "allowances": "0.00",
+        "workedAmount": "800.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 28800,
+        "multipliers": [
+          "2"
+        ],
+        "workDates": [
+          "2026-10-18"
+        ],
+        "reference": {
+          "id": "synthetic.highest-not-stacked",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "minute-rounding",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "19.99 × 60/3600 = 0.333166…; explicit half-up cent rounding gives 0.33.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "19.99",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.minute-rounding",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:01:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "ad10cd0a-bc4a-54fc-9164-c6eb804348d5"
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "0.33",
+        "allowances": "0.00",
+        "workedAmount": "0.33",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 60,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.minute-rounding",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "currency-context",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "8 × CAD 42.125 = CAD 337; currency is preserved without conversion.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "CAD",
+        "hourlyRate": "42.125",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.currency-context",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "67e9759f-7a08-5a56-b005-5350ea812afe"
+        }
+      ],
+      "expected": {
+        "currency": "CAD",
+        "wages": "337.00",
+        "allowances": "0.00",
+        "workedAmount": "337.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 28800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.currency-context",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "one-second-half-cent",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "18 × 1/3600 = 0.005 exactly; half-up cent rounding gives 0.01.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "18.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.one-second-half-cent",
+        "version": "1"
+      },
+      "work": [
+        {
+          "id": "8d0d4648-7289-5e13-a50d-8d2aff0ca59c",
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:00:01Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "0.01",
+        "allowances": "0.00",
+        "workedAmount": "0.01",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 1,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.one-second-half-cent",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "minute-half-cent",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "58.50 × 60/3600 = 0.975 exactly; half-up cent rounding gives 0.98.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "58.50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.minute-half-cent",
+        "version": "1"
+      },
+      "work": [
+        {
+          "id": "74070d20-e33f-543d-b19f-826687d71d76",
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:01:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "0.98",
+        "allowances": "0.00",
+        "workedAmount": "0.98",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 60,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.minute-half-cent",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "partitioned-minute-half-cent",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Two 30-second parts at 58.50 total exactly 0.975 before pay-category half-up rounding, giving 0.98.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "58.50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.partitioned-minute-half-cent",
+        "version": "1"
+      },
+      "work": [
+        {
+          "id": "135d2a81-ee52-5131-803b-65101bdee58b",
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:00:30Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "2ad253a1-36dd-51ad-b31d-a8599e55ecff",
+          "startUTC": "2026-10-16T07:00:30Z",
+          "endUTC": "2026-10-16T07:01:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "0.98",
+        "allowances": "0.00",
+        "workedAmount": "0.98",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 60,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.partitioned-minute-half-cent",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "half-hour-half-cent",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "19.99 × 1800/3600 = 9.995 exactly; half-up cent rounding gives 10.00.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "19.99",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.half-hour-half-cent",
+        "version": "1"
+      },
+      "work": [
+        {
+          "id": "635c17a5-6f83-5867-ac69-155e4e0a895e",
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:30:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "10.00",
+        "allowances": "0.00",
+        "workedAmount": "10.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 1800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.half-hour-half-cent",
+          "version": "1"
+        }
+      }
+    },
+    {
+      "id": "partitioned-half-hour-half-cent",
+      "scope": "Configured synthetic rules only; no legal or agreement certification.",
+      "arithmetic": "Sum rate-times-seconds before division: 19.99 × (1 + 1799)/3600 = 9.995, rounded once to 10.00; recurring per-part decimals must not lower the target.",
+      "timeZone": "UTC",
+      "agreement": {
+        "currency": "USD",
+        "hourlyRate": "19.99",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic.partitioned-half-hour-half-cent",
+        "version": "1"
+      },
+      "work": [
+        {
+          "id": "210ee0c0-0685-5d0e-b005-b8fdf1fc25c6",
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T07:00:01Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "e75a4864-9c43-578c-8072-b3789fddda12",
+          "startUTC": "2026-10-16T07:00:01Z",
+          "endUTC": "2026-10-16T07:30:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "expected": {
+        "currency": "USD",
+        "wages": "10.00",
+        "allowances": "0.00",
+        "workedAmount": "10.00",
+        "calloutGuarantee": "0.00",
+        "actualWorkedSeconds": 1800,
+        "multipliers": [
+          "1"
+        ],
+        "workDates": [
+          "2026-10-16"
+        ],
+        "reference": {
+          "id": "synthetic.partitioned-half-hour-half-cent",
+          "version": "1"
+        }
+      }
+    }
+  ]
+}

@@ -42,6 +42,8 @@ DST changes elapsed time. A wall-clock repeat should propose the intended local 
 
 ## 3. Exact money and explicit rounding
 
+Keep recorded durations and tier positions in exact seconds through monetary aggregation. Do not turn seconds into recurring decimal hours before pricing: one minute at USD 58.50/hour is exactly USD 0.975, which rounds half-up to USD 0.98. For segmented work, sum exact rate-times-seconds-times-multiplier numerators at the declared rounding boundary before dividing by 3,600. Displayed decimal hours are not the financial source of truth. [ADR 0016](../../adr/0016-exact-time-rounding-and-saved-checks.md) records the precision correction and saved-result/version policy.
+
 Use decimal or fixed-point values with currency metadata, never binary floating point for wages. Parsing consumes the entire string. Decimal separator/grouping behavior is explicit; ambiguous input is rejected instead of accepted partially. Reject invalid currency, NaN, and values outside the supported business range. Negative adjustment workflows need their own semantics rather than a silent absolute-value conversion.
 
 Persist rates at their allowed precision, durations as facts, and the rounding policy/version. Multiplication, subtotal aggregation, and rounding points are part of the rule contract. Prefer no intermediate rounding unless a reviewed policy requires it. If payroll rounds per component but the app rounds per period, expose the method and material difference rather than hiding it behind a tolerance.

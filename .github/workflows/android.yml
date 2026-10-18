@@ -1,0 +1,132 @@
+name: Android
+
+on:
+  push:
+    branches: [dev, testing]
+    paths:
+      - "apps/android/**"
+      - "shared/contracts/**"
+      - "scripts/check-android.sh"
+      - "scripts/install-maestro-cli.sh"
+      - "scripts/test-android-maestro.sh"
+      - ".maestro/android/**"
+      - ".github/workflows/android.yml"
+      - "AGENTS.md"
+  pull_request:
+    paths:
+      - "apps/android/**"
+      - "shared/contracts/**"
+      - "scripts/check-android.sh"
+      - "scripts/install-maestro-cli.sh"
+      - "scripts/test-android-maestro.sh"
+      - ".maestro/android/**"
+      - ".github/workflows/android.yml"
+      - "AGENTS.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linepay-android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.build/android-gradle
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up JDK 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install pinned Android SDK packages
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDK_MANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          AVD_MANAGER="$SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+          if [[ ! -x "$SDK_MANAGER" || ! -x "$AVD_MANAGER" ]]; then
+            echo "error: Android command-line tools are missing from the runner SDK" >&2
+            exit 1
+          fi
+          export ANDROID_HOME="$SDK_ROOT"
+          export ANDROID_SDK_ROOT="$SDK_ROOT"
+          set +o pipefail
+          yes | "$SDK_MANAGER" --sdk_root="$SDK_ROOT" --licenses
+          set -o pipefail
+          "$SDK_MANAGER" --sdk_root="$SDK_ROOT" --install \
+            'platform-tools' \
+            'platforms;android-36' \
+            'build-tools;36.0.0' \
+            'emulator' \
+            'system-images;android-36;google_apis;x86_64'
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK_ROOT/emulator" >> "$GITHUB_PATH"
+      - name: Run JVM, app build, release build, and lint gates
+        run: bash scripts/check-android.sh unit
+      - name: Create and boot one API 36 test emulator
+        run: |
+          SDK_ROOT="$ANDROID_SDK_ROOT"
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/android-avd"
+          export ANDROID_USER_HOME="$RUNNER_TEMP/android-user"
+          export ANDROID_EMULATOR_HOME="$RUNNER_TEMP/android-emulator-home"
+          mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_USER_HOME" "$ANDROID_EMULATOR_HOME"
+          "$SDK_ROOT/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name LinePaycheck_E2E_API_36 \
+            --path "$ANDROID_AVD_HOME/LinePaycheck_E2E_API_36.avd" \
+            --package 'system-images;android-36;google_apis;x86_64' \
+            --device pixel_8 \
+            --sdcard 512M
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_USER_HOME=$ANDROID_USER_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_EMULATOR_HOME=$ANDROID_EMULATOR_HOME" >> "$GITHUB_ENV"
+          "$SDK_ROOT/emulator/emulator" \
+            -avd LinePaycheck_E2E_API_36 \
+            -no-window -no-snapshot -no-audio -no-boot-anim -no-metrics \
+            -gpu swiftshader_indirect -port 5554 \
+            > "$RUNNER_TEMP/linepay-android-emulator.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/linepay-android-emulator.pid"
+          adb -s emulator-5554 wait-for-device
+          for attempt in $(seq 1 120); do
+            if [[ "$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+              break
+            fi
+            sleep 2
+          done
+          if [[ "$(adb -s emulator-5554 shell getprop sys.boot_completed | tr -d '\r')" != "1" ]]; then
+            cat "$RUNNER_TEMP/linepay-android-emulator.log" >&2
+            exit 1
+          fi
+          adb devices -l
+      - name: Run connected Android user journey
+        run: bash scripts/check-android.sh device
+      - name: Install checksum-pinned Maestro CLI
+        run: bash scripts/install-maestro-cli.sh
+        env:
+          MAESTRO_CLI_NO_ANALYTICS: "1"
+      - name: Run Android Maestro black-box flow
+        run: bash scripts/test-android-maestro.sh
+      - name: Retain Android build and device evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-e2e-${{ github.sha }}
+          path: |
+            apps/android/app/build/outputs/apk/release/app-release-unsigned.apk
+            apps/android/app/build/reports/lint-results-debug.html
+            apps/android/app/build/test-results/testDebugUnitTest/
+            apps/android/app/build/outputs/androidTest-results/connected/debug/
+            apps/android/build/reports/dependency-verification/
+            .build/maestro-results/
+            ${{ runner.temp }}/linepay-android-emulator.log
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn

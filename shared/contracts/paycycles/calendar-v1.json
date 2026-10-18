@@ -1,0 +1,354 @@
+{
+  "format": "com.streamentry.linepay.calendar-paycycle-fixtures",
+  "version": 1,
+  "scope": "Synthetic calendar boundaries, not a statutory workweek or legal-pay profile.",
+  "cases": [
+    {
+      "id": "weekly-utc",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2026-10-05",
+        "manualEndDate": "2026-10-11",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-10-05",
+        "endDate": "2026-10-11",
+        "endExclusiveDate": "2026-10-12",
+        "startUTC": "2026-10-05T00:00:00Z",
+        "endExclusiveUTC": "2026-10-12T00:00:00Z",
+        "elapsedSeconds": 604800
+      }
+    },
+    {
+      "id": "biweekly-utc",
+      "input": {
+        "cadence": "biweekly",
+        "startDate": "2026-10-05",
+        "manualEndDate": "2026-10-18",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-10-05",
+        "endDate": "2026-10-18",
+        "endExclusiveDate": "2026-10-19",
+        "startUTC": "2026-10-05T00:00:00Z",
+        "endExclusiveUTC": "2026-10-19T00:00:00Z",
+        "elapsedSeconds": 1209600
+      }
+    },
+    {
+      "id": "first-half",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-01",
+        "manualEndDate": "2026-01-15",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-01-01",
+        "endDate": "2026-01-15",
+        "endExclusiveDate": "2026-01-16",
+        "startUTC": "2026-01-01T00:00:00Z",
+        "endExclusiveUTC": "2026-01-16T00:00:00Z",
+        "elapsedSeconds": 1296000
+      }
+    },
+    {
+      "id": "second-half",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-16",
+        "manualEndDate": "2026-01-31",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-01-16",
+        "endDate": "2026-01-31",
+        "endExclusiveDate": "2026-02-01",
+        "startUTC": "2026-01-16T00:00:00Z",
+        "endExclusiveUTC": "2026-02-01T00:00:00Z",
+        "elapsedSeconds": 1382400
+      }
+    },
+    {
+      "id": "february-common",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-02-16",
+        "manualEndDate": "2026-02-28",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-28",
+        "endExclusiveDate": "2026-03-01",
+        "startUTC": "2026-02-16T00:00:00Z",
+        "endExclusiveUTC": "2026-03-01T00:00:00Z",
+        "elapsedSeconds": 1123200
+      }
+    },
+    {
+      "id": "february-leap",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2028-02-16",
+        "manualEndDate": "2028-02-29",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2028-02-16",
+        "endDate": "2028-02-29",
+        "endExclusiveDate": "2028-03-01",
+        "startUTC": "2028-02-16T00:00:00Z",
+        "endExclusiveUTC": "2028-03-01T00:00:00Z",
+        "elapsedSeconds": 1209600
+      }
+    },
+    {
+      "id": "year-boundary",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-12-16",
+        "manualEndDate": "2026-12-31",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2026-12-16",
+        "endDate": "2026-12-31",
+        "endExclusiveDate": "2027-01-01",
+        "startUTC": "2026-12-16T00:00:00Z",
+        "endExclusiveUTC": "2027-01-01T00:00:00Z",
+        "elapsedSeconds": 1382400
+      }
+    },
+    {
+      "id": "la-spring-half",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-03-01",
+        "manualEndDate": "2026-03-15",
+        "timeZone": "America/Los_Angeles"
+      },
+      "expected": {
+        "startDate": "2026-03-01",
+        "endDate": "2026-03-15",
+        "endExclusiveDate": "2026-03-16",
+        "startUTC": "2026-03-01T08:00:00Z",
+        "endExclusiveUTC": "2026-03-16T07:00:00Z",
+        "elapsedSeconds": 1292400
+      }
+    },
+    {
+      "id": "la-fall-half",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-11-01",
+        "manualEndDate": "2026-11-15",
+        "timeZone": "America/Los_Angeles"
+      },
+      "expected": {
+        "startDate": "2026-11-01",
+        "endDate": "2026-11-15",
+        "endExclusiveDate": "2026-11-16",
+        "startUTC": "2026-11-01T07:00:00Z",
+        "endExclusiveUTC": "2026-11-16T08:00:00Z",
+        "elapsedSeconds": 1299600
+      }
+    },
+    {
+      "id": "la-spring-week",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2026-03-02",
+        "manualEndDate": "2026-03-08",
+        "timeZone": "America/Los_Angeles"
+      },
+      "expected": {
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-08",
+        "endExclusiveDate": "2026-03-09",
+        "startUTC": "2026-03-02T08:00:00Z",
+        "endExclusiveUTC": "2026-03-09T07:00:00Z",
+        "elapsedSeconds": 601200
+      }
+    },
+    {
+      "id": "la-fall-biweekly",
+      "input": {
+        "cadence": "biweekly",
+        "startDate": "2026-10-26",
+        "manualEndDate": "2026-11-08",
+        "timeZone": "America/Los_Angeles"
+      },
+      "expected": {
+        "startDate": "2026-10-26",
+        "endDate": "2026-11-08",
+        "endExclusiveDate": "2026-11-09",
+        "startUTC": "2026-10-26T07:00:00Z",
+        "endExclusiveUTC": "2026-11-09T08:00:00Z",
+        "elapsedSeconds": 1213200
+      }
+    },
+    {
+      "id": "manual-leap-span",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2028-02-28",
+        "manualEndDate": "2028-03-02",
+        "timeZone": "UTC"
+      },
+      "expected": {
+        "startDate": "2028-02-28",
+        "endDate": "2028-03-02",
+        "endExclusiveDate": "2028-03-03",
+        "startUTC": "2028-02-28T00:00:00Z",
+        "endExclusiveUTC": "2028-03-03T00:00:00Z",
+        "elapsedSeconds": 345600
+      }
+    },
+    {
+      "id": "manual-fall-day",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2026-11-01",
+        "manualEndDate": "2026-11-01",
+        "timeZone": "America/New_York"
+      },
+      "expected": {
+        "startDate": "2026-11-01",
+        "endDate": "2026-11-01",
+        "endExclusiveDate": "2026-11-02",
+        "startUTC": "2026-11-01T04:00:00Z",
+        "endExclusiveUTC": "2026-11-02T05:00:00Z",
+        "elapsedSeconds": 90000
+      }
+    },
+    {
+      "id": "midnight-gap-does-not-shift-next-boundary",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2018-11-04",
+        "manualEndDate": "2018-11-10",
+        "timeZone": "America/Sao_Paulo"
+      },
+      "expected": {
+        "startDate": "2018-11-04",
+        "endDate": "2018-11-10",
+        "endExclusiveDate": "2018-11-11",
+        "startUTC": "2018-11-04T03:00:00Z",
+        "endExclusiveUTC": "2018-11-11T02:00:00Z",
+        "elapsedSeconds": 601200
+      }
+    },
+    {
+      "id": "week-spanning-skipped-calendar-date",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2011-12-26",
+        "manualEndDate": "2012-01-01",
+        "timeZone": "Pacific/Apia"
+      },
+      "expected": {
+        "startDate": "2011-12-26",
+        "endDate": "2012-01-01",
+        "endExclusiveDate": "2012-01-02",
+        "startUTC": "2011-12-26T10:00:00Z",
+        "endExclusiveUTC": "2012-01-01T10:00:00Z",
+        "elapsedSeconds": 518400
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "bad-cutoff-2",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-02",
+        "manualEndDate": "2026-01-31",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "bad-cutoff-15",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-15",
+        "manualEndDate": "2026-01-31",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "bad-cutoff-17",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-17",
+        "manualEndDate": "2026-01-31",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "bad-cutoff-31",
+      "input": {
+        "cadence": "semimonthly",
+        "startDate": "2026-01-31",
+        "manualEndDate": "2026-01-31",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "invalid-calendar-date",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2026-02-30",
+        "manualEndDate": "2026-03-01",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "reversed-custom",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2026-10-05",
+        "manualEndDate": "2026-10-04",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "id": "unknown-timezone",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2026-10-05",
+        "manualEndDate": "2026-10-11",
+        "timeZone": "Imaginary/Unknown"
+      }
+    },
+    {
+      "id": "wholly-skipped-start-date",
+      "input": {
+        "cadence": "weekly",
+        "startDate": "2011-12-30",
+        "manualEndDate": "2012-01-05",
+        "timeZone": "Pacific/Apia"
+      }
+    },
+    {
+      "id": "wholly-skipped-exclusive-end-date",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2011-12-28",
+        "manualEndDate": "2011-12-29",
+        "timeZone": "Pacific/Apia"
+      }
+    },
+    {
+      "id": "wholly-skipped-manual-last-date",
+      "input": {
+        "cadence": "manual",
+        "startDate": "2011-12-28",
+        "manualEndDate": "2011-12-30",
+        "timeZone": "Pacific/Apia"
+      }
+    }
+  ]
+}

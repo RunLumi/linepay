@@ -15,9 +15,10 @@ enum TemporaryExports {
         let expected = directory.standardizedFileURL
         let candidate = url.standardizedFileURL
         let name = candidate.deletingPathExtension().lastPathComponent
-        let prefix = "LinePaycheck-audit-"
+        let prefixes = ["LinePaycheck-audit-", "LinePaycheck-benefits-"]
         guard candidate.deletingLastPathComponent() == expected,
-            candidate.pathExtension == "pdf", name.hasPrefix(prefix),
+            candidate.pathExtension == "pdf",
+            let prefix = prefixes.first(where: { name.hasPrefix($0) }),
             UUID(uuidString: String(name.dropFirst(prefix.count))) != nil
         else { throw TemporaryExportError.unsafePath }
         if FileManager.default.fileExists(atPath: expected.path) {

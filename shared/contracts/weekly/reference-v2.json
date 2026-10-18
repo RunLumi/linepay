@@ -1,0 +1,894 @@
+{
+  "format": "com.streamentry.linepay.weekly-reference-fixtures",
+  "version": 2,
+  "scope": "Synthetic restricted mathematical/classification vectors, not legal applicability or paycheck mapping approval",
+  "cases": [
+    {
+      "id": "EX10-ordinary48",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "50.00",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "200.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "200.00",
+        "cashRemuneration": "2400.00",
+        "expectedCash": "2600.00",
+        "allocationAmounts": [
+          "200.00"
+        ]
+      }
+    },
+    {
+      "id": "EX12-bonus",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000032",
+            "amount": {
+              "amount": "240",
+              "currency": "USD"
+            },
+            "kind": "includableBonus",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "55.00",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "220.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "220.00",
+        "cashRemuneration": "2640.00",
+        "expectedCash": "2860.00",
+        "allocationAmounts": [
+          "220.00"
+        ]
+      }
+    },
+    {
+      "id": "EX13-weighted",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "30",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "40",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000012",
+            "payPeriodID": "61000000-0000-0000-0000-000000000002",
+            "hours": "20",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "60",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "180000",
+        "regularRate": "48.00",
+        "overtimeSeconds": "36000",
+        "statutoryAdditionalPremium": "240.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "240.00",
+        "cashRemuneration": "2400.00",
+        "expectedCash": "2640.00",
+        "allocationAmounts": [
+          "120.00",
+          "120.00"
+        ]
+      }
+    },
+    {
+      "id": "EX14-eligible-extra",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000032",
+            "amount": {
+              "amount": "400",
+              "currency": "USD"
+            },
+            "kind": "extraPremium",
+            "premiumCredit": "eligibleExtraPremium"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "50.00",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "200.00",
+        "eligibleExtraPremiumCredit": "400.00",
+        "remainingAdditionalPremium": "0.00",
+        "cashRemuneration": "2800.00",
+        "expectedCash": "2800.00",
+        "allocationAmounts": []
+      }
+    },
+    {
+      "id": "EX35-noncreditable-work-premium",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000032",
+            "amount": {
+              "amount": "240",
+              "currency": "USD"
+            },
+            "kind": "extraPremium",
+            "premiumCredit": "ineligible"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "55.00",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "220.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "220.00",
+        "cashRemuneration": "2640.00",
+        "expectedCash": "2860.00",
+        "allocationAmounts": [
+          "220.00"
+        ]
+      }
+    },
+    {
+      "id": "exact-second-fragments",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 144001,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000012",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 28799,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "50.00",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "200.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "200.00",
+        "cashRemuneration": "2400.00",
+        "expectedCash": "2600.00",
+        "allocationAmounts": [
+          "200.00"
+        ]
+      }
+    },
+    {
+      "id": "allocation-residual",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "1",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "20",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000012",
+            "payPeriodID": "61000000-0000-0000-0000-000000000002",
+            "hours": "47",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2370",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "172800",
+        "regularRate": "49.38",
+        "overtimeSeconds": "28800",
+        "statutoryAdditionalPremium": "197.50",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "197.50",
+        "cashRemuneration": "2370.00",
+        "expectedCash": "2567.50",
+        "allocationAmounts": [
+          "1.67",
+          "195.83"
+        ]
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "boundary-unconfirmed",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": false,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "incomplete-week",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": false,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "unknown-applicability",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "unknown",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "unknown-premium",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000032",
+            "amount": {
+              "amount": "240",
+              "currency": "USD"
+            },
+            "kind": "extraPremium",
+            "premiumCredit": "unknown"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "duplicate-work",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "mixed-currency",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "CAD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "invalid-rounding",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 9,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "remuneration-without-hours",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "0",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "employer-unconfirmed",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": false,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "payments-unconfirmed",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "61000000-0000-0000-0000-000000000011",
+            "payPeriodID": "61000000-0000-0000-0000-000000000001",
+            "hours": "48",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "50",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "61000000-0000-0000-0000-000000000031",
+            "amount": {
+              "amount": "2400",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": false
+      }
+    }
+  ]
+}

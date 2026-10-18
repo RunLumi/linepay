@@ -75,14 +75,16 @@ struct FirstPayResultView: View {
                     Section {
                         PayAmount(
                             label: "Expected wages for this work", money: calculation.expectedWages,
-                            prominent: true)
+                            prominent: true
+                        )
+                        .onAppear { model.observedExpectedPay(periodID: context.id) }
                         if calculation.expectedAllowances.amount > 0 {
                             PayAmount(
                                 label: "Separate expected per diem",
                                 money: calculation.expectedAllowances)
                         }
                         Text(
-                            "\(LinePayFormat.hours(model.totalHours)) h worked · pay period \(LinePayFormat.payPeriod(context.window, timeZoneIdentifier: context.timeZoneIdentifier))"
+                            "\(LinePayFormat.workDuration(model.totalHours)) worked · pay period \(LinePayFormat.payPeriod(context.window, timeZoneIdentifier: context.timeZoneIdentifier))"
                         )
                         .font(.subheadline).monospacedDigit()
                         Text(
@@ -97,7 +99,7 @@ struct FirstPayResultView: View {
                     }
                     PayLedgerRows(
                         calculation: calculation, agreement: context.agreement,
-                        work: context.workEntries)
+                        work: context.workEntries, model: model)
                 } else {
                     CalculationProblemView(
                         message: model.calculationError ?? "Review your saved work and rules.")

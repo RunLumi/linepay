@@ -9,6 +9,7 @@ final class AppModel {
     @ObservationIgnored private let evidenceStore: any EvidenceStoring
     @ObservationIgnored private let now: () -> Date
 
+    @ObservationIgnored let localActivity: LocalActivityLedger
     private var state: AppPersistentState
     private(set) var calculation: CalculationResult?
     private(set) var calculationError: String?
@@ -18,11 +19,13 @@ final class AppModel {
     init(
         store: any AppStateStoring = MemoryStateStore(),
         evidenceStore: any EvidenceStoring = MemoryEvidenceStore(),
-        now: @escaping () -> Date = { Date() }
+        now: @escaping () -> Date = { Date() },
+        activity: LocalActivityLedger? = nil
     ) {
         self.store = store
         self.evidenceStore = evidenceStore
         self.now = now
+        localActivity = activity ?? LocalActivityLedger(now: now)
 
         do {
             state = try store.load() ?? AppPersistentState()
@@ -84,19 +87,19 @@ final class AppModel {
     }
 
     var currentAuditStatus: AuditDisplayStatus {
-        guard let activePeriod = state.activePeriod else { return .notAudited }
-        return auditStatus(
-            calculation: calculation, paystub: activePeriod.paystub,
-            reconciliation: activePeriod.reconciliation
-        )
+        guard let context = periodContext() else { return .notAudited }
+        return status(for: context)
     }
 
     private func auditStatus(
         calculation: CalculationResult?, paystub: ConfirmedPaystub?,
-        reconciliation: ReconciliationResult?
+        reconciliation: ReconciliationResult?, requiresCalculationReview: Bool = false,
+        requiresAssessmentReview: Bool = false
     ) -> AuditDisplayStatus {
         AuditAssessment.evaluate(
-            calculation: calculation, paystub: paystub, reconciliation: reconciliation
+            calculation: calculation, paystub: paystub, reconciliation: reconciliation,
+            requiresCalculationReview: requiresCalculationReview,
+            requiresAssessmentReview: requiresAssessmentReview
         ).status
     }
 
@@ -136,6 +139,9 @@ final class AppModel {
     private func candidateForProfile(
         _ draft: PayProfileDraft, scope: RuleChangeScope = .prospective
     ) throws -> AppPersistentState {
+        if draft.crewRuleAdoption != nil, state.profile != nil, scope != .futurePeriods {
+            throw AppModelError.invalidField("Worker-provided drafts apply only to future periods")
+        }
         let agreement = try makeAgreement(from: draft)
         let existing = state.profile
         var candidate = state
@@ -261,6 +267,15 @@ final class AppModel {
             preferredCadence: draft.preferredCadence,
             baselineAgreement: baseline, agreementChanges: changes.isEmpty ? nil : changes)
         candidate.profile = profile
+        if let adoption = draft.crewRuleAdoption {
+            try adoption.validate(agreement: agreement)
+            candidate.crewRuleOrigins =
+                (candidate.crewRuleOrigins ?? []) + [
+                    CrewRuleOrigin(
+                        adoption: adoption, agreement: agreement,
+                        timeZoneIdentifier: draft.timeZoneIdentifier)
+                ]
+        }
         if existing == nil {
             candidate.onboardingProgress = .firstWork
             let window = try makePeriodWindow(
@@ -477,6 +492,16 @@ final class AppModel {
             localDate(from: end, timeZoneIdentifier: zone)
                 == localDate(from: context.window.displayEndDate, timeZoneIdentifier: zone)
         else { throw AppModelError.invalidPayPeriod }
+        // Confirming a new review is explicit; closed records themselves are never recalculated on read.
+        let reviewedCalculation: CalculationResult?
+        if context.isClosed {
+            reviewedCalculation = try? PayCalculator().calculate(
+                work: context.workEntries.map(\.interval),
+                agreement: context.agreement, changes: context.agreementChanges ?? [],
+                policy: .highestApplicable)
+        } else {
+            reviewedCalculation = self.calculation
+        }
         let currency = context.agreement.hourlyRate.currencyCode
         let grossAmount = try positiveDecimal(
             draft.grossPay, field: "Gross pay", allowZero: true, currencyCode: currency)
@@ -513,11 +538,11 @@ final class AppModel {
             grossBasis: draft.grossBasis, lineLayout: draft.lineLayout,
             hoursBasis: draft.hoursBasis, guaranteeLayout: draft.guaranteeLayout,
             hasUnreviewedFields: hasUnreviewed,
-            hasUnsupportedRules: (context.calculation?.agreementSnapshots ?? [context.agreement])
+            hasUnsupportedRules: (reviewedCalculation?.agreementSnapshots ?? [context.agreement])
                 .contains { !($0.unsupportedRuleNotes ?? "").isEmpty })
         let assessment: PaycheckAssessment
-        let calculation = context.calculation
-        if let calculation = context.calculation {
+        let calculation = reviewedCalculation
+        if let calculation {
             assessment = try PaycheckAssessor().assess(
                 calculation: calculation, agreement: context.agreement, facts: facts)
         } else {
@@ -568,7 +593,7 @@ final class AppModel {
                 AuditRevision(
                     id: prior.id, window: context.window,
                     agreement: context.agreement, timeZoneIdentifier: zone,
-                    workEntries: context.workEntries, calculation: calculation,
+                    workEntries: context.workEntries, calculation: context.calculation,
                     paystub: prior, reconciliation: context.reconciliation,
                     agreementChanges: context.agreementChanges))
         }
@@ -671,8 +696,19 @@ final class AppModel {
             return
         }
 
+        // A cadence edit must not prevent closing an existing period or invent a partial cycle.
+        if profile.preferredCadence == .semimonthly {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .gmt
+            if ![1, 16].contains(calendar.component(.day, from: active.window.endDate)) {
+                candidate.activePeriod = nil
+                try commit(candidate)
+                return
+            }
+        }
+
         switch profile.preferredCadence {
-        case .weekly, .biweekly:
+        case .weekly, .biweekly, .semimonthly:
             let nextWindow = try makePeriodWindow(
                 cadence: profile.preferredCadence,
                 startDate: active.window.endDate,
@@ -687,10 +723,203 @@ final class AppModel {
         try commit(candidate)
     }
 
+    var benefitAuditRecords: [BenefitAuditRecord] { state.benefitAudits ?? [] }
+    var benefitAuditDraft: BenefitAuditDraft? { state.benefitAuditDraft }
+    var benefitRecordedEpochSeconds: Int64 { epochSeconds(now()) }
+
+    func makeBenefitDraft() -> BenefitAuditDraft {
+        let zone = currentTimeZoneIdentifier
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: zone) ?? .gmt
+        let start = activePeriod?.window.startDate ?? calendar.startOfDay(for: now())
+        let end =
+            activePeriod?.window.endDate ?? calendar.date(byAdding: .day, value: 1, to: start)
+            ?? start
+        var draft = BenefitAuditDraft(start: start, end: end)
+        draft.timeZoneIdentifier = zone
+        draft.statementTimeZoneIdentifier = zone
+        draft.currencyCode =
+            profile?.agreement.hourlyRate.currencyCode ?? PayProfileDraft.suggestedCurrencyCode
+        draft.statementCurrencyCode = draft.currencyCode
+        draft.roundingScale = NumberEntry.amountFractionDigits(currencyCode: draft.currencyCode)
+        return draft
+    }
+
+    func retainBenefitStatement(data: Data, filename: String, draftID: UUID) throws {
+        guard var draft = benefitAuditDraft, draft.id == draftID, draft.hasStatement,
+            !data.isEmpty, data.count <= AgreementDocumentService.maximumBytes,
+            data.starts(with: Data("%PDF".utf8)), !filename.isEmpty, filename.count <= 512
+        else {
+            throw AppModelError.invalidField(
+                "Open the intended benefits draft and choose a PDF up to 25 MB")
+        }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: filename,
+            mediaType: "application/pdf", sourceKind: .file, recognizedText: nil)
+        draft.hasStatement = true
+        draft.statementEvidence = evidence
+        draft.statementSHA256 = AgreementDocumentService.digest(data)
+        draft.statementConfirmed = false
+        do { try keepBenefitDraft(draft) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+    }
+
+    /// The benefits feature owns its intent/revision rules; this seam owns the atomic state write.
+    func commitBenefits(records: [BenefitAuditRecord], draft: BenefitAuditDraft?) throws {
+        var candidate = state
+        candidate.benefitAudits = records
+        candidate.benefitAuditDraft = draft
+        let retained = Set(candidate.allEvidence.map(\.id))
+        let removed = state.allEvidence.filter { !retained.contains($0.id) }
+        enqueue(removed, in: &candidate)
+        try commit(candidate)
+        if !removed.isEmpty { try? retryEvidenceDeletion() }
+    }
+
+    var agreementDocuments: [ImportedAgreementDocument] { state.agreementDocuments ?? [] }
+
+    func agreementDocument(id: UUID) -> ImportedAgreementDocument? {
+        state.agreementDocuments?.first { $0.id == id }
+    }
+
+    @discardableResult
+    func retainAgreement(data: Data, filename: String) throws -> UUID {
+        guard !data.isEmpty, data.count <= AgreementDocumentService.maximumBytes,
+            data.starts(with: Data("%PDF".utf8)), !filename.isEmpty, filename.count <= 512,
+            agreementDocuments.count < 64
+        else { throw AppModelError.invalidField("Agreement PDF (up to 25 MB)") }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: filename, mediaType: "application/pdf",
+            sourceKind: .file, recognizedText: nil)
+        let document = ImportedAgreementDocument(
+            id: UUID(), filename: filename, sha256: AgreementDocumentService.digest(data),
+            evidence: evidence, importedEpochSeconds: epochSeconds(now()),
+            extractionVersion: AgreementClauseParser.version)
+        var candidate = state
+        candidate.agreementDocuments = agreementDocuments + [document]
+        do { try commit(candidate) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+        return document.id
+    }
+
+    func canDeleteAgreementImport(id: UUID) -> Bool {
+        !state.referencedAgreementDocumentIDs.contains(id)
+    }
+
+    func deleteUnusedAgreementImport(id: UUID) throws {
+        guard let document = agreementDocument(id: id), canDeleteAgreementImport(id: id) else {
+            throw AppModelError.invalidField(
+                "This agreement is cited by saved rules or an unfinished setup")
+        }
+        var candidate = state
+        candidate.agreementDocuments?.removeAll { $0.id == id }
+        if let evidence = document.evidence { enqueue([evidence], in: &candidate) }
+        try commit(candidate)
+        try retryEvidenceDeletion()
+    }
+
+    func finishAgreementExtraction(id: UUID, result: AgreementExtraction) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }) else {
+            throw AppModelError.invalidField("Agreement document unavailable")
+        }
+        guard state.agreementDocuments?[index].candidates == nil else { return }
+        var candidate = state
+        candidate.agreementDocuments?[index].pageCount = result.pageCount
+        candidate.agreementDocuments?[index].candidates = result.candidates
+        candidate.agreementDocuments?[index].extractionNotice = result.notice
+        try commit(candidate)
+    }
+
+    func saveAgreementReview(id: UUID, review: AgreementImportReview) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }),
+            state.agreementDocuments?[index].candidates != nil
+        else { throw AppModelError.invalidField("Agreement document unavailable") }
+        var candidate = state
+        candidate.agreementDocuments?[index].review = review
+        try commit(candidate)
+    }
+
+    func prepareImportedAgreement(id: UUID, replaceExistingDraft: Bool = false) async throws {
+        guard let original = agreementDocument(id: id), let evidence = original.evidence,
+            let url = evidenceStore.url(for: evidence)
+        else {
+            throw AppModelError.invalidField("Retain the original agreement before preparing rules")
+        }
+        _ = try await AgreementDocumentService.verifiedURL(url, sha256: original.sha256, page: 0)
+        try Task.checkCancellation()
+        guard let document = agreementDocument(id: id), document.evidence == evidence,
+            let review = document.review
+        else { throw AppModelError.invalidField("The agreement changed during review") }
+        guard state.setupDraft == nil || replaceExistingDraft else {
+            throw AppModelError.invalidField("An unfinished rule setup already exists")
+        }
+        let draft = try AgreementImportDraftBuilder.build(
+            document: document, review: review, profile: profile, activePeriod: activePeriod)
+        if !draft.hourlyRate.isEmpty { _ = try previewAgreement(draft) }
+        var candidate = state
+        candidate.setupDraft = draft
+        try commit(candidate)
+    }
+
+    func reattachAgreementOriginal(id: UUID, data: Data) throws {
+        guard let index = state.agreementDocuments?.firstIndex(where: { $0.id == id }),
+            let document = agreementDocument(id: id), document.evidence == nil,
+            data.count <= AgreementDocumentService.maximumBytes,
+            AgreementDocumentService.digest(data) == document.sha256
+        else { throw AppModelError.invalidField("Choose the exact original PDF for this source") }
+        let evidence = try evidenceStore.save(
+            data: data, originalFilename: document.filename, mediaType: "application/pdf",
+            sourceKind: .file, recognizedText: nil)
+        var candidate = state
+        candidate.agreementDocuments?[index].evidence = evidence
+        do { try commit(candidate) } catch {
+            queueUnreferencedEvidence(evidence)
+            throw error
+        }
+    }
+
+    func recordResolution(
+        periodID: UUID, paystubID: UUID? = nil, findingID: String? = nil,
+        status: ResolutionStatus, note: String
+    ) throws {
+        guard let context = periodContext(id: periodID),
+            let targetID = paystubID ?? context.paystub?.id
+        else { throw AppModelError.unconfirmedPaystub }
+        let targetPaystub =
+            context.paystub?.id == targetID
+            ? context.paystub : context.revisions.first { $0.paystub.id == targetID }?.paystub
+        guard let targetPaystub else { throw AppModelError.unconfirmedPaystub }
+        if let findingID,
+            !AuditFinding.contains(findingID, in: targetPaystub)
+        {
+            throw AppModelError.invalidField("Comparison item for the selected paycheck")
+        }
+        let note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !note.isEmpty, note.count <= 4_000 else {
+            throw AppModelError.invalidField("Resolution note (1–4,000 characters)")
+        }
+        var candidate = state
+        var events = candidate.resolutionEvents ?? []
+        guard events.count < 10_000 else {
+            throw AppModelError.invalidField("Resolution history limit reached")
+        }
+        events.append(
+            ResolutionEvent(
+                id: UUID(), periodID: periodID, paystubID: targetID, findingID: findingID,
+                status: status, note: note, recordedEpochSeconds: epochSeconds(now())))
+        candidate.resolutionEvents = events
+        try commit(candidate)
+    }
+
     func deleteHistoryPeriod(id: UUID) throws {
         guard let period = state.history.first(where: { $0.id == id }) else { return }
         var candidate = state
         candidate.history.removeAll { $0.id == id }
+        candidate.resolutionEvents?.removeAll { $0.periodID == id }
         let draftEvidence =
             candidate.paystubDraft?.targetPeriodID == id
             ? candidate.paystubDraft?.sourceEvidence : nil
@@ -720,15 +949,7 @@ final class AppModel {
 
     func auditFindings(calculation: CalculationResult, paystub: ConfirmedPaystub) -> [AuditFinding]
     {
-        guard let assessment = paystub.assessment else { return [] }
-        return assessment.comparisons.filter { $0.unit == .money }.map { item in
-            AuditFinding(
-                id: item.id, title: item.field.rawValue,
-                expected: Money(amount: item.expected, currencyCode: item.currencyCode),
-                paid: Money(amount: item.paid, currencyCode: item.currencyCode),
-                difference: Money(amount: item.difference, currencyCode: item.currencyCode),
-                explanation: "Compared using the paystub layout and gross basis you confirmed.")
-        }
+        AuditFinding.from(paystub: paystub)
     }
 
     func exportBackupURL() throws -> URL {
@@ -743,6 +964,8 @@ final class AppModel {
     }
 
     func resetAllData() throws {
+        try LocalVoiceAudioFiles.removeAll()
+        try localActivity.clear()
         // First persist a deletion queue so a failed file removal stays retryable.
         var empty = AppPersistentState()
         empty.hasUsedFreeAudit = state.hasUsedFreeAudit
@@ -762,6 +985,8 @@ final class AppModel {
             return
         }
         // Explicit user-confirmed destructive recovery, never automatic on a decode error.
+        try LocalVoiceAudioFiles.removeAll()
+        try localActivity.clear()
         try evidenceStore.deleteAll()
         try TemporaryExports.removeAll()
         try store.reset()
@@ -774,6 +999,22 @@ final class AppModel {
     }
 
     var setupDraft: PayProfileDraft? { state.setupDraft }
+    var crewRuleOrigins: [CrewRuleOrigin] { state.crewRuleOrigins ?? [] }
+
+    func prepareCrewRuleDraft(_ draft: PayProfileDraft, replaceExistingDraft: Bool = false) throws {
+        guard draft.crewRuleAdoption != nil else {
+            throw AppModelError.invalidField("Review a worker-provided rule draft first")
+        }
+        guard state.setupDraft == nil || replaceExistingDraft else {
+            throw AppModelError.invalidField("An unfinished rule setup already exists")
+        }
+        let agreement = try previewAgreement(draft)
+        try draft.crewRuleAdoption?.validate(agreement: agreement)
+        if let adoption = draft.crewRuleAdoption {
+            try CrewRuleDraftBuilder.validateIdentity(adoption, among: state.crewRuleOrigins ?? [])
+        }
+        try saveSetupDraft(draft)
+    }
 
     func deferFirstWork() throws {
         var candidate = state
@@ -809,32 +1050,47 @@ final class AppModel {
 
     func periodContext(id: UUID? = nil) -> PayPeriodContext? {
         if let active = state.activePeriod, id == nil || active.id == id {
+            let needsAssessmentReview = CalculationRevisionPolicy.requiresAssessmentReview(
+                saved: active.paystub?.assessment, agreement: active.agreement,
+                calculation: active.auditRevisions?.last?.calculation ?? calculation,
+                lineLayout: active.paystub?.confirmation?.lineLayout)
+            let needsReview =
+                active.auditCompletedEpochSeconds != nil
+                && CalculationRevisionPolicy.requiresReview(
+                    saved: active.auditRevisions?.last?.calculation,
+                    current: calculation)
             return PayPeriodContext(
                 id: active.id, window: active.window, agreement: active.agreement,
                 timeZoneIdentifier: currentTimeZoneIdentifier, workEntries: active.workEntries,
-                calculation: active.auditCompletedEpochSeconds == nil
+                calculation: active.auditCompletedEpochSeconds == nil || needsReview
                     ? calculation
                     : (active.auditRevisions?.last?.calculation ?? calculation),
                 paystub: active.paystub, reconciliation: active.reconciliation,
                 revisions: active.auditRevisions ?? [], isClosed: false,
                 agreementChanges: active.agreementChanges,
-                calculationIssue: calculation == nil ? calculationError : nil)
+                calculationIssue: calculation == nil ? calculationError : nil,
+                resolutionEvents: state.resolutionEvents?.filter { $0.periodID == active.id } ?? [],
+                requiresCalculationReview: needsReview,
+                requiresAssessmentReview: needsAssessmentReview)
         }
         guard let period = state.history.first(where: { $0.id == id }) else { return nil }
         return PayPeriodContext(
             id: period.id, window: period.window, agreement: period.agreement,
             timeZoneIdentifier: timeZoneIdentifier(for: period), workEntries: period.workEntries,
-            calculation: period.calculation, paystub: period.paystub,
+            calculation: period.comparisonCalculation, paystub: period.paystub,
             reconciliation: period.reconciliation,
             revisions: period.auditRevisions ?? [], isClosed: true,
             agreementChanges: period.agreementChanges,
-            calculationIssue: period.calculationIssue)
+            calculationIssue: period.calculationIssue,
+            resolutionEvents: state.resolutionEvents?.filter { $0.periodID == period.id } ?? [])
     }
 
     func status(for context: PayPeriodContext) -> AuditDisplayStatus {
         auditStatus(
             calculation: context.calculation, paystub: context.paystub,
-            reconciliation: context.reconciliation)
+            reconciliation: context.reconciliation,
+            requiresCalculationReview: context.requiresCalculationReview,
+            requiresAssessmentReview: context.requiresAssessmentReview)
     }
 
     func saveSetupDraft(_ draft: PayProfileDraft?) throws {
@@ -1049,9 +1305,11 @@ final class AppModel {
                 || state.activePeriod?.agreement != candidate.activePeriod?.agreement
                 || state.activePeriod?.workEntries != candidate.activePeriod?.workEntries
                 || state.activePeriod?.agreementChanges != candidate.activePeriod?.agreementChanges
+            let previous = state
             state = candidate
             lastPersistenceError = nil
             if payChanged { recalculate() }
+            localActivity.observeCommittedChange(from: previous, to: candidate)
         } catch {
             lastPersistenceError = error.localizedDescription
             throw AppModelError.persistenceFailed
@@ -1084,63 +1342,72 @@ final class AppModel {
     }
 
     func calculateWeeklyRegularRate(
-        weekStart: Date, completeWorkweek: Bool
+        weekStart: Date, completeWorkweek: Bool,
+        straightTimeRemuneration: Money? = nil,
+        additionalRemuneration: [WeeklyRemunerationFact] = [],
+        remunerationComplete: Bool = false, workweekBoundaryConfirmed: Bool = false
     ) throws -> WeeklyRegularRateResult {
+        guard completeWorkweek else { throw WeeklyRegularRateError.incompleteWorkweek }
+        guard workweekBoundaryConfirmed else {
+            throw WeeklyRegularRateError.workweekBoundaryUnconfirmed
+        }
+        guard remunerationComplete, let straightTimeRemuneration else {
+            throw WeeklyRegularRateError.remunerationIncomplete
+        }
         guard let profile, let rule = profile.agreement.weeklyOvertime else {
             throw WeeklyRegularRateError.applicabilityUnknown
         }
         let zone = profile.timeZoneIdentifier
-        guard let timeZone = TimeZone(identifier: zone) else {
-            throw WeeklyRegularRateError.applicabilityUnknown
-        }
+        guard TimeZone(identifier: zone) != nil,
+            straightTimeRemuneration.currencyCode == profile.agreement.hourlyRate.currencyCode
+        else { throw WeeklyRegularRateError.currencyMismatch }
+        let start = localDate(from: weekStart, timeZoneIdentifier: zone)
+        let seconds = weekStart.timeIntervalSince1970
+        guard seconds.isFinite, seconds == seconds.rounded(),
+            (-62_135_596_800...(253_402_300_799 - 604_800)).contains(seconds)
+        else { throw WeeklyRegularRateError.invalidWorkweek }
+        let startEpoch = Int64(seconds)
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let start = calendar.startOfDay(for: weekStart)
-        guard let end = calendar.date(byAdding: .day, value: 7, to: start) else {
-            throw WeeklyRegularRateError.incompleteWorkweek
+        calendar.timeZone = TimeZone(identifier: zone) ?? .gmt
+        guard let actualWeekday = Weekday(rawValue: calendar.component(.weekday, from: weekStart))
+        else {
+            throw WeeklyRegularRateError.invalidWorkweek
         }
-        let weekStartLocal = localDate(from: start, timeZoneIdentifier: zone)
         let periods =
             state.history.map {
-                ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+                WeeklyStoredPeriod(
+                    id: $0.id, timeZoneIdentifier: timeZoneIdentifier(for: $0),
+                    agreement: $0.agreement, changes: $0.agreementChanges ?? [],
+                    work: $0.workEntries.map(\.interval))
             }
             + [
                 state.activePeriod.map {
-                    ($0.id, $0.window, $0.agreement, $0.agreementChanges ?? [], $0.workEntries)
+                    WeeklyStoredPeriod(
+                        id: $0.id,
+                        timeZoneIdentifier: $0.agreementTimeZone(
+                            fallback: profile.timeZoneIdentifier),
+                        agreement: $0.agreement, changes: $0.agreementChanges ?? [],
+                        work: $0.workEntries.map(\.interval))
                 }
             ].compactMap { $0 }
-        var facts: [WeeklyWorkFact] = []
-        for (periodID, _, agreement, changes, entries) in periods {
-            guard agreement.weeklyOvertime == profile.agreement.weeklyOvertime else {
-                throw WeeklyRegularRateError.applicabilityUnknown
-            }
-            let timeline = try AgreementTimeline(baseline: agreement, changes: changes)
-            for entry in entries {
-                let intervalStart = Date(
-                    timeIntervalSince1970: TimeInterval(entry.interval.startEpochSeconds))
-                let intervalEnd = Date(
-                    timeIntervalSince1970: TimeInterval(entry.interval.endEpochSeconds))
-                guard intervalStart >= start, intervalEnd <= end else { continue }
-                let date = localDate(from: intervalStart, timeZoneIdentifier: zone)
-                let applied = timeline.agreement(on: date)
-                facts.append(
-                    try WeeklyWorkFact(
-                        id: entry.id, payPeriodID: periodID,
-                        hours: entry.interval.durationHours,
-                        straightRate: applied.hourlyRate))
-            }
+        let slices = try WeeklyRecordedWork.slices(
+            weekStart: start, startEpochSeconds: startEpoch, rule: rule, timeZoneIdentifier: zone,
+            periods: periods)
+        let facts = try slices.map {
+            try WeeklyWorkFact(
+                id: UUID(), payPeriodID: $0.payPeriodID,
+                hours: Decimal($0.workedSeconds) / 3_600, straightRate: $0.agreement.hourlyRate,
+                workedSeconds: $0.workedSeconds)
         }
-        let remuneration = try WeeklyRemunerationFact(
-            amount: Money(
-                amount: facts.reduce(Decimal.zero) { $0 + $1.straightTimeAmount.amount },
-                currencyCode: profile.agreement.hourlyRate.currencyCode),
-            kind: .straightTime)
-        let input = try WeeklyRegularRateInput(
-            weekStart: weekStartLocal, workweekStart: rule.workweekStart,
-            completeWorkweek: completeWorkweek,
-            applicability: rule.applicability, thresholdHours: rule.thresholdHours,
-            work: facts, remuneration: [remuneration])
-        return try WeeklyRegularRateCalculator().calculate(input)
+        let base = try WeeklyRemunerationFact(amount: straightTimeRemuneration, kind: .straightTime)
+        return try WeeklyRegularRateCalculator().calculate(
+            WeeklyRegularRateInput(
+                weekStart: start, workweekStart: actualWeekday,
+                completeWorkweek: completeWorkweek,
+                applicability: rule.applicability, thresholdHours: rule.thresholdHours,
+                work: facts, remuneration: [base] + additionalRemuneration,
+                rounding: profile.agreement.rounding, startEpochSeconds: startEpoch,
+                timeZoneIdentifier: zone))
     }
 
     /// How much saving `draft` would change the open period's expected wages, priced by the same
@@ -1375,7 +1642,8 @@ final class AppModel {
                 FlatPerDiemRule(
                     amountPerWorkDate: Money(
                         amount: try positiveDecimal(
-                            draft.perDiemAmount, field: "Per diem", currencyCode: currency),
+                            draft.perDiemAmount, field: "Per diem", allowZero: true,
+                            currencyCode: currency),
                         currencyCode: currency
                     )
                 )
@@ -1423,7 +1691,9 @@ final class AppModel {
                     title: trimmedTitle.isEmpty ? "Worker-provided source" : trimmedTitle,
                     url: trimmedURL,
                     section: trimmedSection.isEmpty ? nil : trimmedSection,
-                    ruleKey: draft.sourceRuleKey
+                    ruleKey: draft.sourceRuleKey,
+                    documentID: draft.sourceDocumentID, documentSHA256: draft.sourceDocumentSHA256,
+                    documentPage: draft.sourceDocumentPage, quotedText: draft.sourceQuotedText
                 )
             ]
         }
@@ -1436,7 +1706,19 @@ final class AppModel {
             return AgreementSource(
                 title: source.title.isEmpty ? "Worker-provided source" : source.title,
                 url: url, section: source.section.isEmpty ? nil : source.section,
-                ruleKey: source.ruleKey)
+                ruleKey: source.ruleKey, documentID: source.documentID,
+                documentSHA256: source.documentSHA256, documentPage: source.documentPage,
+                quotedText: source.quotedText)
+        }
+        let rounding: MoneyRoundingRule
+        if let adoption = draft.crewRuleAdoption {
+            rounding = try adoption.proposedAgreement(newAgreementID: UUID()).rounding
+        } else if let existing = existingAgreement?.rounding, existing.scope == .payCategory {
+            rounding = existing
+        } else {
+            rounding = MoneyRoundingRule(
+                scale: existingAgreement?.rounding.scale
+                    ?? min(2, LinePayFormat.fractionDigits(currencyCode: currency)))
         }
         return try AgreementSnapshot(
             id: agreementID,
@@ -1453,11 +1735,9 @@ final class AppModel {
             calloutMinimum: calloutMinimum,
             flatPerDiem: perDiem,
             weeklyOvertime: weeklyOvertime,
-            // Only the scale follows the currency (none for VND); mode and scope stay the current
-            // defaults, exactly as every new rule version received before currencies varied.
-            rounding: MoneyRoundingRule(
-                scale: existingAgreement?.rounding.scale
-                    ?? min(2, LinePayFormat.fractionDigits(currencyCode: currency))),
+            // Manual setup keeps its existing defaults. Crew drafts retain explicitly reviewed
+            // rounding, with timeline compatibility checked before adoption.
+            rounding: rounding,
             sources: sources,
             unsupportedRuleNotes: draft.unsupportedRuleNotes.trimmingCharacters(
                 in: .whitespacesAndNewlines),
@@ -1471,45 +1751,14 @@ final class AppModel {
         manualEndDate: Date,
         timeZoneIdentifier: String
     ) throws -> PayPeriodWindow {
-        guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
-            throw AppModelError.invalidField("Time zone")
-        }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let start = calendar.startOfDay(for: startDate)
-
-        let end: Date
-        switch cadence {
-        case .weekly:
-            guard let candidate = calendar.date(byAdding: .day, value: 7, to: start) else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        case .biweekly:
-            guard let candidate = calendar.date(byAdding: .day, value: 14, to: start) else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        case .manual:
-            let endDay = calendar.startOfDay(for: manualEndDate)
-            guard endDay >= start,
-                let candidate = calendar.date(byAdding: .day, value: 1, to: endDay)
-            else {
-                throw AppModelError.invalidPayPeriod
-            }
-            end = candidate
-        }
-
-        return PayPeriodWindow(
-            startEpochSeconds: epochSeconds(start),
-            endEpochSeconds: epochSeconds(end),
-            cadence: cadence
-        )
+        try PayPeriodSchedule.window(
+            cadence: cadence, startDate: startDate, manualEndDate: manualEndDate,
+            timeZoneIdentifier: timeZoneIdentifier)
     }
 
     func auditStatus(for period: CompletedPayPeriod) -> AuditDisplayStatus {
         auditStatus(
-            calculation: period.calculation, paystub: period.paystub,
+            calculation: period.comparisonCalculation, paystub: period.paystub,
             reconciliation: period.reconciliation)
     }
 

@@ -85,10 +85,9 @@ struct PaycheckAssessmentTests {
         #expect(result.verdict == .needsReview)
         #expect(result.comparisons.filter(\.differs).count == 2)
     }
-    /// Issue #67, review-only contract: the restricted weekly layer is never added to expected
-    /// pay, so past 40 logged hours an equal gross must not read as a clean match.
-    @Test(arguments: [(6, true), (4, false)])
-    func weeklyReviewKeepsTheAuditOpenPastFortyHours(_ days: Int, _ opensReview: Bool) throws {
+    /// V4: period hours do not prove complete workweek coverage, even at or below forty.
+    @Test(arguments: [6, 4, 1])
+    func weeklyReviewRequiresMappingAtEveryPeriodLength(_ days: Int) throws {
         let agreement = try AgreementSnapshot(
             id: "synthetic", version: "1", displayName: "Weekly",
             hourlyRate: rate, regularSchedule: [],
@@ -106,9 +105,8 @@ struct PaycheckAssessmentTests {
             calculation: calculation, agreement: agreement,
             facts: PaycheckFacts(
                 hasCompleteWork: true, grossPay: calculation.total, grossBasis: .wagesOnly))
-        let flagged = result.reviewReasons.contains { $0.contains("Weekly overtime is turned on") }
-        #expect(flagged == opensReview)
-        #expect((result.verdict == .matches) == !opensReview)
+        #expect(result.reviewReasons.contains(PaycheckAssessor.weeklyMappingReviewReason))
+        #expect(result.verdict == .needsReview)
     }
 
     @Test func perDiemExcludedFromWageGross() throws {
