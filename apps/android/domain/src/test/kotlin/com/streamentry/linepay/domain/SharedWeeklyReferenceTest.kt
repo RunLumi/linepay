@@ -22,14 +22,20 @@ class SharedWeeklyReferenceTest(
     companion object {
         @JvmStatic @Parameterized.Parameters(name = "{0}")
         fun fixtures(): Collection<Array<Any>> {
-            val file = File(System.getProperty("linepay.sharedContracts"), "weekly/reference-v2.json")
+            val rows = fixturesFor("reference-v2.json", 2, 7, 10) + fixturesFor("reference-v3.json", 3, 3, 0)
+            check(rows.map { it[0] }.toSet().size == rows.size)
+            return rows
+        }
+
+        private fun fixturesFor(path: String, version: Int, caseCount: Int, refusalCount: Int): Collection<Array<Any>> {
+            val file = File(System.getProperty("linepay.sharedContracts"), "weekly/$path")
             val root = JsonParser.parseString(file.readText()).asJsonObject
             check(root["format"].asString == "com.streamentry.linepay.weekly-reference-fixtures")
-            check(root["version"].asInt == 2)
+            check(root["version"].asInt == version)
             val cases = root["cases"].asJsonArray
             val refusals = root["refusals"].asJsonArray
-            check(cases.size() == 7 && refusals.size() == 10)
-            check((cases + refusals).map { it.asJsonObject["id"].asString }.toSet().size == 17)
+            check(cases.size() == caseCount && refusals.size() == refusalCount)
+            check((cases + refusals).map { it.asJsonObject["id"].asString }.toSet().size == caseCount + refusalCount)
             return cases.map { arrayOf(it.asJsonObject["id"].asString, it.asJsonObject, false) } +
                 refusals.map { arrayOf(it.asJsonObject["id"].asString, it.asJsonObject, true) }
         }
@@ -58,7 +64,7 @@ class SharedWeeklyReferenceTest(
         assertEquals(name, expected["allocationAmounts"].asJsonArray.map { BigDecimal(it.asString).stripTrailingZeros() },
             result.allocations.map { it.amount.amount })
         same(result.remainingAdditionalPremium.amount.toPlainString(), result.allocations.fold(ZERO) { sum, item -> sum + item.amount.amount })
-        assertEquals("linepay.android.weekly-regular-rate/2", result.engine)
+        assertEquals("linepay.android.weekly-regular-rate/3", result.engine)
         assertEquals(604800L, result.endEpochSeconds - result.input.startEpochSeconds)
         assertTrue(result.explanation.isNotBlank())
     }

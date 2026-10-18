@@ -30,7 +30,7 @@ Play distribution remain outside this tested slice. App Store release evidence r
 
 `WeeklyRegularRateCalculator` is a pure domain implementation of the existing
 [weekly reference v2](../../shared/contracts/weekly/README.md) behavior. Its provenance is
-`linepay.android.weekly-regular-rate/2`. The caller must provide the employer's explicit start
+`linepay.android.weekly-regular-rate/3`. The caller must provide the employer's explicit start
 instant and timezone for a fixed 168-hour workweek, separately confirm one employer, complete work,
 all payment classifications, and the restricted covered/nonexempt hourly applicability. A calendar
 paycycle supplies none of those confirmations. Unknown premium treatment refuses calculation.
@@ -42,7 +42,10 @@ the displayed regular rate does not feed another calculation. Confirmed noncredi
 are includable without credit. Explicit exclusions stay cash without becoming regular-rate pay.
 No payment classification, exclusion or legal applicability is inferred from a name or clock record.
 
-The shared corpus supplies seven independently stated amounts/allocations and ten refusal cases.
+The original v2 corpus supplies seven independently stated amounts/allocations and ten refusal cases;
+the [v3 allocation cases](../../shared/contracts/weekly/reference-v3.json) add three zero-basis positions
+without changing those earlier vectors. Android begins with the corrected v3 semantics and has no
+historical Android weekly receipts to migrate.
 Focused Android regressions also cover threshold seconds, half-cent ties, credit before rounding,
 rounding modes, residual conservation with zero-basis periods, immutable inputs and fixed-duration
 DST boundaries.

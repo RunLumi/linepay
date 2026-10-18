@@ -78,7 +78,7 @@ class WeeklyRegularRateResult internal constructor(
     allocations: List<WeeklyPremiumAllocation>,
 ) {
     val allocations: List<WeeklyPremiumAllocation> = frozen(allocations)
-    val engine: String = "linepay.android.weekly-regular-rate/2"
+    val engine: String = "linepay.android.weekly-regular-rate/3"
     val explanation: String = "Restricted complete-workweek reference for explicitly confirmed covered/nonexempt hourly scope. " +
         "Remuneration and premium treatment are confirmed separately from clock work. " +
         "Applicability, source approval and paycheck mapping remain separate reviews."
