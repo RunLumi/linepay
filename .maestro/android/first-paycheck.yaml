@@ -1,0 +1,198 @@
+appId: com.streamentry.linepay.android
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: setup.hourly-rate
+- tapOn:
+    id: setup.hourly-rate
+- inputText: "25.00"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: setup.period-start
+    direction: DOWN
+- tapOn:
+    id: setup.period-start
+- inputText: "2026-10-12"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: setup.time-zone
+    direction: DOWN
+- tapOn:
+    id: setup.time-zone
+- eraseText: 40
+- inputText: "UTC"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: setup.daily-overtime-enabled
+    direction: DOWN
+- tapOn:
+    id: setup.daily-overtime-enabled
+- scrollUntilVisible:
+    element:
+      id: setup.rules-reviewed
+    direction: DOWN
+- tapOn:
+    id: setup.rules-reviewed
+- scrollUntilVisible:
+    element:
+      id: setup.save
+    direction: DOWN
+- tapOn:
+    id: setup.save
+- assertVisible:
+    id: today.add-work
+- scrollUntilVisible:
+    element:
+      id: today.add-work
+    direction: DOWN
+- tapOn:
+    id: today.add-work
+- scrollUntilVisible:
+    element:
+      id: shift.start
+    direction: DOWN
+- tapOn:
+    id: shift.start
+- eraseText: 40
+- inputText: "2026-10-12 07:00"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: shift.end
+    direction: DOWN
+- tapOn:
+    id: shift.end
+- eraseText: 40
+- inputText: "2026-10-12 15:30"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: shift.break-start
+    direction: DOWN
+- tapOn:
+    id: shift.break-start
+- inputText: "2026-10-12 12:00"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: shift.break-end
+    direction: DOWN
+- tapOn:
+    id: shift.break-end
+- inputText: "2026-10-12 12:30"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: shift.save
+    direction: DOWN
+- tapOn:
+    id: shift.save
+- assertVisible:
+    id: today.expected-wages
+- assertVisible: "USD 200.00"
+- tapOn:
+    id: nav.pay
+- scrollUntilVisible:
+    element:
+      id: pay.record-check
+    direction: DOWN
+- tapOn:
+    id: pay.record-check
+- scrollUntilVisible:
+    element:
+      id: check.gross
+    direction: DOWN
+- tapOn:
+    id: check.gross
+- inputText: "200.00"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: check.confirm-period
+    direction: DOWN
+- tapOn:
+    id: check.confirm-period
+- scrollUntilVisible:
+    element:
+      id: check.complete-work
+    direction: DOWN
+- tapOn:
+    id: check.complete-work
+- scrollUntilVisible:
+    element:
+      id: check.rules-reviewed
+    direction: DOWN
+- tapOn:
+    id: check.rules-reviewed
+- scrollUntilVisible:
+    element:
+      id: check.weekly-reviewed
+    direction: DOWN
+- tapOn:
+    id: check.weekly-reviewed
+- scrollUntilVisible:
+    element:
+      id: check.save
+    direction: DOWN
+- tapOn:
+    id: check.save
+- assertVisible: "Compared values match"
+- tapOn:
+    id: nav.history
+- assertVisible: "Confirmed gross: USD 200.00"
+- tapOn:
+    id: nav.settings
+- scrollUntilVisible:
+    element:
+      id: backup.password.create
+    direction: DOWN
+- tapOn:
+    id: backup.password.create
+- inputText: "Synthetic-passphrase-for-device-e2e"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: settings.export-backup
+    direction: DOWN
+- tapOn:
+    id: settings.export-backup
+- assertVisible: "Save"
+- tapOn: "Save"
+- scrollUntilVisible:
+    element:
+      text: "Encrypted backup saved to the destination you chose."
+    direction: DOWN
+- assertVisible: "Encrypted backup saved to the destination you chose."
+- scrollUntilVisible:
+    element:
+      id: settings.select-backup
+    direction: DOWN
+- tapOn:
+    id: settings.select-backup
+- assertVisible: "LinePaycheck-backup.lpb"
+- tapOn: "LinePaycheck-backup.lpb"
+- tapOn:
+    id: backup.password.restore
+- inputText: "Synthetic-passphrase-for-device-e2e"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: settings.review-restore
+    direction: DOWN
+- tapOn:
+    id: settings.review-restore
+- assertVisible: "Selected backup: 1 work entry and 1 saved check. Local activity is not included."
+- scrollUntilVisible:
+    element:
+      id: settings.confirm-restore
+    direction: DOWN
+- tapOn:
+    id: settings.confirm-restore
+- assertVisible: "The reviewed backup replaced local pay data."
+- tapOn:
+    id: nav.history
+- assertVisible: "Compared values match"

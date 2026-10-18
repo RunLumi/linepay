@@ -4,81 +4,53 @@ import SwiftUI
 struct SettingsView: View {
     let model: AppModel
     let subscriptionStore: SubscriptionStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var editor = false
     @State private var paywall = false
+    @State private var path = [SettingsDestination]()
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 if let profile = model.profile {
-                    Section("Pay") {
-                        NavigationLink("Pay profile: \(profile.name)") {
-                            List {
-                                Section("Latest entered rules") {
-                                    AgreementSummaryView(agreement: profile.agreement)
-                                }
-                                if let changes = profile.agreementChanges, !changes.isEmpty {
-                                    Section("Dated rule versions") {
-                                        ForEach(changes, id: \.effectiveDate) { change in
-                                            LabeledContent(
-                                                LinePayFormat.localDate(change.effectiveDate),
-                                                value:
-                                                    "Version \(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
-                                            )
-                                        }
-                                        Text(
-                                            "The ledger shows the exact snapshot applied to each work date."
-                                        ).font(.footnote)
-                                    }
-                                }
-                                Section {
-                                    Text(
-                                        "Payroll timezone: \(LinePayFormat.timeZoneName(profile.timeZoneIdentifier))"
-                                    )
-                                    Button("Edit and review rules") { editor = true }
-                                        .linePayRowAction()
-                                    Text(
-                                        "Editing defaults to future periods. Existing work changes only after an explicit current-period review."
-                                    ).font(.footnote)
-                                }
-                            }
-                            .labeledContentStyle(LinePayValueStyle())
-                            .linePayCanvas()
-                            .navigationTitle("Pay profile")
-                        }
+                    Section(header: settingsSectionHeader("Pay")) {
+                        settingsNavigationRow(
+                            "Pay profile: \(profile.name)", destination: .payProfile)
                         Button("Edit pay rules") { editor = true }.accessibilityIdentifier(
                             "settings.edit-rules")
-                        NavigationLink("Pay period: \(profile.preferredCadence.title)") {
-                            PayPeriodSettingsView(model: model)
-                        }
-                        NavigationLink("Rule sources") {
-                            RuleSourcesView(agreement: profile.agreement, model: model)
-                        }
+                        settingsNavigationRow(
+                            "Pay period: \(profile.preferredCadence.title)",
+                            destination: .payPeriod)
+                        settingsNavigationRow("Rule sources", destination: .ruleSources)
                     }
                 }
-                Section("Local diagnostics") {
-                    NavigationLink("Device-local activity") {
-                        LocalDiagnosticsView(ledger: model.localActivity)
+                Section(header: settingsSectionHeader("Local diagnostics")) {
+                    settingsNavigationRow(
+                        "Device-local activity", identifier: "settings.local-activity",
+                        destination: .localActivity)
+                }
+                Section(header: settingsSectionHeader("Employer benefits")) {
+                    settingsNavigationRow(
+                        "Employer contribution checks", identifier: "settings.benefits",
+                        destination: .benefits)
+                }
+                Section(header: settingsSectionHeader("Agreements")) {
+                    settingsNavigationRow(
+                        "Agreement documents", identifier: "settings.agreements",
+                        destination: .agreements)
+                    settingsNavigationRow(
+                        "Crew rule drafts", identifier: "settings.crew-rules",
+                        destination: .crewRules)
+                }
+                Section(header: settingsSectionHeader("LinePaycheck Pro")) {
+                    LabeledContent {
+                        Text(
+                            subscriptionStore.isPro
+                                ? (subscriptionStore.isTrial ? "Pro trial active" : "Pro active")
+                                : model.hasUsedFreeAudit ? "Free check used" : "First check free"
+                        ).foregroundStyle(LinePayColor.textPrimary)
+                    } label: {
+                        Text("Status").foregroundStyle(LinePayColor.textPrimary)
                     }
-                    .accessibilityIdentifier("settings.local-activity")
-                }
-                Section("Employer benefits") {
-                    NavigationLink("Employer contribution checks") {
-                        BenefitAuditsView(model: model)
-                    }
-                    .accessibilityIdentifier("settings.benefits")
-                }
-                Section("Agreements") {
-                    NavigationLink("Agreement documents") { AgreementDocumentsView(model: model) }
-                        .accessibilityIdentifier("settings.agreements")
-                    NavigationLink("Crew rule drafts") { CrewRulesView(model: model) }
-                        .accessibilityIdentifier("settings.crew-rules")
-                }
-                Section("LinePaycheck Pro") {
-                    LabeledContent(
-                        "Status",
-                        value: subscriptionStore.isPro
-                            ? (subscriptionStore.isTrial ? "Pro trial active" : "Pro active")
-                            : model.hasUsedFreeAudit ? "Free check used" : "First check free")
                     if let notice = subscriptionStore.notice { Text(notice).font(.footnote) }
                     if let date = subscriptionStore.renewalDate {
                         LabeledContent(subscriptionStore.willAutoRenew == true ? "Renews" : "Ends")
@@ -86,13 +58,19 @@ struct SettingsView: View {
                             Text(date.formatted(date: .abbreviated, time: .shortened))
                         }
                     }
-                    Button(
-                        subscriptionStore.isPro
-                            ? "View Pro options"
-                            : subscriptionStore.annualTrialDuration.map { "Try Pro free for \($0)" }
-                                ?? "View Pro options"
-                    ) { paywall = true }
-                    .frame(minHeight: 48).accessibilityIdentifier("settings.view-pro")
+                    Button {
+                        paywall = true
+                    } label: {
+                        Text(
+                            subscriptionStore.isPro
+                                ? "View Pro options"
+                                : subscriptionStore.annualTrialDuration.map {
+                                    "Try Pro free for \($0)"
+                                } ?? "View Pro options"
+                        )
+                    }
+                    .linePayRowAction()
+                    .accessibilityIdentifier("settings.view-pro")
                     Button("Restore Purchases") {
                         Task { await subscriptionStore.restorePurchases() }
                     }
@@ -102,11 +80,12 @@ struct SettingsView: View {
                         Text(error).foregroundStyle(LinePayColor.review).font(.footnote)
                     }
                 }
-                Section("Your data") {
-                    NavigationLink("Privacy and local data") { PrivacyDataView(model: model) }
-                        .accessibilityIdentifier("settings.privacy-data")
+                Section(header: settingsSectionHeader("Your data")) {
+                    settingsNavigationRow(
+                        "Privacy and local data", identifier: "settings.privacy-data",
+                        destination: .privacyData)
                     BackupRestoreEntryPoint(title: "Backup and restore")
-                    NavigationLink("Export data") { ExportDataView(model: model) }
+                    settingsNavigationRow("Export data", destination: .exportData)
                     if model.pendingDeletionCount > 0 {
                         Text(
                             model.pendingDeletionCount == 1
@@ -115,9 +94,9 @@ struct SettingsView: View {
                         ).foregroundStyle(LinePayColor.review)
                     }
                 }
-                Section("About") {
-                    NavigationLink("About LinePaycheck") { AboutLinePayView() }
-                        .accessibilityIdentifier("settings.about")
+                Section(header: settingsSectionHeader("About")) {
+                    settingsNavigationRow(
+                        "About LinePaycheck", identifier: "settings.about", destination: .about)
                     Link("Support", destination: AppLinks.support).accessibilityIdentifier(
                         "settings.support")
                     Link("Privacy policy", destination: AppLinks.privacy).accessibilityIdentifier(
@@ -126,14 +105,131 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(
+                dynamicTypeSize.isAccessibilitySize ? .inline : .large
+            )
             .labeledContentStyle(LinePayValueStyle())
             .linePayCanvas()
+            .navigationDestination(for: SettingsDestination.self) { destination in
+                settingsDestination(destination)
+            }
         }
         .sheet(isPresented: $editor) { PayProfileSetupView(model: model) }
         .sheet(isPresented: $paywall) {
             ProPaywallView(store: subscriptionStore) { paywall = false }
         }
     }
+
+    private func settingsSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .textCase(nil)
+            .foregroundStyle(LinePayColor.textPrimary)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func settingsNavigationRow(
+        _ title: String,
+        identifier: String? = nil,
+        destination: SettingsDestination
+    ) -> some View {
+        Button {
+            path.append(destination)
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
+                Text(title)
+                    .foregroundStyle(LinePayColor.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(LinePayColor.textPrimary)
+                    .accessibilityHidden(true)
+            }
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier ?? "settings.\(destination.rawValue)")
+    }
+
+    @ViewBuilder private func settingsDestination(_ destination: SettingsDestination) -> some View {
+        switch destination {
+        case .payProfile:
+            if let profile = model.profile {
+                List {
+                    Section("Latest entered rules") {
+                        AgreementSummaryView(agreement: profile.agreement)
+                    }
+                    if let changes = profile.agreementChanges, !changes.isEmpty {
+                        Section("Dated rule versions") {
+                            ForEach(changes, id: \.effectiveDate) { change in
+                                LabeledContent(
+                                    LinePayFormat.localDate(change.effectiveDate),
+                                    value:
+                                        "Version \(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
+                                )
+                            }
+                            Text(
+                                "The ledger shows the exact snapshot applied to each work date."
+                            ).font(.footnote)
+                        }
+                    }
+                    Section {
+                        Text(
+                            "Payroll timezone: \(LinePayFormat.timeZoneName(profile.timeZoneIdentifier))"
+                        )
+                        Button("Edit and review rules") { editor = true }
+                            .linePayRowAction()
+                        Text(
+                            "Editing defaults to future periods. Existing work changes only after an explicit current-period review."
+                        ).font(.footnote)
+                    }
+                }
+                .labeledContentStyle(LinePayValueStyle())
+                .linePayCanvas()
+                .navigationTitle("Pay profile")
+            } else {
+                Text("Set up a pay profile to view these rules.")
+            }
+        case .payPeriod:
+            PayPeriodSettingsView(model: model)
+        case .ruleSources:
+            if let profile = model.profile {
+                RuleSourcesView(agreement: profile.agreement, model: model)
+            } else {
+                Text("Set up a pay profile to review its rule sources.")
+            }
+        case .localActivity:
+            LocalDiagnosticsView(ledger: model.localActivity)
+        case .benefits:
+            BenefitAuditsView(model: model)
+        case .agreements:
+            AgreementDocumentsView(model: model)
+        case .crewRules:
+            CrewRulesView(model: model)
+        case .privacyData:
+            PrivacyDataView(model: model)
+        case .exportData:
+            ExportDataView(model: model)
+        case .about:
+            AboutLinePayView()
+        }
+    }
+
+}
+
+private enum SettingsDestination: String, Hashable {
+    case payProfile
+    case payPeriod
+    case ruleSources
+    case localActivity
+    case benefits
+    case agreements
+    case crewRules
+    case privacyData
+    case exportData
+    case about
 }
 
 struct PayPeriodSettingsView: View {

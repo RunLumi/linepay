@@ -36,3 +36,18 @@ under their device settings. This does not add a central LinePaycheck data servi
 
 The roadmap's cohort/CAC and >95% coverage targets remain evaluation targets. Hook tests and local
 counts do not establish production conversion, acquisition cost or global event completeness.
+
+## Browser companion, October 19, 2026
+
+The web client follows the same local-only boundary in its own `linepaycheck-web-activity` IndexedDB
+database. It is separate from `com.streamentry.linepay.web.state` v8 and the encrypted financial
+backup payload. Browser events use a closed vocabulary; UUID-shaped internal identities are
+deduplicated locally and excluded from the previewed JSON export. Activity failures do not roll back
+financial writes. A stored opt-out, reset generation and fail-closed future-version handling prevent
+other tabs or unknown schemas from silently restoring or replacing observations. Browser/OS profile
+backup behavior is platform-managed and remains unverified. The feature adds no collector, account,
+tracking SDK or remote event path.
+
+Seven dedicated Node tests and the existing 45-check Chromium/WebKit workflows cover the browser
+ledger and manual export against the same runtime SHA recorded in `docs/plan/v2-execution.md`.
+These checks do not imply installed-PWA, physical-device, or production-funnel evidence.

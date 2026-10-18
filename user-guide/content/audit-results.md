@@ -61,9 +61,14 @@ Use neutral language: “Can you help reconcile this difference?” LinePaycheck
 ## Keep track of a paycheck question
 
 Choose **Follow up → Track this paycheck question** on the result screen. Select a **Status**,
-enter **What happened?**, and choose **Save follow-up**. Each dated entry stays tied to the
-paycheck revision you reviewed. After correcting a paycheck, notes about earlier versions are
-labelled **Different paycheck revision**.
+enter **What happened?**, and choose **Save follow-up**. When that saved comparison contains
+monetary line items, the **Comparison item** section's **Follow-up scope** picker lets you attach
+the note to one item or keep the default **Whole paycheck comparison**. Review the displayed
+expected, confirmed-paid and difference values; choosing an item records context and does not
+change the comparison. Each dated entry stays tied to the paycheck revision you reviewed. History
+shows the selected item, or the whole-paycheck scope.
+After correcting a paycheck, notes about earlier versions are labelled **Different paycheck
+revision**.
 
 Your notes do not change the calculation or its verdict. **Correction confirmed by me** and
 **Explanation accepted by me** record your judgement; LinePaycheck has not verified a recovery

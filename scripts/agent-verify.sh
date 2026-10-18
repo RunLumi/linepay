@@ -35,13 +35,22 @@ case "$MODE" in
         bash "$ROOT/scripts/check-ios.sh"
         bash "$ROOT/scripts/test-ios-maestro.sh"
         ;;
+    android)
+        bash "$ROOT/scripts/check-android.sh" unit
+        ;;
+    android-ui)
+        bash "$ROOT/scripts/check-android.sh" device
+        bash "$ROOT/scripts/test-android-maestro.sh"
+        ;;
     *)
         cat >&2 <<'EOF'
-usage: bash scripts/agent-verify.sh [quick|ios|ui]
+usage: bash scripts/agent-verify.sh [quick|ios|ui|android|android-ui]
 
   quick  strict Swift formatting + pure LinePayDomain tests
   ios    full native iOS quality gate
   ui     native gate + local Maestro smoke suite
+  android     strict Android domain/app build, unit tests, and lint
+  android-ui  Android instrumentation + Maestro journeys on one online device
 EOF
         exit 64
         ;;

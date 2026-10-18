@@ -10,7 +10,7 @@ keywords: [backup, restore, iCloud, new phone, migration, recovery, Files, expor
 
 | Operation | What it gives you |
 | --- | --- |
-| **Complete LinePaycheck backup** | A restorable snapshot of saved work, profiles, rule snapshots, notes, periods, saved drafts, audit history, and retained original paystub and agreement PDFs. |
+| **Complete LinePaycheck backup** | A restorable snapshot of saved work, profiles, rule snapshots, notes, periods, saved drafts, audit history and its follow-up comparison links, and retained original paystub and agreement PDFs. |
 | **Audit PDF or JSON data export** | A report or structured data for your use. A JSON export does not include original document bytes and is not the complete backup format. |
 | **Restore Purchases** | A check of App Store purchase access. It does not restore work, paystubs, or history. |
 

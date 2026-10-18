@@ -30,12 +30,11 @@ struct LocalDiagnosticsView: View {
 
     var body: some View {
         List {
-            Section("Only on this device") {
+            Section {
                 Text(
                     "These local usage counts help explain which steps were reached. No wages, payroll dates, employer or union names, documents or free-text attributes are recorded. Nothing is sent to a collector."
                 )
                 Toggle(
-                    "Record device-local activity",
                     isOn: Binding(
                         get: { ledger.snapshot.recordingEnabled },
                         set: { enabled in
@@ -47,25 +46,33 @@ struct LocalDiagnosticsView: View {
                                     "The recording preference could not be saved. Its previous value is still active."
                             }
                         })
-                )
+                ) {
+                    Text("Record device-local activity")
+                        .font(.body)
+                        .foregroundStyle(LinePayColor.textPrimary)
+                }
                 .accessibilityIdentifier("activity.recording")
                 Text(
                     "This is not an install counter or a global conversion report. Existing subscriptions, renewals and restored pay data are different from new paid customers. Turning recording off keeps prior observations until you clear them."
-                ).font(.footnote)
+                ).font(.body)
                 if let issue = ledger.issue {
                     Label(issue, systemImage: "exclamationmark.triangle")
                 }
+            } header: {
+                localSectionHeader("Only on this device")
             }
-            Section("Observed since the local ledger started") {
+            Section {
                 ForEach(LocalMilestone.allCases, id: \.self) { event in
                     LabeledContent(event.title, value: "\(ledger.count(event))").monospacedDigit()
                         .accessibilityIdentifier("activity.count.\(event.rawValue)")
                 }
                 Text(
                     "Daily breakdown is limited to 400 observed UTC days. Internal deduplication is bounded; counts can be incomplete after failures, disabled recording or retention. Pay backups do not contain this ledger and do not backfill it."
-                ).font(.footnote)
+                ).font(.body)
+            } header: {
+                localSectionHeader("Observed since the local ledger started")
             }
-            Section("Manual diagnostic export") {
+            Section {
                 Text(
                     "The export contains event labels, counts, usage days and recording status. Usage patterns can still be personal; it is not anonymous. It is not a pay-data backup."
                 )
@@ -80,6 +87,8 @@ struct LocalDiagnosticsView: View {
                 }.linePayRowAction().accessibilityIdentifier("activity.preview")
                 Button("Clear only local activity", role: .destructive) { clearing = true }
                     .accessibilityIdentifier("activity.clear")
+            } header: {
+                localSectionHeader("Manual diagnostic export")
             }
             if let errorMessage {
                 Section { Label(errorMessage, systemImage: "exclamationmark.triangle") }
@@ -106,6 +115,14 @@ struct LocalDiagnosticsView: View {
                 "Work, rules, fund checks, paystubs, originals, backups and App Store access are unchanged. The recording preference is kept. Files you already exported are not deleted."
             )
         }
+    }
+
+    private func localSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .textCase(nil)
+            .foregroundStyle(LinePayColor.textPrimary)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 

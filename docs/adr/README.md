@@ -41,3 +41,5 @@
 - [0027-exact-base-time-and-versioned-premium-comparisons](0027-exact-base-time-and-versioned-premium-comparisons.md)
 
 - [0028-browser-confirmed-paycheck-lines-and-hours](0028-browser-confirmed-paycheck-lines-and-hours.md)
+- [0029-native-follow-up-finding-links](0029-native-follow-up-finding-links.md)
+- [0030-android-local-native-state-and-export](0030-android-local-native-state-and-export.md)

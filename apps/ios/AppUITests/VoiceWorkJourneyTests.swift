@@ -86,7 +86,7 @@ final class VoiceWorkJourneyTests: XCTestCase {
     }
 
     private func reveal(_ element: XCUIElement) {
-        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let window = app.windows.firstMatch
         for _ in 0..<30 {
             if element.exists, element.isHittable, element.frame.minY > 115,
                 element.frame.maxY < window.frame.maxY - 125

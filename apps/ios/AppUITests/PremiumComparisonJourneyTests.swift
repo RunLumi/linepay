@@ -43,6 +43,12 @@ final class PremiumComparisonJourneyTests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         tap("audit.correct")
         tap("paystub.correct-existing")
+        XCTAssertTrue(app.navigationBars["Review paystub"].waitForExistence(timeout: 10))
+        let correctionSnapshot = XCTAttachment(string: app.debugDescription)
+        correctionSnapshot.name = "v2-premium-correction-form-accessibility-tree"
+        correctionSnapshot.lifetime = .keepAlways
+        add(correctionSnapshot)
+        capture("v2-premium-correction-form-open", large: large)
         let gross = app.textFields["paystub.inline.gross"].firstMatch
         reveal(gross)
         XCTAssertTrue(gross.waitForExistence(timeout: 10))

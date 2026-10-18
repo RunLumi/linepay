@@ -1,11 +1,13 @@
-# Configured-gross paycheck comparison v1
+# Paycheck comparison contracts v1
 
 [Shared contracts](../README.md)
 
+## Configured gross comparison
+
 `configured-gross-v1.json` contains sixteen synthetic, independently calculated comparisons consumed
-by the existing Swift paycheck assessor and the Kotlin gross assessor. All money uses explicit
-currency and decimal strings. Each case supplies real instants and a payroll timezone for synthetic
-work; the 48-hour case deliberately leaves weekly review pending. No actual worker data is included.
+by the Swift paycheck assessor and Kotlin gross assessor. All money uses explicit currency and
+decimal strings. Each case supplies real instants and a payroll timezone for synthetic work; the
+48-hour case deliberately leaves weekly review pending. No actual worker data is included.
 
 A full-period expected gross requires explicitly confirmed complete work and a confirmed gross
 basis. Cash wages exclude separately configured per diem unless the worker confirms the printed
@@ -24,15 +26,32 @@ differences are possible shortfalls/overpayments within configured scope, never 
 Each comparison traces to the component IDs included in that basis. Save the assessment with its
 work/rule/statement snapshots; reopening history must not rerun it with newer rules.
 
-This subset does not implement full-rate/premium-only wage-line mapping, paid-equivalent hours,
-guarantee mapping, period selection/matching, weekly entitlement or complete platform parity.
-The Kotlin caller must establish period matching and all review flags before invoking it. Its
-weekly flag represents an outstanding review, not a weekly-pay implementation. The current corpus
-uses one explicit rule snapshot; broader timeline/rounding transitions require separate checks.
+## Configured earnings and hour lines
 
-Run `bash scripts/agent-verify.sh quick` and the pinned JVM command in
-[Android](../../../apps/android/README.md). JVM/Swift domain tests do not establish Android UI,
-persistence/history, OCR, migration/restore, actual devices or App Store release readiness.
+`configured-lines-v1.json` contains 29 synthetic cases with independently stated arithmetic. The
+same fixture is consumed by Swift, Kotlin and the browser implementation. It covers full-rate and
+premium-only layouts, actual-work and paid-equivalent hours, separate or included callout
+guarantees, line conflicts and offsetting differences, per-diem observations, unusual or unknown
+mappings, weekly-review guards, and exact-seconds rounding across fragments. The cents and hours
+remain decimal strings; source component IDs are checked alongside amounts.
+
+Money-line differences use the configured wage rounding policy. Displayed hour amounts are rounded
+to four places, while the hour difference is calculated from exact seconds and then rounded
+half-up to four places, independently of the wage rounding mode. A source-period confirmation must
+match the target local dates and timezone before comparison. That confirmation is a worker assertion,
+not independent source verification. A weekly-review flag is an outstanding review, not a weekly
+paycheck allocation or legal-coverage implementation.
+
+These contracts verify deterministic configured-rule arithmetic and comparison mapping. They do not
+establish statutory or agreement completeness, Android Compose behavior, native persistence/history,
+OCR, migration/restore, device/provider behavior, App Store readiness, or a legally owed amount.
+Historical results must retain their original facts, calculation and rule snapshots; a new assessor
+must not rewrite old receipts.
+
+Run the Swift package tests and the pinned JVM command in [Android](../../../apps/android/README.md).
+The browser consumer runs with `node --test apps/web/tests/*.test.mjs`. Their results are separate
+from native UI, persistence/history, OCR, migration/restore, actual-device, provider and App Store
+release evidence.
 
 
 ## Native assessment v3 history fixture

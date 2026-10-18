@@ -26,8 +26,11 @@ import {
   inspectSnapshot,
 } from "./state.mjs";
 import { encryptBackup, decryptBackup } from "./backup.mjs";
+import { LocalActivityLedger } from "./local-activity.mjs";
+import { renderLocalDiagnostics } from "./diagnostics-ui.mjs";
 let openAuditID = null,
-  disposeReports = () => {};
+  disposeReports = () => {},
+  disposeExpectedPay = () => {};
 let fundSelection = null,
   fundEditing = false;
 let state,
@@ -38,7 +41,9 @@ let state,
   pendingAudit = null,
   pendingPaycheckScope = null,
   pendingLineScope = null,
-  pendingRestore = null;
+  pendingRestore = null,
+  activityLedger = null,
+  diagnosticsGeneration = 0;
 const main = document.querySelector("main"),
   status = document.querySelector("#status");
 const esc = (value) =>
@@ -97,8 +102,11 @@ function resultView(result, currency, calculation, rule) {
 }
 function render() {
   if (!state) return;
+  const generation = ++diagnosticsGeneration;
   disposeReports();
   disposeReports = () => {};
+  disposeExpectedPay();
+  disposeExpectedPay = () => {};
   pendingAudit = null;
   pendingPaycheckScope = null;
   pendingLineScope = null;
@@ -126,6 +134,28 @@ function render() {
         );
       },
     });
+  else if (tab === "diagnostics") {
+    void renderLocalDiagnostics({
+      container: main,
+      ledger: activityLedger,
+      run,
+      message,
+      onRendered: () => {
+        bind();
+        const target =
+          main.querySelector("#activity-recording:not(:disabled)") ??
+          main.querySelector("#activity-preview");
+        target?.focus();
+      },
+      isCurrent: () => tab === "diagnostics" && generation === diagnosticsGeneration,
+    }).catch(() => {
+      if (tab !== "diagnostics" || generation !== diagnosticsGeneration) return;
+      main.innerHTML =
+        "<h1>Local diagnostics could not open</h1><p>Pay records remain separate. Reload this page or clear only local activity from its diagnostic store.</p>";
+      bind();
+    });
+    return;
+  }
   else renderPay();
   bind();
 }
@@ -222,6 +252,9 @@ function renderPay() {
       : ""
   }
   ${period.work.length ? auditForm(period) : ""}${!period.closed && (period.work.length || period.audits.length) ? '<button data-action="close">Close this period</button>' : !period.closed ? '<button data-action="discard">Discard empty period</button>' : ""}${period.closed ? periodForm() : ""}`;
+  if (period.work.length > 0 && document.visibilityState === "visible") {
+    observeVisibleExpectedPay(period.id);
+  }
   renderRuleTimelineUI({
     container: main.querySelector("#rule-timeline-tools"),
     state,
@@ -262,6 +295,42 @@ function renderPay() {
     }),
   );
 }
+
+function observeVisibleExpectedPay(periodID) {
+  const answer = main.querySelector(".answer");
+  if (!answer || !activityLedger) return;
+  if (!("IntersectionObserver" in window)) {
+    const frame = answer.getBoundingClientRect();
+    if (
+      frame.bottom > 0 &&
+      frame.top < window.innerHeight &&
+      document.visibilityState === "visible"
+    )
+      void activityLedger.record("expectedPaySeen", { kind: "period", id: periodID });
+    return;
+  }
+  let intersects = false,
+    recorded = false;
+  const recordWhenVisible = () => {
+    if (recorded || !intersects || document.visibilityState !== "visible" || tab !== "pay")
+      return;
+    recorded = true;
+    void activityLedger.record("expectedPaySeen", { kind: "period", id: periodID });
+    disposeExpectedPay();
+    disposeExpectedPay = () => {};
+  };
+  const observer = new IntersectionObserver(([entry]) => {
+    intersects = entry.isIntersecting && entry.intersectionRatio >= 0.5;
+    recordWhenVisible();
+  }, { threshold: [0, 0.5, 1] });
+  const visibilityChanged = () => recordWhenVisible();
+  observer.observe(answer);
+  document.addEventListener("visibilitychange", visibilityChanged);
+  disposeExpectedPay = () => {
+    observer.disconnect();
+    document.removeEventListener("visibilitychange", visibilityChanged);
+  };
+}
 function periodForm() {
   return `<h2>Start a pay period</h2><form id="period-form" data-period-owned><label for="paycycle-cadence">Paycycle</label><select id="paycycle-cadence" name="cadence"><option value="manual">Custom dates</option><option value="weekly">Weekly</option><option value="biweekly">Every two weeks</option><option value="semimonthly">Twice monthly (1–15, 16–end)</option></select><div class="fields">${label("First work date", "start", 'type="date" required')}${label("Last work date (included)", "end", 'type="date" required')}${label("Payroll timezone", "zone", `required value="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)}"`)}</div><p class="note">Confirm the payroll timezone. Device timezone changes will not reinterpret saved work. The newest profile will be copied into this period.</p><button>Review pay period</button><section class="period-preview" aria-live="polite"></section></form>`;
 }
@@ -283,16 +352,60 @@ function renderHistory() {
   }</ul>`;
 }
 function renderBackup() {
-  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">This preview opens web snapshots only. iOS/Android state transfer is not yet supported. The protected envelope uses the shared encryption format; compatible encryption does not imply compatible financial records.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected web backup</h2>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePaycheck.</p><button class="primary">Download encrypted backup</button></form><form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This removes profiles, periods, work and saved checks from this browser only.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
+  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">This preview opens web snapshots only. iOS/Android state transfer is not yet supported. The protected envelope uses the shared encryption format; compatible encryption does not imply compatible financial records.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected web backup</h2>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePaycheck. Device-local activity is kept in a separate database and is not included.</p><button class="primary">Download encrypted backup</button></form><form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This clears local activity first, then removes pay profiles, periods, work and saved checks from this browser. If activity cannot be cleared, pay records are left intact.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
 }
 async function commit(change) {
+  const previous = state;
   const replacement = structuredClone(state);
   change(replacement);
   validateState(replacement);
   message("Saving local records…");
   state = await store.write(replacement, state.revision);
+  await observeCommittedChange(previous, state);
   render();
   message("Saved in this browser.");
+}
+async function observeCommittedChange(previous, next) {
+  if (!activityLedger) return;
+  if (previous.profiles.length === 0 && next.profiles.length > 0)
+    await activityLedger.record("profileReady", { kind: "once" });
+  const priorWork = new Set(
+    previous.periods.flatMap((period) => period.work.map((entry) => entry.id)),
+  );
+  for (const entry of next.periods.flatMap((period) => period.work))
+    if (!priorWork.has(entry.id))
+      await activityLedger.record("workLogged", { kind: "work", id: entry.id });
+  const priorAudits = new Set(
+    previous.periods.flatMap((period) => period.audits.map((audit) => audit.id)),
+  );
+  for (const period of next.periods) {
+    const oldAuditIDs = new Set(
+      previous.periods
+        .find((item) => item.id === period.id)
+        ?.audits.map((audit) => audit.id) ?? [],
+    );
+    for (const audit of period.audits) {
+      if (priorAudits.has(audit.id) || oldAuditIDs.has(audit.id)) continue;
+      await activityLedger.record("paycheckCheckSaved", {
+        kind: "period",
+        id: audit.id,
+      });
+      const result = audit.assessment;
+      if (
+        result?.gross !== null &&
+        result?.gross !== undefined &&
+        result?.difference !== null &&
+        result?.difference !== undefined &&
+        result?.verdict !== "notComparable"
+      )
+        await activityLedger.record("auditCompleted", {
+          kind: "period",
+          id: period.id,
+        });
+    }
+  }
+  if (activityLedger.count("auditCompleted") >= 2)
+    await activityLedger.record("secondAudit", { kind: "once" });
 }
 function resolveClock(text, zone, occurrence = "") {
   const choices = localCandidates(text, zone);
@@ -307,6 +420,11 @@ function resolveClock(text, zone, occurrence = "") {
   return utc(choices.length === 1 ? choices[0] : choices[Number(occurrence)]);
 }
 function bind() {
+  const profileForm = main.querySelector("#profile-form");
+  const profileStarted = () =>
+    void activityLedger?.record("profileStarted", { kind: "once" });
+  profileForm?.addEventListener("input", profileStarted, { once: true });
+  profileForm?.addEventListener("change", profileStarted, { once: true });
   main.querySelectorAll("[data-period-owned]").forEach((form) =>
     bindPeriodSetup({
       form,
@@ -488,6 +606,10 @@ async function submit(form) {
       confirmed: checked("reported-confirmed"),
     };
     pendingLineScope = readLineScope(form, auditID, p.id);
+    await activityLedger?.record("paycheckIntakeStarted", {
+      kind: "period",
+      id: p.id,
+    });
     pendingAudit = {
       id: auditID,
       createdAt: now(),
@@ -564,6 +686,7 @@ async function submit(form) {
       run(async () => {
         if (!pendingRestore) throw Error("Inspect the backup again.");
         state = await store.write(pendingRestore, state.revision);
+        await activityLedger?.record("backupRestored");
         selection = null;
         fundSelection = null;
         fundEditing = false;
@@ -622,13 +745,14 @@ async function action(name) {
     );
   } else if (name === "clear") {
     document.querySelector("#clear-preview").innerHTML =
-      '<div class="preview"><p>Remove every LinePaycheck record from this browser?</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
+      '<div class="preview"><p>Remove local activity and every LinePaycheck pay record from this browser? Activity is cleared first; if it cannot be cleared, pay records remain.</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
     document.querySelector("#confirm-clear").onclick = () =>
       run(async () => {
+        await activityLedger?.clear();
         state = await store.write(emptyState(), state.revision);
         selection = null;
         render();
-        message("This browser’s LinePaycheck records were removed.");
+        message("LinePaycheck activity and pay records were removed from this browser.");
       });
   }
 }
@@ -642,8 +766,11 @@ document.querySelectorAll("[data-tab]").forEach((button) =>
   }),
 );
 try {
+  activityLedger = await LocalActivityLedger.open();
   store = await openStore();
   state = await store.read();
+  await activityLedger.record("firstObservedOpen", { kind: "once" });
+  await activityLedger.record("appOpened");
   render();
   message("Records opened from this browser.");
 } catch (e) {

@@ -1,5 +1,5 @@
 // Cache only the versioned app shell, never user records, exports or arbitrary fetches.
-const CACHE = "linepaycheck-web-shell-v10";
+const CACHE = "linepaycheck-web-shell-v11";
 const FILES = [
   "./",
   "index.html",
@@ -31,6 +31,8 @@ const FILES = [
   "src/resolution-report-ui.mjs",
   "src/state.mjs",
   "src/backup.mjs",
+  "src/local-activity.mjs",
+  "src/diagnostics-ui.mjs",
 ];
 self.addEventListener("install", (event) =>
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES))),

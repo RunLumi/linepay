@@ -1,7 +1,8 @@
 # ADR 0017: native Android calculation and backup boundaries
 
-Status: accepted for the owner's explicit all-stage v2 authorization. October 17, 2026. Native app
-and device verification remain pending; this decision does not change iOS release authority.
+Status: accepted for the owner's explicit all-stage v2 authorization. October 17, 2026. This
+calculation/transport decision does not change iOS release authority. The initial native Compose
+implementation and its bounded persistence decision are recorded separately in [ADR 0030](0030-android-local-native-state-and-export.md).
 
 Use native Kotlin and Compose rather than a shared Swift/runtime layer. Begin with independently
 testable JVM libraries: deterministic configured-pay `domain` and separate password-transport
@@ -27,11 +28,14 @@ adoption. Official wrapper/distribution SHA-256 values, dependency locks and ver
 are retained. JUnit and Gson are test-only; no runtime payroll SDK or remote dependency is added.
 Generating dependency checksums is mechanical integrity bookkeeping, not legal/source approval.
 
-Current host inspection found an empty Android SDK symlink target. No SDK platform, emulator/system
-image, device or runtime was installed/created/erased. Obtain the required exact runtime/device
-approval when needed. Keep development caches local to this repository by default. App UI,
-persistence/migration, complete parity, OCR/voice, subscription authority, actual snapshot restore,
-accessibility/localization and device/store gates remain mandatory parts of the larger goal.
+At the October 17 checkpoint, the Android SDK target was empty and no runtime or emulator had been
+installed. On October 19, after explicit owner approval, Android command-line tools, SDK 36, and one
+Pixel 8/API 36 ARM64 AVD were installed under ignored `.build` storage. The first Compose client now
+has a bounded local work/check workflow, versioned file state, and explicit encrypted backup
+restore. Its JVM, build, lint, and AVD test evidence is in [v2 execution](../plan/v2-execution.md).
+Keep development caches local to this repository by default. Full parity, OCR/voice, commerce,
+weekly-rate computation, source/applicability review, localization, physical-device validation and
+store gates remain outside that first Android slice.
 
 Primary build references checked October 17, 2026:
 

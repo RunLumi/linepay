@@ -19,14 +19,14 @@ An implementation, test result, upload, review submission and public release are
 
 | Workstream | State | Acceptance still required |
 |---|---|---|
-| Foundation: funnel measurement | Implemented; full native gate passed | Final release-candidate/device checks; no production cohort/completeness claim |
+| Foundation: funnel measurement | Native device-local milestones/manual export passed the full native gate; PWA local ledger/export browser-verified | Final release-candidate/device checks; no production cohort/completeness claim |
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Broader calendar UI, physical timezone/provider checks and final release gate |
 | Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
-| Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
-| Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
+| Resolution workflow | Native follow-ups can link to a validated comparison line; browser follow-up and reviewed reports remain available; app, PDF, migration and UI evidence passed | Final release gate; employer receipt or resolution is not inferred |
+| Accessibility | PWA light/dark color-token contrast, Diagnostics focus/Enter, 320px/reduced-motion/large-text checks; native iOS dark XXXL navigation to the local activity control passed | Apple screen audit still reports one Settings contrast issue without an element; VoiceOver, explicit 200% target audit, cross-client audit, and physical-device validation remain open |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
@@ -34,9 +34,9 @@ An implementation, test result, upload, review submission and public release are
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
 | Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
-| Full PWA | Local wage/fund, dated rules, confirmed earnings/hours, reports and recovery browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
+| Full PWA | Local wage/fund, dated rules, confirmed earnings/hours, reports/recovery and device-local diagnostics browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
-| Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
+| Android | Native Kotlin/Compose configured-rules work → gross-check → immutable history slice; local versioned state, manual encrypted backup/restore preview, separate local diagnostics, and API 36 device E2E implemented | Full iOS feature parity, weekly-rate engine, line-level paystub input, benefits, OCR/voice/commerce, Spanish QA, physical device, Play release, and source/applicability review remain open |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Broader accessibility/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
@@ -2102,3 +2102,168 @@ created; describe and verify each property separately.
   presentation, current-result form identity, stable IDs and Debug-only synthetic setup. ADR0023/
   0027, BR111–112 and candidate guide now match that behavior. All remaining original v2 stages and
   final signed/manual App Store/public-release requirements remain open; goal stays active.
+
+## Shared earnings/hour parity checkpoint, October 18
+
+- Added `configured-lines-v1.json`, a 29-case synthetic contract with independently stated
+  configured-rule arithmetic. It includes full-rate and premium-only layouts, exact-second and
+  cross-rate rounding, actual-work and paid-equivalent hours, callout guarantee placement,
+  per-diem observations, source-component traces, line conflicts/offsetting, and review guards.
+  It asserts configured comparisons only; it does not establish legal or complete agreement coverage.
+- Existing Swift and browser assessors and a new Kotlin domain assessor now consume that same
+  fixture independently. The Kotlin boundary requires a worker-confirmed statement period matching
+  the target local start/end dates and timezone before it returns directional line comparisons.
+- Swift LinePayDomain: **163 tests in29 suites passed**, including this corpus, using SwiftPM's
+  native build system and temporary scratch space because the default host cache/build sandbox
+  rejected writes. Log `/private/tmp/linepay-v2-shared-lines-swift-full.log`.
+- Android `:domain:test :backup:test`: **141 JVM tests passed**, 0 failures/skips, including explicit
+  unconfirmed/date/timezone source-period refusal; dependency
+  verification was strict and the run was offline. The ordinary workspace sandbox denied Gradle's
+  local lock-coordination socket, so the same offline command was executed through the reviewed
+  local-process permission path. Log `/private/tmp/linepay-v2-shared-lines-kotlin-final.log`.
+- Browser Node suite: **208 tests passed**, 0 failures/skips. Log
+  `/private/tmp/linepay-v2-shared-lines-web-full.log`.
+- Repository verification: **74 script/legal/store tests passed**, strict Swift formatting over
+  `apps/ios` passed, the legal guardrails check passed without implying approval, five documentation
+  tool tests passed, and the link checker found 1,072 local Markdown links with zero errors.
+- This is shared domain arithmetic/mapping evidence, not Android Compose UI, local financial state
+  migration/history, native source-period UI, device E2E, legal completeness, or release evidence.
+  Android app/runtime and overall v2/App Store release gates remain open.
+
+## PWA local activity and diagnostic export checkpoint, October 19
+
+- Added a separate `linepaycheck-web-activity` IndexedDB database. Financial state remains web-state
+  v8 and protected-backup payloads are unchanged; activity is never serialized into wage backups
+  or reconstructed from their historical records.
+- The closed local milestone vocabulary covers app opens, profile start/save, new work, visibly
+  surfaced expected pay, started/saved paycheck checks, comparable saved checks, a second-check
+  milestone, and explicit financial-backup restores. Local UUID-shaped identities are hashed for
+  deduplication; the digests are never exported. Usage days/counts remain potentially personal.
+- Activity writes happen after financial commits and cannot roll back pay data. The ledger retains
+  up to400 UTC days and20,000 digests; opt-out persists, clear generations prevent stale tabs from
+  writing after reset or pause, and unknown/corrupt formats remain untouched until explicit
+  activity-only reset. Clearing all app data clears activity first and stops if that fails.
+- Users can inspect the exact JSON before a separate download. It contains milestone labels, counts,
+  UTC usage days and recording/error status. It excludes amounts, payroll dates, names, documents,
+  free text, identities and hashes. No collector, server endpoint, account or network upload was
+  added. Browser/OS backup behavior remains platform-managed and unverified.
+- Node suite: **216 tests passed**, 0 failures/skips. Seven local-activity tests cover closed
+  vocabulary, deduplication, export minimization, bounded retention, opt-out/clear, corruption and
+  future-version refusal, write-failure isolation, and stale-tab reset generations. Log
+  `.build/v2-pwa-accessibility-unit-final2.log`; it also checks light/dark text and control contrast.
+- Existing full browser E2E suite plus local activity and keyboard-access journeys passed **47 checks in each** of
+  **Chromium 155.0.8059.85 and WebKit 26.0**. Both final receipts recorded runtime SHA-256
+  `9977e5551191080863dac8e856f1db9dea6183bc523c444a3fa78400c3ed49bb`. The added journeys verify
+  exact diagnostic preview/download, no financial-state mutation, persistent opt-out, a second tab
+  being unable to write after pause, unreadable future-version refusal, explicit local-only recovery,
+  focus landing on the labeled recording control, keyboard Enter activation of the exact-copy
+  preview, light/dark color-token contrast and separation from protected backups. This is not a
+  screen-reader/VoiceOver test.
+  The same runs retain offline shell, stale-tab, migration, line/hour, weekly, fund, template and
+  evidence-report journeys. Receipts: `.build/web-e2e/chromium/report.json` and
+  `.build/web-e2e/webkit/report.json`; command logs:
+  `.build/v2-pwa-accessibility-chromium-final2.log` and
+  `.build/v2-pwa-accessibility-webkit-final2.log`.
+- This remains browser-domain/UI evidence; installed/home-screen PWA behavior, OS-level profile
+  backup, iOS/Android diagnostic parity, physical devices, website deployment, store approval and
+  public release are separate gates. The original all-stage v2 goal remains active.
+- The first browser attempt caught an integration-order regression: the activity write yielded
+  before paycheck line facts were read, while the form handler disabled controls on yield. The
+  app now captures/validates line scope synchronously before recording the local milestone. A later
+  E2E run caught a test race after async all-data clear; the harness now waits for the user-visible
+  completion status before reading financial state. Both final browsers pass at the same runtime
+  hash; the failed run receipts remain under `.build/web-e2e/chromium/`.
+
+## App Store release-path readback, October 19
+
+- The public Apple listing currently renders version **1.0.5 (October 5)** and “Data Not Collected”;
+  this is a storefront readback, not the App Store Connect review state or proof the new version is
+  approved: [LinePaycheck on the App Store](https://apps.apple.com/us/app/linepaycheck-lineman-pay/id6808889292).
+- Local project configuration still says marketing version1.0.5/build11. No version bump, archive,
+  signed IPA, upload, review submission, TestFlight distribution or manual public release has been
+  performed for this v2 work.
+- `bash scripts/agent-doctor.sh` passed harness/configuration/identity/privacy-manifest checks; it
+  reports optional Maestro and XcodeBuildMCP tools unavailable. App Store Connect API environment
+  variables are absent in this shell, so no current account review-state readback is claimed.
+- Only Xcode27.1 is installed while the repository pins Xcode26.6. The host system volume recovered
+  from602MiB to6.0GiB free, but `xcrun altool --version` still hangs after a SQLite cache-lock error;
+  an earlier attempt also reported missing `Defaults.properties`. This is an environment failure,
+  not a successful uploader check. Keep all new build/test scratch on the SSD; do not delete other
+  task outputs to free system space.
+- The active workspace grants read-only `.git` access. `git add` was denied while trying to
+  checkpoint the Android/shared-contract slice; source changes remain in the worktree, not a commit.
+  Stage/commit/release tagging requires repository-metadata write access.
+- App Store submission and manual release remain pending the completed v2 gates and a reproducible,
+  source-bound signed candidate. The existing 1.0.5 release record is historical and does not
+  authorize an automatic release of v2.
+
+## Native accessibility follow-up, October 19
+
+- The Apple audit test now launches at the system text size and lets
+  `performAccessibilityAudit(.all)` vary Dynamic Type. The previous launch argument pinned the
+  content-size category and caused false “Dynamic Type unsupported” and clipping findings.
+- On the existing `LinePay Release iPhone 18` simulator (iPhone 16, iOS 18.5), the audit reports
+  one remaining Settings contrast issue with `issue.element == nil`; Today and Device-local
+  activity produce no audit findings. The failure is recorded, not suppressed or called a pass.
+  Result: `.build/v2-accessibility-audit-unpinned-retry-20261019.xcresult`.
+- The separate dark Accessibility XXXL journey passed: Today → Settings → Device-local activity,
+  scrolling until the recording switch is reachable. Result:
+  `.build/v2-large-text-restored-links-20261019.xcresult`; screenshot:
+  `.build/v2-large-text-restored-links-attachments/3B7AA3FE-1939-4961-BE1E-00F7DB6F8880.png`.
+- Supporting list labels now use primary text, section headers scale as sentence-case headlines,
+  the work log stacks its hours when needed, and audit status content can grow. VoiceOver, a
+  separate 200% touch-target audit, and physical-device inspection remain unverified.
+
+## Native resolution-linked evidence, October 19
+
+- Follow-up events now optionally identify one monetary comparison from their exact saved
+  paycheck revision. Unknown IDs and line IDs from another revision refuse; older events remain
+  paycheck-level during schema-10-to-11 admission.
+- The report receives findings from the selected saved paystub assessment and only follow-ups for
+  that paycheck revision. The related line label and note are added only after the user opts into
+  follow-up history and previews the exact copy. Default report copies still omit both.
+- Focused `PaycheckResolutionTests` and `ReportExporterTests` passed, including migration, rejected
+  IDs, exact revision, backup round-trip and report opt-in. `PaydayJourneyTests` passed the
+  select-specific-line → save → terminate → relaunch flow at standard text and dark Accessibility
+  XXXL on the existing iPhone 16 / iOS 18.5 simulator. Results:
+  `.build/v2-resolution-target-retry-20261019.xcresult`,
+  `.build/v2-follow-up-specific-line-20261019.xcresult`, and
+  `.build/v2-follow-up-specific-line-large-20261019.xcresult`.
+- This captures only the worker's statement. No employer or union receipt, acknowledgement,
+  correction, payment or resolution is inferred.
+
+## Native Android first-device slice, October 19
+
+- Following explicit approval, installed Google's ARM64 command-line tools and Android SDK 36 under
+  ignored `.build/android-sdk`, then created one `LinePaycheck_E2E_API_36` Pixel 8 ARM64 AVD under
+  `.build/android-avd`. The emulator ran with `-no-metrics`; no additional Android device/runtime
+  was created. SDK, AVD, emulator config and Gradle cache remain repository-local.
+- The Compose app now supports one explicit pay profile, configured-rate/time-zone/cadence entry,
+  exact local shift times and an explicit unpaid-break interval, expected configured-rule wages,
+  statement-period and gross-basis confirmation, review gates, and immutable saved paycheck history.
+  It preserves exact work instants plus their zone and calls the existing `LinePayDomain`-independent
+  Kotlin assessors; views contain no pay arithmetic.
+- `AndroidLocalState` schema 1 is written through `AtomicFile` in app-private storage. Unknown or
+  invalid data refuses instead of reopening as empty. The manifest disables automatic backup and
+  contains no `INTERNET` permission. Password-protected manual backup uses the shared AES-GCM/PBKDF2
+  envelope; import validates first, shows record counts, then requires a distinct replace action.
+  A separate opt-in activity ledger is excluded from pay-data backups; its manual diagnostic JSON
+  contains only fixed event counts and recording status.
+- Local verification passed: **141** shared Android `:domain`/`:backup` JVM tests; **3** app JVM
+  tests; `:app:assembleDebug`, `:app:assembleRelease`, and `:app:lintDebug`. A strict verification
+  run passed **2 connected Android instrumentation tests** on the single API 36 emulator. The
+  synthetic UI journey saved a matching $200 configured-rules result, recreated the Activity, and
+  read the same saved history; the on-device encrypted backup transport/state round-trip also passed.
+- The same connected journey passed at **200% Android system font scale**, and the emulator's
+  original `font_scale=1.0` was restored afterward. The checksum-pinned Maestro CLI **2.11.0** ran
+  the checked-in first-paycheck black-box flow **1/1 passed** with analytics disabled; it starts
+  from cleared synthetic app state, enters the configured rate and shift, confirms the statement
+  period and scope, and reaches saved history. Rendered history capture:
+  `.build/v2-android-maestro-history.png`.
+- The APK has no network permission. This does not establish complete parity or legal coverage.
+  Android weekly-rate calculation, line-level paystub entry, benefits, OCR/voice, subscriptions,
+  Spanish terminology QA, physical device and Play release remain open.
+- The Android emulator ran with `-no-metrics`. The SDK package manager emitted Google's current
+  deprecation notice; the downloaded SDK components are pinned locally. AGP 9.2 emits migration
+  warnings because KGP 2.4.0 still requires the
+  temporary legacy DSL opt-out. Keep this visible for a deliberate compiler/plugin migration.

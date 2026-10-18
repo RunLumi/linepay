@@ -12,18 +12,30 @@ struct ReportSharingView: View {
     @State private var showingPreview = false
 
     init(context: PayPeriodContext) {
+        var selectedContext = context
+        if let paystubID = context.paystub?.id {
+            selectedContext.resolutionEvents = context.resolutionEvents.filter {
+                $0.paystubID == paystubID
+            }
+        } else {
+            selectedContext.resolutionEvents = []
+        }
+        let findings = selectedContext.paystub.map { AuditFinding.from(paystub: $0) } ?? []
         _session = State(
             initialValue: ReportShareSession { privacy in
-                guard let calculation = context.calculation else {
+                guard let calculation = selectedContext.calculation else {
                     throw AppModelError.calculationUnavailable
                 }
                 return try ReconciliationReportExporter().export(
-                    window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
-                    agreement: context.agreement, calculation: calculation,
-                    paystub: context.paystub, reconciliation: context.reconciliation,
-                    findings: [], resolutionEvents: context.resolutionEvents, privacy: privacy,
-                    requiresCalculationReview: context.requiresCalculationReview,
-                    requiresAssessmentReview: context.requiresAssessmentReview)
+                    window: selectedContext.window,
+                    timeZoneIdentifier: selectedContext.timeZoneIdentifier,
+                    agreement: selectedContext.agreement, calculation: calculation,
+                    paystub: selectedContext.paystub,
+                    reconciliation: selectedContext.reconciliation,
+                    findings: findings, resolutionEvents: selectedContext.resolutionEvents,
+                    privacy: privacy,
+                    requiresCalculationReview: selectedContext.requiresCalculationReview,
+                    requiresAssessmentReview: selectedContext.requiresAssessmentReview)
             })
     }
 

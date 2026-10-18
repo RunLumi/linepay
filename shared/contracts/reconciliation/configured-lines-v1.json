@@ -1,0 +1,2708 @@
+{
+  "format": "com.streamentry.linepay.configured-line-fixtures",
+  "version": 1,
+  "purpose": "Synthetic independent arithmetic and explicit statement mappings; not complete payroll/legal coverage. Hours expectations are display-rounded to4; difference is from exact seconds.",
+  "currency": "USD",
+  "cases": [
+    {
+      "id": "full-rate-ten-hours",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "8*50 + 2*75 =550; paystub hours are8 and2.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {
+          "regularHours": "8",
+          "overtimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "8",
+            "paid": "8",
+            "difference": "0.0000",
+            "source": "regular"
+          },
+          {
+            "field": "overtimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "premium-only-ten-hours",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "10*50 base500 + 2*25 extra50 =550; base hours include all10.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "500",
+          "overtimePay": "50"
+        },
+        "hours": {
+          "regularHours": "10",
+          "overtimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "500",
+            "paid": "500",
+            "difference": "0.00",
+            "source": "allHourly"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "overtime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "10",
+            "paid": "10",
+            "difference": "0.0000",
+            "source": "allWorked"
+          },
+          {
+            "field": "overtimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "offsetting-earnings",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Expected400+150, observed350+200; equal550 gross cannot cancel +/-50.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "350",
+          "overtimePay": "200"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "350",
+            "difference": "50.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "200",
+            "difference": "-50.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hours-differ-with-equal-cash",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Actual regular8h minus observed7.9h =0.1h; money still550.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {
+          "regularHours": "7.9",
+          "overtimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "8",
+            "paid": "7.9",
+            "difference": "0.1000",
+            "source": "regular"
+          },
+          {
+            "field": "overtimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "callout-separate-actual",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "One actual hour50 plus three paid-equivalent hours150; mapped hours remain explicit.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "callout",
+          "calloutEventID": "88000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "200",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "separateLine",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "50",
+          "calloutPay": "150"
+        },
+        "hours": {
+          "regularHours": "1"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "200",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "calloutPay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "guarantees"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "1",
+            "paid": "1",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "callout-included-paid",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "One actual hour50 plus three paid-equivalent hours150; mapped hours remain explicit.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "callout",
+          "calloutEventID": "88000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "200",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "paidEquivalents",
+        "guaranteeLayout": "includedInHourlyLines",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "200"
+        },
+        "hours": {
+          "regularHours": "4"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "200",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "4",
+            "paid": "4",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "callout-included-actual",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "One actual hour50 plus three paid-equivalent hours150; mapped hours remain explicit.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "callout",
+          "calloutEventID": "88000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "200",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "includedInHourlyLines",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "200"
+        },
+        "hours": {
+          "regularHours": "1"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "200",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "1",
+            "paid": "1",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "callout-unknown-layout",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "200 total is known; an unknown guarantee mapping supplies no hourly expectation.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "callout",
+          "calloutEventID": "88000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "200",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "200"
+        },
+        "hours": {
+          "regularHours": "4"
+        }
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "200",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "allWages"
+          }
+        ]
+      }
+    },
+    {
+      "id": "callout-double-mapping",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Included200 cannot also be treated as separate150.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": "4",
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "callout",
+          "calloutEventID": "88000000-0000-0000-0000-000000000001",
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "200",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "includedInHourlyLines",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "200",
+          "calloutPay": "150"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "200",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unconfirmed-earnings-layout",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "550 gross is known; unconfirmed hourly layout supplies no line mapping.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "unconfirmed",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unconfirmed-hours-basis",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Known400/150 earnings remain; hours cannot be called actual or guaranteed.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "unconfirmed",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {
+          "regularHours": "8",
+          "overtimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unusual-multiplier",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "One hour50*1.25=62.50; no fabricated1x/1.5x/2x statement mapping.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "0",
+            "multiplier": "1.25"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "62.50",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "62.50"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "62.50",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "62.50",
+            "paid": "62.50",
+            "difference": "0.00",
+            "source": "allWages"
+          }
+        ]
+      }
+    },
+    {
+      "id": "straight-minute-half-cent",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "58.50*60/3600=.975 -> .98; never reconstruct from repeating hours.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "58.50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:01:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "0.98",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "0.98"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "0.98",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "0.98",
+            "paid": "0.98",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.98",
+            "paid": "0.98",
+            "difference": "0.00",
+            "source": "allHourly"
+          }
+        ]
+      }
+    },
+    {
+      "id": "premium-minute-half-cent",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Gross58.50*60*1.5/3600=1.4625 ->1.46; base.98, remaining extra.48.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "58.50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "0",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:01:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "1.46",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "0.98",
+          "overtimePay": "0.48"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "1.46",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "1.46",
+            "paid": "1.46",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.98",
+            "paid": "0.98",
+            "difference": "0.00",
+            "source": "allHourly"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "0.48",
+            "paid": "0.48",
+            "difference": "0.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cross-rate-one-second-half-cent",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "(1*1 +17*1)/3600=.005 ->.01 base after combining the bucket.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "1",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [
+        {
+          "effectiveDate": "2026-09-08",
+          "agreement": {
+            "id": "synthetic-lines",
+            "version": "2",
+            "currency": "USD",
+            "hourlyRate": "17",
+            "outsideScheduleMultiplier": "1",
+            "regularSchedule": [],
+            "dailyOvertimeTiers": [],
+            "weekdayPremiums": [],
+            "datePremiums": [],
+            "calloutMinimumHours": null,
+            "perDiemPerWorkDate": null,
+            "rounding": {
+              "scale": 2,
+              "mode": "halfUp",
+              "scope": "payCategory"
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:00:01Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "87000000-0000-0000-0000-000000000002",
+          "startUTC": "2026-09-08T08:00:00Z",
+          "endUTC": "2026-09-08T08:00:01Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "0.01",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "0.01"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "0.01",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "0.01",
+            "paid": "0.01",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.01",
+            "paid": "0.01",
+            "difference": "0.00",
+            "source": "allHourly"
+          }
+        ]
+      }
+    },
+    {
+      "id": "three-fragment-base-rounding",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Three20s fragments share .975 ->.98, not three separately rounded .325 amounts.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "58.50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:00:20Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "87000000-0000-0000-0000-000000000002",
+          "startUTC": "2026-09-07T08:00:20Z",
+          "endUTC": "2026-09-07T08:00:40Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        },
+        {
+          "id": "87000000-0000-0000-0000-000000000003",
+          "startUTC": "2026-09-07T08:00:40Z",
+          "endUTC": "2026-09-07T08:01:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "0.98",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "0.98"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "0.98",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "0.98",
+            "paid": "0.98",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.98",
+            "paid": "0.98",
+            "difference": "0.00",
+            "source": "allHourly"
+          }
+        ]
+      }
+    },
+    {
+      "id": "conflicting-complete-earnings",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Observed400+151=551 conflicts with declared550; expected OT150.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "151"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "151",
+            "difference": "-1.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-complete-breakdown",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Claiming a complete breakdown with no entered earnings cannot verify it.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {},
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          }
+        ]
+      }
+    },
+    {
+      "id": "weekly-scope-pending",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Configured550 remains known; an unresolved complete-workweek mapping requires review.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": true
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unreviewed-source-fields",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Source fields needing review cannot produce a clean conclusion.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": true,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsupported-rule-coverage",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Known configured550 does not certify unrepresented obligations.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "550",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": true,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "overtimePay": "150"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "550",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "550",
+            "paid": "550",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "150",
+            "paid": "150",
+            "difference": "0.00",
+            "source": "overtime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hours-independent-up",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Hours difference uses exact seconds and half-up four decimals, independently of wage up.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "up",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:00:01Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "0.02",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "0.02"
+        },
+        "hours": {
+          "regularHours": "0.00025"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "0.02",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "0.02",
+            "paid": "0.02",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.02",
+            "paid": "0.02",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "0.0003",
+            "paid": "0.00025",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hours-independent-down",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Hours difference uses exact seconds and half-up four decimals, independently of wage down.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "down",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T08:00:01Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "0.01",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "0.01"
+        },
+        "hours": {
+          "regularHours": "0.0003"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "0.01",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "0.01",
+            "paid": "0.01",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "0.01",
+            "paid": "0.01",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "0.0003",
+            "paid": "0.0003",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hours-independent-bankers",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "Hours difference uses exact seconds and half-up four decimals, independently of wage bankers.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "bankers",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "50",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "50"
+        },
+        "hours": {
+          "regularHours": "0.99995"
+        }
+      },
+      "expected": {
+        "verdict": "needsReview",
+        "gross": "50",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "1.0000",
+            "paid": "0.99995",
+            "difference": "0.0001",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "allowance-in-confirmed-gross",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "50 cash +80 separate allowance =130 on the confirmed inclusive gross basis.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesAndPerDiem",
+        "paidGross": "130",
+        "paidPerDiem": "80",
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "50"
+        },
+        "hours": {
+          "regularHours": "1"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "130",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "130",
+            "paid": "130",
+            "difference": "0.00",
+            "source": "allCash"
+          },
+          {
+            "field": "perDiemPay",
+            "unit": "money",
+            "expected": "80",
+            "paid": "80",
+            "difference": "0.00",
+            "source": "allowance"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "1",
+            "paid": "1",
+            "difference": "0.0000",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-allowance-line",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "130 inclusive gross and50 regular are known; absent allowance observation remains unknown.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": "80",
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T09:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesAndPerDiem",
+        "paidGross": "130",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": false,
+        "amounts": {
+          "regularPay": "50"
+        },
+        "hours": {}
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "130",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "130",
+            "paid": "130",
+            "difference": "0.00",
+            "source": "allCash"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "regular"
+          }
+        ]
+      }
+    },
+    {
+      "id": "full-rate-double-time",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "8*50 +2*100=600 with full-rate double-time line.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "2"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "600",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "fullRateBuckets",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "400",
+          "doubleTimePay": "200"
+        },
+        "hours": {
+          "regularHours": "8",
+          "doubleTimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "600",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "600",
+            "paid": "600",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "400",
+            "paid": "400",
+            "difference": "0.00",
+            "source": "regular"
+          },
+          {
+            "field": "doubleTimePay",
+            "unit": "money",
+            "expected": "200",
+            "paid": "200",
+            "difference": "0.00",
+            "source": "doubleTime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "8",
+            "paid": "8",
+            "difference": "0.0000",
+            "source": "regular"
+          },
+          {
+            "field": "doubleTimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "doubleTime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "premium-only-double-time",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "10*50 base500 +2*50 extra100=600.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "2"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T18:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "600",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "500",
+          "doubleTimePay": "100"
+        },
+        "hours": {
+          "regularHours": "10",
+          "doubleTimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "600",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "600",
+            "paid": "600",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "500",
+            "paid": "500",
+            "difference": "0.00",
+            "source": "allHourly"
+          },
+          {
+            "field": "doubleTimePay",
+            "unit": "money",
+            "expected": "100",
+            "paid": "100",
+            "difference": "0.00",
+            "source": "doubleTime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "10",
+            "paid": "10",
+            "difference": "0.0000",
+            "source": "allWorked"
+          },
+          {
+            "field": "doubleTimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "doubleTime"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed-premium-buckets",
+      "scope": "Synthetic configured rules and confirmed source values; not statutory or agreement coverage.",
+      "arithmetic": "8*50 +2*75 +2*100=750; base600, extras50 and100.",
+      "agreement": {
+        "id": "synthetic-lines",
+        "version": "1",
+        "currency": "USD",
+        "hourlyRate": "50",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [
+          {
+            "afterHours": "8",
+            "multiplier": "1.5"
+          },
+          {
+            "afterHours": "10",
+            "multiplier": "2"
+          }
+        ],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        }
+      },
+      "changes": [],
+      "work": [
+        {
+          "id": "87000000-0000-0000-0000-000000000001",
+          "startUTC": "2026-09-07T08:00:00Z",
+          "endUTC": "2026-09-07T20:00:00Z",
+          "timeZone": "UTC",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": []
+        }
+      ],
+      "facts": {
+        "completeWork": true,
+        "grossBasis": "wagesOnly",
+        "paidGross": "750",
+        "paidPerDiem": null,
+        "unreviewedFields": false,
+        "unsupportedRules": false,
+        "weeklyReviewPending": false
+      },
+      "lines": {
+        "layout": "basePlusPremium",
+        "hoursBasis": "actualWork",
+        "guaranteeLayout": "unconfirmed",
+        "completeEarnings": true,
+        "amounts": {
+          "regularPay": "600",
+          "overtimePay": "50",
+          "doubleTimePay": "100"
+        },
+        "hours": {
+          "regularHours": "12",
+          "overtimeHours": "2",
+          "doubleTimeHours": "2"
+        }
+      },
+      "expected": {
+        "verdict": "matches",
+        "gross": "750",
+        "difference": "0",
+        "comparisons": [
+          {
+            "field": "grossPay",
+            "unit": "money",
+            "expected": "750",
+            "paid": "750",
+            "difference": "0.00",
+            "source": "allWages"
+          },
+          {
+            "field": "regularPay",
+            "unit": "money",
+            "expected": "600",
+            "paid": "600",
+            "difference": "0.00",
+            "source": "allHourly"
+          },
+          {
+            "field": "overtimePay",
+            "unit": "money",
+            "expected": "50",
+            "paid": "50",
+            "difference": "0.00",
+            "source": "overtime"
+          },
+          {
+            "field": "doubleTimePay",
+            "unit": "money",
+            "expected": "100",
+            "paid": "100",
+            "difference": "0.00",
+            "source": "doubleTime"
+          },
+          {
+            "field": "regularHours",
+            "unit": "hours",
+            "expected": "12",
+            "paid": "12",
+            "difference": "0.0000",
+            "source": "allWorked"
+          },
+          {
+            "field": "overtimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "overtime"
+          },
+          {
+            "field": "doubleTimeHours",
+            "unit": "hours",
+            "expected": "2",
+            "paid": "2",
+            "difference": "0.0000",
+            "source": "doubleTime"
+          }
+        ]
+      }
+    }
+  ]
+}

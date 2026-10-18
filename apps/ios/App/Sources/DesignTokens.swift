@@ -20,6 +20,18 @@ enum LinePayColor {
     static let lineStrong = dynamicColor(
         light: 0x7A8388, dark: 0x75848D, highLight: 0x4A5358, highDark: 0xB5BEC3)
     static let brandCopper = dynamicColor(light: 0xA94E25, dark: 0xE48A59)
+    static let tabBarUnselected = UIColor { traits in
+        let dark = traits.userInterfaceStyle == .dark
+        let highContrast = traits.accessibilityContrast == .high
+        let color: UInt32 =
+            switch (dark, highContrast) {
+            case (false, false): 0x5C6468
+            case (false, true): 0x13171A
+            case (true, false): 0xAAB2B6
+            case (true, true): 0xF4F1E8
+            }
+        return UIColor(rgb: color)
+    }
 
     private static func dynamicColor(
         light: UInt32, dark: UInt32, highLight: UInt32? = nil, highDark: UInt32? = nil
@@ -59,12 +71,14 @@ struct LinePayValueStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
-                configuration.label.fixedSize()
+                configuration.label
+                    .foregroundStyle(LinePayColor.textPrimary)
+                    .fixedSize()
                 Spacer(minLength: 0)
                 configuration.content.fixedSize()
             }
             VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                configuration.label
+                configuration.label.foregroundStyle(LinePayColor.textPrimary)
                 configuration.content
                     .foregroundStyle(LinePayColor.textPrimary)
             }

@@ -108,18 +108,15 @@ Rules:
 - Prefer Apple frameworks and no dependency over convenience dependencies.
 - Do not add backend infrastructure for hypothetical future requirements.
 
-## iOS baseline
+## Native platform baselines
 
-- Xcode 26.6, Swift 6.3 compiler, Swift 6 language mode.
-- iOS 18+.
-- SwiftUI + Observation.
-- Strict concurrency and warnings-as-errors stay enabled.
-- XcodeGen `2.46.0` owns project generation; generated `.xcodeproj` is disposable.
-- Swift Testing for deterministic unit/integration tests.
-- Maestro for a small number of black-box critical journeys.
-- `PrivacyInfo.xcprivacy` is release-critical.
+iOS uses Xcode 26.6 / Swift 6.3, iOS 18+, SwiftUI + Observation, strict concurrency,
+warnings-as-errors, XcodeGen 2.46.0, Swift Testing and Maestro. Generated projects are disposable;
+`PrivacyInfo.xcprivacy` is release-critical. Do not silence concurrency diagnostics with
+`@unchecked Sendable` without a proven, documented invariant. See [`apps/ios/AGENTS.md`](apps/ios/AGENTS.md).
 
-Do not silence concurrency diagnostics with `@unchecked Sendable` unless the invariant is proven and documented.
+Android baseline, local toolchain and privacy boundaries live in
+[`apps/android/AGENTS.md`](apps/android/AGENTS.md).
 
 ## Mobile feedback loop
 
@@ -137,35 +134,16 @@ and obtain explicit approval before creating a device or installing a runtime. N
 
 ## Verification by risk
 
-Use the narrowest verification that actually proves the change. Do not repeatedly run expensive suites after they already passed unless later edits invalidate the result.
+Use the narrowest gate that proves the change; rerun expensive suites only when later edits invalidate them.
+Run `bash scripts/agent-verify.sh quick` for format/domain, `bash scripts/agent-verify.sh ios` for native,
+`bash scripts/agent-verify.sh ui` for native + Maestro, `bash scripts/agent-verify.sh android` for
+JVM/build/lint, and `bash scripts/agent-verify.sh android-ui` for synthetic-AVD instrumentation + Maestro.
 
-```bash
-# environment + harness checks
-bash scripts/agent-doctor.sh
-
-# formatting + pure domain tests
-bash scripts/agent-verify.sh quick
-
-# full native iOS quality gate
-bash scripts/agent-verify.sh ios
-
-# native gate + simulator Maestro smoke suite
-bash scripts/agent-verify.sh ui
-```
-
-Minimum expectations:
-
-| Change | Verification |
-|---|---|
-| Docs / comments only | review diff; no Xcode build unless docs alter commands/config |
-| Domain/pay math | `agent-verify.sh quick` + focused regression tests |
-| App state / StoreKit / persistence adapter | `agent-verify.sh ios` |
-| User-facing SwiftUI flow | `agent-verify.sh ios` + visual/simulator inspection; run `ui` for critical journeys |
-| Maestro flow/selectors | `agent-verify.sh ui` |
-| Schema migration | migration fixtures + `agent-verify.sh ios` |
-| Release/config/privacy | full native gate + release checklist |
-
-Every bug involving money, time, rule interpretation, migration, or data loss gets a meaningful regression test.
+Docs/comments: review the diff. Domain/pay/time rules: `quick` plus focused regressions. App state,
+StoreKit, persistence, or SwiftUI: `ios`; user-facing UI also needs simulator inspection, and critical
+journeys use `ui`. Android app/persistence: `android` + `android-ui`. Migrations need migration
+fixtures and the native gate. Release/privacy changes need the full native gate and release checklist.
+Money, time, rule, migration, and data-loss bugs require meaningful regression tests.
 
 ## UI and product quality
 

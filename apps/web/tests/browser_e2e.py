@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import tempfile
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from playwright.sync_api import sync_playwright, expect
@@ -15,6 +16,9 @@ if ENGINE not in {'chromium', 'webkit'}:
     raise SystemExit('BROWSER must be chromium or webkit')
 OUTPUT = ROOT / '.build/web-e2e' / ENGINE
 OUTPUT.mkdir(parents=True, exist_ok=True)
+TEMPORARY = OUTPUT / 'tmp'
+TEMPORARY.mkdir(parents=True, exist_ok=True)
+tempfile.tempdir = str(TEMPORARY)
 (OUTPUT / 'report.json').unlink(missing_ok=True)
 def runtime_hash():
     digest = hashlib.sha256()
@@ -48,6 +52,12 @@ def profile(page, rate, diem="80", threshold=None):
 
 def read_state(page):
     return page.evaluate("async () => (await (await import('./src/state.mjs')).openStore()).read()")
+
+def read_activity(page):
+    return page.evaluate("""async () => {
+      const store = await (await import('./src/local-activity.mjs')).openLocalActivityStore();
+      try { return await store.read(); } finally { store.close(); }
+    }""")
 
 with sync_playwright() as pw:
     options = {'headless': True}
@@ -307,6 +317,7 @@ with sync_playwright() as pw:
         own_backup_event.value.save_as(own_backup)
         recipient.get_by_role('button', name='Review removal', exact=True).click()
         recipient.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        expect(recipient.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(recipient)['templateOrigins'] == []
         recipient.get_by_label('Protected web backup', exact=True).set_input_files(own_backup)
         recipient.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -419,6 +430,7 @@ with sync_playwright() as pw:
         timeline_backup_event.value.save_as(timeline_backup)
         timeline_page.get_by_role('button', name='Review removal', exact=True).click()
         timeline_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        expect(timeline_page.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(timeline_page)['ruleTimelines'] == []
         timeline_page.get_by_label('Protected web backup', exact=True).set_input_files(timeline_backup)
         timeline_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -540,6 +552,7 @@ with sync_playwright() as pw:
         calendar_backup_event.value.save_as(calendar_backup)
         calendar_page.get_by_role('button', name='Review removal', exact=True).click()
         calendar_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        expect(calendar_page.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(calendar_page)['paycheckScopes'] == [] and read_state(calendar_page)['paycycleSchedules'] == []
         calendar_page.get_by_label('Protected web backup', exact=True).set_input_files(calendar_backup)
         calendar_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -665,6 +678,7 @@ with sync_playwright() as pw:
         weekly_before = read_state(weekly_page)
         weekly_page.get_by_role('button', name='Review removal', exact=True).click()
         weekly_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        expect(weekly_page.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(weekly_page)['weeklyReviews'] == []
         weekly_page.get_by_label('Protected web backup', exact=True).set_input_files(weekly_backup)
         weekly_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -694,8 +708,132 @@ with sync_playwright() as pw:
         expect(page.locator('#status')).to_contain_text('Could not unlock')
         assert read_state(page) == baseline
         checks.append('actual download; wrong password leaves all local state unchanged and clears password')
+
+        # Local funnel milestones are isolated from financial state and require a separate
+        # exact-copy review before a diagnostic file can leave through browser download.
+        activity_other_tab = context.new_page()
+        activity_other_tab.goto(origin + '/')
+        expect(activity_other_tab.get_by_role('heading', name='Expected cash wages')).to_be_visible()
+        activity_other_tab.get_by_role('button', name='Diagnostics', exact=True).click()
+        expect(activity_other_tab.get_by_role('heading', name='Device-local activity', exact=True)).to_be_visible()
+        activity_other_tab.get_by_label('Record device-local activity', exact=True).uncheck()
+        expect(activity_other_tab.locator('#status')).to_contain_text('recording paused')
+        activity_other_tab.close()
+        page.get_by_role('button', name='Pay', exact=True).click()
+        page.get_by_label('First work date', exact=True).fill('2026-10-15')
+        page.get_by_label('Last work date (included)', exact=True).fill('2026-10-16')
+        page.get_by_label('Payroll timezone', exact=True).fill('America/Chicago')
+        page.get_by_role('button', name='Review pay period', exact=True).click()
+        page.get_by_role('button', name='Start period', exact=True).click()
+        page.get_by_label('Start', exact=True).fill('2026-10-15T08:00')
+        page.get_by_label('End', exact=True).fill('2026-10-15T08:30')
+        page.get_by_role('button', name='Save work', exact=True).click()
+        expect(page.locator('.answer')).to_have_text('USD 12.50')
+        assert read_activity(page)['recordingEnabled'] is False
+        assert next(x['count'] for x in read_activity(page)['totals'] if x['milestone'] == 'workLogged') == 1
+        checks.append('a second tab pause blocks the original stale tab from recording later work while the pay transaction still commits')
+        activity_financial_before = read_state(page)
+        assert 'activity' not in activity_financial_before
+        page.get_by_role('button', name='Pay', exact=True).click()
+        page.locator('.answer').scroll_into_view_if_needed()
+        page.wait_for_function("""async () => {
+          const store = await (await import('./src/local-activity.mjs')).openLocalActivityStore();
+          try { return (await store.read()).totals.some(row => row.milestone === 'expectedPaySeen'); }
+          finally { store.close(); }
+        }""")
+        page.get_by_role('button', name='Diagnostics', exact=True).click()
+        expect(page.get_by_role('heading', name='Device-local activity', exact=True)).to_be_visible()
+        page.wait_for_function("document.activeElement.id === 'activity-recording'")
+        assert page.evaluate('document.activeElement.id') == 'activity-recording'
+        assert page.locator('#activity-download').count() == 0
+        page.locator('#activity-preview').focus()
+        page.keyboard.press('Enter')
+        expect(page.locator('#activity-preview-json')).to_be_visible()
+        expect(page.get_by_role('button', name='Download reviewed JSON', exact=True)).to_be_visible()
+        checks.append('Diagnostics opens with focus on its labelled setting; Enter opens the exact-copy preview before download is enabled')
+        expected_counts = {
+            'firstObservedOpen': 1,
+            'profileStarted': 1,
+            'profileReady': 1,
+            'workLogged': 1,
+            'expectedPaySeen': 1,
+            'paycheckIntakeStarted': 1,
+            'paycheckCheckSaved': 1,
+            'auditCompleted': 1,
+        }
+        for milestone, count in expected_counts.items():
+            assert page.locator(f'[data-activity-count="{milestone}"]').inner_text() == str(count), milestone
+        page.get_by_role('button', name='Preview local diagnostic file', exact=True).click()
+        expect(page.locator('#activity-preview-json')).to_be_visible()
+        diagnostic_text = page.locator('#activity-preview-json').inner_text()
+        diagnostic = json.loads(diagnostic_text)
+        assert diagnostic['format'] == 'com.streamentry.linepay.web.local-diagnostics'
+        assert diagnostic['totals'] and diagnostic['days']
+        assert 'deduplicationDigests' not in diagnostic
+        assert 'activity' not in activity_financial_before and 'USD' not in diagnostic_text
+        assert '19.99' not in diagnostic_text and activity_financial_before['periods'][0]['work'][0]['id'] not in diagnostic_text
+        with page.expect_download() as diagnostic_event:
+            page.get_by_role('button', name='Download reviewed JSON', exact=True).click()
+        diagnostic_file = OUTPUT / 'synthetic-local-diagnostics.json'
+        diagnostic_event.value.save_as(diagnostic_file)
+        assert json.loads(diagnostic_file.read_text()) == diagnostic
+        checks.append('device-local closed milestones persist separately from pay state; exact diagnostic preview download excludes amounts, dates, record IDs and digest keys')
+
+        # Preference is persistent, export is independent, and clearing activity does not
+        # modify financial history. A future activity schema is preserved until explicit clear.
+        page.get_by_label('Record device-local activity', exact=True).uncheck()
+        assert read_activity(page)['recordingEnabled'] is False
+        activity_count_before_reload = read_activity(page)['totals']
+        page.reload()
+        expect(page.get_by_role('heading', name='Expected cash wages')).to_be_visible()
+        assert read_state(page) == activity_financial_before
+        page.get_by_role('button', name='Diagnostics', exact=True).click()
+        expect(page.get_by_role('heading', name='Device-local activity', exact=True)).to_be_visible()
+        assert read_activity(page)['totals'] == activity_count_before_reload
+        page.get_by_role('button', name='Clear only local activity', exact=True).click()
+        page.get_by_role('button', name='Confirm clear local activity', exact=True).click()
+        expect(page.locator('#status')).to_contain_text('Only local activity was cleared')
+        assert read_state(page) == activity_financial_before
+        cleared_activity = read_activity(page)
+        assert cleared_activity['totals'] == [] and cleared_activity['days'] == []
+        assert cleared_activity['recordingEnabled'] is False
+        page.evaluate("""async () => new Promise((resolve, reject) => {
+          const request = indexedDB.open('linepaycheck-web-activity', 2);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains('future-schema')) db.createObjectStore('future-schema');
+          };
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction('future-schema', 'readwrite');
+            tx.objectStore('future-schema').put('SYNTHETIC-FUTURE-ACTIVITY', 'sentinel');
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => reject(tx.error);
+          };
+        })""")
+        page.reload()
+        expect(page.get_by_role('heading', name='Expected cash wages')).to_be_visible()
+        assert read_state(page) == activity_financial_before
+        page.get_by_role('button', name='Diagnostics', exact=True).click()
+        expect(page.get_by_role('alert')).to_contain_text('It has not been overwritten')
+        page.get_by_role('button', name='Preview local diagnostic file', exact=True).click()
+        unavailable_diagnostic = json.loads(page.locator('#activity-preview-json').inner_text())
+        assert unavailable_diagnostic['activityReadable'] is False
+        assert 'SYNTHETIC-FUTURE-ACTIVITY' not in json.dumps(unavailable_diagnostic)
+        page.get_by_role('button', name='Clear only local activity', exact=True).click()
+        page.get_by_role('button', name='Confirm clear local activity', exact=True).click()
+        expect(page.locator('#status')).to_contain_text('Only local activity was cleared')
+        assert read_state(page) == activity_financial_before
+        recovered_activity = read_activity(page)
+        assert recovered_activity['version'] == 1 and recovered_activity['recordingEnabled'] is False
+        assert recovered_activity['totals'] == []
+        checks.append('pause survives reload; explicit activity-only clear preserves pay history and opt-out; future activity version is not overwritten and resets only after user confirmation')
+
+        page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_role('button', name='Review removal', exact=True).click()
         page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
+        expect(page.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(page)['periods'] == []
         page.get_by_label('Protected web backup', exact=True).set_input_files(backup)
         page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -815,6 +953,7 @@ with sync_playwright() as pw:
         line_backup_event.value.save_as(line_backup)
         line_page.get_by_role('button',name='Review removal',exact=True).click()
         line_page.get_by_role('button',name='Confirm remove all local records',exact=True).click()
+        expect(line_page.locator('#status')).to_contain_text('activity and pay records were removed')
         assert read_state(line_page)['paycheckLineScopes'] == []
         line_page.get_by_label('Protected web backup',exact=True).set_input_files(line_backup)
         line_page.get_by_label('Backup password',exact=True).fill(PASSWORD)

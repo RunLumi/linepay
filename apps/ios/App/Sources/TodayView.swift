@@ -75,6 +75,7 @@ struct TodayView: View {
                             } label: {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Repeat last shift")
+                                        .foregroundStyle(LinePayColor.actionText)
                                     Text(LinePayFormat.shiftTimes(last.interval))
                                         .font(.footnote)
                                         .foregroundStyle(LinePayColor.textSecondary)
@@ -110,7 +111,7 @@ struct TodayView: View {
                             AuditStatusView(status: model.status(for: context))
                         }
                     }
-                    Section("Work log") {
+                    Section {
                         if model.workEntries.isEmpty {
                             Text(
                                 "Add each shift after you work it. The estimate updates as you go."
@@ -122,13 +123,24 @@ struct TodayView: View {
                                 editing = entry
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    HStack(alignment: .firstTextBaseline) {
-                                        Text(workKindTitle(entry.interval.kind)).font(.headline)
-                                        Spacer(minLength: LinePaySpacing.compact)
-                                        Text(
-                                            "\(LinePayFormat.hours(entry.interval.durationHours)) h"
-                                        )
-                                        .font(.headline).monospacedDigit()
+                                    ViewThatFits(in: .horizontal) {
+                                        HStack(alignment: .firstTextBaseline) {
+                                            Text(workKindTitle(entry.interval.kind))
+                                                .font(.headline)
+                                            Spacer(minLength: LinePaySpacing.compact)
+                                            Text(
+                                                "\(LinePayFormat.hours(entry.interval.durationHours)) h"
+                                            )
+                                            .font(.headline).monospacedDigit()
+                                        }
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(workKindTitle(entry.interval.kind))
+                                                .font(.headline)
+                                            Text(
+                                                "\(LinePayFormat.hours(entry.interval.durationHours)) h"
+                                            )
+                                            .font(.headline).monospacedDigit()
+                                        }
                                     }
                                     Text(LinePayFormat.shiftTimes(entry.interval))
                                         .font(.subheadline)
@@ -162,6 +174,12 @@ struct TodayView: View {
                                 }
                             }
                         }
+                    } header: {
+                        Text("Work log")
+                            .font(.headline)
+                            .textCase(nil)
+                            .foregroundStyle(LinePayColor.textPrimary)
+                            .accessibilityAddTraits(.isHeader)
                     }
                 } else {
                     Section {

@@ -36,6 +36,8 @@ transient in private browsing. Persistent storage is a user-requested hint, not 
 8. Download a password-protected copy. Verify actual file delivery in the location you chose.
    Unlock/inspect a selected copy, then separately confirm replacement. Wrong passwords, unsupported
    state and concurrent writes leave current records unchanged.
+9. Review optional device-local activity milestones. They live in a separate IndexedDB database,
+   remain outside financial backups and leave only through a separate manual preview/download.
 
 ## Correctness and data boundaries
 
@@ -43,8 +45,11 @@ Pay arithmetic uses exact BigInt rational operations, never binary floating poin
 arithmetic and occurrence indices use safe integer Numbers. The nineteen shared configured-pay
 cases cover daily tiers, breaks, local midnight, DST, isolated/split callout minima, highest weekday
 premia, separate per diem and exact-second cent boundaries. Rounding occurs by category/multiplier,
-with deterministic remainder allocation. Sixteen shared configured-gross comparison cases verify
-scope/review behavior. Thirteen shared fund cases independently verify separate employer
+with deterministic remainder allocation. Twenty-nine shared earnings/hour comparison cases cover
+full-rate and premium-only lines, actual-work/paid-equivalent hours, explicit callout mapping,
+four-place hour presentation and exact-second differences with source-component traces. Sixteen
+shared configured-gross comparison cases verify scope/review behavior. Thirteen shared fund cases
+independently verify separate employer
 contributions, one fund-total rounding, raw statement precision, unknowns, mixed bases and
 incompatible scope. The legacy-rounding case tests a saved-result review flag, not legacy-price
 production or admission of native legacy snapshots.
@@ -81,6 +86,24 @@ commit `192cab9` source. Actual encrypted old-version recovery is tested in both
 an explicit complete financial-state migrator exists. Matching encryption is not state portability.
 Browser download evidence does not establish actual OS Files/iCloud delivery or two-device restore.
 
+## Device-local activity and manual diagnostics
+
+The closed local vocabulary records first/open observations, profile setup, new work, visible
+expected pay, started/saved paycheck checks, comparable confirmed checks, a second comparable check,
+and explicit financial-backup restores. There are no app-install, purchase, trial, revenue, account,
+employer, union, payroll-date, amount, document or free-text events. Record identities are accepted
+only in a closed local identity shape and stored as internal SHA-256 deduplication digests; hashing
+is not anonymity. No activity is sent to a server or included in a financial backup.
+
+The separate database keeps lifetime totals and up to 400 observed UTC days, caps its digest set at
+20,000, and fails closed on unknown/corrupt state. Observation failure never rolls back a saved pay
+record. The user can pause recording, clear only activity, or review the exact diagnostic JSON before
+downloading it. The export contains milestone counts, usage days and recording status; it can still
+be personal and is not a pay-data backup. Browser/device backup behavior depends on platform settings
+and has not been independently verified. Clearing all local data clears activity first, then pay
+records; if activity cannot be cleared, pay data is left intact. Restored pay backups never backfill
+activity history.
+
 ## Real browser verification
 
 Use the pinned `requirements-test.txt` in an isolated developer Python environment with the selected
@@ -95,12 +118,15 @@ BROWSER=webkit python3 apps/web/tests/browser_e2e.py
 
 It covers actual wage/fund forms, immutable revisions, material-edit confirmation invalidation,
 downloaded encrypted recovery, old-version migration, wrong-password refusal,
-inspection-before-replacement, stale-tab conflict, narrow/dark/enlarged text and offline reload with
+inspection-before-replacement, stale-tab conflict, Diagnostics focus/Enter flow,
+narrow/dark/enlarged text and offline reload with
 the real origin stopped plus a fresh no-worker negative control. Positive/offline proof uses real responses. One separate negative test aborts a module request, then
 removes the route and requires a real reload with stored records unchanged.
 [Playwright WebKit issue 42775](https://github.com/microsoft/playwright/issues/42775) explains why its
 offline-emulation flag cannot establish this; the harness uses real server unavailability for both
-engines. Installed/home-screen PWA behavior and physical browser/device behavior remain unverified.
+engines. Diagnostics moves focus to its labeled recording setting and supports Enter to open the
+exact-copy preview; this is not a VoiceOver or assistive-technology certification.
+Installed/home-screen PWA behavior and physical browser/device behavior remain unverified.
 
 The home-screen PNG is copied unchanged from the repository’s existing native AppIcon-1024.png; no new icon ownership or brand claim is introduced.
 
@@ -108,9 +134,11 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 179 Node checks include nineteen pay, sixteen gross, thirteen fund and five portable-rule
-fixtures, plus eight temporal prices/five refusals, bounded-input, history/migration and cipher checks. Pay/gross/fund have independent
-Swift/Kotlin consumers; portable-rule fixtures currently have a Swift consumer. Shared
+The 216 Node checks include nineteen pay, sixteen gross, twenty-nine earnings/hour, thirteen fund,
+seven local-activity boundaries, five portable-rule fixtures and a light/dark contrast audit, plus
+eight temporal prices/five refusals, bounded-input,
+history/migration and cipher checks. Pay/line/gross/fund have independent Swift/Kotlin consumers;
+portable-rule fixtures currently have a Swift consumer. Shared
 fixtures do not establish full platform/legal parity. Fund eligibility is never inferred from wage
 hours or overtime; optional source notes remain worker-provided, without original-file or third-party
 verification. Fund differences never change cash wages or the wage verdict. Fund arithmetic refuses more than 38 significant digits rather than silently rounding inputs;

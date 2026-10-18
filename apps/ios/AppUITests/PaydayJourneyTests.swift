@@ -212,6 +212,15 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(
             app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
         tap("audit.follow-up")
+        let findingPicker = app.descendants(matching: .any)
+            .matching(identifier: "resolution.finding").firstMatch
+        scrollTo(findingPicker)
+        XCTAssertTrue(findingPicker.waitForExistence(timeout: 10))
+        findingPicker.tap()
+        let grossOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Gross pay")).firstMatch
+        XCTAssertTrue(grossOption.waitForExistence(timeout: 10))
+        grossOption.tap()
         let note = app.textFields["resolution.note"].firstMatch
         scrollTo(note)
         XCTAssertTrue(note.waitForExistence(timeout: 10))
@@ -222,6 +231,9 @@ final class PaydayJourneyTests: XCTestCase {
         let saved = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
         scrollTo(saved)
         XCTAssertTrue(saved.waitForExistence(timeout: 10))
+        let scope = app.staticTexts["resolution.history-scope"].firstMatch
+        scrollTo(scope)
+        XCTAssertEqual(scope.label, "Comparison item: Gross pay")
         capture(largeText ? "v2-follow-up-largest-text" : "v2-follow-up")
         app.terminate()
         launch(reset: false, scenario: "shortfall", largeText: largeText)
@@ -233,6 +245,9 @@ final class PaydayJourneyTests: XCTestCase {
         let restored = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
         scrollTo(restored)
         XCTAssertTrue(restored.waitForExistence(timeout: 10))
+        let restoredScope = app.staticTexts["resolution.history-scope"].firstMatch
+        scrollTo(restoredScope)
+        XCTAssertEqual(restoredScope.label, "Comparison item: Gross pay")
         capture("v2-follow-up-restored")
     }
 

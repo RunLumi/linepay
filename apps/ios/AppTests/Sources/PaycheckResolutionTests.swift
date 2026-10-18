@@ -25,17 +25,45 @@ struct PaycheckResolutionTests {
         #expect(restored.periodContext()?.resolutionEvents == after.resolutionEvents)
     }
 
+    @Test func resolutionFindingMustBelongToItsSavedPaycheck() throws {
+        let store = UnitStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        try model.confirmPaystub(UnitFixture.paystub(model, gross: "375"))
+        let context = try #require(model.periodContext())
+        let paystub = try #require(context.paystub)
+        let finding = try #require(AuditFinding.from(paystub: paystub).first)
+
+        #expect(throws: (any Error).self) {
+            try model.recordResolution(
+                periodID: context.id, findingID: "unknown-line", status: .shared,
+                note: "Synthetic invalid reference")
+        }
+        try model.recordResolution(
+            periodID: context.id, findingID: finding.id, status: .shared,
+            note: "Synthetic line question")
+
+        let event = try #require(model.periodContext()?.resolutionEvents.first)
+        #expect(event.paystubID == paystub.id)
+        #expect(event.findingID == finding.id)
+        try AppStateValidation.validate(try #require(store.state))
+    }
+
     @Test func correctionKeepsNotesBoundToOriginalPaycheckRevision() throws {
         let model = AppModel(store: UnitStateStore())
         try UnitFixture.populate(model)
         try model.confirmPaystub(UnitFixture.paystub(model, gross: "375"))
         let original = try #require(model.periodContext())
+        let originalPaystub = try #require(original.paystub)
+        let originalFinding = try #require(AuditFinding.from(paystub: originalPaystub).first)
         try model.recordResolution(
-            periodID: original.id, status: .shared, note: "Sent synthetic question")
+            periodID: original.id, findingID: originalFinding.id,
+            status: .shared, note: "Sent synthetic question")
         try model.confirmPaystub(UnitFixture.paystub(model, gross: "400"))
         let corrected = try #require(model.periodContext())
         #expect(corrected.resolutionEvents.first?.paystubID == original.paystub?.id)
         #expect(corrected.resolutionEvents.first?.paystubID != corrected.paystub?.id)
+        #expect(corrected.resolutionEvents.first?.findingID == originalFinding.id)
         #expect(corrected.revisions.contains { $0.paystub.id == original.paystub?.id })
         try model.recordResolution(
             periodID: original.id, status: .corrected, note: "Reviewed corrected statement")
@@ -48,12 +76,16 @@ struct PaycheckResolutionTests {
         try model.confirmPaystub(UnitFixture.paystub(model, gross: "375"))
         let original = try #require(model.periodContext())
         let oldID = try #require(original.paystub?.id)
+        let originalPaystub = try #require(original.paystub)
+        let originalFinding = try #require(AuditFinding.from(paystub: originalPaystub).first)
         try model.confirmPaystub(UnitFixture.paystub(model, gross: "400"))
         try model.recordResolution(
-            periodID: original.id, paystubID: oldID, status: .explained,
+            periodID: original.id, paystubID: oldID, findingID: originalFinding.id,
+            status: .explained,
             note: "Explanation for original statement")
         let current = try #require(model.periodContext())
         #expect(current.resolutionEvents.first?.paystubID == oldID)
+        #expect(current.resolutionEvents.first?.findingID == originalFinding.id)
         let revision = try #require(current.revisions.first { $0.paystub.id == oldID })
         let context = revision.context(
             periodID: original.id,
@@ -72,14 +104,18 @@ struct PaycheckResolutionTests {
         try UnitFixture.populate(model)
         try model.confirmPaystub(UnitFixture.paystub(model))
         let period = try #require(model.periodContext())
+        let paystub = try #require(period.paystub)
+        let finding = try #require(AuditFinding.from(paystub: paystub).first)
         try model.recordResolution(
-            periodID: period.id, status: .awaitingResponse, note: "Synthetic question")
+            periodID: period.id, findingID: finding.id,
+            status: .awaitingResponse, note: "Synthetic question")
         try model.archiveCurrentPeriod()
         try model.recordResolution(periodID: period.id, status: .unresolved, note: "Still waiting")
         let state = try #require(store.state)
         let archive = BackupArchive(createdAt: UnitFixture.start, state: state, files: [])
         let restored = try BackupArchive.decode(archive.encoded())
         #expect(restored.state.resolutionEvents == state.resolutionEvents)
+        #expect(restored.state.resolutionEvents?.first?.findingID == finding.id)
         #expect(model.periodContext()?.resolutionEvents.isEmpty == true)
         #expect(model.periodContext(id: period.id)?.resolutionEvents.count == 2)
         let next = model.activePeriod
@@ -137,6 +173,30 @@ struct PaycheckResolutionTests {
         try AppStateValidation.validate(migrated)
     }
 
+    @Test func schemaTenFollowUpsMigrateWithoutInventingFindingLinks() throws {
+        let store = UnitStateStore()
+        let model = AppModel(store: store)
+        try UnitFixture.populate(model)
+        try model.confirmPaystub(UnitFixture.paystub(model, gross: "375"))
+        let context = try #require(model.periodContext())
+        try model.recordResolution(
+            periodID: context.id, status: .shared, note: "Older paycheck-level question")
+        let state = try #require(store.state)
+        var json = try #require(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+        json["schemaVersion"] = 10
+        var events = try #require(json["resolutionEvents"] as? [[String: Any]])
+        events[0].removeValue(forKey: "findingID")
+        json["resolutionEvents"] = events
+
+        let migrated = try JSONDecoder().decode(
+            AppPersistentState.self, from: JSONSerialization.data(withJSONObject: json))
+        #expect(migrated.schemaVersion == AppPersistentState.currentSchemaVersion)
+        #expect(migrated.resolutionEvents?.first?.findingID == nil)
+        #expect(migrated.resolutionEvents?.first?.note == "Older paycheck-level question")
+        try AppStateValidation.validate(migrated)
+    }
+
     @Test func schemaFourDiskFileOpensWithoutLosingHistoricalPaycheckFacts() throws {
         let directory = UnitFixture.temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -180,6 +240,17 @@ struct PaycheckResolutionTests {
         #expect(throws: LocalStateStoreError.invalidState) {
             try AppStateValidation.validate(state)
         }
+
+        let paystub = try #require(period.paystub)
+        state.resolutionEvents = [
+            ResolutionEvent(
+                id: UUID(), periodID: period.id, paystubID: paystub.id,
+                findingID: "unknown-line", status: .explained,
+                note: "Synthetic invalid finding", recordedEpochSeconds: 0)
+        ]
+        #expect(throws: LocalStateStoreError.invalidState) {
+            try AppStateValidation.validate(state)
+        }
     }
 
     @Test func reportNotesRequireExplicitOptIn() throws {
@@ -187,23 +258,30 @@ struct PaycheckResolutionTests {
         try UnitFixture.populate(model)
         try model.confirmPaystub(UnitFixture.paystub(model))
         let period = try #require(model.periodContext())
+        let paystub = try #require(period.paystub)
+        let finding = try #require(AuditFinding.from(paystub: paystub).first)
         let sentinel = "PRIVATE-RESOLUTION-SENTINEL"
-        try model.recordResolution(periodID: period.id, status: .shared, note: sentinel)
+        try model.recordResolution(
+            periodID: period.id, findingID: finding.id, status: .shared, note: sentinel)
         let context = try #require(model.periodContext())
         let calculation = try #require(context.calculation)
+        let reportPaystub = try #require(context.paystub)
+        let findings = AuditFinding.from(paystub: reportPaystub)
         for (includeSource, include) in [
             (false, false), (true, false), (false, true), (true, true),
         ] {
             let url = try ReconciliationReportExporter().export(
                 window: context.window, timeZoneIdentifier: context.timeZoneIdentifier,
                 agreement: context.agreement, calculation: calculation, paystub: context.paystub,
-                reconciliation: context.reconciliation, findings: [],
+                reconciliation: context.reconciliation, findings: findings,
                 resolutionEvents: context.resolutionEvents,
                 privacy: ReportPrivacyOptions(
                     includeSourceDetails: includeSource, includeResolutionHistory: include))
             defer { try? TemporaryExports.removeReport(url) }
             let text = try #require(PDFDocument(url: url)?.string)
             #expect(text.contains(sentinel) == include)
+            #expect(
+                text.contains("Related comparison item: \(finding.title)") == include)
         }
     }
 }

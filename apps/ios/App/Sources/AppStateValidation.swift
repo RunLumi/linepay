@@ -28,22 +28,27 @@ enum AppStateValidation {
             throw invalid()
         }
         for event in events {
-            let paystubs: [UUID]
+            let paystubs: [ConfirmedPaystub]
             if let active = state.activePeriod, active.id == event.periodID {
                 paystubs =
-                    [active.paystub?.id].compactMap { $0 }
-                    + (active.auditRevisions ?? []).map { $0.paystub.id }
+                    [active.paystub].compactMap { $0 }
+                    + (active.auditRevisions ?? []).map(\.paystub)
             } else if let period = state.history.first(where: { $0.id == event.periodID }) {
                 paystubs =
-                    [period.paystub?.id].compactMap { $0 }
-                    + (period.auditRevisions ?? []).map { $0.paystub.id }
+                    [period.paystub].compactMap { $0 }
+                    + (period.auditRevisions ?? []).map(\.paystub)
             } else {
                 throw invalid()
             }
-            guard paystubs.contains(event.paystubID), !event.note.isEmpty,
+            guard let paystub = paystubs.first(where: { $0.id == event.paystubID }),
+                !event.note.isEmpty,
                 event.note.count <= 4_000,
                 (-62_135_596_800...253_402_300_799).contains(event.recordedEpochSeconds)
             else { throw invalid() }
+            if let findingID = event.findingID {
+                guard AuditFinding.contains(findingID, in: paystub)
+                else { throw invalid() }
+            }
         }
         if let profile = state.profile {
             guard TimeZone(identifier: profile.timeZoneIdentifier) != nil else { throw invalid() }

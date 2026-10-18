@@ -6,3 +6,4 @@ dependencyResolutionManagement {
 rootProject.name = "LinePaycheckAndroid"
 include(":domain")
 include(":backup")
+include(":app")

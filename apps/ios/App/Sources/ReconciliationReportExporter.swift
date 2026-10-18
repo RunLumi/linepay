@@ -94,6 +94,16 @@ struct ReconciliationReportExporter {
                 for event in resolutionEvents {
                     writer.text(event.status.title)
                     writer.caption("Paycheck revision: \(event.paystubID.uuidString)")
+                    if let findingID = event.findingID {
+                        if let finding = findings.first(where: { $0.id == findingID }) {
+                            writer.caption("Related comparison item: \(finding.title)")
+                        } else {
+                            writer.caption(
+                                "Related comparison item is unavailable in this report copy.")
+                        }
+                    } else {
+                        writer.caption("Follow-up scope: whole paycheck comparison.")
+                    }
                     writer.caption(
                         ISO8601DateFormatter().string(
                             from: Date(
@@ -141,6 +151,9 @@ struct ReconciliationReportExporter {
                         if privacy.includeSourceDetails { writer.caption(suggestion.sourceText) }
                     } else {
                         writer.caption("Source: value entered and confirmed by the worker.")
+                    }
+                    if let finding = findings.first(where: { $0.id == comparison.id }) {
+                        writer.caption(finding.explanation)
                     }
                 }
             }

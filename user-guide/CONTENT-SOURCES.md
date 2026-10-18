@@ -27,7 +27,7 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Recording work | `AddWorkView.swift`, `CalloutEntryWorkflow.swift`, `RepeatWorkView.swift`, `RepeatWorkDraft.swift`, `TodayView.swift`; domain `apps/ios/Packages/LinePayDomain/Sources/LinePayDomain/WorkTemplate.swift`; app regressions in `CalloutEntryWorkflowTests.swift` / `RepeatWorkDraftTests.swift` and domain `ProductBoundaryTests.swift` |
 | Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `WeeklyRecordedWork.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
-| Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `AppState.swift`, domain `PaycheckAssessment.swift` |
+| Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift`, `ReconciliationReportExporter.swift`, `ReportSharingView.swift`, `AppState.swift`, `AppStateValidation.swift`, domain `PaycheckAssessment.swift` |
 | Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
 | Pro and billing | `SubscriptionStore.swift`, `SettingsView.swift`, `AuditDetailView.swift`, `docs/pricing.md` |
 | Support addresses | `apps/ios/App/Sources/AppLinks.swift` |
@@ -64,6 +64,13 @@ No public guide exports this source map, root AGENTS.md, internal docs, private 
 V2 paycycle review (2026-10-16, release pending): `PayPeriodSchedule.swift` and `PayProfileSetupView.swift` add explicit twice-monthly calendar periods. Updated pay-profile and getting-started; reviewed pay-rules and changing-rules without further changes.
 
 V2 follow-up review (2026-10-16, release pending): `AuditDetailView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift` and `ReportSharingView.swift` inform audit-results and evidence-and-reports. Follow-up notes are local, revision-bound, and excluded from reports unless opted in.
+
+Targeted native follow-up extension (October 19, 2026): a worker can associate a note with one
+monetary comparison from the exact saved paycheck revision or keep it paycheck-level. The
+comparison label is included only with the separate follow-up-history report opt-in. Old notes
+remain paycheck-level. Updated audit-results, evidence-and-reports and backup guidance; no
+employer receipt, correction or recovery is inferred. Full-site release-candidate review remains
+pending.
 
 V2 OCR evidence review (2026-10-16, release pending): `OCRFieldProvenanceView.swift`, `PaystubImportView.swift`, and `PaystubTextParser.swift` inform confirming-fields. Re-reviewed importing-paychecks and paystub-layouts; their steps and scope remain unchanged. Recognition scores do not establish correctness.
 

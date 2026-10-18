@@ -118,7 +118,7 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | ID | Rule | Observable consequence |
 |---|---|---|
 | BR-075 | A resolution status is the worker's report, separate from payroll arithmetic. | Corrected/explained/shared does not rewrite an audit verdict, prove payment/recovery or send a message. Corrections append events. |
-| BR-076 | Follow-up belongs to a specific saved comparison. | Unknown/orphaned references refuse; another paycheck revision's notes never appear in a selected report. |
+| BR-076 | Follow-up belongs to an exact saved paycheck revision and may target one of its compared money lines. | Unknown/orphaned revision or line references refuse; older or unrelated revision notes never appear in the selected report. |
 | BR-077 | A report uses the selected saved snapshot and explicit privacy choices. | New profiles do not reprice it. Notes, detailed clocks and draft text are omitted by default; unknown gross is never zero. |
 | BR-078 | Export follows exact-copy review. | Changing privacy options invalidates preview/actions. Downloaded HTML uses the reviewed bytes; oversized reports refuse without truncating a tail. |
 | BR-079 | Printing/exporting is not delivery or external verification. | Local Blob review, browser PDF rendering, OS/provider save, recipient transfer and release remain separate evidence claims. |

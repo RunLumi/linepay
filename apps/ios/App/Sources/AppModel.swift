@@ -883,13 +883,21 @@ final class AppModel {
     }
 
     func recordResolution(
-        periodID: UUID, paystubID: UUID? = nil, status: ResolutionStatus, note: String
+        periodID: UUID, paystubID: UUID? = nil, findingID: String? = nil,
+        status: ResolutionStatus, note: String
     ) throws {
         guard let context = periodContext(id: periodID),
-            let targetID = paystubID ?? context.paystub?.id,
-            context.paystub?.id == targetID
-                || context.revisions.contains(where: { $0.paystub.id == targetID })
+            let targetID = paystubID ?? context.paystub?.id
         else { throw AppModelError.unconfirmedPaystub }
+        let targetPaystub =
+            context.paystub?.id == targetID
+            ? context.paystub : context.revisions.first { $0.paystub.id == targetID }?.paystub
+        guard let targetPaystub else { throw AppModelError.unconfirmedPaystub }
+        if let findingID,
+            !AuditFinding.contains(findingID, in: targetPaystub)
+        {
+            throw AppModelError.invalidField("Comparison item for the selected paycheck")
+        }
         let note = note.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !note.isEmpty, note.count <= 4_000 else {
             throw AppModelError.invalidField("Resolution note (1–4,000 characters)")
@@ -901,8 +909,8 @@ final class AppModel {
         }
         events.append(
             ResolutionEvent(
-                id: UUID(), periodID: periodID, paystubID: targetID, status: status,
-                note: note, recordedEpochSeconds: epochSeconds(now())))
+                id: UUID(), periodID: periodID, paystubID: targetID, findingID: findingID,
+                status: status, note: note, recordedEpochSeconds: epochSeconds(now())))
         candidate.resolutionEvents = events
         try commit(candidate)
     }
@@ -941,15 +949,7 @@ final class AppModel {
 
     func auditFindings(calculation: CalculationResult, paystub: ConfirmedPaystub) -> [AuditFinding]
     {
-        guard let assessment = paystub.assessment else { return [] }
-        return assessment.comparisons.filter { $0.unit == .money }.map { item in
-            AuditFinding(
-                id: item.id, title: item.field.rawValue,
-                expected: Money(amount: item.expected, currencyCode: item.currencyCode),
-                paid: Money(amount: item.paid, currencyCode: item.currencyCode),
-                difference: Money(amount: item.difference, currencyCode: item.currencyCode),
-                explanation: "Compared using the paystub layout and gross basis you confirmed.")
-        }
+        AuditFinding.from(paystub: paystub)
     }
 
     func exportBackupURL() throws -> URL {

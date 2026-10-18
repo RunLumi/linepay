@@ -295,7 +295,7 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 10
+    static let currentSchemaVersion = 11
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -337,7 +337,7 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // V1–v9 admission preserves recorded calculations and comparison versions unchanged.
+        // V1–v10 admission preserves recorded calculations and comparison versions unchanged.
         schemaVersion = Self.currentSchemaVersion
         crewRuleOrigins = try values.decodeIfPresent(
             [CrewRuleOrigin].self, forKey: .crewRuleOrigins)
@@ -440,4 +440,22 @@ struct AuditFinding: Identifiable, Hashable, Sendable {
     let paid: Money
     let difference: Money
     let explanation: String
+
+    static func contains(_ id: String, in paystub: ConfirmedPaystub) -> Bool {
+        paystub.assessment?.comparisons.contains { $0.unit == .money && $0.id == id } ?? false
+    }
+
+    static func from(paystub: ConfirmedPaystub) -> [AuditFinding] {
+        guard let assessment = paystub.assessment else { return [] }
+        return assessment.comparisons.filter { $0.unit == .money }.map { item in
+            AuditFinding(
+                id: item.id,
+                title: item.field.title,
+                expected: Money(amount: item.expected, currencyCode: item.currencyCode),
+                paid: Money(amount: item.paid, currencyCode: item.currencyCode),
+                difference: Money(amount: item.difference, currencyCode: item.currencyCode),
+                explanation: "Compared using the paystub layout and gross basis you confirmed."
+            )
+        }
+    }
 }

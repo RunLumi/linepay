@@ -5,6 +5,7 @@ struct PaycheckResolutionView: View {
     let periodID: UUID
     var paystubID: UUID? = nil
     @State private var status: ResolutionStatus = .reviewing
+    @State private var findingID = ""
     @State private var note = ""
     @State private var errorMessage: String?
     @FocusState private var noteFocused: Bool
@@ -14,6 +15,7 @@ struct PaycheckResolutionView: View {
             if let context = model.periodContext(id: periodID),
                 let paystub = selectedPaystub(in: context)
             {
+                let findings = AuditFinding.from(paystub: paystub)
                 Section {
                     Text(
                         "Keep a record of what you reviewed, shared or heard back. These are your notes; they do not change the paycheck comparison or establish that money is owed or recovered."
@@ -22,6 +24,27 @@ struct PaycheckResolutionView: View {
                         "A useful question: Could you help me understand the difference between these confirmed work records and the paystub for this period?"
                     )
                     .font(.footnote)
+                }
+                if !findings.isEmpty {
+                    Section("Comparison item") {
+                        Picker("Follow-up scope", selection: $findingID) {
+                            Text("Whole paycheck comparison").tag("")
+                            ForEach(findings) { finding in
+                                Text(finding.title).tag(finding.id)
+                            }
+                        }
+                        .accessibilityIdentifier("resolution.finding")
+                        if let finding = findings.first(where: { $0.id == findingID }) {
+                            LabeledContent(
+                                "Expected", value: LinePayFormat.money(finding.expected))
+                            LabeledContent(
+                                "Confirmed paid", value: LinePayFormat.money(finding.paid))
+                            LabeledContent(
+                                "Expected minus confirmed",
+                                value: LinePayFormat.money(finding.difference))
+                            Text(finding.explanation).font(.footnote)
+                        }
+                    }
                 }
                 Section("Record a follow-up") {
                     Picker("Status", selection: $status) {
@@ -57,6 +80,9 @@ struct PaycheckResolutionView: View {
                                 format: .dateTime.year().month().day().hour().minute()
                             )
                             .font(.caption).foregroundStyle(LinePayColor.textSecondary)
+                            Text(resolutionScope(for: event, in: context))
+                                .font(.subheadline)
+                                .accessibilityIdentifier("resolution.history-scope")
                             Text(event.note)
                             if event.paystubID != paystub.id {
                                 Label(
@@ -89,10 +115,25 @@ struct PaycheckResolutionView: View {
     private func save() {
         do {
             try model.recordResolution(
-                periodID: periodID, paystubID: paystubID, status: status, note: note)
+                periodID: periodID, paystubID: paystubID,
+                findingID: findingID.isEmpty ? nil : findingID, status: status, note: note)
             note = ""
             noteFocused = false
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func resolutionScope(for event: ResolutionEvent, in context: PayPeriodContext)
+        -> String
+    {
+        guard let findingID = event.findingID else { return "Whole paycheck comparison" }
+        let paystub =
+            context.paystub?.id == event.paystubID
+            ? context.paystub
+            : context.revisions.first { $0.paystub.id == event.paystubID }?.paystub
+        guard let paystub,
+            let finding = AuditFinding.from(paystub: paystub).first(where: { $0.id == findingID })
+        else { return "Specific item from a saved paycheck revision" }
+        return "Comparison item: \(finding.title)"
     }
 }
