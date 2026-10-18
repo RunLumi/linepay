@@ -57,6 +57,19 @@ struct CrewRuleWorkflowTests {
         #expect(model.calculation?.total == result.total)
         #expect(model.calculation?.provenance == result.provenance)
         #expect(model.calculation?.agreementSnapshots == result.agreementSnapshots)
+        let refreshed = try #require(model.calculation)
+        #expect(refreshed.components.count == result.components.count)
+        let retainingRecordedIDs = zip(refreshed.components, result.components).map {
+            fresh, saved in
+            PayComponent(
+                id: saved.id, category: fresh.category, workIntervalID: fresh.workIntervalID,
+                localDate: fresh.localDate, hours: fresh.hours, multiplier: fresh.multiplier,
+                amount: fresh.amount, explanation: fresh.explanation, ruleKeys: fresh.ruleKeys,
+                baseRate: fresh.baseRate, appliedAgreement: fresh.appliedAgreement,
+                unroundedAmount: fresh.unroundedAmount, baseTimeNumerator: fresh.baseTimeNumerator)
+        }
+        #expect(retainingRecordedIDs == result.components)
+        #expect(refreshed.weeklyRegularRate == result.weeklyRegularRate)
         #expect(model.activePeriod?.agreement == original.agreement)
         let origin = try #require(model.crewRuleOrigins.first)
         #expect(origin.adoption.templateData == proposal.crewRuleAdoption?.templateData)

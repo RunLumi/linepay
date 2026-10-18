@@ -22,8 +22,8 @@ An implementation, test result, upload, review submission and public release are
 | Foundation: funnel measurement | Implemented; full native gate passed | Final release-candidate/device checks; no production cohort/completeness claim |
 | Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
-| Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Current native App/Simulator regression, physical timezone/provider checks and final release gate |
-| Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native App/visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
+| Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Broader calendar UI, physical timezone/provider checks and final release gate |
+| Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native workflow plus browser append-only follow-up/reviewed reports implemented | Saved finding/status/notes/history and shareable evidence packet |
 | Accessibility | Pending | VoiceOver, large text, contrast/motion and critical native journeys |
@@ -38,7 +38,7 @@ An implementation, test result, upload, review submission and public release are
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | JVM configured-pay/fund/gross comparison and encrypted transport and calendar boundaries implemented; 111 JVM tests passed | Native Compose app, full parity, state portability and Android runtime/E2E remain pending |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
-| Crew templates | Browser exchange/recovery verified; native Files/UI/adoption/state implementation added | Native App tests/Simulator/visual/provider execution, Android adoption, physical transfer and actual crew use remain unverified |
+| Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Dedicated native Files/visual/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
 | App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
 
 ## Initial verified state
@@ -1897,3 +1897,35 @@ created; describe and verify each property separately.
   Android parity and interchange, verified sources/library, referrals, localization, independent
   document/physical-device/provider evidence and the final signed/manual App Store/public-release
   chain. No source/counsel approval, deployment, upload, version bump or store write was made.
+
+## Native runtime recovery and corrected crew assertion, October 18
+
+- Original session12515 completed, terminal65. The authoritative result bundle summary records
+  374 tests:372 passed,1 failed and1 skipped. All **29 executed UI journeys passed**; the store
+  screenshot capture was intentionally skipped. The sole App failure is the earlier crew assertion
+  comparing arbitrary generated IDs in fresh calculations. Keep this failed bundle visible:
+  `.build/v2-native-base-20261018/{AppTests.xcresult,test-summary.json}`. Its stdout is
+  `/private/tmp/linepay-v2-native-base-20261018.log`; it did not reach its Release step.
+- Strengthened the corrected crew test: compare the exact stored calculation/revision/work/paystub,
+  current totals/provenance/snapshots, and **all component fields with only fresh row IDs normalized
+  to the retained IDs**. Count and weekly-result equality are independent assertions. No pay field,
+  rate, applied rule, amount, hours or exact trace is omitted. No production code changed to mask
+  the initial assertion failure.
+- After confirming no other native job, reused the same existing iOS18.5 device. Ran the entire
+  current LinePayAppTests target with local StoreKit, coverage and strict unchanged project settings.
+  Current authoritative summary: **344 passed,0 failed,0 skipped**. Followed with generic iOS
+  Simulator Release build, dependency-lock comparison and bundled privacy/launch-screen validation.
+  The command chain completed with terminal0, session31801. No signing/archive/store operation.
+- Results: `.build/v2-native-current-20261018/{AppTests.xcresult,test-summary.json,app-coverage.json}`;
+  Release app remains in its `DerivedData/Build/Products/Release-iphonesimulator/` for inspection.
+  `verification-receipt.json` binds the compiled executable and175 source/resource hashes, verified
+  unchanged through both operations. Source comparison with the prior111-file compiler subset shows
+  only CrewRuleWorkflowTests changed; all production files are identical to the preceding UI run.
+- This is component-by-component current native evidence, not a claim that the original full
+  command exited successfully or that the skipped screenshot run passed. Maestro remains absent.
+  Xcode27.1/Swift6.4 ran in Swift6 mode; repository baseline remains26.6/6.3. No simulator/runtime
+  creation, erase, repeated first-launch setup or unrelated service termination occurred.
+- Native App execution now proves crew admission/retention/recovery and schema10/producer5 precision
+  review paths that were previously only typechecked. Dedicated crew Files/visual journeys, complete
+  weekly-to-paycheck integration, physical microphone/Speech, two-device/provider evidence, the rest
+  of the roadmap and final signed/manual release chain remain open. PWA work is committed0b246e6.
