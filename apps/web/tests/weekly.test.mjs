@@ -17,6 +17,7 @@ import {
 import { assessWithWeeklyContext } from "../src/assessment-period.mjs";
 import { createPaycheckReport } from "../src/report.mjs";
 import { encryptBackup, decryptBackup } from "../src/backup.mjs";
+import { dec } from "../src/decimal.mjs";
 const corpus = JSON.parse(
   readFileSync(
     new URL(
@@ -32,7 +33,19 @@ assert.equal(
 assert.equal(corpus.version, 2);
 assert.equal(corpus.cases.length, 7);
 assert.equal(corpus.refusals.length, 10);
-for (const c of corpus.cases)
+const zeroBasisCorpus = JSON.parse(
+  readFileSync(
+    new URL(
+      "../../../shared/contracts/weekly/reference-v3.json",
+      import.meta.url,
+    ),
+  ),
+);
+assert.equal(zeroBasisCorpus.format, corpus.format);
+assert.equal(zeroBasisCorpus.version, 3);
+assert.equal(zeroBasisCorpus.cases.length, 3);
+assert.equal(zeroBasisCorpus.refusals.length, 0);
+for (const c of [...corpus.cases, ...zeroBasisCorpus.cases])
   test("weekly parity: " + c.id, () => {
     const actual = calculateWeekly(c.input);
     for (const [key, value] of Object.entries(c.expected))
@@ -43,6 +56,28 @@ for (const c of corpus.cases)
     );
     assert.deepEqual(calculateWeekly(c.input), actual);
   });
+test("new weekly calculations use v3 and allocation is independent of work order", () => {
+  for (const c of zeroBasisCorpus.cases) {
+    const result = calculateWeekly(c.input);
+    assert.equal(result.engine, "linepay.web.weekly-regular-rate/3");
+    assert.deepEqual(
+      calculateWeekly({ ...c.input, work: c.input.work.slice().reverse() }),
+      result,
+    );
+    assert.equal(
+      result.allocations.reduce(
+        (sum, a) => sum + dec(a.amount).units(2, "halfUp"),
+        0n,
+      ),
+      1n,
+    );
+    assert.ok(
+      result.allocations
+        .filter((a) => a.basisNumerator === "0")
+        .every((a) => a.amount === "0.00"),
+    );
+  }
+});
 for (const c of corpus.refusals)
   test("weekly refusal: " + c.id, () =>
     assert.throws(() => calculateWeekly(c.input)),
@@ -81,6 +116,72 @@ function record(state, id = "62000000-0000-0000-0000-000000000001") {
     result: calculateWeekly(input),
   };
 }
+test("original v2 weekly receipts retain their amounts through validation and encrypted backup", async () => {
+  // Emitted with unmodified 1da1059 source, including its zero-basis rounding defect.
+  const zeroBasis = JSON.parse(
+    readFileSync(
+      new URL("./fixtures/weekly-zero-basis-v2.json", import.meta.url),
+    ),
+  );
+  const state = decodeState(legacy(7));
+  const positiveBasis = JSON.parse(
+    readFileSync(
+      new URL("./fixtures/weekly-positive-basis-v2.json", import.meta.url),
+    ),
+  );
+  state.weeklyReviews.push(zeroBasis);
+  state.weeklyReviews.push(positiveBasis);
+  // Positive-basis v2 rows also replay without upgrading their recorded engine.
+  validateWeeklyReview(positiveBasis);
+  assert.equal(positiveBasis.result.remainingAdditionalPremium, "0.01");
+  assert.deepEqual(
+    positiveBasis.result.allocations.map((a) => a.amount),
+    calculateWeekly(positiveBasis.input).allocations.map((a) => a.amount),
+  );
+  const original = structuredClone(state.weeklyReviews);
+  validateState(state);
+  assert.deepEqual(state.weeklyReviews, original);
+  assert.deepEqual(
+    zeroBasis.result.allocations.map((a) => a.amount),
+    ["0.01", "0.00", "0.00"],
+  );
+  assert.deepEqual(
+    calculateWeekly(zeroBasis.input).allocations.map((a) => a.amount),
+    ["0.00", "0.01", "0.00"],
+  );
+  const password = JSON.parse(
+    readFileSync(
+      new URL(
+        "../../../shared/contracts/backup/encryption-v1.json",
+        import.meta.url,
+      ),
+    ),
+  ).uiPhraseASCII;
+  const restored = inspectSnapshot(
+    await decryptBackup(await encryptBackup(snapshot(state), password), password),
+  );
+  assert.deepEqual(restored.weeklyReviews, original);
+  for (const engine of [
+    "linepay.web.weekly-regular-rate/3",
+    "linepay.web.weekly-regular-rate/4",
+    null,
+  ]) {
+    const changed = structuredClone(zeroBasis);
+    changed.result.engine = engine;
+    assert.throws(() => validateWeeklyReview(changed));
+  }
+  for (const review of original) {
+    const changed = structuredClone(review);
+    changed.result.expectedCash = "0.00";
+    assert.throws(() => validateWeeklyReview(changed));
+    if (review.result.allocations.length > 0) {
+      const reallocated = structuredClone(review);
+      reallocated.result.allocations[0].amount = "0.00";
+      reallocated.result.allocations[1].amount = "0.01";
+      assert.throws(() => validateWeeklyReview(reallocated));
+    }
+  }
+});
 test("schemas1–6 preserve all original records and never invent weekly reviews", () => {
   for (let version = 1; version <= 6; version++) {
     const old = legacy(version),

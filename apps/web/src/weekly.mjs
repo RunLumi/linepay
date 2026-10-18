@@ -40,6 +40,10 @@ export const weeklyMappingReason =
   "A separate weekly reference does not map complete workweeks and additional premium into this paycheck. Review that mapping before relying on the gross difference.";
 
 export function calculateWeekly(input) {
+  return calculateWeeklyVersion(input, 3);
+}
+
+function calculateWeeklyVersion(input, version) {
   keys(input, [
     "startUTC",
     "timeZone",
@@ -215,7 +219,8 @@ export function calculateWeekly(input) {
     }));
     let residual = target - rows.reduce((sum, b) => sum + b.units, 0n);
     for (const row of rows)
-      if (residual > 0n) {
+      // V2 receipts retain their original allocation, including the zero-basis defect.
+      if (residual > 0n && (version === 2 || row.basis.compare(zero) > 0)) {
         row.units++;
         residual--;
       }
@@ -234,7 +239,7 @@ export function calculateWeekly(input) {
   const remainingText = remaining.fixed(scale, mode),
     cashText = cash.fixed(scale, mode);
   return {
-    engine: "linepay.web.weekly-regular-rate/2",
+    engine: `linepay.web.weekly-regular-rate/${version}`,
     currency: input.currency,
     startUTC: input.startUTC,
     endExclusiveUTC: new Date(end * 1000).toISOString().replace(".000Z", "Z"),
@@ -460,8 +465,16 @@ export function validateWeeklyReview(record) {
     typeof record.reference === "string" && record.reference.length <= 2000,
     "Weekly source note exceeds its limit.",
   );
+  need(
+    record.result?.engine === "linepay.web.weekly-regular-rate/2" ||
+      record.result?.engine === "linepay.web.weekly-regular-rate/3",
+    "Unsupported weekly engine version.",
+  );
   const work = workFromWeeklySource(record.source),
-    result = calculateWeekly(record.input);
+    result = calculateWeeklyVersion(
+      record.input,
+      record.result.engine === "linepay.web.weekly-regular-rate/2" ? 2 : 3,
+    );
   need(
     record.input.startUTC === record.source.startUTC &&
       record.input.timeZone === record.source.timeZone &&

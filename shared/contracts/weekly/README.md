@@ -31,3 +31,16 @@ boundary/employer/payment confirmation protocol before calling the pure calculat
 neither native UI collection nor device execution. Native and browser wire/state formats remain
 separate. No verified weekly-paycheck mapping, country/CBA applicability or source approval follows.
 See [browser evidence](../../../docs/adr/0026-browser-weekly-reviews-and-frozen-evidence.md).
+
+## Restricted reference v3
+
+`reference-v3.json` adds three independent rounding cases without changing any v2 vector. Each
+declares 50 qualifying hours, USD0.10 remuneration and 10 overtime hours: additional premium is
+0.10 × 10 / (2 × 50) = USD0.01. Rate-times-second allocation numerators are a permutation of
+0,60000,60000. A zero basis must remain zero; the first positive period in deterministic identity
+order receives the residual cent. The cases place the zero basis first, middle and last.
+
+New Swift/browser weekly results identify engine3. Native v1/v2 results remain frozen recorded
+values; browser v2 receipts replay only their original engine during validation and encrypted
+recovery. A new calculation uses engine3 without changing the earlier receipt. These arithmetic
+regressions do not establish legal applicability, paycheck mapping or cross-client backup admission.

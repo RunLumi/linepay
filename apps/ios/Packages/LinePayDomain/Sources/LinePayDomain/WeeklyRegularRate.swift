@@ -308,7 +308,7 @@ public struct WeeklyRegularRateCalculator: Sendable {
             eligibleExtraPremiumCredit: creditMoney,
             remainingAdditionalPremium: remainingMoney, cashRemuneration: cashMoney,
             expectedCash: expectedCash, allocations: allocations,
-            engineVersion: "linepay.weekly-regular-rate/2",
+            engineVersion: "linepay.weekly-regular-rate/3",
             startEpochSeconds: input.startEpochSeconds,
             endEpochSeconds: input.startEpochSeconds.map { $0 + 604_800 },
             timeZoneIdentifier: input.timeZoneIdentifier)
@@ -349,6 +349,8 @@ public struct WeeklyRegularRateCalculator: Sendable {
         allocations.sort { ($0.payPeriodID?.uuidString ?? "") < ($1.payPeriodID?.uuidString ?? "") }
         for index in allocations.indices where residual >= unit {
             let item = allocations[index]
+            // A zero-weight group must stay zero, including when its identity sorts first.
+            guard bases[item.payPeriodID, default: 0] > 0 else { continue }
             allocations[index] = WeeklyPremiumAllocation(
                 id: item.id, payPeriodID: item.payPeriodID,
                 amount: Money(amount: item.amount.amount + unit, currencyCode: currency),

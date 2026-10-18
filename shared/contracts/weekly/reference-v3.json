@@ -1,0 +1,246 @@
+{
+  "format": "com.streamentry.linepay.weekly-reference-fixtures",
+  "version": 3,
+  "scope": "Synthetic zero-basis rounding regression vectors; not legal applicability or paycheck mapping approval",
+  "arithmetic": "Three qualifying facts of 60000 seconds each total 180000 seconds = 50 hours. Confirmed remuneration is USD 0.10; overtime is 10 hours. Additional premium is 0.10 * 10 / (2 * 50) = USD 0.01. Allocation rate-times-second numerators are a permutation of 0,60000,60000: zero gets no allocation, each positive group has half a cent before floor, then the first positive period in deterministic identity order receives the one residual cent.",
+  "cases": [
+    {
+      "id": "zero-basis-first",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "62000000-0000-0000-0000-000000000010",
+            "payPeriodID": "62000000-0000-0000-0000-000000000000",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "0",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000011",
+            "payPeriodID": "62000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000012",
+            "payPeriodID": "62000000-0000-0000-0000-000000000002",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "62000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "0.10",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "180000",
+        "regularRate": "0.00",
+        "overtimeSeconds": "36000",
+        "statutoryAdditionalPremium": "0.01",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "0.01",
+        "cashRemuneration": "0.10",
+        "expectedCash": "0.11",
+        "allocationAmounts": [
+          "0.00",
+          "0.01",
+          "0.00"
+        ]
+      }
+    },
+    {
+      "id": "zero-basis-middle",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "62000000-0000-0000-0000-000000000010",
+            "payPeriodID": "62000000-0000-0000-0000-000000000000",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000011",
+            "payPeriodID": "62000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "0",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000012",
+            "payPeriodID": "62000000-0000-0000-0000-000000000002",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "62000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "0.10",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "180000",
+        "regularRate": "0.00",
+        "overtimeSeconds": "36000",
+        "statutoryAdditionalPremium": "0.01",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "0.01",
+        "cashRemuneration": "0.10",
+        "expectedCash": "0.11",
+        "allocationAmounts": [
+          "0.01",
+          "0.00",
+          "0.00"
+        ]
+      }
+    },
+    {
+      "id": "zero-basis-last",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "62000000-0000-0000-0000-000000000010",
+            "payPeriodID": "62000000-0000-0000-0000-000000000000",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000011",
+            "payPeriodID": "62000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "62000000-0000-0000-0000-000000000012",
+            "payPeriodID": "62000000-0000-0000-0000-000000000002",
+            "hours": null,
+            "workedSeconds": 60000,
+            "straightRate": {
+              "amount": "0",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "62000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "0.10",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "180000",
+        "regularRate": "0.00",
+        "overtimeSeconds": "36000",
+        "statutoryAdditionalPremium": "0.01",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "0.01",
+        "cashRemuneration": "0.10",
+        "expectedCash": "0.11",
+        "allocationAmounts": [
+          "0.01",
+          "0.00",
+          "0.00"
+        ]
+      }
+    }
+  ],
+  "refusals": []
+}

@@ -1,0 +1,216 @@
+{
+  "id": "zero-basis-v2-review",
+  "createdAt": "2026-10-19T00:00:00Z",
+  "reference": "Synthetic original v2 receipt, emitted by 1da1059 before the zero-basis correction.",
+  "source": {
+    "startUTC": "2026-09-07T00:00:00Z",
+    "timeZone": "UTC",
+    "currency": "USD",
+    "periods": [
+      {
+        "periodID": "62000000-0000-0000-0000-000000000000",
+        "timeZone": "UTC",
+        "rule": {
+          "currency": "USD",
+          "hourlyRate": "0",
+          "outsideScheduleMultiplier": "1",
+          "regularSchedule": [],
+          "dailyOvertimeTiers": [],
+          "weekdayPremiums": [],
+          "datePremiums": [],
+          "calloutMinimumHours": null,
+          "perDiemPerWorkDate": null,
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          },
+          "id": "zero-basis-rule-0",
+          "version": "1"
+        },
+        "timeline": null,
+        "work": [
+          {
+            "id": "source-work-0",
+            "startUTC": "2026-09-07T00:00:00Z",
+            "endUTC": "2026-09-07T16:40:00Z",
+            "timeZone": "UTC",
+            "kind": "regular",
+            "unpaidBreaks": [],
+            "calloutEventID": null
+          }
+        ]
+      },
+      {
+        "periodID": "62000000-0000-0000-0000-000000000001",
+        "timeZone": "UTC",
+        "rule": {
+          "currency": "USD",
+          "hourlyRate": "1",
+          "outsideScheduleMultiplier": "1",
+          "regularSchedule": [],
+          "dailyOvertimeTiers": [],
+          "weekdayPremiums": [],
+          "datePremiums": [],
+          "calloutMinimumHours": null,
+          "perDiemPerWorkDate": null,
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          },
+          "id": "zero-basis-rule-1",
+          "version": "1"
+        },
+        "timeline": null,
+        "work": [
+          {
+            "id": "source-work-1",
+            "startUTC": "2026-09-08T00:00:00Z",
+            "endUTC": "2026-09-08T16:40:00Z",
+            "timeZone": "UTC",
+            "kind": "regular",
+            "unpaidBreaks": [],
+            "calloutEventID": null
+          }
+        ]
+      },
+      {
+        "periodID": "62000000-0000-0000-0000-000000000002",
+        "timeZone": "UTC",
+        "rule": {
+          "currency": "USD",
+          "hourlyRate": "1",
+          "outsideScheduleMultiplier": "1",
+          "regularSchedule": [],
+          "dailyOvertimeTiers": [],
+          "weekdayPremiums": [],
+          "datePremiums": [],
+          "calloutMinimumHours": null,
+          "perDiemPerWorkDate": null,
+          "rounding": {
+            "scale": 2,
+            "mode": "halfUp",
+            "scope": "payCategory"
+          },
+          "id": "zero-basis-rule-2",
+          "version": "1"
+        },
+        "timeline": null,
+        "work": [
+          {
+            "id": "source-work-2",
+            "startUTC": "2026-09-09T00:00:00Z",
+            "endUTC": "2026-09-09T16:40:00Z",
+            "timeZone": "UTC",
+            "kind": "regular",
+            "unpaidBreaks": [],
+            "calloutEventID": null
+          }
+        ]
+      }
+    ]
+  },
+  "input": {
+    "startUTC": "2026-09-07T00:00:00Z",
+    "timeZone": "UTC",
+    "currency": "USD",
+    "boundaryConfirmed": true,
+    "completeWorkweek": true,
+    "applicability": "coveredNonexemptHourly",
+    "work": [
+      {
+        "id": "62000000-0000-0000-0000-000000000000-source-work-0-1788739200-1788799200",
+        "payPeriodID": "62000000-0000-0000-0000-000000000000",
+        "hours": null,
+        "workedSeconds": 60000,
+        "straightRate": {
+          "amount": "0",
+          "currency": "USD"
+        },
+        "qualifies": true
+      },
+      {
+        "id": "62000000-0000-0000-0000-000000000001-source-work-1-1788825600-1788885600",
+        "payPeriodID": "62000000-0000-0000-0000-000000000001",
+        "hours": null,
+        "workedSeconds": 60000,
+        "straightRate": {
+          "amount": "1",
+          "currency": "USD"
+        },
+        "qualifies": true
+      },
+      {
+        "id": "62000000-0000-0000-0000-000000000002-source-work-2-1788912000-1788972000",
+        "payPeriodID": "62000000-0000-0000-0000-000000000002",
+        "hours": null,
+        "workedSeconds": 60000,
+        "straightRate": {
+          "amount": "1",
+          "currency": "USD"
+        },
+        "qualifies": true
+      }
+    ],
+    "remuneration": [
+      {
+        "id": "62000000-0000-0000-0000-000000000200",
+        "amount": {
+          "amount": "0.10",
+          "currency": "USD"
+        },
+        "kind": "straightTime",
+        "premiumCredit": "notApplicable"
+      }
+    ],
+    "rounding": {
+      "scale": 2,
+      "mode": "halfUp",
+      "scope": "payCategory"
+    },
+    "singleEmployerConfirmed": true,
+    "paymentsConfirmed": true
+  },
+  "result": {
+    "engine": "linepay.web.weekly-regular-rate/2",
+    "currency": "USD",
+    "startUTC": "2026-09-07T00:00:00Z",
+    "endExclusiveUTC": "2026-09-14T00:00:00Z",
+    "timeZone": "UTC",
+    "qualifyingSeconds": "180000",
+    "qualifyingHoursDisplay": "50.00000000",
+    "overtimeSeconds": "36000",
+    "overtimeHoursDisplay": "10.00000000",
+    "includableRemuneration": "0.1",
+    "regularRate": "0.00",
+    "statutoryAdditionalPremium": "0.01",
+    "eligibleExtraPremiumCredit": "0.00",
+    "remainingAdditionalPremium": "0.01",
+    "cashRemuneration": "0.10",
+    "expectedCash": "0.11",
+    "allocations": [
+      {
+        "id": "62000000-0000-0000-0000-000000000000-source-work-0-1788739200-1788799200",
+        "payPeriodID": "62000000-0000-0000-0000-000000000000",
+        "amount": "0.01",
+        "basisNumerator": "0",
+        "basisDenominator": "3600"
+      },
+      {
+        "id": "62000000-0000-0000-0000-000000000001-source-work-1-1788825600-1788885600",
+        "payPeriodID": "62000000-0000-0000-0000-000000000001",
+        "amount": "0.00",
+        "basisNumerator": "60000",
+        "basisDenominator": "3600"
+      },
+      {
+        "id": "62000000-0000-0000-0000-000000000002-source-work-2-1788912000-1788972000",
+        "payPeriodID": "62000000-0000-0000-0000-000000000002",
+        "amount": "0.00",
+        "basisNumerator": "60000",
+        "basisDenominator": "3600"
+      }
+    ]
+  }
+}
