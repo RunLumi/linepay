@@ -26,6 +26,7 @@ PLACEHOLDER = re.compile(r"^(?:tbd|todo|unknown|pending|n/?a|example|replace.*|<
 COPY_PATHS = (
     "docs/pricing.md", "docs/marketing.md", "docs/appstore.md",
     "docs/product/pricing.md", "docs/growth/marketing.md", "docs/release/appstore.md",
+    "docs/release/app-store.md",
 )
 INVENTORY_PATH = "docs/legal/inventory.json"
 
