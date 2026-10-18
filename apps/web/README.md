@@ -17,6 +17,17 @@ The manifest and service worker provide an offline shell. Close open tabs to ado
 updates do not force an in-progress form to reload. Browser storage can be cleared/evicted or be
 transient in private browsing. Persistent storage is a user-requested hint, not a recovery copy.
 
+## Cloudflare release
+
+The [static web release runbook](../../docs/release/web-worker.md) packages runtime files into a
+separate allowlisted directory and uses pinned Wrangler development tooling. The production origin
+is `https://app.linepaycheck.com`, separate from the marketing site. Configuration and local tests
+do not prove a live release; dated deployment evidence belongs in that runbook's release receipts.
+Cloudflare delivers public assets and receives ordinary request metadata; pay records remain local.
+Keep the origin stable: browser records do not move with DNS redirects. Before a move, export a
+protected web backup, verify its delivery, unlock/inspect it at the destination and explicitly
+replace there. Preserve the old origin/data until recovery is confirmed.
+
 ## Working journey
 
 1. Explicitly confirm a new pay profile. Optional fields left blank remain unconfigured.

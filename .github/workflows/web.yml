@@ -2,10 +2,10 @@ name: Local browser client
 
 on:
   pull_request:
-    paths: ['apps/web/**', 'shared/contracts/**', '.github/workflows/web.yml']
+    paths: ['apps/web/**', 'shared/contracts/**', 'tools/web-worker/**', '.github/workflows/web.yml']
   push:
     branches: [dev, testing]
-    paths: ['apps/web/**', 'shared/contracts/**', '.github/workflows/web.yml']
+    paths: ['apps/web/**', 'shared/contracts/**', 'tools/web-worker/**', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -30,6 +30,14 @@ jobs:
           node-version: '22'
       - name: Exact domain, state and transport checks
         run: node --test apps/web/tests/*.test.mjs
+      - name: Install pinned Worker development tooling
+        run: npm --prefix tools/web-worker ci --ignore-scripts --no-audit --no-fund
+      - name: Package runtime assets and validate Worker configuration
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          npm --prefix tools/web-worker run check:worker
+          npm --prefix tools/web-worker run check:assets
       - name: Install isolated browser-test tools
         run: |
           python3 -m venv "$RUNNER_TEMP/web-qa-venv"
@@ -43,6 +51,20 @@ jobs:
         env:
           BROWSER: webkit
         run: '"$RUNNER_TEMP/web-qa-venv/bin/python" apps/web/tests/browser_e2e.py'
+      - name: Actual Worker HTTP and browser policies
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          tools/web-worker/node_modules/.bin/wrangler dev --config apps/web/wrangler.jsonc --env staging --local --ip 127.0.0.1 --port 8787 > .build/web-worker/local-worker.log 2>&1 &
+          worker_pid=$!
+          trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8787/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tools/web-worker/check-http.mjs http://127.0.0.1:8787/
+          BROWSER=chromium "$RUNNER_TEMP/web-qa-venv/bin/python" tools/web-worker/check-browser.py http://127.0.0.1:8787/
+          BROWSER=webkit "$RUNNER_TEMP/web-qa-venv/bin/python" tools/web-worker/check-browser.py http://127.0.0.1:8787/
       - name: Retain synthetic browser evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -54,6 +76,9 @@ jobs:
             .build/web-e2e/**/failure.txt
             .build/web-e2e/**/synthetic-*-report.html
             .build/web-e2e/**/synthetic-*-report.pdf
+            .build/web-worker/asset-manifest.json
+            .build/web-worker/local-worker.log
+            .build/web-worker/browser-*/**
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
