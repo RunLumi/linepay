@@ -26,7 +26,7 @@ An implementation, test result, upload, review submission and public release are
 | Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native follow-ups can link to a validated comparison line; browser follow-up and reviewed reports remain available; app, PDF, migration and UI evidence passed | Final release gate; employer receipt or resolution is not inferred |
-| Accessibility | PWA light/dark color-token contrast, Diagnostics focus/Enter, 320px/reduced-motion/large-text checks; native iOS dark XXXL navigation to the local activity control passed | Apple screen audit still reports one Settings contrast issue without an element; VoiceOver, explicit 200% target audit, cross-client audit, and physical-device validation remain open |
+| Accessibility | PWA light/dark tokens, Diagnostics keyboard, 320px/reduced-motion/large-text browser checks; native Settings Apple audit and dark XXXL navigation passed on iOS 18.5 | Final candidate, VoiceOver, explicit 200% target audit, cross-client and physical-device checks remain open |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
@@ -2267,3 +2267,48 @@ created; describe and verify each property separately.
   deprecation notice; the downloaded SDK components are pinned locally. AGP 9.2 emits migration
   warnings because KGP 2.4.0 still requires the
   temporary legacy DSL opt-out. Keep this visible for a deliberate compiler/plugin migration.
+
+## Integrated main and release-check milestone, October 19
+
+- PR [#112](https://github.com/RunLumi/linepay/pull/112) was merged while native checks were
+  pending. Remote main was fetched and fast-forwarded in the isolated publication clone to
+  `1da1059e0c190d4ca938d5852bf8ce893ef86608`, including the owner's v3 plan. The shared root
+  checkout and other worktrees were preserved. This is a source integration receipt, not a
+  statement that all checks passed before merge.
+- The owner expanded the objective to v2 plus v3, Cloudflare Workers web publication, and
+  smaller milestone PRs with a fresh main integration before each merge. Generic paycheck
+  positioning supersedes the specialist-only acquisition copy; payroll, privacy, historical
+  snapshots, existing technical identifiers and manual release after Apple approval remain binding.
+- The Settings contrast finding was identified at the large-text pay-period row under the tab
+  bar. Accessibility-sized Settings now uses an inline navigation title. Apple's complete
+  screen audit passed on iOS 18.5 in
+  `.build/v2-accessibility-retest-20261019.xcresult`; no issue was suppressed.
+- The full native run `.build/v2-native-release-gate-20261019/` was interrupted and has no
+  completed aggregate result. Its local-activity UI failure led to fresh post-relaunch element
+  queries and structural JSON assertions requiring every count and day bucket to be empty.
+  Nine ledger app tests and the actual opt-out/export/relaunch/clear UI journey then passed
+  on existing iOS 26.5: **10 passed, 0 failed, 0 skipped**,
+  `.build/pr112-local-activity-ios26.xcresult`. Production ledger code was unchanged.
+- Hosted browser CI at `6027ed9d5f7a8feb08ab552ac3bf83c2824283b0` passed both browser gates
+  after the narrow text-wrap fix. Android JVM/build/release/lint also passed with strict
+  publisher-verified dependency receipts. Hosted device setup failed because the preinstalled
+  command-line tools lacked `pixel_8`; pinning command-line-tools 22.0 preserves that intended
+  device profile. Connected tests and Maestro did not run in that failed hosted attempt.
+- The final fixture-backed local Android instrumentation rerun passed **2/2**;
+  `.build/pr112-android-fixture-device.log`. Earlier synthetic local Maestro and 200% font-scale
+  evidence remain scoped to their recorded source, not a new hosted device pass.
+- The existing iOS runner is offline: launchd reports exit 126 and cannot access its SSD working
+  directory. Its registration is preserved. The existing iOS 18.5 device is also preserved;
+  explicit runtime-restore approval was received. Apple's downloader currently rejects both
+  architecture variants and the exact build. `simctl runtime scan-and-mount` rediscovered the
+  existing 18.5 MobileAsset and restored device availability without creating/erasing a device.
+  An explicit `runtime verify` reported a missing/invalid sealed resource, whereas the detailed
+  runtime registry reports `Ready` and `Signature State: Verified` for the mounted Apple image.
+  Both observations are retained; simulator execution and the full native gate remain open.
+- The native workflow timeout is raised to 60 minutes for the added independent v2 UI journeys,
+  coverage export and Release build. No test or assertion is skipped to meet the deadline.
+- The legal resource inventory now excludes `.build` relative to the checkout root. Previously
+  an isolated checkout located inside an ignored `.build` ancestor skipped all recursive
+  resources and reported false inventory drift. A synthetic regression proves actual resources
+  and package declarations remain included while generated descendant caches stay excluded.
+  No recorded resource hashes or approval requirements were changed.
