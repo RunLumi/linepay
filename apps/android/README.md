@@ -7,7 +7,8 @@ account, backend, network permission, ad/analytics SDK, or Android automatic bac
 ## Current product slice
 
 - `domain` contains the independent exact-money configured-pay, benefit, calendar-period, gross
-  comparison, and earnings/hour comparison engines. Calculation provenance remains
+  comparison, and earnings/hour comparison engines, plus a restricted weekly reference engine.
+  Configured-pay provenance remains
   `linepay.android.configured-pay/1`; this does not claim parity with the Swift engine or complete
   legal coverage.
 - `app` provides pay-rule setup, exact-time work entry with explicit unpaid breaks and payroll
@@ -24,6 +25,30 @@ account, backend, network permission, ad/analytics SDK, or Android automatic bac
 This is a first Android vertical slice, not full feature parity. Android OCR/voice/StoreKit, line-level
 paystub entry, full weekly overtime review, multiple employer profiles, Spanish localization, and
 Play distribution remain outside this tested slice. App Store release evidence remains an iOS gate.
+
+## Restricted weekly reference milestone
+
+`WeeklyRegularRateCalculator` is a pure domain implementation of the existing
+[weekly reference v2](../../shared/contracts/weekly/README.md) behavior. Its provenance is
+`linepay.android.weekly-regular-rate/2`. The caller must provide the employer's explicit start
+instant and timezone for a fixed 168-hour workweek, separately confirm one employer, complete work,
+all payment classifications, and the restricted covered/nonexempt hourly applicability. A calendar
+paycycle supplies none of those confirmations. Unknown premium treatment refuses calculation.
+
+The engine retains exact worked seconds or explicit decimal hours, immutable input facts, separately
+classified remuneration, a regular-rate display, additional premium and deterministic allocation
+amounts with exact basis numerators. Monetary fractions round only at the declared output boundary;
+the displayed regular rate does not feed another calculation. Confirmed noncreditable work premiums
+are includable without credit. Explicit exclusions stay cash without becoming regular-rate pay.
+No payment classification, exclusion or legal applicability is inferred from a name or clock record.
+
+The shared corpus supplies seven independently stated amounts/allocations and ten refusal cases.
+Focused Android regressions also cover threshold seconds, half-cent ties, credit before rounding,
+rounding modes, residual conservation with zero-basis periods, immutable inputs and fixed-duration
+DST boundaries.
+This milestone does not connect the reference to Compose, persist weekly evidence, map it to a
+paycheck or change any saved gross-check verdict. Those native collection/history/mapping gates
+remain pending; passing arithmetic does not establish legal, agreement or source approval.
 
 ## Toolchain
 
