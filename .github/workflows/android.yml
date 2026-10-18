@@ -124,6 +124,7 @@ jobs:
             apps/android/app/build/reports/lint-results-debug.html
             apps/android/app/build/test-results/testDebugUnitTest/
             apps/android/app/build/outputs/androidTest-results/connected/debug/
+            apps/android/build/reports/dependency-verification/
             .build/maestro-results/
             ${{ runner.temp }}/linepay-android-emulator.log
           include-hidden-files: true
