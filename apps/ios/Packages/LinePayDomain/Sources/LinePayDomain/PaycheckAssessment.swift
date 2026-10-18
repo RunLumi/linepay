@@ -101,7 +101,9 @@ public struct PaycheckAssessment: Codable, Hashable, Sendable {
 }
 
 public struct PaycheckAssessor: Sendable {
-    public static let currentEngineVersion = 4
+    public static let currentEngineVersion = 5
+    public static let exactBaseReviewReason =
+        "This saved calculation lacks an exact base-time trace for premium-only earnings. Recalculate from the original work and rules before interpreting those line differences."
     public static let weeklyMappingReviewReason =
         "Complete workweek coverage and any additional weekly premium are not mapped into this paycheck comparison. A pay-period hour total or a separate weekly result does not establish that mapping. Review the complete workweek before relying on the gross difference."
 
@@ -151,7 +153,7 @@ public struct PaycheckAssessor: Sendable {
         _ recorded: PaycheckAssessment, calculation: CalculationResult,
         agreement: AgreementSnapshot, facts: PaycheckFacts
     ) throws -> PaycheckAssessment {
-        guard [3, 4].contains(recorded.engineVersion) else {
+        guard [3, 4, 5].contains(recorded.engineVersion) else {
             throw PaycheckAssessmentError.unsupportedRecordedVersion(recorded.engineVersion)
         }
         let reproduced = try assess(
@@ -265,6 +267,19 @@ public struct PaycheckAssessor: Sendable {
             facts.amounts.keys.contains(where: {
                 [.regularPay, .overtimePay, .doubleTimePay, .calloutPay].contains($0)
             }) || !facts.hours.isEmpty
+        let baseParts = wageComponents.filter {
+            $0.category == .workedHours || facts.guaranteeLayout == .includedInHourlyLines
+        }
+        let missingBaseTrace =
+            producerVersion >= 5 && facts.lineLayout == .basePlusPremium
+            && facts.amounts.keys.contains(where: {
+                [.regularPay, .overtimePay, .doubleTimePay].contains($0)
+            })
+            && baseParts.contains {
+                $0.baseTimeNumerator == nil || $0.baseTimeNumerator!.isNaN
+                    || $0.baseTimeNumerator! < 0
+            }
+        if missingBaseTrace { reasons.append(Self.exactBaseReviewReason) }
         let guaranteeMappingKnown = guarantees.isEmpty || facts.guaranteeLayout != .unconfirmed
         if hasHourlyFacts && !guaranteeMappingKnown {
             reasons.append(
@@ -297,13 +312,14 @@ public struct PaycheckAssessor: Sendable {
                     (facts.lineLayout == .basePlusPremium && field == .regularPay)
                         || ($0.multiplier ?? 1) == multiplier
                 }
-                if let paid = facts.amounts[field] {
+                if let paid = facts.amounts[field], !missingBaseTrace {
                     let expected: Decimal
                     if facts.lineLayout == .fullRateBuckets {
                         expected = selected.reduce(0) { $0 + $1.amount.amount }
                     } else {
-                        let base = normalizedBase(
-                            selected, calculation: calculation, agreement: agreement)
+                        let base = try normalizedBase(
+                            selected, calculation: calculation, agreement: agreement,
+                            producerVersion: producerVersion)
                         expected =
                             field == .regularPay
                             ? base
@@ -424,8 +440,40 @@ public struct PaycheckAssessor: Sendable {
     /// For a premium-only statement, split each rounded gross bucket into base and extra.
     /// Summing those bases and extras reconstructs the same gross, including cent allocation.
     private func normalizedBase(
-        _ selected: [PayComponent], calculation: CalculationResult, agreement: AgreementSnapshot
-    ) -> Decimal {
+        _ selected: [PayComponent], calculation: CalculationResult, agreement: AgreementSnapshot,
+        producerVersion: Int
+    ) throws -> Decimal {
+        if producerVersion >= 5 {
+            var groups: [PayComponentRounding.Key: Decimal] = [:]
+            var value = Decimal.zero
+            for part in selected {
+                guard let numerator = part.baseTimeNumerator, !numerator.isNaN, numerator >= 0
+                else {
+                    throw PaycheckAssessmentError.invalidFact
+                }
+                let snapshot =
+                    (calculation.agreementSnapshots ?? [agreement]).first {
+                        AgreementReference($0) == part.appliedAgreement
+                    } ?? agreement
+                if snapshot.rounding.scope == .legacySegments {
+                    value +=
+                        Money(amount: numerator / 3600, currencyCode: part.amount.currencyCode)
+                        .rounded(using: snapshot.rounding).amount
+                } else {
+                    let key = PayComponentRounding.Key(
+                        category: part.category, multiplier: part.multiplier,
+                        rule: snapshot.rounding, currency: part.amount.currencyCode)
+                    groups[key, default: 0] += numerator
+                }
+            }
+            for (key, numerator) in groups {
+                value +=
+                    Money(amount: numerator / 3600, currencyCode: key.currency).rounded(
+                        using: key.rule
+                    ).amount
+            }
+            return value
+        }
         var groups: [PayComponentRounding.Key: Decimal] = [:]
         var result = Decimal.zero
         for part in selected {

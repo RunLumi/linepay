@@ -58,3 +58,15 @@ In the v2 candidate, an outdated active weekly check requires a new review befor
 as a current comparison. A historical weekly report keeps its original amounts and **Recorded
 verdict**, with an **Earlier weekly comparison** note about missing mapping. This is preserved
 history, not current weekly-pay verification. Native report/interaction acceptance remains pending.
+
+
+## Premium-only precision in the v2 candidate
+
+**Development preview:** native interaction, migration and report acceptance remain pending.
+An older **Base + premium only** check may have reconstructed base pay from rounded decimal hours.
+At a half-cent this can change a line by one cent even when gross is correct. New checks use exact
+base-time evidence. An older active monetary-line check requires an explicit new review; its
+original values remain in the earlier revision. **Earlier recorded comparison** and a premium-only
+scope note identify preserved historical results, including their **Recorded verdict** in reports.
+Missing exact evidence keeps a new line comparison in review until recalculated from original work
+and rules. This does not verify missing weekly or agreement coverage.

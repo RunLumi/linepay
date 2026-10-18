@@ -59,12 +59,12 @@ struct HistoryView: View {
                                                 ).monospacedDigit()
                                             }
                                             AuditStatusView(status: model.auditStatus(for: period))
-                                            if AuditAssessment.legacyWeeklyScopeNote(
+                                            if AuditAssessment.legacyScopeNote(
                                                 calculation: period.comparisonCalculation,
                                                 paystub: paid, agreement: period.agreement) != nil
                                             {
                                                 Label(
-                                                    "Earlier weekly comparison",
+                                                    "Earlier recorded comparison",
                                                     systemImage: "clock"
                                                 )
                                                 .font(.footnote)
@@ -127,7 +127,7 @@ struct HistoricalPeriodView: View {
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.headline)
                     PayAmount(label: "Expected wages", money: context.calculation?.expectedWages)
-                    if context.calculation?.provenance?.engine != "linepay.configured-pay/3" {
+                    if context.calculation?.provenance?.engine != PayCalculator.currentEngine {
                         Text(
                             "This is a saved calculation. A new paycheck review uses current precision; earlier records are kept."
                         )
@@ -140,7 +140,7 @@ struct HistoricalPeriodView: View {
                         Label("Awaiting paycheck", systemImage: "clock")
                     } else {
                         AuditStatusView(status: model.status(for: context))
-                        if let note = AuditAssessment.legacyWeeklyScopeNote(
+                        if let note = AuditAssessment.legacyScopeNote(
                             calculation: context.calculation, paystub: context.paystub,
                             agreement: context.agreement)
                         {

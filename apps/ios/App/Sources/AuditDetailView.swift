@@ -87,7 +87,7 @@ struct AuditDetailView: View {
                             context.window, timeZoneIdentifier: context.timeZoneIdentifier)
                     ).font(.subheadline)
                     if let note = presentation.legacyScopeNote {
-                        Label("Earlier weekly comparison", systemImage: "clock")
+                        Label("Earlier recorded comparison", systemImage: "clock")
                         Text(note).font(.footnote).accessibilityIdentifier(
                             "audit.legacy-weekly-scope")
                     }

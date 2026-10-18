@@ -40,7 +40,7 @@ Original files can be shared by several revisions. Removing a shared original re
 
 ## Earlier weekly comparisons in the v2 candidate
 
-An **Earlier weekly comparison** note identifies a saved result that did not record verified workweek-to-paycheck mapping. Its original verdict and amounts remain unchanged. An explicit new review uses current safeguards and appends a revision; it does not reclassify the old record. Historical PDF copies disclose this scope beside the **Recorded verdict**. Native interaction/report acceptance of this candidate is pending.
+An **Earlier recorded comparison** note identifies a saved result that did not record verified workweek-to-paycheck mapping. Its original verdict and amounts remain unchanged. An explicit new review uses current safeguards and appends a revision; it does not reclassify the old record. Historical PDF copies disclose this scope beside the **Recorded verdict**. Native interaction/report acceptance of this candidate is pending.
 
 ## Delete only with a backup plan
 
@@ -51,3 +51,15 @@ Export a complete backup first when those records may be needed later. Local del
 Next: [Back up and restore safely]({{< relref "/backup-and-restore" >}}).
 
 In the v2 development workflow, [benefits checks]({{< relref "/benefits" >}}) are independent fund/period records. Deleting a wage work period does not delete those separate benefits checks.
+
+
+## Premium-only precision in the v2 candidate
+
+**Development preview:** native interaction, migration and report acceptance remain pending.
+An older **Base + premium only** check may have reconstructed base pay from rounded decimal hours.
+At a half-cent this can change a line by one cent even when gross is correct. New checks use exact
+base-time evidence. An older active monetary-line check requires an explicit new review; its
+original values remain in the earlier revision. **Earlier recorded comparison** and a premium-only
+scope note identify preserved historical results, including their **Recorded verdict** in reports.
+Missing exact evidence keeps a new line comparison in review until recalculated from original work
+and rules. This does not verify missing weekly or agreement coverage.

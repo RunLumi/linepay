@@ -44,3 +44,9 @@ Entering a separate callout amount while choosing a layout that already includes
 Unusual multipliers beyond the supported 1×, 1.5×, and 2× hourly buckets, mixed reporting conventions, adjustments, or other unmapped earnings may require review. Mark **Other pay lines or rules remain unmapped** instead of forcing an approximation.
 
 A gross comparison and a confirmed-line comparison answer different questions. Neither is a complete contractual or tax audit. Read [supported rules and limits]({{< relref "/supported-rules" >}}) when the source does not fit the available settings.
+
+
+In the unreleased v2 candidate, a new **Base + premium only** comparison uses exact base-time
+evidence through money rounding. A saved check made with earlier rounded-hours mapping requires
+explicit re-review for current use; earlier recorded amounts remain available. Native acceptance
+is pending. See [comparison safeguards]({{< relref "/audit-results" >}}).

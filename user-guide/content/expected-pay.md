@@ -36,7 +36,7 @@ New estimates keep recorded time precise through money rounding. For a synthetic
 
 Earlier saved estimates and audit revisions retain their recorded values and calculation version. If updated precision changes an active check’s ledger, the app requires a new review instead of relabelling the old result as current. An explicit review of a closed period uses current precision and appends a new audit revision while keeping the original estimate and earlier checks. This is a calculation correction, not evidence that money has been recovered or that every pay obligation was checked.
 
-The v2 candidate also requires a new review when weekly comparison safeguards change, even if the configured amount stays the same. This changes whether an active comparison can be relied on; it does not rewrite the earlier verdict or expected-pay record. See [weekly safeguards]({{< relref "/audit-results" >}}). Native interaction and migration acceptance remains pending.
+The v2 candidate also requires a new review when weekly comparison safeguards or premium-only base precision change, even if the configured amount stays the same. This changes whether an active comparison can be relied on; it does not rewrite the earlier verdict or expected-pay record. For premium-only monetary lines, new checks keep exact base-time evidence; an older rounded-hours mapping can differ at a half-cent even with unchanged gross. See [comparison safeguards]({{< relref "/audit-results" >}}). Native interaction and migration acceptance remains pending.
 
 ## An unavailable result is not zero
 

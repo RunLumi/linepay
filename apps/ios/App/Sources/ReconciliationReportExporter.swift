@@ -34,7 +34,7 @@ struct ReconciliationReportExporter {
             writer.beginPage()
             writer.title("LinePaycheck paycheck reconciliation")
             writer.text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
-            if calculation.provenance?.engine != "linepay.configured-pay/3" {
+            if calculation.provenance?.engine != PayCalculator.currentEngine {
                 writer.caption(
                     "Saved calculation: amounts remain as recorded. A new paycheck review uses current precision."
                 )

@@ -346,6 +346,8 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
     public let baseRate: Money?
     public let appliedAgreement: AgreementReference?
     public let unroundedAmount: Money?
+    /// Exact base hourly rate × paid/worked seconds, before multiplier and hour conversion.
+    public let baseTimeNumerator: Decimal?
 
     public init(
         id: UUID = UUID(),
@@ -359,7 +361,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         ruleKeys: [PayRuleKey]? = nil,
         baseRate: Money? = nil,
         appliedAgreement: AgreementReference? = nil,
-        unroundedAmount: Money? = nil
+        unroundedAmount: Money? = nil, baseTimeNumerator: Decimal? = nil
     ) {
         self.id = id
         self.category = category
@@ -373,6 +375,7 @@ public struct PayComponent: Codable, Hashable, Identifiable, Sendable {
         self.baseRate = baseRate
         self.appliedAgreement = appliedAgreement
         self.unroundedAmount = unroundedAmount
+        self.baseTimeNumerator = baseTimeNumerator
     }
 }
 

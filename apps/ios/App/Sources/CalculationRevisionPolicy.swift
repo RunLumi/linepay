@@ -19,13 +19,20 @@ enum CalculationRevisionPolicy {
     }
 
     static func requiresAssessmentReview(
-        saved: PaycheckAssessment?, agreement: AgreementSnapshot, calculation: CalculationResult?
+        saved: PaycheckAssessment?, agreement: AgreementSnapshot, calculation: CalculationResult?,
+        lineLayout: PaystubLineLayout? = nil
     ) -> Bool {
         guard let saved, saved.engineVersion < PaycheckAssessor.currentEngineVersion,
             saved.expectedGross != nil
         else { return false }
-        return PaycheckAssessor.requiresWeeklyMappingReview(
-            agreement: agreement, calculation: calculation)
+        return
+            (saved.engineVersion < 4
+            && PaycheckAssessor.requiresWeeklyMappingReview(
+                agreement: agreement, calculation: calculation))
+            || (saved.engineVersion < 5 && lineLayout == .basePlusPremium
+                && saved.comparisons.contains {
+                    [.regularPay, .overtimePay, .doubleTimePay].contains($0.field)
+                })
     }
 
     private static func prices(_ result: CalculationResult) -> [PriceKey: Decimal] {

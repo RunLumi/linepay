@@ -39,12 +39,13 @@ struct PaystubImportView: View {
                         .foregroundStyle(LinePayColor.textSecondary)
                         if context.requiresAssessmentReview {
                             Text(
-                                "Weekly comparison safeguards changed. This review creates a new check while retaining the earlier comparison and amounts."
+                                "Paycheck comparison safeguards changed. This review creates a new check while retaining the earlier comparison and amounts."
                             )
                             .font(.footnote).accessibilityIdentifier("paystub.assessment-review")
                         }
                         if context.requiresCalculationReview
-                            || context.calculation?.provenance?.engine != "linepay.configured-pay/3"
+                            || context.calculation?.provenance?.engine
+                                != PayCalculator.currentEngine
                         {
                             Text(
                                 "This review uses updated calculation precision. Earlier saved estimates and audit revisions stay unchanged."

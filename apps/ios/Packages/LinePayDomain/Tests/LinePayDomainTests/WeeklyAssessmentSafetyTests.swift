@@ -52,7 +52,7 @@ struct WeeklyAssessmentSafetyTests {
                     hasCompleteWork: true, grossPay: Money(amount: paid, currencyCode: "USD"),
                     grossBasis: .wagesOnly))
             #expect(result.verdict == .needsReview)
-            #expect(result.engineVersion == 4)
+            #expect(result.engineVersion == 5)
             #expect(result.expectedGross == calculation.expectedWages)
             #expect(result.reviewReasons.contains { $0.lowercased().contains("workweek") })
         }
@@ -64,7 +64,7 @@ struct WeeklyAssessmentSafetyTests {
             facts: PaycheckFacts(
                 hasCompleteWork: true, grossPay: calculation.total, grossBasis: .wagesOnly))
         #expect(result.verdict == .matches && result.reviewReasons.isEmpty)
-        #expect(result.engineVersion == 4)
+        #expect(result.engineVersion == 5)
     }
     @Test func originalAssessmentV3ReceiptsRemainRecordedWhileExplicitV4ReviewUsesNewScope() throws
     {
@@ -112,7 +112,7 @@ struct WeeklyAssessmentSafetyTests {
                 calculation: row.calculation, agreement: row.agreement,
                 facts: PaycheckFacts(
                     hasCompleteWork: true, grossPay: original.paidGross, grossBasis: .wagesOnly))
-            #expect(reviewed.engineVersion == 4)
+            #expect(reviewed.engineVersion == 5)
             #expect(reviewed.verdict == (row.id == "no-weekly-scope" ? .matches : .needsReview))
             #expect(
                 reviewed.comparisons == original.comparisons

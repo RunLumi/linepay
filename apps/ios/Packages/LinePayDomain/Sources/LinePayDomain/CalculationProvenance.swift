@@ -111,6 +111,6 @@ enum PayComponentRounding {
             localDate: part.localDate, hours: part.hours, multiplier: part.multiplier,
             amount: amount, explanation: part.explanation, ruleKeys: part.ruleKeys,
             baseRate: part.baseRate, appliedAgreement: part.appliedAgreement,
-            unroundedAmount: part.amount)
+            unroundedAmount: part.amount, baseTimeNumerator: part.baseTimeNumerator)
     }
 }

@@ -102,7 +102,7 @@ Do not create a backend only to mirror App Store subscription state unless a fut
 
 ## Local persistence
 
-The current native implementation uses `VersionedLocalStateStore` with atomic versioned JSON state and separate retained evidence files, rather than SwiftData. The v2 candidate uses pay-data schema 9; historical schemas 1–8 remain readable without silently repricing records. Store locally:
+The current native implementation uses `VersionedLocalStateStore` with atomic versioned JSON state and separate retained evidence files, rather than SwiftData. The v2 candidate uses pay-data schema 10; historical schemas 1–9 remain readable without silently repricing records. Store locally:
 
 - pay profiles and immutable rule snapshots;
 - work intervals;

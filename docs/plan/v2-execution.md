@@ -1779,3 +1779,62 @@ created; describe and verify each property separately.
   that literal with the existing explicitly public shared encryption vector, without bypassing the
   hook. Final Node suite again passed155 tests, `/private/tmp/linepay-v2-web-weekly-node-fixture.log`.
   Runtime assets/hash are unchanged; no production credential was introduced or used.
+
+## Exact premium-only base correction, October 18
+
+- Continued the all-stage objective on `codex/v2-e2e`, starting at3836154. While preparing
+  PWA earnings-line parity, independently calculated native expectations exposed a defect:
+  60 seconds at USD58.50/hour is0.975 base, rounded0.98, but assessment4 reconstructed0.97
+  from repeating Decimal hours. Original regression failed both straight/premium cases
+  (four issues), `/private/tmp/linepay-v2-premium-base-before.log`.
+- New calculation producer4 retains rate × paid seconds before multiplier/division;
+  assessment5 rounds exact base at the original bucket boundary. Gross wage pricing is
+  unchanged. Missing trace refuses fresh premium-only money expectations with Needs review.
+  Full-rate amounts and independent weekly-mapping safeguards retain their scope.
+- Schema10 admits new trace/producers; old1–9 receipts remain original. Active earlier
+  premium-only monetary comparisons require explicit review even with unchanged gross.
+  Archived checks/PDFs retain their original values and Recorded verdict with a scope note.
+  Original weekly legacy policy is pinned before4, not every producer below current.
+- Generated two original producer4 receipts from actual3836154 source using JSONEncoder
+  directly to preserve Decimal; never JSONSerialization/Double for financial fixture values.
+  Shared `native-assessment-v4.json` labels the known old defect. Explicit original4 replay
+  passes; missing-trace review preserves known gross and omits unsafe line expectations.
+- Four domain tests cover both60-second straight/premium cases, cross-rate1second at1+17
+  half-cent aggregation, old replay/missing trace and included/separate callout guarantees.
+  Exact callout fixture uses1hour minimum; a repeating1/60hour input was corrected during
+  test development rather than assumed to represent exactly60seconds.
+- Required quick gate passed74 repository tests, strict Swift format and **162 domain tests
+  in28 suites**: `/private/tmp/linepay-v2-base-precision-quick-final.log`.
+  SDK module emission and focused App/report-test typechecking passed **111 source files**,
+  SHA256 `a8536475e6160bf9257473af7df0b16cfaf434d44f2bf2f45f836a867a1cd4ae`,
+  `/private/tmp/linepay-v2-base-assessment-typecheck-final.log`. This alone is not App-test,
+  migration, linking, Simulator, visual, PDF or Files proof.
+- Candidate guide was re-reviewed only for affected mapped sources. Hugo root/project paths,
+  links/search/provenance and42 actual Chromium guide checks passed:
+  `/private/tmp/linepay-v2-base-guide-{check,browser}.log`. ADR0027 and BR104–106 record
+  semantics. Reviewed project.yml change bundles synthetic receipt only into AppTests; the
+  updated resource hash is mechanical bookkeeping, not source/legal/release approval.
+- Host state changed: first-launch now exits0, system CoreSimulator is1174.9.2 and the existing
+  LinePay iOS18.5 device7DE1B778-AB9B-478B-9E1A-027E1106814A lists available/shutdown.
+  No runtime/device was created. No concurrent native jobs;34% memory free, SSD529GiB/
+  system25GiB available. Doctor passed with optional Maestro/XcodeBuildMCP absent.
+- Full native gate is now running on that existing device, session12515:
+  `/private/tmp/linepay-v2-native-base-20261018.log`,
+  results `.build/v2-native-base-20261018/`. Do not restart merely because observation expires
+  or claim PASS before terminal completion. New focused App tests are included in that run.
+- The planned PWA earnings/hours mapping is still pending; this correction is its prerequisite.
+  All other Android/native/PWA/library/localization/source/device/provider/store requirements
+  remain within the original goal. No App Store write, upload, version bump or public release.
+
+- Runtime update: native App tests finished **344 tests/50 suites, one issue**. New exact-base
+  migration/no-write/re-review/archive/backup and missing-trace admission tests passed. Weekly
+  correction/history/PDF and actual local StoreKit lifecycle tests passed. The one failure was the
+  crew test's comparison of freshly generated calculation component IDs after a future rule
+  change. The saved audit was not the object being asserted. Corrected the test to compare the
+  exact saved calculation/revision/work/paystub plus current total/provenance/snapshots; it still
+  requires execution. No production behavior was changed to mask the failure.
+- Native gate continues through30 checked-in UI journeys on the same device. Its terminal result
+  remains pending. The earlier SDK hash reconstructs exactly from111 source files with only the
+  corrected crew assertion reverted; evidence is retained under
+  `.build/v2-native-base-20261018/{compiled-CrewRuleWorkflowTests.swift,compiler-bound-source-hashes.json}`.
+  Do not present the old compiler hash as the corrected test's runtime result.

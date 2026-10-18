@@ -68,7 +68,9 @@ struct WeeklyAssessmentRevisionTests {
         state.hasUsedFreeAudit = true
         let oldBytes = try JSONEncoder().encode(state)
         let decoded = try JSONDecoder().decode(AppPersistentState.self, from: oldBytes)
-        #expect(decoded.schemaVersion == 9 && decoded.activePeriod == state.activePeriod)
+        #expect(
+            decoded.schemaVersion == AppPersistentState.currentSchemaVersion
+                && decoded.activePeriod == state.activePeriod)
         try AppStateValidation.validate(decoded)
         let store = UnitStateStore()
         try store.save(decoded)
@@ -103,7 +105,7 @@ struct WeeklyAssessmentRevisionTests {
         #expect(frozen.paystub?.assessment == context.paystub?.assessment)
     }
 
-    @Test func anExplicitCorrectionAppendsV4AndPreservesV3AcrossArchiveAndBackup() throws {
+    @Test func anExplicitCorrectionAppendsCurrentAndPreservesV3AcrossArchiveAndBackup() throws {
         let store = try legacyStore()
         let before = try #require(store.state?.activePeriod?.auditRevisions?.first)
         let model = AppModel(store: store)
@@ -111,7 +113,7 @@ struct WeeklyAssessmentRevisionTests {
         let context = try #require(model.periodContext())
         #expect(!context.requiresAssessmentReview && model.currentAuditStatus == .needsReview)
         #expect(context.revisions.count == 2 && context.revisions.first == before)
-        #expect(context.paystub?.assessment?.engineVersion == 4)
+        #expect(context.paystub?.assessment?.engineVersion == PaycheckAssessor.currentEngineVersion)
         #expect(
             context.paystub?.assessment?.expectedGross == before.paystub.assessment?.expectedGross)
         try model.archiveCurrentPeriod()
@@ -120,7 +122,9 @@ struct WeeklyAssessmentRevisionTests {
         let state = try #require(store.state)
         let restored = try BackupArchive.decode(
             BackupArchive(createdAt: UnitFixture.start, state: state, files: []).encoded())
-        #expect(restored.state.history == state.history && restored.state.schemaVersion == 9)
+        #expect(
+            restored.state.history == state.history
+                && restored.state.schemaVersion == AppPersistentState.currentSchemaVersion)
         #expect(AppModel(store: store).history == state.history)
     }
 

@@ -169,6 +169,17 @@ enum AppStateValidation {
         ).rounded(using: agreement.rounding)
         guard sum == calculation.total else { throw invalid() }
         for component in calculation.components {
+            if let base = component.baseTimeNumerator {
+                guard !base.isNaN, base >= 0 else { throw invalid() }
+            }
+            if calculation.provenance?.engine == PayCalculator.currentEngine,
+                component.category != .perDiem
+            {
+                guard let base = component.baseTimeNumerator,
+                    let raw = component.unroundedAmount,
+                    raw.amount == base * (component.multiplier ?? 1) / 3_600
+                else { throw invalid() }
+            }
             if let raw = component.unroundedAmount {
                 guard !raw.amount.isNaN, raw.amount >= 0,
                     raw.currencyCode == calculation.total.currencyCode
@@ -179,7 +190,8 @@ enum AppStateValidation {
             let supportedPrecision =
                 (provenance.engine == "linepay.configured-pay/2"
                     && provenance.rounding == "explicit-snapshot-rounding/1")
-                || (provenance.engine == "linepay.configured-pay/3"
+                || (["linepay.configured-pay/3", PayCalculator.currentEngine].contains(
+                    provenance.engine)
                     && provenance.rounding == "exact-seconds-snapshot-rounding/2")
             guard supportedPrecision,
                 provenance.callout == "confirmed-event-isolated-minimum/1"
@@ -224,6 +236,25 @@ enum AppStateValidation {
             guard assessment.verdict == .needsReview,
                 assessment.reviewReasons.contains(PaycheckAssessor.weeklyMappingReviewReason)
             else { throw invalid() }
+        }
+        if assessment.engineVersion >= 5, assessment.expectedGross != nil,
+            paystub.confirmation?.lineLayout == .basePlusPremium, let calculation
+        {
+            let included = calculation.components.filter {
+                $0.category == .workedHours
+                    || ($0.category == .calloutGuarantee
+                        && paystub.confirmation?.guaranteeLayout == .includedInHourlyLines)
+            }
+            let hasMoneyLines = [paystub.regularPay, paystub.overtimePay, paystub.doubleTimePay]
+                .contains { $0 != nil }
+            if hasMoneyLines && included.contains(where: { $0.baseTimeNumerator == nil }) {
+                guard assessment.verdict == .needsReview,
+                    assessment.reviewReasons.contains(PaycheckAssessor.exactBaseReviewReason),
+                    !assessment.comparisons.contains(where: {
+                        [.regularPay, .overtimePay, .doubleTimePay].contains($0.field)
+                    })
+                else { throw invalid() }
+            }
         }
         for comparison in assessment.comparisons {
             guard

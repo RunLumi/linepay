@@ -34,7 +34,7 @@ Open **Pay → View paycheck result**, or choose **View paycheck result** for th
 
 When weekly scope is configured or a weekly result is attached, the comparison stays **Needs review** until complete workweeks and any additional premium are actually mapped into this paycheck. A short pay period can belong to an overtime week. A separate weekly review does not clear this guard, and the shown configured difference does not establish a shortfall or overpayment.
 
-An active older weekly check requires **Review or correct paycheck facts**. This creates a new check while keeping the earlier verdict, amounts and evidence. Use **View recorded comparison**, where offered, to inspect its saved revision before correcting or closing the period. An archived **Earlier weekly comparison** remains a record of its original scope; a report labels its **Recorded verdict**. Do not treat that older match as current proof of complete weekly coverage.
+An active older weekly check requires **Review or correct paycheck facts**. This creates a new check while keeping the earlier verdict, amounts and evidence. Use **View recorded comparison**, where offered, to inspect its saved revision before correcting or closing the period. An archived **Earlier recorded comparison** remains a record of its original scope; a report labels its **Recorded verdict**. Do not treat that older match as current proof of complete weekly coverage.
 
 ## Interpret the sign
 
@@ -69,3 +69,15 @@ Your notes do not change the calculation or its verdict. **Correction confirmed 
 **Explanation accepted by me** record your judgement; LinePaycheck has not verified a recovery
 or contacted your employer. Follow-ups stay available without Pro and are included in a complete
 backup. Deleting the period deletes its follow-ups.
+
+
+## Premium-only precision in the v2 candidate
+
+**Development preview:** native interaction, migration and report acceptance remain pending.
+An older **Base + premium only** check may have reconstructed base pay from rounded decimal hours.
+At a half-cent this can change a line by one cent even when gross is correct. New checks use exact
+base-time evidence. An older active monetary-line check requires an explicit new review; its
+original values remain in the earlier revision. **Earlier recorded comparison** and a premium-only
+scope note identify preserved historical results, including their **Recorded verdict** in reports.
+Missing exact evidence keeps a new line comparison in review until recalculated from original work
+and rules. This does not verify missing weekly or agreement coverage.

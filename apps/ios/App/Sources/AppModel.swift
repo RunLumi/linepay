@@ -1052,7 +1052,8 @@ final class AppModel {
         if let active = state.activePeriod, id == nil || active.id == id {
             let needsAssessmentReview = CalculationRevisionPolicy.requiresAssessmentReview(
                 saved: active.paystub?.assessment, agreement: active.agreement,
-                calculation: active.auditRevisions?.last?.calculation ?? calculation)
+                calculation: active.auditRevisions?.last?.calculation ?? calculation,
+                lineLayout: active.paystub?.confirmation?.lineLayout)
             let needsReview =
                 active.auditCompletedEpochSeconds != nil
                 && CalculationRevisionPolicy.requiresReview(

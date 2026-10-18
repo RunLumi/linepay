@@ -17,6 +17,7 @@ public struct PayCalculationPolicy: Hashable, Sendable {
 }
 
 public struct PayCalculator: Sendable {
+    public static let currentEngine = "linepay.configured-pay/4"
     public init() {}
 
     public func calculate(
@@ -84,7 +85,8 @@ public struct PayCalculator: Sendable {
                         finalMultiplier: baseMultiplier, agreement: agreement
                     ),
                     baseRate: agreement.hourlyRate,
-                    appliedAgreement: AgreementReference(agreement)
+                    appliedAgreement: AgreementReference(agreement),
+                    baseTimeNumerator: agreement.hourlyRate.amount * slice.seconds
                 )
                 components.append(part)
                 exactTimeNumerators[part.id] = numerator
@@ -120,7 +122,7 @@ public struct PayCalculator: Sendable {
             total: total.rounded(using: agreement.rounding),
             agreementSnapshots: snapshots.isEmpty ? [agreement] : snapshots,
             provenance: CalculationProvenance(
-                engine: "linepay.configured-pay/3",
+                engine: Self.currentEngine,
                 rounding: "exact-seconds-snapshot-rounding/2",
                 callout: "confirmed-event-isolated-minimum/1"),
             weeklyRegularRate: try weekly.map { try WeeklyRegularRateCalculator().calculate($0) }
@@ -412,7 +414,8 @@ public struct PayCalculator: Sendable {
                 explanation:
                     "one isolated minimum for the confirmed callout event; actual work is unchanged",
                 ruleKeys: [.callout], baseRate: agreement.hourlyRate,
-                appliedAgreement: AgreementReference(agreement))
+                appliedAgreement: AgreementReference(agreement),
+                baseTimeNumerator: agreement.hourlyRate.amount * missingSeconds)
             result.append(part)
             exactTimeNumerators[part.id] = numerator
         }

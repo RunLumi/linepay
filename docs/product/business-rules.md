@@ -181,3 +181,14 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-101 | Weekly references retain frozen original inputs and reproduce exactly. | Preview writes nothing; later ledger changes do not rewrite saved clock/rule/payment facts or results. |
 | BR-102 | Later evidence does not silently reclassify earlier checks. | New engine3 checks retain the weekly prefix/references known then; related evidence keeps new verdicts in review and old copies explicitly historical. |
 | BR-103 | Financial state must remain manually recoverable within its declared format. | v7 preserves old1–6 metadata, rejects unknown/future fields and checks the8MiB protected-snapshot budget before committing. |
+
+
+### Exact base-time comparison evidence (v2 candidate)
+
+| ID | Rule | Boundary |
+| --- | --- | --- |
+| BR-104 | Premium-only base uses exact rate × paid seconds through the original rounding bucket. | Repeating Decimal hours are display/comparison quantities, never a substitute for exact base-time evidence. |
+| BR-105 | Missing exact trace cannot produce new premium-only money expectations. | Retain independently known gross; omit unsupported earnings comparisons and require review. |
+| BR-106 | A comparison correction preserves earlier receipts. | Active pre-v5 premium-only line checks require explicit review; archives/replay retain old producers and disclose their earlier scope. |
+
+See [ADR0027](../adr/0027-exact-base-time-and-versioned-premium-comparisons.md).

@@ -44,11 +44,19 @@ struct CrewRuleWorkflowTests {
         try UnitFixture.populate(model)
         try model.confirmPaystub(UnitFixture.paystub(model))
         let original = try #require(model.activePeriod)
-        let result = model.calculation
+        let result = try #require(model.periodContext()?.calculation)
         let proposal = try draft(model)
         try model.prepareCrewRuleDraft(proposal)
         try model.saveProfile(proposal, scope: .futurePeriods)
-        #expect(model.calculation == result && model.currentPaystub == original.paystub)
+        // The saved audit keeps exact component identities. A fresh calculation may generate
+        // new row IDs when scheduling a later snapshot; those IDs are not a pricing change.
+        #expect(model.periodContext()?.calculation == result)
+        #expect(model.activePeriod?.auditRevisions == original.auditRevisions)
+        #expect(model.activePeriod?.workEntries == original.workEntries)
+        #expect(model.currentPaystub == original.paystub)
+        #expect(model.calculation?.total == result.total)
+        #expect(model.calculation?.provenance == result.provenance)
+        #expect(model.calculation?.agreementSnapshots == result.agreementSnapshots)
         #expect(model.activePeriod?.agreement == original.agreement)
         let origin = try #require(model.crewRuleOrigins.first)
         #expect(origin.adoption.templateData == proposal.crewRuleAdoption?.templateData)
@@ -64,7 +72,9 @@ struct CrewRuleWorkflowTests {
         oldShape["schemaVersion"] = 8
         let upgraded = try JSONDecoder().decode(
             AppPersistentState.self, from: JSONSerialization.data(withJSONObject: oldShape))
-        #expect(upgraded.schemaVersion == 9 && upgraded.crewRuleOrigins == state.crewRuleOrigins)
+        #expect(
+            upgraded.schemaVersion == AppPersistentState.currentSchemaVersion
+                && upgraded.crewRuleOrigins == state.crewRuleOrigins)
         #expect(upgraded.activePeriod == state.activePeriod)
 
         #expect(restored.state.activePeriod == state.activePeriod)

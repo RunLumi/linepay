@@ -28,7 +28,7 @@ struct CalculationRevisionPolicyTests {
         try model.confirmPaystub(UnitFixture.paystub(model, gross: "0.97"))
         let revisions = try #require(model.activePeriod?.auditRevisions)
         #expect(revisions.count == 2 && revisions.first == saved)
-        #expect(revisions.last?.calculation?.provenance?.engine == "linepay.configured-pay/3")
+        #expect(revisions.last?.calculation?.provenance?.engine == PayCalculator.currentEngine)
         #expect(model.currentPaystub?.assessment?.expectedGross?.amount == Decimal(string: "0.98"))
         #expect(model.currentPaystub?.assessment?.difference?.amount == Decimal(string: "0.01"))
     }
@@ -67,7 +67,7 @@ struct CalculationRevisionPolicyTests {
         #expect(after.auditRevisions?.count == 2)
         let context = try #require(model.periodContext(id: prior.id))
         #expect(context.calculation?.expectedWages.amount == Decimal(string: "0.98"))
-        #expect(context.calculation?.provenance?.engine == "linepay.configured-pay/3")
+        #expect(context.calculation?.provenance?.engine == PayCalculator.currentEngine)
         #expect(context.paystub?.assessment?.difference?.amount == Decimal(string: "0.01"))
         #expect(model.auditStatus(for: after) == .possibleShortfall)
         let bytes = try BackupArchive(
@@ -86,14 +86,14 @@ struct CalculationRevisionPolicyTests {
         let context = try #require(model.periodContext())
         #expect(!context.requiresCalculationReview && model.currentAuditStatus == .grossMatches)
         #expect(context.calculation?.provenance?.engine == "linepay.configured-pay/2")
-        #expect(model.calculation?.provenance?.engine == "linepay.configured-pay/3")
+        #expect(model.calculation?.provenance?.engine == PayCalculator.currentEngine)
         try model.confirmPaystub(UnitFixture.paystub(model))
         #expect(
             model.activePeriod?.auditRevisions?.first?.calculation?.provenance?.engine
                 == "linepay.configured-pay/2")
         #expect(
             model.activePeriod?.auditRevisions?.last?.calculation?.provenance?.engine
-                == "linepay.configured-pay/3")
+                == PayCalculator.currentEngine)
     }
 
     private func legacyStore(rate: String, seconds: TimeInterval, recorded: String) throws
