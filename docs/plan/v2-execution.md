@@ -1,5 +1,10 @@
 # V2 implementation and release checkpoint
 
+Android release follow-up, October 19: the owner requested creation/publication through Browser
+and signing recovery under `backups/`. A signed 1.0 (1) candidate, JVM/build/lint gates and
+API 36 instrumentation/Maestro passed; Play creation is blocked on explicit publisher compliance
+attestations. See the [candidate receipt](../release/evidence/android-1.0-2026-10-19.md).
+
 [Plan index](README.md) · [Source roadmap](v2.md) · [Release procedure](../release/api-and-testflight.md)
 
 ## Authority and acceptance

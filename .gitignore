@@ -38,6 +38,7 @@ local.properties
 *.mobileprovision
 *.jks
 *.keystore
+/backups/
 
 # Generated/exported sensitive artifacts
 *.paystub.pdf
