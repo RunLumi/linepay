@@ -1,4 +1,5 @@
 """Synthetic browser checks against the actual Worker origin and its HTTP policies."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -21,6 +22,8 @@ output.mkdir(parents=True, exist_ok=True)
 result = output / 'report.json'
 result.unlink(missing_ok=True)
 password = json.loads((ROOT / 'shared/contracts/backup/encryption-v1.json').read_text())['uiPhraseASCII']
+assets = json.loads((ROOT / '.build/web-worker/asset-manifest.json').read_text())['assets']
+html_hash = next(asset['sha256'] for asset in assets if asset['path'] == 'index.html')
 
 with sync_playwright() as pw:
     options = {'headless': True}
@@ -36,6 +39,8 @@ with sync_playwright() as pw:
         response = page.goto(origin)
         assert response.status == 200
         assert "frame-ancestors 'self'" in response.headers['content-security-policy']
+        assert 'no-transform' in response.headers['cache-control']
+        assert hashlib.sha256(response.body()).hexdigest() == html_hash, 'The browser must receive the exact reviewed HTML without edge-injected scripts'
         expect(page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
         page.get_by_role('button', name='Pay rules', exact=True).click()
         page.get_by_label('Hourly rate', exact=True).fill('19.99')

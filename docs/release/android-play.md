@@ -10,7 +10,7 @@ OCR, weekly-rate review, line-level paystub intake, subscriptions or full iOS pa
 
 The subsequent verified candidate is 1.0.1/code 2 from source `301b916`, with the in-app
 privacy-policy action and corrected Pay-screen error rendering. The same bundle is available
-internally and in U.S. production review. See the [dated release evidence](evidence/android-1.0-2026-10-19.md)
+internally and in U.S. production review. See the [dated release evidence](evidence/android-1.0.1-2026-10-19.md)
 for source hashes, actual test layers, approval history and current publication boundaries.
 
 ## Signing and recovery

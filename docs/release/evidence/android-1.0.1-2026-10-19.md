@@ -1,4 +1,4 @@
-# Android 1.0 (1) candidate — October 19, 2026
+# Android Play release evidence — October 19, 2026
 
 [Android release procedure](../android-play.md) · [v3 plan](../../plan/v3.md)
 
