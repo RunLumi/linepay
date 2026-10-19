@@ -2,7 +2,7 @@
 
 [Android release procedure](../android-play.md) · [v3 plan](../../plan/v3.md)
 
-Status: **signed local candidate; not created, uploaded, submitted or published in Play**.
+Status: **published to Play internal testing; production is not submitted or available**.
 
 The owner requested Android app creation and release through Browser, and a backup of the
 signing key and passwords under `backups/`. The candidate keeps package
@@ -37,7 +37,7 @@ excluded from Git, with directory mode 0700 and file mode 0600. This is one copy
 disk, not proof of an independent off-device backup. Google Play's separate distribution
 private key is not part of this backup.
 
-## Play and publication boundary
+## Initial Play creation boundary
 
 Browser confirmed no existing LinePay listing in the selected Cloudjet Solutions PTE. account
 and confirmed the package name is available. The new-app form has the v3 name, package,
@@ -52,3 +52,45 @@ The live privacy/support pages were inspected in Browser and currently describe 
 behavior. Accurate Android policy/support coverage, actual Play questionnaires/listing assets,
 track requirements, review submission and production readback remain outstanding. Do not
 call this a v3 feature-parity release or a published Android app.
+
+## Owner-approved creation and internal publication, October 19
+
+The owner explicitly answered yes to accepting the Developer Program and U.S. export-law
+attestations and continuing creation/release. Browser then created **Paycheck Audit: LinePay**
+in the selected account, Play app ID `4972185693247056753`. The signed AAB was accepted as
+version code 1, version 1.0, API 26+, target SDK 36. The upload's certificate and local backup
+remain bound to source `8586aee4cccbee0b9e70343151dd533f83705931`.
+
+The first internal release, **1.0 (1) — first Android release**, was saved and published.
+Fresh Play readback says **Available to internal testers**, **Not reviewed**. Play uses a
+temporary package-based app name until review. This is not production availability or proof
+of installation on a tester's physical device.
+
+The owner supplied one Google account for access. A dedicated **LinePay Android owner test**
+email list contains that address and is selected on this track; its exact address is retained
+only in the private release receipt. Other existing selected lists were preserved. Automatic
+review rejected removing them because revoking their access was not authorized; the safer
+completed action added the requested list without changing the existing selections.
+
+Internal opt-in: <https://play.google.com/apps/internaltest/4700980308332830413>.
+
+The English store listing was prepared with scoped manual-comparison copy, the existing icon,
+a feature graphic, and two real Android screen captures framed at 9:16. The history capture
+is a synthetic earlier Android run; only framing/captions were composed for the store.
+Promotional layout and screenshot framing received AI-assistance labels; no synthetic UI was
+generated or substituted for an Android capture. Store listing/review status is separate from
+the published internal bundle.
+
+### Remaining production block
+
+An Android-specific section for the existing public privacy policy was prepared and passed
+the website's complete `pnpm check` gate. It is saved in local website commit `7b90d32` on
+`codex/android-privacy-release` in `/Volumes/SSD/linepaycheck.com`. Automatic approval review
+rejected publishing this public legal/privacy-policy change because it needs explicit owner
+publication approval beyond the app-creation attestations. No deployment or alternate write
+was used to bypass that decision.
+
+Production still requires that policy publication, final store/asset declarations, app-content
+questionnaires, country/track selection, submission and actual Google review/readback. Internal
+publication does not close these gates. Release warnings retained: initial missing testers
+(subsequently configured), no R8 deobfuscation mapping, and no native debug-symbol upload.

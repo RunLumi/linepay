@@ -2,8 +2,10 @@
 
 Android release follow-up, October 19: the owner requested creation/publication through Browser
 and signing recovery under `backups/`. A signed 1.0 (1) candidate, JVM/build/lint gates and
-API 36 instrumentation/Maestro passed; Play creation is blocked on explicit publisher compliance
-attestations. See the [candidate receipt](../release/evidence/android-1.0-2026-10-19.md).
+API 36 instrumentation/Maestro passed. After explicit compliance approval, Play internal testing
+was published and the requested owner tester configured. Production remains pending the public
+Android privacy update and Play setup/review. See the
+[release receipt](../release/evidence/android-1.0-2026-10-19.md).
 
 [Plan index](README.md) · [Source roadmap](v2.md) · [Release procedure](../release/api-and-testflight.md)
 
