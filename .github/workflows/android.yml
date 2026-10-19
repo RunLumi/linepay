@@ -94,7 +94,22 @@ jobs:
             -gpu swiftshader_indirect -port 5554 \
             > "$RUNNER_TEMP/linepay-android-emulator.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/linepay-android-emulator.pid"
-          adb -s emulator-5554 wait-for-device
+          for attempt in $(seq 1 150); do
+            if [[ "$(adb -s emulator-5554 get-state 2>/dev/null | tr -d '\r')" == "device" ]]; then
+              break
+            fi
+            if ! kill -0 "$(cat "$RUNNER_TEMP/linepay-android-emulator.pid")" 2>/dev/null; then
+              cat "$RUNNER_TEMP/linepay-android-emulator.log" >&2
+              adb devices -l >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          if [[ "$(adb -s emulator-5554 get-state 2>/dev/null | tr -d '\r')" != "device" ]]; then
+            cat "$RUNNER_TEMP/linepay-android-emulator.log" >&2
+            adb devices -l >&2
+            exit 1
+          fi
           for attempt in $(seq 1 120); do
             if [[ "$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
               break
