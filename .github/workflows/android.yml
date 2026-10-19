@@ -72,6 +72,12 @@ jobs:
           echo "$SDK_ROOT/emulator" >> "$GITHUB_PATH"
       - name: Run JVM, app build, release build, and lint gates
         run: bash scripts/check-android.sh unit
+      - name: Enable KVM for the API 36 test emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check
       - name: Create and boot one API 36 test emulator
         run: |
           SDK_ROOT="$ANDROID_SDK_ROOT"
