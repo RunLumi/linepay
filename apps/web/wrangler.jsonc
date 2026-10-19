@@ -1,0 +1,29 @@
+{
+  "$schema": "../../tools/web-worker/node_modules/wrangler/config-schema.json",
+  "name": "linepaycheck-web-staging",
+  "account_id": "73fe06de8746378768229a64680dd62f",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "send_metrics": false,
+  "dependencies_instrumentation": {
+    "enabled": false
+  },
+  "assets": {
+    "directory": "../../.build/web-worker/assets",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "env": {
+    "staging": {
+      "name": "linepaycheck-web-staging"
+    },
+    "production": {
+      "name": "linepaycheck-web",
+      "workers_dev": false,
+      "routes": [
+        { "pattern": "app.linepaycheck.com", "custom_domain": true }
+      ]
+    }
+  }
+}

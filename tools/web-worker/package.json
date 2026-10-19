@@ -1,0 +1,21 @@
+{
+  "name": "@linepaycheck/web-release",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "check:assets": "node build.mjs --check",
+    "check:http": "node check-http.mjs",
+    "check:worker": "npm run build && wrangler deploy --config ../../apps/web/wrangler.jsonc --env staging --dry-run",
+    "dev:worker": "npm run build && wrangler dev --config ../../apps/web/wrangler.jsonc --env staging --local --ip 127.0.0.1",
+    "deploy:staging": "npm run build && wrangler deploy --config ../../apps/web/wrangler.jsonc --env staging",
+    "deploy:production": "npm run build && wrangler deploy --config ../../apps/web/wrangler.jsonc --env production"
+  },
+  "devDependencies": {
+    "wrangler": "4.148.0"
+  }
+}
