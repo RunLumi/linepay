@@ -1,5 +1,8 @@
 # LinePaycheck Android
 
+The first Play candidate uses the v3 display name **Paycheck Audit: LinePay** while preserving
+`com.streamentry.linepay.android`. See [Play release and signing recovery](../../docs/release/android-play.md).
+
 The owner authorized native Android for the v2 work on October 16, 2026. The client uses Kotlin
 and Jetpack Compose. Payroll data remains in app-private local storage; the app has no LinePaycheck
 account, backend, network permission, ad/analytics SDK, or Android automatic backup.

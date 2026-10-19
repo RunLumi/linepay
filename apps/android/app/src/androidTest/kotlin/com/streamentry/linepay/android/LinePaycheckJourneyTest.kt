@@ -51,6 +51,8 @@ class LinePaycheckJourneyTest {
         compose.onNodeWithTag("today.expected-wages").assertTextContains("USD 200.00")
 
         compose.onNodeWithTag("nav.pay").performClick()
+        compose.onNodeWithText("A pay period could not be calculated from the saved rules.")
+            .assertDoesNotExist()
         compose.onNodeWithTag("pay.record-check").performScrollTo().performClick()
         enter("check.gross", "200.00")
         compose.onNodeWithTag("check.confirm-period").performScrollTo().performClick()

@@ -20,11 +20,15 @@ appId: com.streamentry.linepay.android
     element:
       id: setup.time-zone
     direction: DOWN
-- tapOn:
+- longPressOn:
     id: setup.time-zone
-- eraseText: 40
+- tapOn: "Select all"
+- eraseText: 1
 - inputText: "UTC"
 - hideKeyboard
+- assertVisible:
+    id: setup.time-zone
+    text: "UTC"
 - scrollUntilVisible:
     element:
       id: setup.daily-overtime-enabled
@@ -55,20 +59,33 @@ appId: com.streamentry.linepay.android
     element:
       id: shift.start
     direction: DOWN
-- tapOn:
+- longPressOn:
     id: shift.start
-- eraseText: 40
+# Android can select the entire date automatically, omitting Select all from its menu.
+- tapOn:
+    text: "Select all"
+    optional: true
+- eraseText: 1
 - inputText: "2026-10-12 07:00"
 - hideKeyboard
+- assertVisible:
+    id: shift.start
+    text: "2026-10-12 07:00"
 - scrollUntilVisible:
     element:
       id: shift.end
     direction: DOWN
-- tapOn:
+- longPressOn:
     id: shift.end
-- eraseText: 40
+- tapOn:
+    text: "Select all"
+    optional: true
+- eraseText: 1
 - inputText: "2026-10-12 15:30"
 - hideKeyboard
+- assertVisible:
+    id: shift.end
+    text: "2026-10-12 15:30"
 - scrollUntilVisible:
     element:
       id: shift.break-start
@@ -140,6 +157,10 @@ appId: com.streamentry.linepay.android
     direction: DOWN
 - tapOn:
     id: check.save
+- scrollUntilVisible:
+    element:
+      text: "Compared values match"
+    direction: DOWN
 - assertVisible: "Compared values match"
 - tapOn:
     id: nav.history
