@@ -25,8 +25,8 @@ const quantityLabels = {
 };
 const statuses = {
   notVerified: "Not verified",
-  notComparable: "Not comparable",
-  comparedValuesMatch: "Compared values match",
+  notComparable: "Unable to verify",
+  comparedValuesMatch: "Match within compared scope",
   possibleDifference: "Possible difference",
 };
 const notes = {

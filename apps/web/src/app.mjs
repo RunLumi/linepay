@@ -83,11 +83,11 @@ const label = (title, name, options = "") =>
 const check = (title, name, required = false) =>
   `<label><input type="checkbox" name="${name}" ${required ? "required" : ""}>${title}</label>`;
 const verdicts = {
-  matches: "Compared values match",
+  matches: "Match within compared scope",
   possibleShortfall: "Possible shortfall",
   possibleOverpayment: "Possible overpayment",
   needsReview: "Needs review",
-  notComparable: "Not comparable",
+  notComparable: "Unable to verify",
 };
 function resultView(result, currency, calculation, rule) {
   return `<p class="badge">${esc(verdicts[result.verdict])}</p>${result.reportedPeriod ? `<p class="context">Reported work period: ${result.reportedPeriod.startDate === null ? "not stated" : esc(result.reportedPeriod.startDate) + " through " + esc(result.reportedPeriod.endDate)} · ${esc(result.reportedPeriod.timeZone)} · ${result.reportedPeriod.confirmed ? "confirmed from source" : "not confirmed"}</p>` : '<p class="note">This legacy check did not retain separate reported-date facts. Its original result remains as recorded.</p>'}${result.gross === null ? "<p>No comparable expected gross.</p>" : `<ul class="ledger"><li><span>Expected gross in confirmed scope</span><strong class="money">${money(result.gross, currency)}</strong></li><li><span>Confirmed paycheck gross</span><span class="money">${money(result.paidGross, currency)}</span></li><li><span>Expected minus paid</span><strong class="money">${money(result.difference, currency)}</strong></li></ul>`}<ul>${result.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>${result.comparisons
@@ -224,7 +224,7 @@ function renderProfiles() {
 function renderPay() {
   const period = current();
   if (!period) {
-    main.innerHTML = `<h1>Your work. Your expected pay.</h1><p>Start with the rules you explicitly confirmed. Record actual work, then compare a paycheck in the same period.</p>${state.profiles.length ? periodForm() : `<p>No pay profile is saved yet.</p><button class="primary" data-action="profile">Confirm pay rules</button>`}`;
+    main.innerHTML = `<h1>Is Your Paycheck Correct?</h1><p>Track what you worked. Compare expected pay with your paystub. Understand possible differences.</p><p>Start with the pay rules you explicitly confirm. Record actual work, then compare a paycheck covering the same period. A result shows a match within the compared scope, a possible difference or that it is unable to verify.</p>${state.profiles.length ? periodForm() : `<p>No pay profile is saved yet.</p><button class="primary" data-action="profile">Confirm pay rules</button>`}`;
     return;
   }
   const schedule = state.paycycleSchedules.find(
@@ -352,7 +352,7 @@ function renderHistory() {
   }</ul>`;
 }
 function renderBackup() {
-  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">This preview opens web snapshots only. iOS/Android state transfer is not yet supported. The protected envelope uses the shared encryption format; compatible encryption does not imply compatible financial records.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected web backup</h2>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePaycheck. Device-local activity is kept in a separate database and is not included.</p><button class="primary">Download encrypted backup</button></form><form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This clears local activity first, then removes pay profiles, periods, work and saved checks from this browser. If activity cannot be cleared, pay records are left intact.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
+  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">This preview opens web snapshots only. iOS/Android state transfer is not yet supported. The protected envelope uses the shared encryption format; compatible encryption does not imply compatible financial records.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected web backup</h2>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePay. Device-local activity is kept in a separate database and is not included.</p><button class="primary">Download encrypted backup</button></form><form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This clears local activity first, then removes pay profiles, periods, work and saved checks from this browser. If activity cannot be cleared, pay records are left intact.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
 }
 async function commit(change) {
   const previous = state;
@@ -745,14 +745,14 @@ async function action(name) {
     );
   } else if (name === "clear") {
     document.querySelector("#clear-preview").innerHTML =
-      '<div class="preview"><p>Remove local activity and every LinePaycheck pay record from this browser? Activity is cleared first; if it cannot be cleared, pay records remain.</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
+      '<div class="preview"><p>Remove local activity and every Paycheck Audit: LinePay pay record from this browser? Activity is cleared first; if it cannot be cleared, pay records remain.</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
     document.querySelector("#confirm-clear").onclick = () =>
       run(async () => {
         await activityLedger?.clear();
         state = await store.write(emptyState(), state.revision);
         selection = null;
         render();
-        message("LinePaycheck activity and pay records were removed from this browser.");
+        message("Paycheck Audit: LinePay activity and pay records were removed from this browser.");
       });
   }
 }

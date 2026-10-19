@@ -757,7 +757,7 @@ export function openStore() {
     request.onerror = () =>
       reject(Error("Browser storage is unavailable. No changes were saved."));
     request.onblocked = () =>
-      reject(Error("Close other LinePaycheck tabs before opening storage."));
+      reject(Error("Close other LinePay tabs before opening storage."));
     request.onsuccess = () => {
       const db = request.result;
       db.onversionchange = () => db.close();
