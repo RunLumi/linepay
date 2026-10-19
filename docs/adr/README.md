@@ -44,3 +44,4 @@
 - [0029-native-follow-up-finding-links](0029-native-follow-up-finding-links.md)
 - [0030-android-local-native-state-and-export](0030-android-local-native-state-and-export.md)
 - [0031-cloudflare-static-web-release](0031-cloudflare-static-web-release.md)
+- [0032-weekly-zero-basis-allocation](0032-weekly-zero-basis-allocation.md)

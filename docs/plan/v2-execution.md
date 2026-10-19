@@ -2398,3 +2398,25 @@ created; describe and verify each property separately.
 - Swift format lint passed. The repository script suite passed **82 tests**, the Android emulator startup regressions passed **7 tests**, and the LinePayDomain suite passed **163 tests in 29 suites** using task-local SwiftPM caches. The aggregate `agent-verify.sh quick` wrapper could not finish inside this sandbox because SwiftPM attempted restricted cache/scratch writes; each underlying gate was run separately and passed.
 - Hosted iOS and Legal regressions for the refreshed PR113 head, the full native release gate, device/provider checks and App Store submission/review remain separate and open. This focused local pass is not a release-readiness or store-submission claim.
 - Exact-head Agent Harness run `39260794671` on `d6ac586328b33161895df03696f6215aba05e6cf` failed because `AGENTS.md` measured 12,374 bytes against the 12,000-byte limit. The key note was shortened without removing the owner-provided candidate IDs or verification boundary; `AGENTS.md` now measures 11,995 bytes and `bash scripts/check-agent-harness.sh` passed on source `2ce1ea4`. The failed hosted run remains a historical failure; all hosted checks on the next PR113 head must run again.
+
+## Weekly reference v3 integration candidate, October 19
+
+- An independently reproduced rounding defect assigned a residual cent to a zero-basis period
+  when it sorted first. New weekly references skip zero-basis recipients and identify engine3.
+  The weekly total is unchanged; three shared vectors put the zero basis first, middle and last.
+  The original seventeen v2 vectors remain unchanged. See
+  [ADR0032](../adr/0032-weekly-zero-basis-allocation.md).
+- Native recorded v1/v2 results remain frozen values. Browser retained v2 receipts replay their
+  original producer, survive actual encryption/recovery and refuse altered/unknown results.
+  New reviews always use v3. The service-worker shell moves to v14 after the delivery-policy v13, for the changed browser module,
+  without forcing an open form to reload.
+- The pure Android reference adopts exact rational intermediates and the same confirmed-input
+  boundary. It changes no Android UI, stored state or gross verdict. Native review collection,
+  history, rate provenance and period allocation remain separate work.
+- Component verification before integration passed 166 Swift domain tests, 228 browser unit tests
+  and 180 Android domain tests. A pre-fix regression failed before correction. These are not a
+  full native, hosted, physical-device or released-candidate receipt.
+- Peer review reproduced overlong decimal/aggregate actual work and an Android extreme-scale zero
+  overflow. New /3 admissions now enforce the fixed window in every client and normalize Android
+  decimal hours; five shared positive cases and five refusals pass. Browser /2 replay remains
+  unchanged. This candidate is not yet submitted or merged.
