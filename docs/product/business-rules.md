@@ -162,6 +162,9 @@ These are worker-provided selected parameters, not verified agreement packs or c
 | BR-094 | Weekly remuneration and premium treatment are explicit facts. | Unknown credit treatment refuses; confirmed non-overtime work premiums are included without credit. Clock work does not fill remuneration or determine exclusions. |
 | BR-095 | Collect the actual portion of recorded work in the reviewed interval. | Clip both tails, remove intersecting breaks, preserve seconds/dated rates and original records; unrelated old scope does not block, relevant mixed scope requires review. |
 | BR-096 | New weekly arithmetic has a new version; old receipts remain recorded. | V2 revalidates decoded inputs and uses deterministic allocation IDs; a new review does not rewrite v1 or silently clear paycheck warnings. |
+| BR-113 | A zero weekly allocation basis receives zero, including residual rounding units. | V3 distributes residual units only among positive bases in deterministic identity order; allocations conserve the rounded total. |
+| BR-114 | Same-version validation preserves known historical arithmetic. | New weekly results use v3; native old values remain recorded and browser v2 replays its original producer. Unknown engines or changed retained results refuse. |
+| BR-115 | Actual work fits inside its confirmed fixed weekly window. | New v3 hours and seconds share the same per-fact bound; aggregate actual work, including nonqualifying work, cannot exceed 168 hours. Exact conversion and normalized representation prevent rounded-down excess or arithmetic overflow. |
 
 
 ## Versioned weekly paycheck review

@@ -87,9 +87,9 @@ struct WeeklyReviewSafetyTests {
         let result = try WeeklyRegularRateCalculator().calculate(source)
         #expect(result.qualifyingHours == 48 && result.remainingAdditionalPremium.amount == 200)
         #expect(result == (try WeeklyRegularRateCalculator().calculate(source)))
-        #expect(result.engineVersion == "linepay.weekly-regular-rate/2")
+        #expect(result.engineVersion == "linepay.weekly-regular-rate/3")
     }
-    @Test func originalV1ReceiptKeepsItsOldValuesWhileExplicitNewCalculationUsesV2() throws {
+    @Test func originalV1ReceiptKeepsItsOldValuesWhileNewReviewUsesCurrentEngine() throws {
         var root = URL(fileURLWithPath: #filePath)
         for _ in 0..<7 { root.deleteLastPathComponent() }
         let data = try Data(
@@ -114,7 +114,7 @@ struct WeeklyReviewSafetyTests {
         #expect(roundTrip == original.result)
         let reviewed = try WeeklyRegularRateCalculator().calculate(original.input)
         #expect(
-            reviewed.engineVersion == "linepay.weekly-regular-rate/2"
+            reviewed.engineVersion == "linepay.weekly-regular-rate/3"
                 && reviewed.expectedCash.amount == 2860)
         #expect(original.result.expectedCash.amount == 2840)
     }
