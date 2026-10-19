@@ -141,7 +141,7 @@ jobs:
           } > "$RUNNER_TEMP/linepay-android/host.log" 2>&1
           timeout --kill-after=5s 10s adb devices -l > "$RUNNER_TEMP/linepay-android/adb-devices.log" 2>&1 || true
           timeout --kill-after=5s 10s adb -s emulator-5554 shell getprop > "$RUNNER_TEMP/linepay-android/getprop.log" 2>&1 || true
-          timeout --kill-after=5s 15s adb -s emulator-5554 logcat -d -t 1000 > "$RUNNER_TEMP/linepay-android/logcat.log" 2>&1 || true
+          timeout --kill-after=5s 15s adb -s emulator-5554 logcat -d -t 10000 > "$RUNNER_TEMP/linepay-android/logcat.log" 2>&1 || true
           if [[ -f "$RUNNER_TEMP/android-avd/LinePaycheck_E2E_API_36.avd/config.ini" ]]; then
             cp "$RUNNER_TEMP/android-avd/LinePaycheck_E2E_API_36.avd/config.ini" "$RUNNER_TEMP/linepay-android/avd-config.ini"
           fi
