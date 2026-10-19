@@ -143,7 +143,21 @@ final class BenefitJourneyTests: XCTestCase {
         launch(scenario: "benefits-review-comma")
         openBenefits()
         tap("benefits.resume")
+        let reformatted = app.staticTexts["benefits.format-notice"].firstMatch.waitForExistence(
+            timeout: 10)
+        if !reformatted { captureDiagnosticState("v2-benefits-comma-missing-conversion") }
+        XCTAssertTrue(
+            reformatted, "The saved comma draft must finish reformatting before continuing")
+        capture("v2-benefits-comma-before-continue")
         tap("benefits.continue")
+        capture("v2-benefits-comma-after-continue")
+        let rulesStep = app.staticTexts["Step 2 of 4"].firstMatch.waitForExistence(timeout: 10)
+        let segment = app.buttons["benefits.segment"].firstMatch.waitForExistence(timeout: 10)
+        if !rulesStep || !segment {
+            captureDiagnosticState("v2-benefits-comma-unexpected-rules-step")
+        }
+        XCTAssertTrue(rulesStep, "Continue must open the rules step after number-format conversion")
+        XCTAssertTrue(segment, "The converted draft must keep its editable date/rate segment")
         tap("benefits.segment")
         let rate = app.textFields["benefits.rate"].firstMatch
         scroll(rate)
@@ -276,6 +290,14 @@ final class BenefitJourneyTests: XCTestCase {
             let delta: CGFloat = element.frame.minY <= 140 ? 160 : -160
             start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: delta)))
         }
+    }
+
+    private func captureDiagnosticState(_ name: String) {
+        capture(name)
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = "\(name)-accessibility"
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
     }
 
     private func capture(_ name: String) {

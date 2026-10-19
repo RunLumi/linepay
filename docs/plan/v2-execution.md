@@ -34,7 +34,7 @@ An implementation, test result, upload, review submission and public release are
 | Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native follow-ups can link to a validated comparison line; browser follow-up and reviewed reports remain available; app, PDF, migration and UI evidence passed | Final release gate; employer receipt or resolution is not inferred |
-| Accessibility | PWA light/dark color-token contrast, Diagnostics focus/Enter, 320px/reduced-motion/large-text checks; native iOS dark XXXL navigation to the local activity control passed | Apple screen audit still reports one Settings contrast issue without an element; VoiceOver, explicit 200% target audit, cross-client audit, and physical-device validation remain open |
+| Accessibility | PWA light/dark tokens, Diagnostics keyboard, 320px/reduced-motion/large-text browser checks; native Settings Apple audit and dark XXXL navigation passed on iOS 18.5 | Final candidate, VoiceOver, explicit 200% target audit, cross-client and physical-device checks remain open |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
 | Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
@@ -2276,6 +2276,105 @@ created; describe and verify each property separately.
   warnings because KGP 2.4.0 still requires the
   temporary legacy DSL opt-out. Keep this visible for a deliberate compiler/plugin migration.
 
+## Integrated main and release-check milestone, October 19
+
+- PR [#112](https://github.com/RunLumi/linepay/pull/112) was merged while native checks were
+  pending. Remote main was fetched and fast-forwarded in the isolated publication clone to
+  `1da1059e0c190d4ca938d5852bf8ce893ef86608`, including the owner's v3 plan. The shared root
+  checkout and other worktrees were preserved. This is a source integration receipt, not a
+  statement that all checks passed before merge.
+- The owner expanded the objective to v2 plus v3, Cloudflare Workers web publication, and
+  smaller milestone PRs with a fresh main integration before each merge. Generic paycheck
+  positioning supersedes the specialist-only acquisition copy; payroll, privacy, historical
+  snapshots, existing technical identifiers and manual release after Apple approval remain binding.
+- The Settings contrast finding was identified at the large-text pay-period row under the tab
+  bar. Accessibility-sized Settings now uses an inline navigation title. Apple's complete
+  screen audit passed on iOS 18.5 in
+  `.build/v2-accessibility-retest-20261019.xcresult`; no issue was suppressed.
+- The full native run `.build/v2-native-release-gate-20261019/` was interrupted and has no
+  completed aggregate result. Its local-activity UI failure led to fresh post-relaunch element
+  queries and structural JSON assertions requiring every count and day bucket to be empty.
+  Nine ledger app tests and the actual opt-out/export/relaunch/clear UI journey then passed
+  on existing iOS 26.5: **10 passed, 0 failed, 0 skipped**,
+  `.build/pr112-local-activity-ios26.xcresult`. Production ledger code was unchanged.
+- Hosted browser CI at `6027ed9d5f7a8feb08ab552ac3bf83c2824283b0` passed both browser gates
+  after the narrow text-wrap fix. Android JVM/build/release/lint also passed with strict
+  publisher-verified dependency receipts. Hosted device setup failed because the preinstalled
+  command-line tools lacked `pixel_8`; pinning command-line-tools 22.0 preserves that intended
+  device profile. Connected tests and Maestro did not run in that failed hosted attempt.
+- The final fixture-backed local Android instrumentation rerun passed **2/2**;
+  `.build/pr112-android-fixture-device.log`. Earlier synthetic local Maestro and 200% font-scale
+  evidence remain scoped to their recorded source, not a new hosted device pass.
+- The existing iOS runner is offline: launchd reports exit 126 and cannot access its SSD working
+  directory. Its registration is preserved. The existing iOS 18.5 device is also preserved;
+  explicit runtime-restore approval was received. Apple's downloader currently rejects both
+  architecture variants and the exact build. `simctl runtime scan-and-mount` rediscovered the
+  existing 18.5 MobileAsset and restored device availability without creating/erasing a device.
+  An explicit `runtime verify` reported a missing/invalid sealed resource, whereas the detailed
+  runtime registry reports `Ready` and `Signature State: Verified` for the mounted Apple image.
+  Both observations are retained; simulator execution and the full native gate remain open.
+- The native workflow timeout is raised to 60 minutes for the added independent v2 UI journeys,
+  coverage export and Release build. No test or assertion is skipped to meet the deadline.
+- The legal resource inventory now excludes `.build` relative to the checkout root. Previously
+  an isolated checkout located inside an ignored `.build` ancestor skipped all recursive
+  resources and reported false inventory drift. A synthetic regression proves actual resources
+  and package declarations remain included while generated descendant caches stay excluded.
+  No recorded resource hashes or approval requirements were changed.
+
+## Hosted verification recovery and web delivery, October 19
+
+- PR [#114](https://github.com/RunLumi/linepay/pull/114) passed its exact-head hosted docs, legal
+  and complete browser/Worker HTTP gates and was merged as
+  `ce4be563c08d14d5b82cbb5e011832ddf53ff713`. The merged source deployed to isolated staging
+  (version `1171d604-f90b-4432-a759-cd70158919a6`); exact HTTP and both browser journeys passed.
+- After a fresh explicit production confirmation, the same source deployed to
+  `https://app.linepaycheck.com`, version `c8159e8a-59b6-4f74-950c-18f070d65a11`. Public DNS,
+  TLS and all32runtime byte checks passed. The live WebKit journey passed, but Chromium caught
+  an injected Cloudflare Web Analytics script absent on staging. Therefore this is not a
+  complete privacy/browser acceptance receipt. PR [#116](https://github.com/RunLumi/linepay/pull/116)
+  adds documented `no-transform`, exact browser HTML verification and a waiting cache refresh.
+  Its production redeployment and both browser readbacks remain pending. Marketing apex/www
+  ownership is preserved, and no pay-data backend was added.
+- Existing iOS runner registration works in a temporary foreground listener; launchd SSD access
+  remains unresolved. PR113's full native run passed both Apple accessibility journeys and two
+  benefits journeys, then failed the saved-comma-draft locale journey before reaching its segment
+  action. The failed run was canceled for focused investigation; its aggregate bundle lacks
+  `Info.plist` and cannot serve as a completed result. The retained CI log is partial evidence,
+  not a native PASS. A dedicated capture/reproduction is being prepared.
+- PR113 Android JVM/build/release/lint passed. Its emulator stage remained in unbounded ADB
+  discovery and was canceled; no connected or Maestro PASS is claimed. Startup now has an explicit
+  hosted KVM preflight, bounded AVD/ADB/boot commands, process-liveness checks, cleanup and retained
+  diagnostics. Seven subprocess regressions cover crash, hung/offline ADB, missing acceleration,
+  incomplete boot and successful startup. Real hosted recovery remains pending.
+
+- Recovery follow-up: the canceled Android emulator log confirms missing `/dev/kvm` permission.
+  On `e0640414f5e2c2640739981496d08c1e05305943`, the scoped user ACL/preflight recovered real
+  hosted boot in39.2seconds and connected instrumentation passed2/2. Maestro then failed its
+  first launch with `Unknown error`, before the journey. The next source retains verbose Maestro
+  debug/test artifacts and a bounded larger logcat tail; its root cause and final hosted flow remain open.
+- Native benefits recheck now waits for the actual successful conversion notice before navigating,
+  then explicitly requires step2 and its editable segment. The notice has a stable accessibility ID.
+  All original number, fresh-confirmation, history and report checks remain. The complete original
+  BenefitJourneyTests class passed3/3,0failed/skipped in380.551seconds on iOS18.5/22F77 with the
+  existing7DEdevice; result `.build/benefit-locale-ui/.build/benefit-locale-class-20261019.xcresult`.
+  Before/after captures show the converted8.75/40 fields. Original CI failure causation is unproven;
+  this guard proves the required presentation state before the next action. Full native CI remains due.
+
+## Exact-head hosted recheck, October 19
+
+- Before refreshing PR113 onto the latest main, hosted run `39181064180` on head
+  `39174e95fcd45fc1738b6c2f0a9c9c96857b137a` passed Android, including emulator boot, connected
+  instrumentation **2/2**, and the checked-in `first-paycheck` Maestro journey **1/1**. Its earlier
+  launch-time `Unknown error` was followed by this complete hosted flow, so that earlier failure is
+  retained as history rather than current status.
+- On that same head, Documentation, User guide, Agent Harness and Legal engineering controls passed.
+  The iOS workflow was queued and Legal regressions were pending at the last readback. The focused
+  benefits class pass is not a substitute for the full iOS release workflow. This re-integration
+  changes the branch head, so all required checks must pass again on the refreshed head.
+- PR117's merged browser publication is recorded below and in
+  [its source-bound receipt](../release/evidence/web-2026-10-19.md). That final readback supersedes
+  the earlier PR114/PR116 staging and analytics-injection checkpoints above.
+
 ## Published browser preview, October 19
 
 - The owner explicitly approved `app.linepaycheck.com`. PR114 and privacy correction PR116
@@ -2290,6 +2389,16 @@ created; describe and verify each property separately.
 - The [publication receipt](../release/evidence/web-2026-10-19.md) retains actual provider/source
   evidence. It does not close complete feature parity, engine3 corrections, native interchange,
   installed/physical PWA, localization, source rights or App Store gates.
+
+## Latest-main integration and focused native regressions, October 19
+
+- PR113's isolated branch was integrated with verified remote main `e4255c44e2894333dfaecaf5f2221f161f9ea592` before further changes. The Android CI overlap was resolved in favor of PR113's scoped KVM ACL, Pixel 8 profile, bounded emulator startup and retained diagnostics; the merged main release changes remain intact. This is source integration, not exact-head hosted verification.
+- Two focused UI regressions were corrected: the large-text Settings journey now waits for the About route and locates the guide by its stable identifier; the premium-history journey scrolls each action into a safe viewport before tapping, including beneath the pinned form action.
+- Both focused journeys passed **2/2, 0 failed, 0 skipped** on the existing `LinePay Release iPhone 18` simulator (iOS 18.5 build 22F77). The run verified the About/guide and recovery route plus explicit paystub correction, the $0.97 original comparison, the $0.98 base plus $0.48 premium, archive retention, and relaunch retention. Result: `/private/tmp/linepay-v2-pr113-focused.xcresult`; selected visual captures were inspected from `/private/tmp/linepay-v2-pr113-focused-attachments-final/`.
+- Swift format lint passed. The repository script suite passed **82 tests**, the Android emulator startup regressions passed **7 tests**, and the LinePayDomain suite passed **163 tests in 29 suites** using task-local SwiftPM caches. The aggregate `agent-verify.sh quick` wrapper could not finish inside this sandbox because SwiftPM attempted restricted cache/scratch writes; each underlying gate was run separately and passed.
+- Hosted iOS and Legal regressions for the refreshed PR113 head, the full native release gate, device/provider checks and App Store submission/review remain separate and open. This focused local pass is not a release-readiness or store-submission claim.
+- Exact-head Agent Harness run `39260794671` on `d6ac586328b33161895df03696f6215aba05e6cf` failed because `AGENTS.md` measured 12,374 bytes against the 12,000-byte limit. The key note was shortened without removing the owner-provided candidate IDs or verification boundary; `AGENTS.md` now measures 11,995 bytes and `bash scripts/check-agent-harness.sh` passed on source `2ce1ea4`. The failed hosted run remains a historical failure; all hosted checks on the next PR113 head must run again.
+- Hosted Android Maestro failed on PR113 heads `d6ac586`, `5cd79a3` and `91cff7d` with three different symptoms (`setup.rules-reviewed` not found, `today.add-work` not visible, then ADB `device offline` at app launch, reproduced on one rerun) while main's `pixel`-profile emulator passed the identical app and flow at `324b759` and `b8e65cb`. The retained logs showed the PR-only `pixel_8` profile (1080x2400, 2 cores, software GL) with the pinned `cmdline-tools;22.0` avdmanager, which also printed a `devices.xml` load error. The hosted workflow now returns to main's verified `pixel` profile and preinstalled command-line tools, keeping the bounded startup, scoped KVM ACL and retained diagnostics. The flow and assertions are unchanged. This is a hypothesis until the hosted rerun passes.
 
 ## Weekly reference v3 integration candidate, October 19
 

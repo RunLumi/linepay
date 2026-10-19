@@ -385,10 +385,15 @@ final class PaydayJourneyTests: XCTestCase {
         capture("large-dark-audit")
         tab("Settings")
         capture("37-settings")
-        tap("About LinePaycheck")
+        let about = app.buttons["settings.about"].firstMatch
+        scrollTo(about)
+        XCTAssertTrue(about.waitForExistence(timeout: 10))
+        XCTAssertTrue(about.isHittable, "About navigation must remain reachable at large text")
+        about.tap()
+        XCTAssertTrue(app.navigationBars["About LinePaycheck"].waitForExistence(timeout: 10))
         capture("45-about")
         let guide = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "User Guide")).firstMatch
+            .matching(identifier: "settings.user-guide").firstMatch
         scrollTo(guide)
         XCTAssertTrue(guide.waitForExistence(timeout: 10))
         XCTAssertTrue(guide.isHittable)

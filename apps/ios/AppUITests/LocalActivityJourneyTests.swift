@@ -57,10 +57,16 @@ final class LocalActivityJourneyTests: XCTestCase {
         tap("activity.clear")
         tap("activity.confirm-clear")
         tap("activity.preview")
-        XCTAssertTrue(preview.waitForExistence(timeout: 10))
-        XCTAssertTrue(preview.label.contains("\"recordingEnabled\" : false"))
-        XCTAssertFalse(preview.label.contains("\"count\" : 1"))
+        let clearedPreview = app.staticTexts["activity.preview-json"].firstMatch
+        XCTAssertTrue(clearedPreview.waitForExistence(timeout: 10))
         capture("v2-local-activity-cleared")
+        let data = try XCTUnwrap(clearedPreview.label.data(using: .utf8))
+        let cleared = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(cleared["recordingEnabled"] as? Bool, false)
+        let totals = try XCTUnwrap(cleared["totals"] as? [[String: Any]])
+        XCTAssertTrue(totals.allSatisfy { ($0["count"] as? Int) == 0 }, "\(totals)")
+        XCTAssertEqual((cleared["days"] as? [Any])?.count, 0)
         app.buttons["Close"].firstMatch.tap()
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(app.staticTexts["$2,000.00"].firstMatch.waitForExistence(timeout: 10))
@@ -96,7 +102,7 @@ final class LocalActivityJourneyTests: XCTestCase {
     }
 
     private func reveal(_ element: XCUIElement) {
-        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        let window = app.windows.firstMatch
         for _ in 0..<20 {
             if element.exists, element.isHittable, element.frame.minY > 110,
                 element.frame.maxY < window.frame.maxY - 90
