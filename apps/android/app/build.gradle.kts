@@ -4,6 +4,17 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val uploadSigning = listOf(
+    "LINEPAY_ANDROID_KEYSTORE", "LINEPAY_ANDROID_STORE_PASSWORD",
+    "LINEPAY_ANDROID_KEY_ALIAS", "LINEPAY_ANDROID_KEY_PASSWORD",
+).associateWith { providers.environmentVariable(it).orNull }
+val hasUploadSigning = uploadSigning.values.any { it != null }
+if (hasUploadSigning) {
+    require(uploadSigning.values.all { !it.isNullOrBlank() }) {
+        "All four LINEPAY_ANDROID signing environment variables must be supplied."
+    }
+}
+
 android {
     namespace = "com.streamentry.linepay.android"
     compileSdk = 36
@@ -12,9 +23,21 @@ android {
         applicationId = "com.streamentry.linepay.android"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    if (hasUploadSigning) {
+        signingConfigs {
+            create("upload") {
+                storeFile = file(requireNotNull(uploadSigning["LINEPAY_ANDROID_KEYSTORE"]))
+                storePassword = uploadSigning["LINEPAY_ANDROID_STORE_PASSWORD"]
+                keyAlias = uploadSigning["LINEPAY_ANDROID_KEY_ALIAS"]
+                keyPassword = uploadSigning["LINEPAY_ANDROID_KEY_PASSWORD"]
+            }
+        }
+        buildTypes.getByName("release").signingConfig = signingConfigs.getByName("upload")
     }
 
     buildFeatures {
