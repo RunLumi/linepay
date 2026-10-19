@@ -8,6 +8,11 @@ scope is manual configured-rule wages, work records, a period-confirmed gross co
 immutable history, encrypted manual backup and local diagnostics. Do not advertise Android
 OCR, weekly-rate review, line-level paystub intake, subscriptions or full iOS parity.
 
+The subsequent verified candidate is 1.0.1/code 2 from source `301b916`, with the in-app
+privacy-policy action and corrected Pay-screen error rendering. The same bundle is available
+internally and in U.S. production review. See the [dated release evidence](evidence/android-1.0-2026-10-19.md)
+for source hashes, actual test layers, approval history and current publication boundaries.
+
 ## Signing and recovery
 
 Supply `LINEPAY_ANDROID_KEYSTORE`, `LINEPAY_ANDROID_STORE_PASSWORD`,
@@ -85,6 +90,7 @@ Full description draft:
 > verify agreements, process payroll or decide whether an employer violated the law.
 > A possible difference is a prompt to review the facts, not proof of underpayment.
 
-The live privacy and support pages were inspected in Browser on October 19, 2026. They
-currently describe the iPhone app and need accurate Android coverage before a production
-submission. Do not submit those URLs as though that update has already been published.
+The privacy policy was updated with owner approval and its Android section was verified live
+on October 19, 2026. Platform-specific backup, local diagnostics and no-network/no-account
+behavior are described separately from the existing iPhone app. Future releases must recheck
+the actual policy against their binaries and disclosures.
