@@ -25,16 +25,18 @@ fun PayScreen(
     val period = runCatching { LinePaycheckRepository.currentPeriod(state) }.getOrNull()
     PageContent {
         Text("Paycheck review", style = MaterialTheme.typography.headlineSmall)
-        period?.let {
-            Text("${it.startDate} – ${it.lastDate} · ${it.timeZone.id}")
+        if (period != null) {
+            Text("${period.startDate} – ${period.lastDate} · ${period.timeZone.id}")
             SectionHeading("Expected wages")
-            MoneyText(formatMoney(it.expectedWages, profile.currencyCode), large = true)
-            if (it.expectedPerDiem != "0.00") {
+            MoneyText(formatMoney(period.expectedWages, profile.currencyCode), large = true)
+            if (period.expectedPerDiem != "0.00") {
                 SectionHeading("Separate expected per diem")
-                MoneyText(formatMoney(it.expectedPerDiem, profile.currencyCode))
+                MoneyText(formatMoney(period.expectedPerDiem, profile.currencyCode))
             }
-            it.boundaryReview?.let { note -> InlineMessage(note, isError = true) }
-        } ?: InlineMessage("A pay period could not be calculated from the saved rules.", true)
+            period.boundaryReview?.let { note -> InlineMessage(note, isError = true) }
+        } else {
+            InlineMessage("A pay period could not be calculated from the saved rules.", true)
+        }
 
         InlineMessage("Expected pay uses only the rules you entered. Unconfigured legal or agreement rules are not assumed away.")
         Button(
