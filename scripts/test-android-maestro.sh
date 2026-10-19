@@ -72,7 +72,10 @@ trap cleanup_test_backup EXIT
 adb -s "$ANDROID_SERIAL" shell rm -f "$TEST_BACKUP_PATH"
 adb -s "$ANDROID_SERIAL" install -r \
     "$ROOT/apps/android/app/build/outputs/apk/debug/app-debug.apk"
-"$MAESTRO_BIN" --device="$ANDROID_SERIAL" test \
+"$MAESTRO_BIN" --verbose --device="$ANDROID_SERIAL" test \
     --format JUNIT \
     --output "$ROOT/.build/maestro-results/android-first-paycheck.xml" \
+    --debug-output "$ROOT/.build/maestro-results/android-debug" \
+    --test-output-dir "$ROOT/.build/maestro-results/android-debug" \
+    --flatten-debug-output \
     "$ROOT/.maestro/android/first-paycheck.yaml"

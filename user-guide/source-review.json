@@ -145,8 +145,8 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "5b429af26f114aaa676f37941fc37aa36fe7c791",
-      "reason": "Targeted October18 native result review: comparison links retain stable IDs; a newly confirmed receipt resets the live form to its verdict. Existing guide steps remain valid. Largest-text premium correction/archive/relaunch passed; broader release and physical acceptance remain separate."
+      "blob": "329a2202ee162483094214e16242526eecbf2865",
+      "reason": "Targeted October 19 audit-offer layout review: re-read audit-results and evidence-and-reports. The optional Pro offer moves after the scrolling result content at accessibility text sizes; standard-size placement, financial scope, report and correction actions, subscription access and visible wording remain unchanged. Existing public instructions stay accurate. New focused runtime acceptance is recorded separately; this is not a release-wide accessibility approval."
     },
     {
       "path": "apps/ios/App/Sources/AuditStatusView.swift",
@@ -323,8 +323,9 @@
       "guides": [
         "benefits"
       ],
-      "disposition": "reviewed",
-      "blob": "9cbd28fe5021f7e5fb6c4002f3ba1e69b41f9952"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "8dcaae1fbb970626a29472962de17c7c1b4c3a2b",
+      "reason": "Targeted October 19 review: re-read benefits guidance on saved numeric context, exact reformatting and fresh review. The existing successful-conversion notice gains only a stable accessibility identifier; visible copy and public steps are unchanged. The UI acceptance guard now waits for that notice and verifies the rules step, without attributing the earlier CI failure to a proven cause."
     },
     {
       "path": "apps/ios/App/Sources/BenefitAuditsView.swift",

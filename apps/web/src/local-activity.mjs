@@ -163,7 +163,7 @@ export function openLocalActivityStore(indexedDB = globalThis.indexedDB) {
     };
     request.onblocked = () => {
       settled = true;
-      reject(Error("Close other LinePaycheck tabs before opening local activity."));
+      reject(Error("Close other LinePay tabs before opening local activity."));
     };
     request.onsuccess = () => {
       const db = request.result;
@@ -273,7 +273,7 @@ function deleteLocalActivityDatabase(indexedDB = globalThis.indexedDB) {
     request.onblocked = () => {
       if (settled) return;
       settled = true;
-      reject(Error("Close other LinePaycheck tabs before clearing local activity."));
+      reject(Error("Close other LinePay tabs before clearing local activity."));
     };
   });
 }

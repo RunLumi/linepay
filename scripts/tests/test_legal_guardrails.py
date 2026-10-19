@@ -70,6 +70,19 @@ class LegalGateTests(unittest.TestCase):
     def test_complete_synthetic_evidence_validates(self):
         self.assertEqual(self.errors(), [])
 
+    def test_inventory_checks_checkout_inside_build_ancestor(self):
+        root = self.root / ".build" / "isolated-checkout"
+        source = root / "apps/ios/App/Resources/PrivacyInfo.xcprivacy"
+        package = root / "apps/ios/Packages/Domain/Package.swift"
+        generated = root / "apps/ios/Packages/Domain/.build/cache/Package.swift"
+        for path in (source, package, generated):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("synthetic inventory input")
+        self.assertEqual(guard.inventory(root), {
+            str(source.relative_to(root)): guard.sha256_file(source),
+            str(package.relative_to(root)): guard.sha256_file(package),
+        })
+
     def test_missing_each_required_top_level_field_fails(self):
         for key in self.evidence:
             with self.subTest(key=key):
@@ -222,6 +235,18 @@ class LegalGateTests(unittest.TestCase):
                      "Possible difference, not a legal determination.", "No paycheck uploads to our servers."):
             with self.subTest(text=text):
                 self.assertEqual(guard.copy_violations(text), [])
+
+    def test_store_copy_scan_covers_canonical_and_legacy_metadata_paths(self):
+        for relative in ("docs/release/app-store.md", "docs/release/appstore.md", "docs/appstore.md"):
+            with self.subTest(path=relative):
+                path = self.root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Guaranteed wage recovery")
+                self.assertEqual(guard.check_copy(self.root), [
+                    f"{relative}: Unsubstantiated recovery guarantee",
+                ])
+                path.write_text("Possible difference, not a legal determination.")
+                self.assertEqual(guard.check_copy(self.root), [])
 
     def test_malformed_nested_values_fail_closed_without_crashing(self):
         mutations = [

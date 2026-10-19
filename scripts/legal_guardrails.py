@@ -26,6 +26,7 @@ PLACEHOLDER = re.compile(r"^(?:tbd|todo|unknown|pending|n/?a|example|replace.*|<
 COPY_PATHS = (
     "docs/pricing.md", "docs/marketing.md", "docs/appstore.md",
     "docs/product/pricing.md", "docs/growth/marketing.md", "docs/release/appstore.md",
+    "docs/release/app-store.md",
 )
 INVENTORY_PATH = "docs/legal/inventory.json"
 
@@ -246,7 +247,8 @@ def inventory(root):
     root = Path(root)
     paths = {root / "apps/ios/project.yml", root / "apps/ios/App/Info.plist"}
     for pattern in ("apps/ios/**/Package.swift", "apps/ios/**/Package.resolved", "apps/ios/App/Resources/**/*"):
-        paths.update(path for path in root.glob(pattern) if path.is_file() and ".build" not in path.parts)
+        paths.update(path for path in root.glob(pattern)
+                     if path.is_file() and ".build" not in path.relative_to(root).parts)
     return {str(path.relative_to(root)): sha256_file(path) for path in sorted(paths) if path.is_file()}
 
 

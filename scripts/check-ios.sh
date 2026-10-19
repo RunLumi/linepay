@@ -6,6 +6,11 @@ IOS_DIR="$ROOT/apps/ios"
 DOMAIN_DIR="$IOS_DIR/Packages/LinePayDomain"
 PRIVACY_MANIFEST="$IOS_DIR/App/Resources/PrivacyInfo.xcprivacy"
 EXPECTED_XCODEGEN_VERSION="2.46.0"
+IOS_BUILD_JOBS="${LINEPAY_IOS_BUILD_JOBS:-2}"
+if [[ ! "$IOS_BUILD_JOBS" =~ ^[1-9][0-9]*$ ]]; then
+    echo "error: LINEPAY_IOS_BUILD_JOBS must be a positive integer" >&2
+    exit 64
+fi
 DERIVED_DATA="$(mktemp -d "${TMPDIR:-/tmp}/linepay-derived.XXXXXX")"
 cleanup() {
     if [[ -d "${RESULTS_DIR:-}/AppTests.xcresult" ]]; then
@@ -87,7 +92,7 @@ plutil -lint "$PRIVACY_MANIFEST"
 echo "==> Test pure domain package"
 (
     cd "$DOMAIN_DIR"
-    swift test --parallel --enable-code-coverage
+    swift test --jobs "$IOS_BUILD_JOBS" --parallel --enable-code-coverage
 )
 
 DOMAIN_COVERAGE="$(find "$DOMAIN_DIR/.build" -path '*/codecov/LinePayDomain.json' -print -quit)"
@@ -109,6 +114,7 @@ check_package_lock
 
 echo "==> Run app-layer tests on iOS Simulator"
 xcodebuild \
+    -jobs "$IOS_BUILD_JOBS" \
     -project "$IOS_DIR/LinePay.xcodeproj" \
     -scheme LinePay \
     -configuration Debug \
@@ -139,6 +145,7 @@ plutil -extract UILaunchScreen xml1 -o /dev/null "$BUILT_INFO_PLIST"
 
 echo "==> Build Release for generic iOS Simulator"
 xcodebuild \
+    -jobs "$IOS_BUILD_JOBS" \
     -project "$IOS_DIR/LinePay.xcodeproj" \
     -scheme LinePay \
     -configuration Release \

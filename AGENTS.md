@@ -211,3 +211,5 @@ Do not create process artifacts for trivial reversible choices.
 Follow the [complexity budget and anti-goals](docs/engineering/agentic-development.md#complexity-budget); preserve payroll correctness, privacy, and data safety.
 
 Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
+
+ASC keys: Verify team issuer, app `6808889292`, and least role from protected records; never infer pairing from `.p8` filenames or commit key material. Owner candidates (2026-10-19): `2HR347AH8Q`, `3XJ664VDDN`, `HSDB3PQ6ST`, `P8ZK4BPD78` (pairing unverified). See [release procedure](docs/release/api-and-testflight.md).

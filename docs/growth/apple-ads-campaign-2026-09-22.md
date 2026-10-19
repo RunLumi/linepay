@@ -33,7 +33,7 @@ The campaign uses exact-match keywords only:
 - `[callout pay calculator]`
 - `[per diem calculator]`
 
-Search Match is disabled so Apple does not expand delivery beyond these explicitly selected search intents. This implements the Search Results, exact-match-first direction in the [marketing strategy](marketing.md#apple-ads-advanced), while remaining a single small campaign rather than the strategy's eventual multi-ad-group structure.
+Search Match is disabled so Apple does not expand delivery beyond these explicitly selected search intents. This implements the Search Results, exact-match-first direction in the [then-current marketing strategy](https://github.com/RunLumi/linepay/blob/1da1059e0c190d4ca938d5852bf8ce893ef86608/docs/growth/marketing.md#apple-ads-advanced), while remaining a single small campaign rather than the strategy's eventual multi-ad-group structure.
 
 ## Spend boundary and limitations
 

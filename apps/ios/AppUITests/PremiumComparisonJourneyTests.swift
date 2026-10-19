@@ -101,15 +101,25 @@ final class PremiumComparisonJourneyTests: XCTestCase {
     }
     private func reveal(_ element: XCUIElement) {
         let window = app.windows.firstMatch
+        let safeTop = window.frame.minY + 120
+        let safeBottom = window.frame.maxY - 140
         for _ in 0..<24 {
-            if element.exists && element.isHittable { return }
-            let above = element.exists && element.frame.maxY < 120
-            let searchEarlier = !element.exists && !true
-            if above || searchEarlier { window.swipeDown() } else { window.swipeUp() }
+            guard element.exists else {
+                window.swipeUp()
+                continue
+            }
+            let centerY = element.frame.midY
+            if element.isHittable && centerY >= safeTop && centerY <= safeBottom { return }
+            if centerY < safeTop {
+                window.swipeDown()
+            } else {
+                window.swipeUp()
+            }
         }
         if element.exists {
             print(
                 "Synthetic UI reveal miss:", element.identifier, element.frame, window.frame,
+                "safe vertical interval:", safeTop, safeBottom,
                 "hittable:", element.isHittable)
         }
     }
