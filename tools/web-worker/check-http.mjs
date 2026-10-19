@@ -30,6 +30,7 @@ for (const asset of receipt.assets.filter((entry) => entry.path !== "_headers"))
   assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'self'/, route);
   assert.match(response.headers.get("cache-control") ?? "", /max-age=0/, route);
   assert.match(response.headers.get("cache-control") ?? "", /must-revalidate/, route);
+  assert.match(response.headers.get("cache-control") ?? "", /no-transform/, route);
   assert.doesNotMatch(response.headers.get("cache-control") ?? "", /immutable/, route);
   assert.equal(response.headers.get("set-cookie"), null, route);
   if (route === "/sw.js") assert.equal(response.headers.get("service-worker-allowed"), "/");

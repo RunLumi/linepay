@@ -21,6 +21,16 @@ collector or automatic backup is configured. Pay records stay in that browser's 
 the worker deliberately exports a file. Do not enable Cloudflare Web Analytics, request-body
 logging, collectors or another data flow as part of a routine static deployment.
 
+The app sends `Cache-Control: no-transform` on its assets. A proxied custom domain can inherit
+zone-level Web Analytics injection even when the Worker has no analytics binding and staging
+has none. Cloudflare documents that this directive prevents automatic beacon injection
+([Web Analytics setup](https://developers.cloudflare.com/web-analytics/get-started/)).
+Verify both actual browser HTML bytes and network requests on the production hostname; a plain
+HTTP client's byte check alone does not prove the browser receives the same HTML. Ordinary CDN
+request metadata remains part of static hosting; this directive does not disable edge inspection.
+The cache version also advances so a closed/reopened app adopts responses from this delivery
+policy. Activation still waits for open clients; editing is never interrupted by a forced reload.
+
 ## Reproducible checks
 
 Use Node 22+ and the repository's pinned Python browser tools. From the repository root:
