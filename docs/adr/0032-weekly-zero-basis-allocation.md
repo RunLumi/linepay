@@ -39,3 +39,7 @@ exceed the window, and native decimal conversions must preserve exact durations.
 accepted decimal hours before arithmetic; extreme-scale zero representations cannot cause overflow.
 These admission corrections leave the confirmed forty-hour reference threshold unchanged. Browser
 v2 replay retains its original admission semantics rather than invalidating a stored receipt.
+
+A browser downgrade to a pre-v3 client cannot read new v3 weekly receipts, even though the outer
+state schema remains8. Prefer repair forward, retain manual backups, and verify the intended reader
+before rollback. Reverting assets alone is not a recovery procedure for newer stored results.
