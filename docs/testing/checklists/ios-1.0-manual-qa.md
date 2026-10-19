@@ -45,9 +45,9 @@ Run on a real iPhone before App Store submission. Use synthetic pay data only.
 
 ## Reconciliation
 
-- [ ] Exact gross match shows `Matches` with non-color cue.
-- [ ] Lower paid gross shows `Possible shortfall`.
-- [ ] Higher paid gross shows `Possible overpayment`.
+- [ ] Exact gross match shows `No difference within compared items` (or `...: gross total only`) with non-color cue.
+- [ ] Lower paid gross shows `Possible difference: paystub is lower`.
+- [ ] Higher paid gross shows `Possible difference: paystub is higher`.
 - [ ] Editing work after an audit changes status to `Needs review` rather than silently trusting stale reconciliation.
 - [ ] Re-running the same pay-period audit remains allowed after the free audit was consumed.
 - [ ] Optional confirmed regular/OT/DT/callout/per-diem lines produce explainable comparisons.

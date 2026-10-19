@@ -20,13 +20,13 @@ struct OnboardingWelcomeView: View {
                 LineGapMark()
 
                 VStack(alignment: .leading, spacing: LinePaySpacing.standard) {
-                    Text("Know what your work should pay.")
+                    Text("Is your paycheck correct?")
                         .font(.largeTitle.bold())
                         .foregroundStyle(LinePayColor.textPrimary)
 
                     Text(
-                        "Log your hours, see the math behind your expected pay, and check it "
-                            + "against the paycheck you actually get."
+                        "Track what you worked. Compare expected pay with your paystub. "
+                            + "Understand possible differences."
                     )
                     .font(.title3)
                     .foregroundStyle(LinePayColor.textSecondary)
@@ -37,7 +37,7 @@ struct OnboardingWelcomeView: View {
                     trustRow(
                         icon: "person.crop.circle.badge.xmark",
                         title: "No account",
-                        detail: "Start using LinePaycheck without an email or password."
+                        detail: "No email, password, or employer payroll login."
                     )
                     trustRow(
                         icon: "iphone",
@@ -48,8 +48,15 @@ struct OnboardingWelcomeView: View {
                     trustRow(
                         icon: "equal.circle",
                         title: "Explainable pay",
-                        detail: "See how your confirmed rules turn worked hours into expected pay."
+                        detail:
+                            "See how the hourly rate and rules you confirm turn worked hours into expected pay."
                     )
+                }
+                if onImportAgreement != nil || onImportCrewRules != nil {
+                    Text("Have your pay rules in writing?")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(LinePayColor.textSecondary)
+                        .accessibilityAddTraits(.isHeader)
                 }
                 if let onImportAgreement {
                     Button("Import an agreement PDF", action: onImportAgreement)
@@ -57,7 +64,7 @@ struct OnboardingWelcomeView: View {
                         .accessibilityIdentifier("onboarding.import-agreement")
                 }
                 if let onImportCrewRules {
-                    Button("Inspect a crew rule draft", action: onImportCrewRules)
+                    Button("Open a shared rule draft", action: onImportCrewRules)
                         .buttonStyle(LinePaySecondaryButtonStyle())
                         .accessibilityIdentifier("onboarding.import-crew-rules")
                 }
@@ -68,7 +75,7 @@ struct OnboardingWelcomeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Button("Calculate my pay") {
+            Button("Check my paycheck") {
                 onContinue()
             }
             .buttonStyle(LinePayPrimaryButtonStyle())
@@ -76,7 +83,7 @@ struct OnboardingWelcomeView: View {
             .padding(.vertical, LinePaySpacing.standard)
             .background(LinePayColor.canvas)
             .accessibilityIdentifier("onboarding.set-up-pay")
-            .accessibilityHint("Starts a short setup of your pay rate and rules")
+            .accessibilityHint("Starts a short setup of your hourly rate and pay period")
         }
         .background(LinePayColor.canvas.ignoresSafeArea())
     }

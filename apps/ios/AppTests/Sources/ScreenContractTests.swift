@@ -21,9 +21,16 @@ struct ScreenContractTests {
         var continued = 0
         let view = OnboardingWelcomeView { continued += 1 }
         let content = try text(view)
-        #expect(content.contains("LinePaycheck") && content.contains("pay"))
+        #expect(content.contains("Is your paycheck correct?"))
+        #expect(content.contains("Compare expected pay with your paystub"))
+        #expect(content.contains("employer payroll login"))
+        // v3 first screen: a generic hourly worker sees no trade or agreement jargon.
+        for jargon in ["lineman", "lineworker", "crew", "CBA", "union", "callout", "per diem"] {
+            #expect(!content.localizedCaseInsensitiveContains(jargon), "\(jargon)")
+        }
         let buttons = try view.inspect().findAll(ViewType.Button.self)
         #expect(buttons.count == 1)
+        #expect(try buttons.first?.labelView().text().string() == "Check my paycheck")
         try #require(buttons.first).tap()
         #expect(continued == 1)
     }

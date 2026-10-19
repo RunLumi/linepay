@@ -32,7 +32,7 @@ struct ReconciliationReportExporter {
         let data = renderer.pdfData { context in
             var writer = PDFTextWriter(context: context, pageBounds: pageBounds)
             writer.beginPage()
-            writer.title("LinePaycheck paycheck reconciliation")
+            writer.title("Paycheck audit: expected pay and paystub comparison")
             writer.text(LinePayFormat.payPeriod(window, timeZoneIdentifier: timeZoneIdentifier))
             if calculation.provenance?.engine != PayCalculator.currentEngine {
                 writer.caption(

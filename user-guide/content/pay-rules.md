@@ -8,7 +8,7 @@ keywords: [OT, double time, daily overtime, weekly overtime, Sunday, holiday, gu
 ---
 ## Confirm your agreement, not a common example
 
-Open **Settings → Edit pay rules → Your rules**. Optional rules remain off until you enable them. The app does not infer an agreement from your employer, local, job title, or location.
+Open **Settings → Edit pay rules → Your rules**. Optional rules remain off until you enable them. **Overtime and premiums** (daily overtime, Sunday premium) come first; **Advanced rules** (callout minimum, flat per diem) are for work such as utility and field callouts and stay off unless you confirm them. The app does not infer an agreement from your employer, local, job title, or location.
 
 A calculation can only cover what the app represents and you confirm. Keep a missing-rule note rather than approximating an unsupported entitlement.
 

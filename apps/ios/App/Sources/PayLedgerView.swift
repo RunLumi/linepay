@@ -68,7 +68,9 @@ struct PayLedgerView: View {
                     }
                     if context.workEntries.isEmpty {
                         Section {
-                            Text("No work to check yet. Add a shift you worked first.")
+                            Text(
+                                "No work to check yet. To check a paycheck, first add the shifts you worked in this pay period."
+                            )
                             Text(
                                 "Log each shift as you work it. When the paycheck arrives, compare it with what this period should pay."
                             )

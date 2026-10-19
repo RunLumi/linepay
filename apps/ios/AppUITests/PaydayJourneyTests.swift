@@ -69,7 +69,8 @@ final class PaydayJourneyTests: XCTestCase {
         confirmManualGross("400")
         capture("late-paycheck-result")
         XCTAssertTrue(
-            app.staticTexts["Gross total matches"].firstMatch.waitForExistence(timeout: 10))
+            app.staticTexts["No difference within compared items: gross total only"].firstMatch
+                .waitForExistence(timeout: 10))
         capture("24-late-paycheck-matches")
         tab("Today")
         XCTAssertTrue(
@@ -178,11 +179,11 @@ final class PaydayJourneyTests: XCTestCase {
 
     func testAuditVerdictsAndEvidenceRoutes() throws {
         for (scenario, verdict) in [
-            ("matches", "Gross total matches"),
-            ("shortfall", "Possible shortfall"),
-            ("overpayment", "Possible overpayment"),
+            ("matches", "No difference within compared items: gross total only"),
+            ("shortfall", "Possible difference: paystub is lower"),
+            ("overpayment", "Possible difference: paystub is higher"),
             ("review", "Needs review"),
-            ("not-comparable", "Not ready to compare"),
+            ("not-comparable", "Unable to verify"),
         ] {
             launch(scenario: scenario)
             tab("Pay")
@@ -210,7 +211,8 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("View paycheck result")
         XCTAssertTrue(
-            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+            app.staticTexts["Possible difference: paystub is lower"].firstMatch.waitForExistence(
+                timeout: 10))
         tap("audit.follow-up")
         let findingPicker = app.descendants(matching: .any)
             .matching(identifier: "resolution.finding").firstMatch
@@ -240,7 +242,8 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("View paycheck result")
         XCTAssertTrue(
-            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+            app.staticTexts["Possible difference: paystub is lower"].firstMatch.waitForExistence(
+                timeout: 10))
         tap("audit.follow-up")
         let restored = app.staticTexts["Synthetic payroll question reviewed"].firstMatch
         scrollTo(restored)
@@ -279,7 +282,8 @@ final class PaydayJourneyTests: XCTestCase {
         tab("Pay")
         tap("View paycheck result")
         XCTAssertTrue(
-            app.staticTexts["Possible shortfall"].firstMatch.waitForExistence(timeout: 10))
+            app.staticTexts["Possible difference: paystub is lower"].firstMatch.waitForExistence(
+                timeout: 10))
         XCTAssertTrue(app.staticTexts["$116.00"].firstMatch.exists)
         capture("store-03-possible-difference")
         tapContaining("Double-time pay")

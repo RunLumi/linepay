@@ -61,7 +61,8 @@ final class PremiumComparisonJourneyTests: XCTestCase {
         capture("v2-premium-explicit-review", large: large)
         compare.tap()
         XCTAssertTrue(
-            app.staticTexts["Compared values match"].firstMatch.waitForExistence(timeout: 15))
+            app.staticTexts["No difference within compared items"].firstMatch.waitForExistence(
+                timeout: 15))
         let base = app.buttons["audit.line.regularPay"].firstMatch
         reveal(base)
         XCTAssertTrue(base.label.contains("Expected $0.98"), base.label)

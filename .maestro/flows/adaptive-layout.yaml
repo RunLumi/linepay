@@ -57,5 +57,5 @@ onFlowComplete:
     file: ../helpers/confirm-paystub.yaml
     env:
       GROSS: "9876543.21"
-- assertVisible: Possible overpayment
+- assertVisible: "Possible difference: paystub is higher"
 - takeScreenshot: large-amount-comparison

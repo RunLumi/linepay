@@ -18,7 +18,7 @@ tags: [smoke, ios, regression]
     file: ../helpers/confirm-paystub.yaml
     env:
       GROSS: "450.00"
-- assertVisible: Possible shortfall
+- assertVisible: "Possible difference: paystub is lower"
 - takeScreenshot: paycheck-comparison
 - tapOn:
     text: Pay
@@ -46,7 +46,7 @@ tags: [smoke, ios, regression]
 - tapOn:
     id: history.period.*
 - waitForAnimationToEnd
-- assertVisible: Possible shortfall
+- assertVisible: "Possible difference: paystub is lower"
 - takeScreenshot: archived-pay-period
 - stopApp
 - launchApp

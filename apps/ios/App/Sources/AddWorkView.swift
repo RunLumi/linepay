@@ -254,9 +254,11 @@ struct AddWorkView: View {
                 }
 
                 Section("Note") {
-                    TextField("Storm, crew, ticket", text: $draft.note, axis: .vertical)
-                        .lineLimit(1...5)
-                        .accessibilityIdentifier("work.note")
+                    TextField(
+                        "Job site, ticket number, or reminder", text: $draft.note, axis: .vertical
+                    )
+                    .lineLimit(1...5)
+                    .accessibilityIdentifier("work.note")
                 }
 
                 Section("Preview") {

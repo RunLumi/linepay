@@ -103,7 +103,7 @@ struct DocumentPipelineTests {
             text.contains(
                 "Expected on the same basis: \(LinePayFormat.money(Money(amount: 400, currencyCode: "USD")))"
             ))
-        #expect(!text.contains("Possible shortfall"))
+        #expect(!text.contains("Possible difference"))
         #expect(text.contains("Report created:"))
         #expect(text.contains("END OF LONG SOURCE"))
     }

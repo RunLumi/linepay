@@ -259,7 +259,7 @@ struct AppModelTests {
         paystub.grossBasis = .wagesOnly
         paystub.reviewedFields = [.grossPay, .periodStart, .periodEnd]
 
-        #expect(throws: AppModelError.invalidPayPeriod) {
+        #expect(throws: AppModelError.paystubPeriodMismatch) {
             try model.confirmPaystub(paystub)
         }
         #expect(model.currentPaystub == nil)

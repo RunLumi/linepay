@@ -35,7 +35,7 @@ tags: [ios, regression, payroll-scope]
       id: audit.status
     timeout: 60000
 - waitForAnimationToEnd
-- assertVisible: Gross total matches
+- assertVisible: "No difference within compared items: gross total only"
 - scrollUntilVisible:
     element:
       id: audit.correct

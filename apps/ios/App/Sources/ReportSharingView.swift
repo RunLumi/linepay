@@ -129,7 +129,7 @@ struct ReportPreviewView: View {
                         ShareLink(
                             "Share report", item: ReportSharePayload(report: report),
                             preview: SharePreview(
-                                "LinePaycheck report", image: Image(systemName: "doc.text"))
+                                "Paycheck audit report", image: Image(systemName: "doc.text"))
                         )
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .padding(.horizontal)
