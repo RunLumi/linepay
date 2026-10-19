@@ -1,6 +1,7 @@
 package com.streamentry.linepay.android
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -106,6 +107,14 @@ fun SettingsScreen(
         SectionHeading("Privacy")
         Text("Pay, work, saved checks and rules stay in this app's private local files. There is no LinePaycheck account, pay-data server or analytics collector.")
         Text("Android automatic app backup is disabled. Pay data leaves this app only when you explicitly export a password-protected backup or share a report.")
+        TextButton(
+            onClick = {
+                runCatching {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://linepaycheck.com/privacy#android")))
+                }.onFailure { error = "No web browser could open the privacy policy. Visit linepaycheck.com/privacy." }
+            },
+            modifier = Modifier.testTag("settings.privacy-policy"),
+        ) { Text("Read privacy policy") }
 
         SectionHeading("Device-local activity")
         androidx.compose.foundation.layout.Row(
