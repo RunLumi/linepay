@@ -6,6 +6,7 @@
 - [API and TestFlight workflow](api-and-testflight.md)
 - [Cloudflare static web release](web-worker.md)
 - [Browser preview publication, October 19, 2026](evidence/web-2026-10-19.md)
+- [Browser v3 copy publication, October 19, 2026](evidence/web-v3-2026-10-19.md)
 - [Android Play release and signing recovery](android-play.md)
 - [Android 1.0.1 (2) review and internal update, October 19](evidence/android-1.0.1-2026-10-19.md)
 - [Before first TestFlight](checklists/ios-before-first-testflight.md)
