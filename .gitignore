@@ -47,6 +47,7 @@ local.properties
 __pycache__/
 *.py[cod]
 .test-results/
+.wrangler/
 
 # Ad-hoc Maestro captures written at the repository root.
 /*.png

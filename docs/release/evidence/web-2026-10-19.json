@@ -1,0 +1,229 @@
+{
+  "record_kind": "web-deployment-receipt",
+  "verified_at": "2026-10-19T00:32:46.154649+00:00",
+  "scope": "Implemented browser preview; not full v2/v3 or App Store approval",
+  "source_commit": "d3f61837aa3af25f4930802dc8d1441376fe9511",
+  "production": {
+    "origin": "https://app.linepaycheck.com/",
+    "worker": "linepaycheck-web",
+    "deployment_id": "1a17b2a6-df54-44c5-9ec9-02fc9bb4543d",
+    "version_id": "9ea7453f-6c26-4838-a473-48dfe4a2b971",
+    "deployed_at": "2026-10-19T00:19:15.598963Z"
+  },
+  "staging": {
+    "origin": "https://linepaycheck-web-staging.4rqnf2gvxf.workers.dev/",
+    "version_id": "01caf5bc-0434-4b5c-9769-b1ada3e70f29"
+  },
+  "http_checks": {
+    "status": "passed",
+    "runtime_assets": 32,
+    "private_missing_path_refusals": 11,
+    "post_status": 405,
+    "exact_bytes": true,
+    "no_transform": true
+  },
+  "browser_harness": {
+    "playwright": "1.55.0",
+    "fresh_synthetic_contexts": true,
+    "exact_initial_html": true,
+    "same_origin_get_only": true,
+    "results": [
+      {
+        "status": "passed",
+        "origin": "https://app.linepaycheck.com/",
+        "browser": "chromium",
+        "checks": [
+          "exact synthetic wages and saved comparison",
+          "sandboxed Blob report with HTTP CSP",
+          "report HTML download and print layout",
+          "encrypted backup download",
+          "service-worker control and retained local records after reload",
+          "same-origin GET-only requests"
+        ]
+      },
+      {
+        "status": "passed",
+        "origin": "https://app.linepaycheck.com/",
+        "browser": "webkit",
+        "checks": [
+          "exact synthetic wages and saved comparison",
+          "sandboxed Blob report with HTTP CSP",
+          "report HTML download and print layout",
+          "encrypted backup download",
+          "service-worker control and retained local records after reload",
+          "same-origin GET-only requests"
+        ]
+      }
+    ]
+  },
+  "asset_manifest": {
+    "sourceCommit": "d3f61837aa3af25f4930802dc8d1441376fe9511",
+    "assets": [
+      {
+        "path": "_headers",
+        "bytes": 437,
+        "sha256": "021825ff95dcaf1884e47ad0fc04bbd10151b908797ea0229d1bfb3ed243917f"
+      },
+      {
+        "path": "app-icon.png",
+        "bytes": 799561,
+        "sha256": "61110be652b87f654c831b0ffd316aacc2692aec165e4bf572ee6881200c27eb"
+      },
+      {
+        "path": "icon.svg",
+        "bytes": 211,
+        "sha256": "4d47287947774548150c320f63a776a0fa6647d14af9e5d49f24eb0fbcc30fae"
+      },
+      {
+        "path": "index.html",
+        "bytes": 1866,
+        "sha256": "e2cc4faf2638560fd0ccf45292b8b979a8e92a1d7dd0f8724c875dd9407a430a"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 467,
+        "sha256": "1d6aaf08b5aa731673b77722ffb7a920a55b281b468b3acb1ed364e00b79eb50"
+      },
+      {
+        "path": "src/app.mjs",
+        "bytes": 38700,
+        "sha256": "86dff3f7ded85961607b04d35156ff4a29362381e8b570b1b66ae8aecdcea820"
+      },
+      {
+        "path": "src/assessment-lines-ui.mjs",
+        "bytes": 5394,
+        "sha256": "02ea4d859cee347741c270ba641cd6164e6f59dbe71c96162e3fe1fb017fe670"
+      },
+      {
+        "path": "src/assessment-lines.mjs",
+        "bytes": 8293,
+        "sha256": "529c70c4d397aeead1f62c7862264d0d0e79373921004b3876aac8ac167deadb"
+      },
+      {
+        "path": "src/assessment-period.mjs",
+        "bytes": 7385,
+        "sha256": "47c04908d4def211742b0b049a28ecb782278addf88f7ee10f212e96554974e2"
+      },
+      {
+        "path": "src/assessment.mjs",
+        "bytes": 3236,
+        "sha256": "8b532479373d46c763ea2a592af78d7243cfe7f9caf11fba4666d56fcbc64728"
+      },
+      {
+        "path": "src/backup.mjs",
+        "bytes": 3026,
+        "sha256": "81d312fdd5a183174b23b94890359011d9a152916cce45a682687c31ccee0b4d"
+      },
+      {
+        "path": "src/benefits-ui.mjs",
+        "bytes": 18167,
+        "sha256": "0998419ed89211a0d8678d547a3e6f23725c0e4ed657e5c22a42b369bb802e12"
+      },
+      {
+        "path": "src/benefits.mjs",
+        "bytes": 8822,
+        "sha256": "1abc006cfa1daeace85219cbf777fb8e0c55c7e410c79c75efad114776c7ade9"
+      },
+      {
+        "path": "src/bootstrap.mjs",
+        "bytes": 861,
+        "sha256": "54e70fd3615769bc6b5d79e8d310d9a0c4211366a15561647bf880d555ee0616"
+      },
+      {
+        "path": "src/calculation-context.mjs",
+        "bytes": 1559,
+        "sha256": "4f1d2cca0a5ab0f42f5f730fb5efeec358638f0ea57cf37b97a18b325c2db088"
+      },
+      {
+        "path": "src/decimal.mjs",
+        "bytes": 2919,
+        "sha256": "6f19c2e1278814a881f15308f7ddfacd9651e27310fe67c60c43389c0d056237"
+      },
+      {
+        "path": "src/diagnostics-ui.mjs",
+        "bytes": 5916,
+        "sha256": "8f03fc0d0e3e330b8648480d1e5655c6bc331d20a0e8564ec5f5285726c0c0ee"
+      },
+      {
+        "path": "src/local-activity.mjs",
+        "bytes": 18255,
+        "sha256": "d34c3ee004212a664e0d4a98e669d93c8fdc0ccd89389a121887fb61f3e84032"
+      },
+      {
+        "path": "src/paycycle.mjs",
+        "bytes": 2794,
+        "sha256": "7e80120563dcb4d938ee17d58df4a4dda17cbaa573fabad00218212c09749799"
+      },
+      {
+        "path": "src/payroll-v2.mjs",
+        "bytes": 12500,
+        "sha256": "83c2efe045571eec761b757e02114351852129dafa1ab8b2c213e0d2bceceb9d"
+      },
+      {
+        "path": "src/payroll.mjs",
+        "bytes": 13592,
+        "sha256": "8a3b46c304118867bbbe6efdbacf817dd691372c0600ae4ed7f1e39374c85815"
+      },
+      {
+        "path": "src/period-setup-ui.mjs",
+        "bytes": 2784,
+        "sha256": "e715fafb301f6e10509892f4758a1785af7380f704ef67987aff3a13f9e24872"
+      },
+      {
+        "path": "src/report.mjs",
+        "bytes": 13650,
+        "sha256": "fe075ec72c92873aae921024fde9c50dc4fcdff3fa09771dbc4ccf2cce28a52b"
+      },
+      {
+        "path": "src/resolution-report-ui.mjs",
+        "bytes": 6645,
+        "sha256": "31c34698285f1d01b6ebfb19c7848dbf5642c095c095ce7c3ebc8a7a98afea7b"
+      },
+      {
+        "path": "src/resolution.mjs",
+        "bytes": 2031,
+        "sha256": "1d24e8a432d13d834b44f059512429977e4fc484cf9193910731f10555eea91a"
+      },
+      {
+        "path": "src/rule-template-ui.mjs",
+        "bytes": 10033,
+        "sha256": "b87f6a7edb37b36c4eaf46143585b8779aae21bd07fb7b88db49376c5371e640"
+      },
+      {
+        "path": "src/rule-template.mjs",
+        "bytes": 9831,
+        "sha256": "2dc8033bc19490a625fdbfed7c5c6e15be2ea79d1c545ae5f63cc544e723f61d"
+      },
+      {
+        "path": "src/rule-timeline-ui.mjs",
+        "bytes": 7336,
+        "sha256": "e0685ded4ef122ae91ecf69eaca6ba86b0fbaac27fab60e103c9d7e533cdc260"
+      },
+      {
+        "path": "src/state.mjs",
+        "bytes": 24459,
+        "sha256": "b6aa56df572752ad1d2fc8725d1581994d55d70403575cb633288b65dd369306"
+      },
+      {
+        "path": "src/weekly-ui.mjs",
+        "bytes": 11923,
+        "sha256": "083cdb193e203cab5adecdfe67ca1fbf28bdd0e06ba30509b99d5c78908d6377"
+      },
+      {
+        "path": "src/weekly.mjs",
+        "bytes": 15629,
+        "sha256": "43e30ba262a4b62525ccb1ff31522e3a94d6b6c546c96e459966410b46a917b8"
+      },
+      {
+        "path": "styles.css",
+        "bytes": 5465,
+        "sha256": "5fc149f620f0e983ac31407b11f654dc046883690451f101b64bce0ec836edab"
+      },
+      {
+        "path": "sw.js",
+        "bytes": 1910,
+        "sha256": "1a08440b9e32090acb8626613f829c7f624012df1a3a5c4b60fb61680716a706"
+      }
+    ]
+  }
+}
