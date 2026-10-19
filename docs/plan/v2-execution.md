@@ -2338,3 +2338,16 @@ created; describe and verify each property separately.
   hosted KVM preflight, bounded AVD/ADB/boot commands, process-liveness checks, cleanup and retained
   diagnostics. Seven subprocess regressions cover crash, hung/offline ADB, missing acceleration,
   incomplete boot and successful startup. Real hosted recovery remains pending.
+
+- Recovery follow-up: the canceled Android emulator log confirms missing `/dev/kvm` permission.
+  On `e0640414f5e2c2640739981496d08c1e05305943`, the scoped user ACL/preflight recovered real
+  hosted boot in39.2seconds and connected instrumentation passed2/2. Maestro then failed its
+  first launch with `Unknown error`, before the journey. The next source retains verbose Maestro
+  debug/test artifacts and a bounded larger logcat tail; its root cause and final hosted flow remain open.
+- Native benefits recheck now waits for the actual successful conversion notice before navigating,
+  then explicitly requires step2 and its editable segment. The notice has a stable accessibility ID.
+  All original number, fresh-confirmation, history and report checks remain. The complete original
+  BenefitJourneyTests class passed3/3,0failed/skipped in380.551seconds on iOS18.5/22F77 with the
+  existing7DEdevice; result `.build/benefit-locale-ui/.build/benefit-locale-class-20261019.xcresult`.
+  Before/after captures show the converted8.75/40 fields. Original CI failure causation is unproven;
+  this guard proves the required presentation state before the next action. Full native CI remains due.
