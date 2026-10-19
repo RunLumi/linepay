@@ -47,7 +47,12 @@ struct BenefitAuditEditorView: View {
                             .linePayRowAction().accessibilityIdentifier("benefits.convert-format")
                     }
                 }
-                if let formatNotice { Section { Text(formatNotice).font(.footnote) } }
+                if let formatNotice {
+                    Section {
+                        Text(formatNotice).font(.footnote)
+                            .accessibilityIdentifier("benefits.format-notice")
+                    }
+                }
                 switch step {
                 case 0: basics
                 case 1: rules
