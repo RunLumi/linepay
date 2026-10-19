@@ -57,13 +57,14 @@ struct SharedWeeklyReferenceTests {
         let expectedCash: String
         let allocationAmounts: [String]
     }
-    private func corpus() throws -> Corpus {
+    private func corpus(version: Int = 2) throws -> Corpus {
         var root = URL(fileURLWithPath: #filePath)
         for _ in 0..<7 { root.deleteLastPathComponent() }
         return try JSONDecoder().decode(
             Corpus.self,
             from: Data(
-                contentsOf: root.appendingPathComponent("shared/contracts/weekly/reference-v2.json")
+                contentsOf: root.appendingPathComponent(
+                    "shared/contracts/weekly/reference-v\(version).json")
             ))
     }
     private func number(_ text: String) throws -> Decimal {
@@ -109,11 +110,12 @@ struct SharedWeeklyReferenceTests {
                 rounding: input.rounding, startEpochSeconds: Int64(date.timeIntervalSince1970),
                 timeZoneIdentifier: input.timeZone))
     }
-    @Test func sevenIndependentPricesAndAllocationsMatch() throws {
-        let corpus = try corpus()
+    @Test(arguments: [2, 3])
+    func independentPricesAndAllocationsMatch(version: Int) throws {
+        let corpus = try corpus(version: version)
         try #require(
             corpus.format == "com.streamentry.linepay.weekly-reference-fixtures"
-                && corpus.version == 2 && corpus.cases.count == 7)
+                && corpus.version == version && corpus.cases.count == (version == 2 ? 7 : 5))
         for row in corpus.cases {
             let result = try calculate(row.input)
             let expected = try #require(row.expected)
@@ -135,13 +137,14 @@ struct SharedWeeklyReferenceTests {
                     == (try expected.allocationAmounts.map(number)), "\(row.id)")
         }
     }
-    @Test func tenUnknownOrInvalidInputsRefuse() throws {
-        let source = try corpus()
+    @Test(arguments: [2, 3])
+    func unknownOrInvalidInputsRefuse(version: Int) throws {
+        let source = try corpus(version: version)
         try #require(
             source.format == "com.streamentry.linepay.weekly-reference-fixtures"
-                && source.version == 2)
+                && source.version == version)
         let rows = source.refusals
-        try #require(rows.count == 10)
+        try #require(rows.count == (version == 2 ? 10 : 5))
         for row in rows {
             #expect(throws: (any Error).self, "\(row.id)") { try calculate(row.input) }
         }
