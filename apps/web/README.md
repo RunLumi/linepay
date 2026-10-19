@@ -1,4 +1,11 @@
-# LinePaycheck local browser client
+# Paycheck Audit: LinePay local browser client
+
+The browser shell uses the [v3 positioning](../../docs/plan/v3.md): public name **Paycheck Audit: LinePay**,
+subtitle **Verify Pay & Track Hours**, headline **Is Your Paycheck Correct?**. Results are labelled
+*Match within compared scope*, *Possible shortfall/overpayment* (a possible difference), *Needs review*
+or *Unable to verify*; none is a legal verdict. Calculations, stored-state schema, technical identifiers
+(`linepaycheck-web` Worker, IndexedDB names, backup/state formats) and the development-preview label
+with `noindex` are unchanged. Native apps carry their own copy and are not changed by this client.
 
 Development preview for the owner's all-stage v2 request. This is an implemented local workflow,
 not yet full native feature parity, a deployed service, a released/installed PWA or a legal-pay audit.
@@ -145,7 +152,7 @@ The local-browser GitHub workflow runs the same domain and two-browser commands 
 client or shared contracts. Workflow configuration is not hosted-CI success evidence; inspect the
 actual run before merging.
 
-The 216 Node checks include nineteen pay, sixteen gross, twenty-nine earnings/hour, thirteen fund,
+The 233 Node checks include nineteen pay, sixteen gross, twenty-nine earnings/hour, thirteen fund,
 seven local-activity boundaries, five portable-rule fixtures and a light/dark contrast audit, plus
 eight temporal prices/five refusals, bounded-input,
 history/migration and cipher checks. Pay/line/gross/fund have independent Swift/Kotlin consumers;

@@ -41,7 +41,7 @@ with sync_playwright() as pw:
         assert "frame-ancestors 'self'" in response.headers['content-security-policy']
         assert 'no-transform' in response.headers['cache-control']
         assert hashlib.sha256(response.body()).hexdigest() == html_hash, 'The browser must receive the exact reviewed HTML without edge-injected scripts'
-        expect(page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         page.get_by_role('button', name='Pay rules', exact=True).click()
         page.get_by_label('Hourly rate', exact=True).fill('19.99')
         page.get_by_label('Per diem per worked local date', exact=True).fill('80')
@@ -68,7 +68,7 @@ with sync_playwright() as pw:
         tools = page.locator('[data-audit-tools]').first
         tools.get_by_role('button', name='Review evidence report', exact=True).click()
         report = tools.frame_locator('iframe')
-        expect(report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         assert 'USD 1.00' in report.locator('body').inner_text()
         assert 'Arial' in report.locator('body').evaluate('(element) => getComputedStyle(element).fontFamily')
         with page.expect_download() as downloaded:
@@ -77,7 +77,7 @@ with sync_playwright() as pw:
         downloaded.value.save_as(html)
         printed = context.new_page()
         printed.set_content(html.read_text())
-        expect(printed.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(printed.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         printed.emulate_media(media='print')
         if engine == 'chromium':
             printed.pdf(path=str(output / 'synthetic-report.pdf'), prefer_css_page_size=True)

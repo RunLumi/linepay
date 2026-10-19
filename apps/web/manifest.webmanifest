@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "LinePaycheck local notebook",
-  "short_name": "LinePaycheck",
+  "name": "Paycheck Audit: LinePay",
+  "short_name": "LinePay",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

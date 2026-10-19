@@ -181,7 +181,7 @@ test("incomparable saved gross stays unknown rather than becoming zero in a repo
     options,
   }).html;
   assert.ok(
-    html.includes("Not comparable / unknown") &&
+    html.includes("Unable to verify / unknown") &&
       html.includes("Complete work not confirmed"),
   );
   assert.equal(html.includes("USD null"), false);
@@ -227,7 +227,7 @@ test("follow-up from one saved paycheck revision cannot leak into another select
     options: { ...options, includeFollowUps: true },
   }).html;
   assert.ok(
-    html.includes("Compared values match") &&
+    html.includes("Match within compared scope") &&
       html.includes("No follow-up was recorded for this check."),
   );
   assert.equal(html.includes("PRIVATE SYNTHETIC"), false);

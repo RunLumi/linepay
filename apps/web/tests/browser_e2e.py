@@ -76,7 +76,7 @@ with sync_playwright() as pw:
     page.on('pageerror', lambda e: errors.append(str(e)))
     try:
         page.goto(origin + '/')
-        expect(page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         profile(page, '19.99')
         page.get_by_label('First work date', exact=True).fill('2026-10-01')
         page.get_by_label('Last work date (included)', exact=True).fill('2026-10-14')
@@ -114,7 +114,7 @@ with sync_playwright() as pw:
         checks.append('worker-recorded correction appends follow-up without changing original 1.00 possible-shortfall comparison')
         tools.get_by_role('button', name='Review evidence report', exact=True).click()
         reviewed = tools.frame_locator('iframe')
-        expect(reviewed.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(reviewed.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         body = reviewed.locator('body').inner_text()
         assert 'USD 10.00' in body and 'USD 9.00' in body and 'USD 1.00' in body and 'Possible shortfall' in body
         assert 'PRIVATE SYNTHETIC' not in body and 'Correction confirmed by me' not in body and frozen_check['work'][0]['startUTC'] not in body
@@ -259,7 +259,7 @@ with sync_playwright() as pw:
         recipient = recipient_context.new_page()
         recipient.on('pageerror', lambda e: errors.append(str(e)))
         recipient.goto(origin + '/')
-        expect(recipient.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(recipient.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         recipient.get_by_role('button', name='Pay rules', exact=True).click()
         ambiguous = OUTPUT / 'synthetic-ambiguous.linepayrules'
         ambiguous.write_text(transfer.read_text().replace('"hourlyRate": null','"hourlyRate": null, "hourly\\u0052ate": "99"'))
@@ -336,7 +336,7 @@ with sync_playwright() as pw:
         timeline_page = timeline_context.new_page()
         timeline_page.on('pageerror', lambda e: errors.append(str(e)))
         timeline_page.goto(origin + '/')
-        expect(timeline_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(timeline_page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         profile(timeline_page, '50', '80', '8')
         timeline_page.get_by_label('First work date', exact=True).fill('2026-10-05')
         timeline_page.get_by_label('Last work date (included)', exact=True).fill('2026-10-18')
@@ -398,7 +398,7 @@ with sync_playwright() as pw:
         saved_tools = timeline_page.locator(f'[data-audit-tools="{dated_audit["id"]}"]')
         saved_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         historical_report = saved_tools.frame_locator('iframe')
-        expect(historical_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(historical_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         assert 'USD 1005.00' in historical_report.locator('body').inner_text() and 'USD 55/hour' in historical_report.locator('body').inner_text()
         with timeline_page.expect_download() as dated_report_event:
             saved_tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True).click()
@@ -456,7 +456,7 @@ with sync_playwright() as pw:
         calendar_page = calendar_context.new_page()
         calendar_page.on('pageerror', lambda e: errors.append(str(e)))
         calendar_page.goto(origin + '/')
-        expect(calendar_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(calendar_page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         profile(calendar_page, '50')
         calendar_page.get_by_label('Paycycle', exact=True).select_option('weekly')
         calendar_page.get_by_label('First work date', exact=True).fill('2026-03-02')
@@ -488,7 +488,7 @@ with sync_playwright() as pw:
                 calendar_page.get_by_label('I confirmed these work-period dates and timezone against the source.', exact=True).check()
             calendar_page.get_by_role('button', name='Review comparison', exact=True).click()
         calendar_review('2026-03-09', '2026-03-15', True)
-        expect(calendar_page.locator('#audit-preview')).to_contain_text('Not comparable')
+        expect(calendar_page.locator('#audit-preview')).to_contain_text('Unable to verify')
         assert read_state(calendar_page)['periods'][0]['audits'] == []
         calendar_page.get_by_role('button', name='Save this check', exact=True).click()
         mismatched = read_state(calendar_page)['periods'][0]['audits'][0]
@@ -496,13 +496,13 @@ with sync_playwright() as pw:
         mismatch_tools = calendar_page.locator(f'[data-audit-tools="{mismatched["id"]}"]')
         mismatch_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         mismatch_report = mismatch_tools.frame_locator('iframe')
-        expect(mismatch_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(mismatch_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         mismatch_body = mismatch_report.locator('body').inner_text()
         assert '2026-03-09 through 2026-03-15' in mismatch_body and 'Different work period / context' in mismatch_body and 'USD 25.00' not in mismatch_body
         calendar_page.screenshot(path=str(OUTPUT / 'mismatched-period-review.png'), full_page=True)
         checks.append('source dates from another week cannot produce a shortfall; recorded facts/report retain mismatch and unknown expected comparison')
         calendar_review(None, None, False)
-        expect(calendar_page.locator('#audit-preview')).to_contain_text('Not comparable')
+        expect(calendar_page.locator('#audit-preview')).to_contain_text('Unable to verify')
         calendar_page.get_by_role('button', name='Save this check', exact=True).click()
         assert read_state(calendar_page)['periods'][0]['audits'][1]['assessment']['periodMatch'] == 'unconfirmedPeriod'
         calendar_review('2026-03-02', '2026-03-08', True)
@@ -570,7 +570,7 @@ with sync_playwright() as pw:
         weekly_page = weekly_context.new_page()
         weekly_page.on('pageerror', lambda e: errors.append(str(e)))
         weekly_page.goto(origin + '/')
-        expect(weekly_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+        expect(weekly_page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         profile(weekly_page, '50', diem='')
         weekly_page.get_by_label('First work date', exact=True).fill('2026-09-07')
         weekly_page.get_by_label('Last work date (included)', exact=True).fill('2026-09-13')
@@ -879,7 +879,7 @@ with sync_playwright() as pw:
         line_page = line_context.new_page()
         line_page.on('pageerror',lambda e: errors.append(str(e)))
         line_page.goto(origin + '/')
-        expect(line_page.get_by_role('heading',name='Your work. Your expected pay.')).to_be_visible()
+        expect(line_page.get_by_role('heading',name='Is Your Paycheck Correct?')).to_be_visible()
         profile(line_page,'58.50',diem='',threshold='0')
         line_page.get_by_label('First work date',exact=True).fill('2026-10-01')
         line_page.get_by_label('Last work date (included)',exact=True).fill('2026-10-14')
@@ -907,7 +907,7 @@ with sync_playwright() as pw:
             line_page.get_by_label('I confirmed these work-period dates and timezone against the source.',exact=True).check()
             line_page.get_by_role('button',name='Review comparison',exact=True).click()
         fill_lines()
-        expect(line_page.locator('#audit-preview .badge')).to_have_text('Compared values match')
+        expect(line_page.locator('#audit-preview .badge')).to_have_text('Match within compared scope')
         expect(line_page.locator('#audit-preview [data-comparison-field="regularPay"]')).to_contain_text('expected USD 0.98')
         expect(line_page.locator('#audit-preview [data-comparison-field="regularHours"]')).to_contain_text('expected 0.0167 h')
         line_page.locator('#audit-preview [data-comparison-evidence="regularPay"] summary').click()
@@ -983,7 +983,7 @@ with sync_playwright() as pw:
             legacy_page = legacy_context.new_page()
             legacy_page.on('pageerror', lambda e: errors.append(str(e)))
             legacy_page.goto(origin + '/')
-            expect(legacy_page.get_by_role('heading', name='Your work. Your expected pay.')).to_be_visible()
+            expect(legacy_page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
             prior = json.loads((WEB / f'tests/fixtures/web-state-v{old_version}.json').read_text())
             protected = legacy_page.evaluate("""async ({state,password}) => {
               const {encryptBackup}=await import('./src/backup.mjs');
@@ -1091,7 +1091,7 @@ with sync_playwright() as pw:
         offline_tools = page.locator(f'[data-audit-tools="{check_id}"]')
         offline_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         offline_report = offline_tools.frame_locator('iframe')
-        expect(offline_report.get_by_role('heading', name='LinePaycheck paycheck evidence report', exact=True)).to_be_visible()
+        expect(offline_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
         assert 'USD 1.00' in offline_report.locator('body').inner_text()
         assert 'PRIVATE SYNTHETIC' not in offline_report.locator('body').inner_text()
         offline_tools.locator('iframe').scroll_into_view_if_needed()
