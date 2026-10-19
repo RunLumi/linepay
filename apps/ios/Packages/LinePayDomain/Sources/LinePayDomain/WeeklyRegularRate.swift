@@ -228,12 +228,28 @@ public struct WeeklyRegularRateCalculator: Sendable {
         guard (0...8).contains(input.rounding.scale), input.rounding.scope == .payCategory else {
             throw WeeklyRegularRateError.invalidRounding
         }
+        var recordedSeconds = Decimal.zero
         for fact in input.work {
             _ = try WeeklyWorkFact(
                 id: fact.id, payPeriodID: fact.payPeriodID, hours: fact.hours,
                 straightRate: fact.straightRate,
                 qualifiesForWeeklyOvertime: fact.qualifiesForWeeklyOvertime,
                 workedSeconds: fact.workedSeconds)
+            guard fact.hours <= 168 else { throw WeeklyRegularRateError.workExceedsFixedWindow }
+            var duration = fact.workedSeconds.map(Decimal.init) ?? .zero
+            if fact.workedSeconds == nil {
+                var hours = fact.hours
+                var secondsPerHour = Decimal(3_600)
+                guard NSDecimalMultiply(&duration, &hours, &secondsPerHour, .plain) == .noError
+                else { throw WeeklyRegularRateError.arithmeticNotExact }
+            }
+            var previous = recordedSeconds
+            guard NSDecimalAdd(&recordedSeconds, &previous, &duration, .plain) == .noError else {
+                throw WeeklyRegularRateError.arithmeticNotExact
+            }
+            // Eligibility changes overtime counting, not actual time available in this window.
+            guard duration <= 604_800, recordedSeconds <= 604_800
+            else { throw WeeklyRegularRateError.workExceedsFixedWindow }
         }
         for fact in input.remuneration {
             _ = try WeeklyRemunerationFact(
@@ -308,7 +324,7 @@ public struct WeeklyRegularRateCalculator: Sendable {
             eligibleExtraPremiumCredit: creditMoney,
             remainingAdditionalPremium: remainingMoney, cashRemuneration: cashMoney,
             expectedCash: expectedCash, allocations: allocations,
-            engineVersion: "linepay.weekly-regular-rate/2",
+            engineVersion: "linepay.weekly-regular-rate/3",
             startEpochSeconds: input.startEpochSeconds,
             endEpochSeconds: input.startEpochSeconds.map { $0 + 604_800 },
             timeZoneIdentifier: input.timeZoneIdentifier)
@@ -349,6 +365,8 @@ public struct WeeklyRegularRateCalculator: Sendable {
         allocations.sort { ($0.payPeriodID?.uuidString ?? "") < ($1.payPeriodID?.uuidString ?? "") }
         for index in allocations.indices where residual >= unit {
             let item = allocations[index]
+            // A zero-weight group must stay zero, including when its identity sorts first.
+            guard bases[item.payPeriodID, default: 0] > 0 else { continue }
             allocations[index] = WeeklyPremiumAllocation(
                 id: item.id, payPeriodID: item.payPeriodID,
                 amount: Money(amount: item.amount.amount + unit, currencyCode: currency),
@@ -373,6 +391,7 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
     case invalidWorkweek, invalidRounding, unknownPremiumCredit, arithmeticNotExact,
         allocationUnavailable
     case remunerationIncomplete
+    case workExceedsFixedWindow
     case workweekBoundaryUnconfirmed
 
     public var errorDescription: String? {
@@ -409,6 +428,8 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
             "Confirm the whole week's straight-time remuneration and every other cash payment and classification before calculating."
         case .workweekBoundaryUnconfirmed:
             "Confirm the employer's exact recurring 168-hour workweek boundary before calculating."
+        case .workExceedsFixedWindow:
+            "Actual work cannot exceed the reviewed 168-hour window. Review all recorded work, including work that does not qualify for weekly overtime."
         }
     }
 }
