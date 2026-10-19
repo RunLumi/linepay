@@ -213,3 +213,5 @@ Follow the [complexity budget and anti-goals](docs/engineering/agentic-developme
 Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
 
 Select an existing App Store Connect team key autonomously and verify its issuer pairing against this app before use. Keep key material and the selected pairing in protected local release configuration; follow `docs/release/api-and-testflight.md`.
+
+For the October 19, 2026 release, the owner identified these existing key IDs as candidates: `2HR347AH8Q`, `3XJ664VDDN`, `HSDB3PQ6ST`, and `P8ZK4BPD78`. These are identifiers, not proof of issuer, team, or role. As of that date no `ASC_ISSUER_ID` pairing was configured; resolve the matching team App Manager key from protected release records and verify the app read before upload. Never infer a pairing from a `.p8` filename or commit key material.
