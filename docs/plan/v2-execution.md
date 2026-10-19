@@ -2389,3 +2389,11 @@ created; describe and verify each property separately.
 - The [publication receipt](../release/evidence/web-2026-10-19.md) retains actual provider/source
   evidence. It does not close complete feature parity, engine3 corrections, native interchange,
   installed/physical PWA, localization, source rights or App Store gates.
+
+## Latest-main integration and focused native regressions, October 19
+
+- PR113's isolated branch was integrated with verified remote main `e4255c44e2894333dfaecaf5f2221f161f9ea592` before further changes. The Android CI overlap was resolved in favor of PR113's scoped KVM ACL, Pixel 8 profile, bounded emulator startup and retained diagnostics; the merged main release changes remain intact. This is source integration, not exact-head hosted verification.
+- Two focused UI regressions were corrected: the large-text Settings journey now waits for the About route and locates the guide by its stable identifier; the premium-history journey scrolls each action into a safe viewport before tapping, including beneath the pinned form action.
+- Both focused journeys passed **2/2, 0 failed, 0 skipped** on the existing `LinePay Release iPhone 18` simulator (iOS 18.5 build 22F77). The run verified the About/guide and recovery route plus explicit paystub correction, the $0.97 original comparison, the $0.98 base plus $0.48 premium, archive retention, and relaunch retention. Result: `/private/tmp/linepay-v2-pr113-focused.xcresult`; selected visual captures were inspected from `/private/tmp/linepay-v2-pr113-focused-attachments-final/`.
+- Swift format lint passed. The repository script suite passed **82 tests**, the Android emulator startup regressions passed **7 tests**, and the LinePayDomain suite passed **163 tests in 29 suites** using task-local SwiftPM caches. The aggregate `agent-verify.sh quick` wrapper could not finish inside this sandbox because SwiftPM attempted restricted cache/scratch writes; each underlying gate was run separately and passed.
+- Hosted iOS and Legal regressions for the refreshed PR113 head, the full native release gate, device/provider checks and App Store submission/review remain separate and open. This focused local pass is not a release-readiness or store-submission claim.
