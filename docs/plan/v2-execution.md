@@ -47,7 +47,7 @@ An implementation, test result, upload, review submission and public release are
 | Android | Native Kotlin/Compose configured-rules work → gross-check → immutable history slice; local versioned state, manual encrypted backup/restore preview, separate local diagnostics, and API 36 device E2E implemented | Full iOS feature parity, weekly-rate engine, line-level paystub input, benefits, OCR/voice/commerce, Spanish QA, physical device, Play release, and source/applicability review remain open |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
 | Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Broader accessibility/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
-| App Store release | Pending | Full native/release gates, signed binary/hash, receipt, MANUAL review/public readbacks |
+| App Store release | iOS 1.1.0 (12) signed, validated, uploaded and `IN_BETA_TESTING` internally ([receipt](../release/evidence/ios-1.1.0-12-testflight-2026-10-20.md)); web v3 live on Cloudflare; Android already in Play review | Owner release evidence and per-request approvals, App Store version/metadata/screenshots, MANUAL review submission, public readbacks; unresolved iOS 26.5 Maestro and local accessibility/StoreKit findings |
 
 ## Initial verified state
 
@@ -2421,3 +2421,10 @@ created; describe and verify each property separately.
   overflow. New /3 admissions now enforce the fixed window in every client and normalize Android
   decimal hours; five shared positive cases and five refusals pass. Browser /2 replay remains
   unchanged. This candidate is not yet submitted or merged.
+
+## v3 release milestone, October 20, 2026
+
+- Merged to `main`: PRs 113, 119, 120, 121, 122, 123 and 124 (v3 copy and compare-state wording, iOS 1.1.0 build 12).
+- Browser v3 copy is live at `app.linepaycheck.com` ([receipt](../release/evidence/web-v3-2026-10-19.md)).
+- iOS 1.1.0 (12) internal TestFlight upload is recorded in its [receipt](../release/evidence/ios-1.1.0-12-testflight-2026-10-20.md), including the unresolved native findings. Nothing was submitted to App Review or released.
+- Remaining v2 rows that need rights, professional review or external evidence (verified rule sources, agreement library, referrals, localization QA, physical-device checks) were not completed by this milestone.
