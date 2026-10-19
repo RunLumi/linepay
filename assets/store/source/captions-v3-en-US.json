@@ -15,7 +15,7 @@
       "id": "02-track-hours-know-expected-pay",
       "raw": "store-v3-02-today.png",
       "headline": "Track Hours.\nKnow Expected Pay.",
-      "caption": "Log each shift. See expected wages from the rules you confirm.",
+      "caption": "Log shifts. See expected wages from your rules.",
       "qualifier": "Illustrative data",
       "productState": "today-expected-wages-before-paycheck",
       "accessRequirement": "Free"
@@ -51,7 +51,7 @@
       "id": "06-complex-pay",
       "raw": "store-v3-06-advanced-rules.png",
       "headline": "Built for Complex\nPay, Too.",
-      "caption": "Optional callout minimums and per diem. Off until you confirm.",
+      "caption": "Optional callout minimum and per diem rules.",
       "qualifier": "Illustrative data",
       "productState": "rule-editor-advanced-callout-minimum-and-per-diem-on",
       "accessRequirement": "Free"

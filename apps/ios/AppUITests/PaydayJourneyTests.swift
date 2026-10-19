@@ -323,7 +323,7 @@ final class PaydayJourneyTests: XCTestCase {
             app.staticTexts["Possible difference: paystub is lower"].firstMatch.exists)
         capture("store-v3-01-paycheck-result")
         dragContent(upBy: 0.55)
-        dragContent(upBy: 0.50)
+        dragContent(upBy: 0.48)
         XCTAssertTrue(
             app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Double-time hours"))
                 .firstMatch.waitForExistence(timeout: 5))
