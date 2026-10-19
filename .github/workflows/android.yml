@@ -9,6 +9,8 @@ on:
       - "scripts/check-android.sh"
       - "scripts/install-maestro-cli.sh"
       - "scripts/test-android-maestro.sh"
+      - "scripts/start-android-ci-emulator.py"
+      - "scripts/tests/test_android_ci_emulator.py"
       - ".maestro/android/**"
       - ".github/workflows/android.yml"
       - "AGENTS.md"
@@ -19,6 +21,8 @@ on:
       - "scripts/check-android.sh"
       - "scripts/install-maestro-cli.sh"
       - "scripts/test-android-maestro.sh"
+      - "scripts/start-android-ci-emulator.py"
+      - "scripts/tests/test_android_ci_emulator.py"
       - ".maestro/android/**"
       - ".github/workflows/android.yml"
       - "AGENTS.md"
@@ -74,42 +78,46 @@ jobs:
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK_ROOT/emulator" >> "$GITHUB_PATH"
+      - name: Verify hosted KVM access and startup regressions
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s scripts/tests -p test_android_ci_emulator.py
+          mkdir -p "$RUNNER_TEMP/linepay-android"
+          # GitHub supports KVM on hosted Linux; grant only this runner user access.
+          # https://github.blog/changelog/2024-04-02-github-actions-hardware-accelerated-android-virtualization-now-available/
+          # https://developer.android.com/studio/run/emulator-acceleration#vm-linux
+          {
+            test -c /dev/kvm
+            if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
+              sudo setfacl --modify "u:$(id -un):rw" /dev/kvm
+            fi
+            test -r /dev/kvm && test -w /dev/kvm
+            ls -l /dev/kvm
+            getfacl /dev/kvm
+            timeout --kill-after=5s 20s "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check
+          } 2>&1 | tee "$RUNNER_TEMP/linepay-android/kvm-preflight.log"
       - name: Run JVM, app build, release build, and lint gates
         run: bash scripts/check-android.sh unit
       - name: Create and boot one API 36 test emulator
+        timeout-minutes: 8
         run: |
           SDK_ROOT="$ANDROID_SDK_ROOT"
           export ANDROID_AVD_HOME="$RUNNER_TEMP/android-avd"
           export ANDROID_USER_HOME="$RUNNER_TEMP/android-user"
           export ANDROID_EMULATOR_HOME="$RUNNER_TEMP/android-emulator-home"
           mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_USER_HOME" "$ANDROID_EMULATOR_HOME"
-          "$SDK_ROOT/cmdline-tools/22.0/bin/avdmanager" create avd \
+          timeout --kill-after=5s 60s "$SDK_ROOT/cmdline-tools/22.0/bin/avdmanager" create avd \
             --name LinePaycheck_E2E_API_36 \
             --path "$ANDROID_AVD_HOME/LinePaycheck_E2E_API_36.avd" \
             --package 'system-images;android-36;google_apis;x86_64' \
             --device pixel_8 \
-            --sdcard 512M
+            --sdcard 512M < /dev/null
           echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_USER_HOME=$ANDROID_USER_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_EMULATOR_HOME=$ANDROID_EMULATOR_HOME" >> "$GITHUB_ENV"
-          "$SDK_ROOT/emulator/emulator" \
-            -avd LinePaycheck_E2E_API_36 \
-            -no-window -no-snapshot -no-audio -no-boot-anim -no-metrics \
-            -gpu swiftshader_indirect -port 5554 \
-            > "$RUNNER_TEMP/linepay-android-emulator.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/linepay-android-emulator.pid"
-          adb -s emulator-5554 wait-for-device
-          for attempt in $(seq 1 120); do
-            if [[ "$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
-              break
-            fi
-            sleep 2
-          done
-          if [[ "$(adb -s emulator-5554 shell getprop sys.boot_completed | tr -d '\r')" != "1" ]]; then
-            cat "$RUNNER_TEMP/linepay-android-emulator.log" >&2
-            exit 1
-          fi
-          adb devices -l
+          python3 scripts/start-android-ci-emulator.py
+          timeout --kill-after=5s 10s adb devices -l
       - name: Run connected Android user journey
         run: bash scripts/check-android.sh device
       - name: Install checksum-pinned Maestro CLI
@@ -118,6 +126,33 @@ jobs:
           MAESTRO_CLI_NO_ANALYTICS: "1"
       - name: Run Android Maestro black-box flow
         run: bash scripts/test-android-maestro.sh
+      - name: Collect emulator diagnostics
+        if: always()
+        timeout-minutes: 2
+        run: |
+          mkdir -p "$RUNNER_TEMP/linepay-android"
+          {
+            uname -a
+            free -h
+            df -h "$RUNNER_TEMP"
+            if [[ -f "$RUNNER_TEMP/linepay-android/emulator.pid" ]]; then
+              ps -p "$(cat "$RUNNER_TEMP/linepay-android/emulator.pid")" -o pid,ppid,stat,etime,comm || true
+            fi
+          } > "$RUNNER_TEMP/linepay-android/host.log" 2>&1
+          timeout --kill-after=5s 10s adb devices -l > "$RUNNER_TEMP/linepay-android/adb-devices.log" 2>&1 || true
+          timeout --kill-after=5s 10s adb -s emulator-5554 shell getprop > "$RUNNER_TEMP/linepay-android/getprop.log" 2>&1 || true
+          timeout --kill-after=5s 15s adb -s emulator-5554 logcat -d -t 1000 > "$RUNNER_TEMP/linepay-android/logcat.log" 2>&1 || true
+          if [[ -f "$RUNNER_TEMP/android-avd/LinePaycheck_E2E_API_36.avd/config.ini" ]]; then
+            cp "$RUNNER_TEMP/android-avd/LinePaycheck_E2E_API_36.avd/config.ini" "$RUNNER_TEMP/linepay-android/avd-config.ini"
+          fi
+      - name: Stop the synthetic CI emulator
+        if: always()
+        timeout-minutes: 1
+        run: |
+          if [[ -f "$RUNNER_TEMP/linepay-android/emulator.pid" ]]; then
+            timeout --kill-after=5s 15s adb -s emulator-5554 emu kill || true
+            kill -TERM -- "-$(cat "$RUNNER_TEMP/linepay-android/emulator.pid")" 2>/dev/null || true
+          fi
       - name: Retain Android build and device evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -130,7 +165,7 @@ jobs:
             apps/android/app/build/outputs/androidTest-results/connected/debug/
             apps/android/build/reports/dependency-verification/
             .build/maestro-results/
-            ${{ runner.temp }}/linepay-android-emulator.log
+            ${{ runner.temp }}/linepay-android/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
