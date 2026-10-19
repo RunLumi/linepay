@@ -50,7 +50,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Install pinned Android command-line tools and SDK packages
+      - name: Install pinned Android SDK packages
         run: |
           SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           SDK_MANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
@@ -64,10 +64,6 @@ jobs:
           set +o pipefail
           yes | "$SDK_MANAGER" --sdk_root="$SDK_ROOT" --licenses
           set -o pipefail
-          # The hosted image's preinstalled avdmanager lacks the Pixel 8 profile.
-          # Use the same command-line-tools revision as the verified local AVD.
-          "$SDK_MANAGER" --sdk_root="$SDK_ROOT" --install 'cmdline-tools;22.0'
-          SDK_MANAGER="$SDK_ROOT/cmdline-tools/22.0/bin/sdkmanager"
           "$SDK_MANAGER" --sdk_root="$SDK_ROOT" --install \
             'platform-tools' \
             'platforms;android-36' \
@@ -107,11 +103,11 @@ jobs:
           export ANDROID_USER_HOME="$RUNNER_TEMP/android-user"
           export ANDROID_EMULATOR_HOME="$RUNNER_TEMP/android-emulator-home"
           mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_USER_HOME" "$ANDROID_EMULATOR_HOME"
-          timeout --kill-after=5s 60s "$SDK_ROOT/cmdline-tools/22.0/bin/avdmanager" create avd \
+          timeout --kill-after=5s 60s "$SDK_ROOT/cmdline-tools/latest/bin/avdmanager" create avd \
             --name LinePaycheck_E2E_API_36 \
             --path "$ANDROID_AVD_HOME/LinePaycheck_E2E_API_36.avd" \
             --package 'system-images;android-36;google_apis;x86_64' \
-            --device pixel_8 \
+            --device pixel \
             --sdcard 512M < /dev/null
           echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_USER_HOME=$ANDROID_USER_HOME" >> "$GITHUB_ENV"
