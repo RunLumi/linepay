@@ -83,7 +83,7 @@ jobs:
             --name LinePaycheck_E2E_API_36 \
             --path "$ANDROID_AVD_HOME/LinePaycheck_E2E_API_36.avd" \
             --package 'system-images;android-36;google_apis;x86_64' \
-            --device pixel_8 \
+            --device pixel \
             --sdcard 512M
           echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_USER_HOME=$ANDROID_USER_HOME" >> "$GITHUB_ENV"
