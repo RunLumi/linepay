@@ -102,6 +102,7 @@ function calculateWeeklyVersion(input, version) {
     "Too many weekly facts.",
   );
   let qualifying = zero,
+    recordedSeconds = zero,
     numerator = zero,
     cash = zero,
     credit = zero;
@@ -136,6 +137,14 @@ function calculateWeeklyVersion(input, version) {
       duration = seconds(row.workedSeconds);
     } else {
       duration = amount(row.hours).mul(seconds(3600));
+    }
+    if (version === 3) {
+      recordedSeconds = recordedSeconds.add(duration);
+      need(
+        duration.compare(seconds(604800)) <= 0 &&
+          recordedSeconds.compare(seconds(604800)) <= 0,
+        "Actual work exceeds the reviewed 168-hour window, including nonqualifying work.",
+      );
     }
     if (!row.qualifies) continue;
     qualifying = qualifying.add(duration);

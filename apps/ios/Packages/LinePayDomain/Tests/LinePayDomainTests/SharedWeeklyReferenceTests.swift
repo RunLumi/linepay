@@ -115,7 +115,7 @@ struct SharedWeeklyReferenceTests {
         let corpus = try corpus(version: version)
         try #require(
             corpus.format == "com.streamentry.linepay.weekly-reference-fixtures"
-                && corpus.version == version && corpus.cases.count == (version == 2 ? 7 : 3))
+                && corpus.version == version && corpus.cases.count == (version == 2 ? 7 : 5))
         for row in corpus.cases {
             let result = try calculate(row.input)
             let expected = try #require(row.expected)
@@ -137,13 +137,14 @@ struct SharedWeeklyReferenceTests {
                     == (try expected.allocationAmounts.map(number)), "\(row.id)")
         }
     }
-    @Test func tenUnknownOrInvalidInputsRefuse() throws {
-        let source = try corpus()
+    @Test(arguments: [2, 3])
+    func unknownOrInvalidInputsRefuse(version: Int) throws {
+        let source = try corpus(version: version)
         try #require(
             source.format == "com.streamentry.linepay.weekly-reference-fixtures"
-                && source.version == 2)
+                && source.version == version)
         let rows = source.refusals
-        try #require(rows.count == 10)
+        try #require(rows.count == (version == 2 ? 10 : 5))
         for row in rows {
             #expect(throws: (any Error).self, "\(row.id)") { try calculate(row.input) }
         }

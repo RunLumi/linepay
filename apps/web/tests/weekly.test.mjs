@@ -43,8 +43,8 @@ const zeroBasisCorpus = JSON.parse(
 );
 assert.equal(zeroBasisCorpus.format, corpus.format);
 assert.equal(zeroBasisCorpus.version, 3);
-assert.equal(zeroBasisCorpus.cases.length, 3);
-assert.equal(zeroBasisCorpus.refusals.length, 0);
+assert.equal(zeroBasisCorpus.cases.length, 5);
+assert.equal(zeroBasisCorpus.refusals.length, 5);
 for (const c of [...corpus.cases, ...zeroBasisCorpus.cases])
   test("weekly parity: " + c.id, () => {
     const actual = calculateWeekly(c.input);
@@ -69,7 +69,7 @@ test("new weekly calculations use v3 and allocation is independent of work order
         (sum, a) => sum + dec(a.amount).units(2, "halfUp"),
         0n,
       ),
-      1n,
+      dec(result.remainingAdditionalPremium).units(2, "halfUp"),
     );
     assert.ok(
       result.allocations
@@ -78,7 +78,7 @@ test("new weekly calculations use v3 and allocation is independent of work order
     );
   }
 });
-for (const c of corpus.refusals)
+for (const c of [...corpus.refusals, ...zeroBasisCorpus.refusals])
   test("weekly refusal: " + c.id, () =>
     assert.throws(() => calculateWeekly(c.input)),
   );

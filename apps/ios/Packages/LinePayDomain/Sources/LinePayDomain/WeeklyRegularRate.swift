@@ -228,12 +228,28 @@ public struct WeeklyRegularRateCalculator: Sendable {
         guard (0...8).contains(input.rounding.scale), input.rounding.scope == .payCategory else {
             throw WeeklyRegularRateError.invalidRounding
         }
+        var recordedSeconds = Decimal.zero
         for fact in input.work {
             _ = try WeeklyWorkFact(
                 id: fact.id, payPeriodID: fact.payPeriodID, hours: fact.hours,
                 straightRate: fact.straightRate,
                 qualifiesForWeeklyOvertime: fact.qualifiesForWeeklyOvertime,
                 workedSeconds: fact.workedSeconds)
+            guard fact.hours <= 168 else { throw WeeklyRegularRateError.workExceedsFixedWindow }
+            var duration = fact.workedSeconds.map(Decimal.init) ?? .zero
+            if fact.workedSeconds == nil {
+                var hours = fact.hours
+                var secondsPerHour = Decimal(3_600)
+                guard NSDecimalMultiply(&duration, &hours, &secondsPerHour, .plain) == .noError
+                else { throw WeeklyRegularRateError.arithmeticNotExact }
+            }
+            var previous = recordedSeconds
+            guard NSDecimalAdd(&recordedSeconds, &previous, &duration, .plain) == .noError else {
+                throw WeeklyRegularRateError.arithmeticNotExact
+            }
+            // Eligibility changes overtime counting, not actual time available in this window.
+            guard duration <= 604_800, recordedSeconds <= 604_800
+            else { throw WeeklyRegularRateError.workExceedsFixedWindow }
         }
         for fact in input.remuneration {
             _ = try WeeklyRemunerationFact(
@@ -375,6 +391,7 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
     case invalidWorkweek, invalidRounding, unknownPremiumCredit, arithmeticNotExact,
         allocationUnavailable
     case remunerationIncomplete
+    case workExceedsFixedWindow
     case workweekBoundaryUnconfirmed
 
     public var errorDescription: String? {
@@ -411,6 +428,8 @@ public enum WeeklyRegularRateError: Error, Equatable, LocalizedError, Sendable {
             "Confirm the whole week's straight-time remuneration and every other cash payment and classification before calculating."
         case .workweekBoundaryUnconfirmed:
             "Confirm the employer's exact recurring 168-hour workweek boundary before calculating."
+        case .workExceedsFixedWindow:
+            "Actual work cannot exceed the reviewed 168-hour window. Review all recorded work, including work that does not qualify for weekly overtime."
         }
     }
 }

@@ -1,7 +1,7 @@
 {
   "format": "com.streamentry.linepay.weekly-reference-fixtures",
   "version": 3,
-  "scope": "Synthetic zero-basis rounding regression vectors; not legal applicability or paycheck mapping approval",
+  "scope": "Synthetic zero-basis rounding regression vectors; not legal applicability or paycheck mapping approval; fixed-window admission checks actual duration independently of overtime eligibility",
   "arithmetic": "Three qualifying facts of 60000 seconds each total 180000 seconds = 50 hours. Confirmed remuneration is USD 0.10; overtime is 10 hours. Additional premium is 0.10 * 10 / (2 * 50) = USD 0.01. Allocation rate-times-second numerators are a permutation of 0,60000,60000: zero gets no allocation, each positive group has half a cent before floor, then the first positive period in deterministic identity order receives the one residual cent.",
   "cases": [
     {
@@ -240,7 +240,351 @@
           "0.00"
         ]
       }
+    },
+    {
+      "id": "complete-window-exact-seconds",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 604800,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "168",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "604800",
+        "regularRate": "1.00",
+        "overtimeSeconds": "460800",
+        "statutoryAdditionalPremium": "64.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "64.00",
+        "cashRemuneration": "168.00",
+        "expectedCash": "232.00",
+        "allocationAmounts": [
+          "64.00"
+        ]
+      }
+    },
+    {
+      "id": "complete-window-decimal-hours",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": "168",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "168",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      },
+      "expected": {
+        "qualifyingSeconds": "604800",
+        "regularRate": "1.00",
+        "overtimeSeconds": "460800",
+        "statutoryAdditionalPremium": "64.00",
+        "eligibleExtraPremiumCredit": "0.00",
+        "remainingAdditionalPremium": "64.00",
+        "cashRemuneration": "168.00",
+        "expectedCash": "232.00",
+        "allocationAmounts": [
+          "64.00"
+        ]
+      }
     }
   ],
-  "refusals": []
+  "refusals": [
+    {
+      "id": "hours-exceed-fixed-window",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": "169",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "169",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "seconds-exceed-fixed-window",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 604801,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "168",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "fractional-hours-exceed-fixed-window",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": "168.00000001",
+            "workedSeconds": null,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "168",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "combined-work-exceeds-fixed-window",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 360000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "64000000-0000-0000-0000-000000000011",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 360000,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "200",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    },
+    {
+      "id": "nonqualifying-work-still-uses-fixed-window",
+      "input": {
+        "startUTC": "2026-09-07T00:00:00Z",
+        "timeZone": "UTC",
+        "currency": "USD",
+        "boundaryConfirmed": true,
+        "completeWorkweek": true,
+        "applicability": "coveredNonexemptHourly",
+        "work": [
+          {
+            "id": "64000000-0000-0000-0000-000000000010",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 604800,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": true
+          },
+          {
+            "id": "64000000-0000-0000-0000-000000000011",
+            "payPeriodID": "64000000-0000-0000-0000-000000000001",
+            "hours": null,
+            "workedSeconds": 1,
+            "straightRate": {
+              "amount": "1",
+              "currency": "USD"
+            },
+            "qualifies": false
+          }
+        ],
+        "remuneration": [
+          {
+            "id": "64000000-0000-0000-0000-000000000200",
+            "amount": {
+              "amount": "168",
+              "currency": "USD"
+            },
+            "kind": "straightTime",
+            "premiumCredit": "notApplicable"
+          }
+        ],
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "singleEmployerConfirmed": true,
+        "paymentsConfirmed": true
+      }
+    }
+  ],
+  "windowAdmission": "Every declared work fact, including nonqualifying actual work, and their combined duration must fit the fixed 604800-second window. This is a physical input consistency check, not a new overtime applicability rule. Exactly 168 hours at rate USD1 with USD168 confirmed remuneration gives 128 overtime hours, USD64 additional premium and USD232 cash; both exact-second and decimal-hour representations must agree."
 }

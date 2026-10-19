@@ -44,3 +44,10 @@ New Swift/browser weekly results identify engine3. Native v1/v2 results remain f
 values; browser v2 receipts replay only their original engine during validation and encrypted
 recovery. A new calculation uses engine3 without changing the earlier receipt. These arithmetic
 regressions do not establish legal applicability, paycheck mapping or cross-client backup admission.
+
+The same v3 corpus checks new input admission: each actual-work duration and the sum of all work
+facts must fit the fixed 604800-second window. Nonqualifying work still uses actual time in that
+window; its qualifier only changes overtime counting. Exactly 168 hours in either representation
+remains admitted. Overlong hours/seconds, a fractional excess, a combined excess and an excess
+caused by nonqualifying work refuse. This is a physical consistency bound, not a new legal-pay rule.
+V2 vectors and frozen v2 receipt replay retain their original semantics.

@@ -22,7 +22,7 @@ class SharedWeeklyReferenceTest(
     companion object {
         @JvmStatic @Parameterized.Parameters(name = "{0}")
         fun fixtures(): Collection<Array<Any>> {
-            val rows = fixturesFor("reference-v2.json", 2, 7, 10) + fixturesFor("reference-v3.json", 3, 3, 0)
+            val rows = fixturesFor("reference-v2.json", 2, 7, 10) + fixturesFor("reference-v3.json", 3, 5, 5)
             check(rows.map { it[0] }.toSet().size == rows.size)
             return rows
         }

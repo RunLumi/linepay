@@ -104,4 +104,21 @@ struct WeeklyAllocationTests {
         #expect(reviewed.expectedCash == original.expectedCash)
         #expect(original.allocations[0].amount.amount == decimal("0.01"))
     }
+
+    @Test("Subsecond precision cannot silently hide excess work at the fixed-window boundary")
+    func unrepresentableDurationSumRequiresReview() throws {
+        let source = try input(zeroAt: 0)
+        let tinyHours = try #require(Decimal(string: "0.000000000000000000000000000000000001"))
+        let facts = try [Decimal(168), tinyHours].map { hours in
+            try WeeklyWorkFact(
+                hours: hours, straightRate: Money(amount: 1, currencyCode: "USD"))
+        }
+        let invalid = try WeeklyRegularRateInput(
+            weekStart: source.weekStart, workweekStart: source.workweekStart,
+            completeWorkweek: true, applicability: source.applicability,
+            work: facts, remuneration: source.remuneration)
+        #expect(throws: (any Error).self) {
+            try WeeklyRegularRateCalculator().calculate(invalid)
+        }
+    }
 }

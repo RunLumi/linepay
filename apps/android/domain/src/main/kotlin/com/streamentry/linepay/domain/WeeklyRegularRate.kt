@@ -19,7 +19,7 @@ data class WeeklyWorkFact(
     val straightRate: Money,
     val qualifiesForWeeklyOvertime: Boolean,
 ) {
-    internal val seconds: BigDecimal get() = workedSeconds?.let(BigDecimal::valueOf) ?: requireNotNull(hours) * SECONDS_PER_HOUR
+    internal val seconds: BigDecimal get() = workedSeconds?.let(BigDecimal::valueOf) ?: requireNotNull(hours).stripTrailingZeros() * SECONDS_PER_HOUR
     internal val straightNumerator: BigDecimal get() = straightRate.amount * seconds
 }
 
@@ -88,7 +88,7 @@ class WeeklyReviewRequired(val reason: Reason) : IllegalArgumentException(reason
     enum class Reason {
         BOUNDARY_UNCONFIRMED, EMPLOYER_UNCONFIRMED, REMUNERATION_UNCONFIRMED, INCOMPLETE_WORKWEEK,
         APPLICABILITY_UNKNOWN, UNSUPPORTED_THRESHOLD, INVALID_WORKWEEK, INVALID_ROUNDING,
-        INVALID_FACT_COLLECTION, DUPLICATE_FACT_ID, INVALID_WORK_FACT, INVALID_REMUNERATION,
+        INVALID_FACT_COLLECTION, DUPLICATE_FACT_ID, INVALID_WORK_FACT, WORK_EXCEEDS_FIXED_WINDOW, INVALID_REMUNERATION,
         INVALID_CREDIT_CLASSIFICATION, UNKNOWN_PREMIUM_CREDIT, CURRENCY_MISMATCH,
         REMUNERATION_WITHOUT_QUALIFYING_HOURS, ALLOCATION_UNAVAILABLE, ALLOCATION_NOT_CONSERVED,
     }
@@ -111,7 +111,7 @@ class WeeklyRegularRateCalculator {
             .fold(ZERO) { sum, fact -> sum + fact.amount.amount }
         if (qualifying.signum() == 0 && includable.signum() > 0) fail(WeeklyReviewRequired.Reason.REMUNERATION_WITHOUT_QUALIFYING_HOURS)
 
-        val overtime = (qualifying - input.thresholdHours * SECONDS_PER_HOUR).max(ZERO)
+        val overtime = (qualifying - BigDecimal(144000)).max(ZERO)
         // Keep the rational fraction intact until each monetary output's rounding boundary.
         // A displayed regular rate or rounded statutory premium must never drive remaining pay.
         val denominator = if (qualifying.signum() > 0) qualifying * BigDecimal(2) else ONE
@@ -158,6 +158,7 @@ class WeeklyRegularRateCalculator {
         if (input.work.size > 2000 || input.remuneration.size > 100) fail(WeeklyReviewRequired.Reason.INVALID_FACT_COLLECTION)
         if (input.work.map { it.id }.toSet().size != input.work.size ||
             input.remuneration.map { it.id }.toSet().size != input.remuneration.size) fail(WeeklyReviewRequired.Reason.DUPLICATE_FACT_ID)
+        var recordedSeconds = ZERO
         for (fact in input.work) {
             if ((fact.hours == null) == (fact.workedSeconds == null) ||
                 fact.hours?.let { !validAmount(it) } == true ||
@@ -165,6 +166,11 @@ class WeeklyRegularRateCalculator {
                 fail(WeeklyReviewRequired.Reason.INVALID_WORK_FACT)
             }
             if (fact.straightRate.currencyCode != input.currencyCode) fail(WeeklyReviewRequired.Reason.CURRENCY_MISMATCH)
+            // Every fact represents actual work in this fixed window, independent of overtime eligibility.
+            recordedSeconds += fact.seconds
+            if (fact.seconds > BigDecimal(604800) || recordedSeconds > BigDecimal(604800)) {
+                fail(WeeklyReviewRequired.Reason.WORK_EXCEEDS_FIXED_WINDOW)
+            }
         }
         for (fact in input.remuneration) {
             if (!validAmount(fact.amount.amount)) fail(WeeklyReviewRequired.Reason.INVALID_REMUNERATION)

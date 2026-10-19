@@ -256,8 +256,8 @@
         "supported-rules"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "963605687e97e3a5afd271d83c7b47ae16163572",
-      "reason": "Targeted October19 weekly engine3 review of pay-rules/supported-rules: residual cents skip zero-basis recipients while weekly cash, collection steps, scope warnings and frozen earlier results remain unchanged. Neither guide exposes allocation cents. Existing native interaction/accessibility, physical and release acceptance remain pending; this is not a complete guide/release review."
+      "blob": "07f048aef8ad6f1504452ad4e5326c9ba4f97508",
+      "reason": "Targeted October19 weekly engine3 review of pay-rules/supported-rules: zero-basis recipients receive no residual cents and actual work, including nonqualifying work, must fit the declared 168-hour window. Weekly cash for valid inputs, collection steps, scope warnings and frozen earlier results remain unchanged. Existing complete-workweek guidance remains accurate; neither guide exposes allocation cents. Native interaction/accessibility, physical and release acceptance remain pending; this is not a complete guide/release review."
     },
     {
       "path": "apps/ios/App/Sources/AgreementDocumentsView.swift",

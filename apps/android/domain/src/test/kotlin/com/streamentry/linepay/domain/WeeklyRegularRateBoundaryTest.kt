@@ -159,4 +159,25 @@ class WeeklyRegularRateBoundaryTest {
         assertThrows(UnsupportedOperationException::class.java) { (source.work as MutableList<*>).clear() }
         assertThrows(UnsupportedOperationException::class.java) { (result.allocations as MutableList<*>).clear() }
     }
+
+    @Test fun acceptedZeroRepresentationsCannotOverflowDurationOrMoneyArithmetic() {
+        val zero = BigDecimal("0E-2147483647")
+        for (fact in listOf(work().copy(hours = zero, workedSeconds = null),
+            work().copy(straightRate = Money(zero, "USD")), work())) {
+            val source = input(work = listOf(fact), remuneration = listOf(payment().copy(amount = Money(zero, "USD"))),
+                threshold = BigDecimal("40.000000000"))
+            val result = calculate(source)
+            same("0", result.expectedCash.amount)
+            assertSame(source, result.input)
+        }
+        same("0", Money(zero, "USD").amount)
+    }
+
+    @Test fun nonqualifyingActualWorkStillFitsTheSameWindowWithoutChangingOvertimeCounting() {
+        val result = calculate(input(work = listOf(work(1, seconds = 144000), work(2, seconds = 460800, qualifies = false)),
+            remuneration = listOf(payment(amount = "2000"))))
+        same("144000", result.qualifyingSeconds)
+        same("0", result.remainingAdditionalPremium.amount)
+        same("2000", result.expectedCash.amount)
+    }
 }
