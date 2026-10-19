@@ -223,6 +223,18 @@ class LegalGateTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual(guard.copy_violations(text), [])
 
+    def test_store_copy_scan_covers_canonical_and_legacy_metadata_paths(self):
+        for relative in ("docs/release/app-store.md", "docs/release/appstore.md", "docs/appstore.md"):
+            with self.subTest(path=relative):
+                path = self.root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Guaranteed wage recovery")
+                self.assertEqual(guard.check_copy(self.root), [
+                    f"{relative}: Unsubstantiated recovery guarantee",
+                ])
+                path.write_text("Possible difference, not a legal determination.")
+                self.assertEqual(guard.check_copy(self.root), [])
+
     def test_malformed_nested_values_fail_closed_without_crashing(self):
         mutations = [
             lambda e: e["storefront"]["subscriptions"][0].update(product_id=[]),
