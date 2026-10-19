@@ -1,0 +1,60 @@
+{
+  "fixtureID": "store-week-2026-08-v1",
+  "frames": [
+    {
+      "id": "01-is-your-paycheck-correct",
+      "raw": "store-v3-01-paycheck-result.png",
+      "headline": "Is Your\nPaycheck Correct?",
+      "caption": "Compare expected gross with your paystub.",
+      "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
+      "lineGap": true,
+      "productState": "confirmed-line-comparison-possible-difference-paystub-lower",
+      "accessRequirement": "First check free; Pro for later periods"
+    },
+    {
+      "id": "02-track-hours-know-expected-pay",
+      "raw": "store-v3-02-today.png",
+      "headline": "Track Hours.\nKnow Expected Pay.",
+      "caption": "Log each shift. See expected wages from the rules you confirm.",
+      "qualifier": "Illustrative data",
+      "productState": "today-expected-wages-before-paycheck",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "03-scan-review-compare",
+      "raw": "store-v3-03-scan-review.png",
+      "headline": "Scan. Review.\nCompare.",
+      "caption": "Read on your iPhone. Nothing counts until you confirm it.",
+      "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
+      "productState": "paystub-ocr-review-unconfirmed-dates-and-gross",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "04-possible-overtime-gaps",
+      "raw": "store-v3-04-line-differences.png",
+      "headline": "Find Possible\nOvertime Gaps.",
+      "caption": "Line by line: expected double time vs. your paystub.",
+      "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
+      "productState": "confirmed-line-comparison-double-time-hours-difference",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "05-keep-the-evidence",
+      "raw": "store-v3-05-line-evidence.png",
+      "headline": "Keep the\nEvidence.",
+      "caption": "Work, rule and paystub value behind every line.",
+      "qualifier": "Illustrative data",
+      "productState": "double-time-line-evidence-with-retained-paystub",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "06-complex-pay",
+      "raw": "store-v3-06-advanced-rules.png",
+      "headline": "Built for Complex\nPay, Too.",
+      "caption": "Optional callout minimums and per diem. Off until you confirm.",
+      "qualifier": "Illustrative data",
+      "productState": "rule-editor-advanced-callout-minimum-and-per-diem-on",
+      "accessRequirement": "Free"
+    }
+  ]
+}

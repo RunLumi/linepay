@@ -305,6 +305,73 @@ final class PaydayJourneyTests: XCTestCase {
         capture("store-08-history")
     }
 
+    /// Captures the v3 "Paycheck Audit" App Store set (docs/release/app-store.md §5) from the same
+    /// synthetic week. Opt-in: `TEST_RUNNER_LINEPAY_STORE_CAPTURE=v3 TEST_RUNNER_TZ=America/Chicago`.
+    /// `store-week-sourced` is the `store-week-checked` result for a synthetic paystub that the real
+    /// on-device OCR read first; `store-week-advanced` is a separate callout/per-diem fixture.
+    func testV3StoreScreenshotsFromSamplePaycheck() throws {
+        try XCTSkipUnless(
+            ProcessInfo.processInfo.environment["LINEPAY_STORE_CAPTURE"] == "v3",
+            "Store captures run only on request")
+
+        // 1 Is Your Paycheck Correct? / 4 Find Possible Overtime Gaps / 5 Keep the Evidence
+        launch(scenario: "store-week-sourced")
+        tab("Pay")
+        tap("pay.open-audit")
+        XCTAssertTrue(app.staticTexts["$116.00"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.staticTexts["Possible difference: paystub is lower"].firstMatch.exists)
+        capture("store-v3-01-paycheck-result")
+        dragContent(upBy: 0.55)
+        dragContent(upBy: 0.50)
+        XCTAssertTrue(
+            app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Double-time hours"))
+                .firstMatch.waitForExistence(timeout: 5))
+        capture("store-v3-04-line-differences")
+        tapContaining("Double-time pay")
+        XCTAssertTrue(app.navigationBars["Double-time pay"].waitForExistence(timeout: 10))
+        capture("store-v3-05-line-evidence")
+        tapContaining("Overtime")
+        XCTAssertTrue(app.navigationBars["Why this amount?"].waitForExistence(timeout: 10))
+        capture("store-v3-05-alt-why-this-amount")
+        app.navigationBars.buttons.firstMatch.tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        tap("audit.export")
+        tap("report.preview")
+        XCTAssertTrue(app.descendants(matching: .any)["report.pdf"].waitForExistence(timeout: 20))
+        capture("store-v3-05-alt-report-preview")
+        app.terminate()
+
+        // 2 Track Hours. Know Expected Pay.
+        launch(scenario: "store-week")
+        XCTAssertTrue(app.staticTexts["$3,016.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("store-v3-02-today")
+        tab("Pay")
+        XCTAssertTrue(app.staticTexts["$3,016.00"].firstMatch.waitForExistence(timeout: 10))
+        capture("store-v3-02-alt-pay-ledger")
+        app.terminate()
+
+        // 3 Scan. Review. Compare.
+        launch(scenario: "store-week-scan")
+        tab("Pay")
+        tap("pay.check-paycheck")
+        tap("paystub.resume")
+        XCTAssertTrue(app.textFields["paystub.inline.gross"].waitForExistence(timeout: 10))
+        capture("store-v3-03-scan-review")
+        app.terminate()
+
+        // 6 Built for Complex Pay, Too.
+        launch(scenario: "store-week-advanced")
+        tab("Pay")
+        XCTAssertTrue(app.staticTexts["Expected per diem"].firstMatch.waitForExistence(timeout: 10))
+        capture("store-v3-06-alt-advanced-ledger")
+        tab("Settings")
+        tap("Edit pay rules")
+        advanceSetupStep(to: "Step 3 of 4")
+        dragContent(upBy: 0.62)
+        capture("store-v3-06-advanced-rules")
+    }
+
     func testCurrentAuditCanOpenItsCorrectionWithoutLosingNavigation() throws {
         launch(scenario: "matches")
         tab("Pay")
@@ -711,6 +778,14 @@ final class PaydayJourneyTests: XCTestCase {
             if element.exists && element.isHittable { return }
             frontmostWindow.swipeUp()
         }
+    }
+    /// A slow, momentum-free drag by a fixed fraction of the window, so captures frame the same rows.
+    private func dragContent(upBy fraction: Double) {
+        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)).press(
+            forDuration: 0.1,
+            thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8 - fraction)),
+            withVelocity: .slow, thenHoldForDuration: 0.6)
     }
     private func dismissKeyboard() {
         if app.buttons["keyboard.done"].firstMatch.exists {
