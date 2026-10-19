@@ -2282,3 +2282,25 @@ created; describe and verify each property separately.
 - The [publication receipt](../release/evidence/web-2026-10-19.md) retains actual provider/source
   evidence. It does not close complete feature parity, engine3 corrections, native interchange,
   installed/physical PWA, localization, source rights or App Store gates.
+
+## Weekly reference v3 integration candidate, October 19
+
+- An independently reproduced rounding defect assigned a residual cent to a zero-basis period
+  when it sorted first. New weekly references skip zero-basis recipients and identify engine3.
+  The weekly total is unchanged; three shared vectors put the zero basis first, middle and last.
+  The original seventeen v2 vectors remain unchanged. See
+  [ADR0032](../adr/0032-weekly-zero-basis-allocation.md).
+- Native recorded v1/v2 results remain frozen values. Browser retained v2 receipts replay their
+  original producer, survive actual encryption/recovery and refuse altered/unknown results.
+  New reviews always use v3. The service-worker shell moves to v14 after the delivery-policy v13, for the changed browser module,
+  without forcing an open form to reload.
+- The pure Android reference adopts exact rational intermediates and the same confirmed-input
+  boundary. It changes no Android UI, stored state or gross verdict. Native review collection,
+  history, rate provenance and period allocation remain separate work.
+- Component verification before integration passed 166 Swift domain tests, 228 browser unit tests
+  and 180 Android domain tests. A pre-fix regression failed before correction. These are not a
+  full native, hosted, physical-device or released-candidate receipt.
+- Peer review reproduced overlong decimal/aggregate actual work and an Android extreme-scale zero
+  overflow. New /3 admissions now enforce the fixed window in every client and normalize Android
+  decimal hours; five shared positive cases and five refusals pass. Browser /2 replay remains
+  unchanged. This candidate is not yet submitted or merged.
