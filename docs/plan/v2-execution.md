@@ -2351,3 +2351,33 @@ created; describe and verify each property separately.
   existing7DEdevice; result `.build/benefit-locale-ui/.build/benefit-locale-class-20261019.xcresult`.
   Before/after captures show the converted8.75/40 fields. Original CI failure causation is unproven;
   this guard proves the required presentation state before the next action. Full native CI remains due.
+
+## Exact-head hosted recheck, October 19
+
+- Before refreshing PR113 onto the latest main, hosted run `39181064180` on head
+  `39174e95fcd45fc1738b6c2f0a9c9c96857b137a` passed Android, including emulator boot, connected
+  instrumentation **2/2**, and the checked-in `first-paycheck` Maestro journey **1/1**. Its earlier
+  launch-time `Unknown error` was followed by this complete hosted flow, so that earlier failure is
+  retained as history rather than current status.
+- On that same head, Documentation, User guide, Agent Harness and Legal engineering controls passed.
+  The iOS workflow was queued and Legal regressions were pending at the last readback. The focused
+  benefits class pass is not a substitute for the full iOS release workflow. This re-integration
+  changes the branch head, so all required checks must pass again on the refreshed head.
+- PR117's merged browser publication is recorded below and in
+  [its source-bound receipt](../release/evidence/web-2026-10-19.md). That final readback supersedes
+  the earlier PR114/PR116 staging and analytics-injection checkpoints above.
+
+## Published browser preview, October 19
+
+- The owner explicitly approved `app.linepaycheck.com`. PR114 and privacy correction PR116
+  passed their exact-head hosted gates and merged. Production now serves source
+  `d3f61837aa3af25f4930802dc8d1441376fe9511`, Worker version
+  `9ea7453f-6c26-4838-a473-48dfe4a2b971`; normal DNS/TLS,32byte-matched assets,11refusals and
+  POST405 passed. Fresh Chromium and WebKit journeys passed exact HTML, same-origin GET-only
+  traffic, saved comparison, report/print, protected backup and retained records after reload.
+- The first production Chromium attempt caught inherited zone-level analytics injection. The
+  app's `no-transform` response policy and cachev13 corrected it without changing marketing
+  settings or forcing open clients to reload. Ordinary CDN request metadata remains disclosed.
+- The [publication receipt](../release/evidence/web-2026-10-19.md) retains actual provider/source
+  evidence. It does not close complete feature parity, engine3 corrections, native interchange,
+  installed/physical PWA, localization, source rights or App Store gates.

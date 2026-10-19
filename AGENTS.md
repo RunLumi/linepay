@@ -211,3 +211,5 @@ Do not create process artifacts for trivial reversible choices.
 Follow the [complexity budget and anti-goals](docs/engineering/agentic-development.md#complexity-budget); preserve payroll correctness, privacy, and data safety.
 
 Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
+
+Select an existing App Store Connect team key autonomously and verify its issuer pairing against this app before use. Keep key material and the selected pairing in protected local release configuration; follow `docs/release/api-and-testflight.md`.

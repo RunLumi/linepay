@@ -24,6 +24,13 @@ Run the [release-readiness skill](../../.agents/skills/release-readiness/SKILL.m
 
 Use an existing **team** API key with the least sufficient role; an App Manager key was sufficient for the verified upload/metadata operations. Keep the private key outside the repository. Account Holder/Admin setup and any new access grant are separate authorized work, not part of an automatic release retry. See [Apple API keys](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api).
 
+The owner authorized autonomous selection of an existing key on October 19, 2026. If `ASC_*` is
+unset, resolve a documented key/issuer pairing from protected local release records and verify a
+read of app `6808889292` with bundle `com.streamentry.linepay` before using it. An installed `.p8`
+filename alone is not a verified pairing. Retain the chosen reference and live readback in the
+private release directory; the owner need not choose among known working keys. This does not grant
+authority to create keys, expand roles, or bypass the source-bound release checks.
+
 Prerequisites: repository-pinned Xcode/XcodeGen, a Python environment with `cryptography`, and `jq` for inspecting JSON. The Python package is developer tooling only, not an app dependency. Verify the existing environment before installing anything:
 
 ```bash
