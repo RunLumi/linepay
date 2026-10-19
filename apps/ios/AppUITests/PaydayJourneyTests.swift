@@ -784,7 +784,8 @@ final class PaydayJourneyTests: XCTestCase {
         let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
         window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)).press(
             forDuration: 0.1,
-            thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8 - fraction)),
+            thenDragTo: window.coordinate(
+                withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8 - fraction)),
             withVelocity: .slow, thenHoldForDuration: 0.6)
     }
     private func dismissKeyboard() {
