@@ -84,8 +84,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay
         PRODUCT_NAME: LinePay
-        CURRENT_PROJECT_VERSION: 11
-        MARKETING_VERSION: 1.0.5
+        CURRENT_PROJECT_VERSION: 12
+        MARKETING_VERSION: 1.1.0
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: App/Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -100,7 +100,7 @@ targets:
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Record a short work reading on this device for your review. Audio is not sent to a server."
         INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "Read a temporary work recording on this device only. Review all facts before saving work; no server fallback is used."
-        INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device for a paycheck audit."
+        INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device to compare it with the pay you expect."
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"
     dependencies:

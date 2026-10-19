@@ -47,7 +47,7 @@ struct LiveAuditView: View {
     }
 
     /// Names what the free check found, only while that result is current and only as a possible
-    /// shortfall; otherwise states plainly what Pro adds.
+    /// difference; otherwise states plainly what Pro adds.
     private var offerNote: String {
         if let context = model.periodContext(id: periodID), !context.isClosed,
             let paid = context.paystub,
@@ -61,7 +61,7 @@ struct LiveAuditView: View {
             let difference = paid.assessment?.difference, difference.amount > 0
         {
             return
-                "This check found a possible shortfall of \(LinePayFormat.money(difference)). Pro checks every paycheck after this one."
+                "This check found a possible difference of \(LinePayFormat.money(difference)). Pro checks every paycheck after this one."
         }
         return "Your free check is used. Pro checks every paycheck after this one."
     }
@@ -179,7 +179,7 @@ struct AuditDetailView: View {
                                     Text(
                                         comparison.differs
                                             ? "Difference \(format(comparison.difference, comparison))"
-                                            : "Compared value matches"
+                                            : "No difference in this item"
                                     )
                                     .foregroundStyle(
                                         comparison.differs

@@ -55,13 +55,15 @@ Persist real inputs before the offer. Dismissing or cancelling a purchase must r
 
 ### Welcome: recognizable outcome
 
-Headline: **Know what your work should pay.**
+Headline (v3, [docs/plan/v3.md](../plan/v3.md)): **Is your paycheck correct?**
 
-Support: **Log your hours, see the math behind your expected pay, and check it against the paycheck you actually get.**
+Support: **Track what you worked. Compare expected pay with your paystub. Understand possible differences.**
 
-Trust: **No LinePaycheck account. Your pay data stays on this iPhone by default.**
+Trust: **No account** (no email, password, or employer payroll login) and **Private by default** (your pay data stays on this iPhone unless you export or back it up).
 
-CTA: **Calculate my pay**.
+CTA: **Check my paycheck**. The first screen uses no lineworker, crew or agreement terms; importing an agreement PDF or a shared rule draft sits below the trust rows under **Have your pay rules in writing?**. Callout minimum and per diem live under **Advanced rules** in setup and stay off until the worker confirms them.
+
+Result states use the v3 vocabulary: **No difference within compared items**, **Possible difference** (with the direction of the paystub relative to expected pay), **Unable to verify**, and **Needs review**. A pay-period mismatch compares nothing; an unmodeled rule, unconfirmed paystub detail or incomplete work never reads as a clean match.
 
 Use the actual product's ledger visual or the Line Gap mark. Optional **See an example** opens clearly labeled synthetic data in a separate, discardable preview. It must never write a sample into the worker's real ledger or imply recovered wages. No purchase or permission request on this screen.
 

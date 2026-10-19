@@ -260,6 +260,14 @@ struct PayProfileSetupView: View {
                 "Sunday premium", detail: "A multiplier for every hour worked on Sunday.",
                 isOn: $draft.useSundayPremium)
             if draft.useSundayPremium { number("Sunday multiplier", $draft.sundayMultiplier) }
+        } header: {
+            Text("Overtime and premiums")
+        } footer: {
+            Text(
+                "Everything starts off. Turn on only what your employer or pay agreement actually pays; anything left off is not configured, not ruled out."
+            )
+        }
+        Section {
             ruleToggle(
                 "Callout minimum", detail: "Guaranteed paid hours when you are called out.",
                 isOn: $draft.useCalloutMinimum)
@@ -279,10 +287,10 @@ struct PayProfileSetupView: View {
                 number("\(draft.resolvedCurrencyCode) per worked date", $draft.perDiemAmount)
             }
         } header: {
-            Text("Common rules")
+            Text("Advanced rules")
         } footer: {
             Text(
-                "Everything starts off. Turn on only what your agreement or employer actually pays; anything left off is not configured, not ruled out."
+                "Optional rules for callouts and per diem, common in utility and field work. They stay off unless you confirm them."
             )
         }
         Section {
@@ -565,7 +573,7 @@ struct PayProfileSetupView: View {
         switch step {
         case 0: "Your base pay. Everything else builds on it."
         case 1: "The dates your paycheck covers."
-        case 2: "Turn on only the extras your agreement or employer actually pays."
+        case 2: "Turn on only the extras your employer or pay agreement actually pays."
         default:
             editing
                 ? "Check the change and choose which work it applies to."

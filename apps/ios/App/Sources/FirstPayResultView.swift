@@ -88,7 +88,7 @@ struct FirstPayResultView: View {
                         )
                         .font(.subheadline).monospacedDigit()
                         Text(
-                            "Based only on the rules you entered and the work logged so far. Keep adding shifts; when the paycheck arrives, compare it with the full period."
+                            "Based only on the rules you confirmed and the work logged so far. Overtime or premiums you did not turn on are not included. Keep adding shifts; when the paycheck arrives, compare it with the full period."
                         )
                         .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
                     }

@@ -409,14 +409,16 @@ enum AuditDisplayStatus: Hashable, Sendable {
     case possibleOverpayment
     case needsReview
 
+    /// v3 result vocabulary (docs/plan/v3.md section 5). A match is scoped to what was compared;
+    /// a difference is possible, never proven; missing or incompatible inputs are never "correct".
     var title: String {
         switch self {
-        case .notAudited: "Not audited"
-        case .matches: "Compared values match"
-        case .grossMatches: "Gross total matches"
-        case .notComparable: "Not ready to compare"
-        case .possibleShortfall: "Possible shortfall"
-        case .possibleOverpayment: "Possible overpayment"
+        case .notAudited: "Not compared yet"
+        case .matches: "No difference within compared items"
+        case .grossMatches: "No difference within compared items: gross total only"
+        case .notComparable: "Unable to verify"
+        case .possibleShortfall: "Possible difference: paystub is lower"
+        case .possibleOverpayment: "Possible difference: paystub is higher"
         case .needsReview: "Needs review"
         }
     }

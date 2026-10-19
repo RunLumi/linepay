@@ -1,7 +1,7 @@
 {
   "reviewedOn": "2026-10-04",
   "appVersion": "1.0.5",
-  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct. Targeted October17 native crew candidate review: existing mapped public steps unchanged; new candidate Files/adoption instructions remain internal pending native runtime, provider and visual acceptance. This is not a complete public-guide release review. Targeted October17 weekly correction: v2 candidate guidance for exact 168-hour boundary and remuneration classification; no automatic audit clearance or native runtime approval. Targeted October 17 assessment-v4/schema9 review: active weekly re-review, retained earlier comparisons, recorded historical PDF scope and no shortfall marketing from Needs review. Candidate native execution remains pending; no complete release/guide approval. Targeted October18 assessment5/schema10 review: exact base-time evidence for premium-only money lines, explicit active re-review and retained producer4 receipts; native execution and release approval remain pending. Targeted October18 native crew guide: documented the candidate Files workflow, status beside each action and fixed imported scope; ordinary manual changes remain available. Physical/cross-device and release acceptance remain pending. Targeted October 19 native follow-up review: audit-results, evidence-and-reports, and backup-and-restore now describe optional saved-line references, exact-revision report scope, explicit report opt-in, and schema-10 migration without inferred links. This is not a full-site or release-candidate freshness review.",
+  "note": "Targeted v2 paycycle review on 2026-10-16: updated setup/getting-started; pay-rules and changing-rules remain accurate. Other source reviews retain the recorded baseline; v2 release pending. Targeted follow-up and report review: updated audit-results and evidence-and-reports; v2 not yet released. Targeted local agreement import review on 2026-10-16; updated setup, source evidence, deletion and backup guidance; remaining ledger/history/pay/work/billing/support instructions unchanged. Not a full-site release review. Targeted v2 benefits review on 2026-10-16: new fund/period, source, revision and report guide; updated backup, privacy and history scope. Not a full-site release review. Region-change recovery re-reviewed: valid inputs reformat exactly; partial input remains unchanged and blocks preview until corrected. Scoped cleanup now accepts benefits reports. Targeted device-local activity review on October 16: documented opt-out, exact manual diagnostic preview/Files export, activity-only clear, retention and exclusion from financial backups. Usage days can be personal; no global conversion evidence. Other public steps unchanged. Targeted v2 voice review on October 16: explicit typed/voice reading, selected work date/timezone, required break facts, reviewed proposal and separate final save; temporary audio/permissions/local-only fallback documented. Physical microphone/recognition accuracy is not yet proven. Targeted October 17 protected-backup review: optional per-copy protection, separate password acknowledgement, unlock before replacement preview, no password recovery, legacy compatibility, existing provider-delivery limits. Cross-device and Android/PWA restoration remain distinct evidence. Targeted October 17 precision review: exact seconds through cent rounding; affected active checks require re-review, original closed estimates/revisions remain frozen, explicit closed review appends current-precision comparison. No legal coverage or recovered-money claim. Targeted duration presentation review: clock quantities use minute/second duration labels with hourly rate units; approximate display is marked and never feeds money calculations. Paystub-hour entry/comparison remains distinct. Targeted October17 native crew candidate review: existing mapped public steps unchanged; new candidate Files/adoption instructions remain internal pending native runtime, provider and visual acceptance. This is not a complete public-guide release review. Targeted October17 weekly correction: v2 candidate guidance for exact 168-hour boundary and remuneration classification; no automatic audit clearance or native runtime approval. Targeted October 17 assessment-v4/schema9 review: active weekly re-review, retained earlier comparisons, recorded historical PDF scope and no shortfall marketing from Needs review. Candidate native execution remains pending; no complete release/guide approval. Targeted October18 assessment5/schema10 review: exact base-time evidence for premium-only money lines, explicit active re-review and retained producer4 receipts; native execution and release approval remain pending. Targeted October18 native crew guide: documented the candidate Files workflow, status beside each action and fixed imported scope; ordinary manual changes remain available. Physical/cross-device and release acceptance remain pending. Targeted October 19 native follow-up review: audit-results, evidence-and-reports, and backup-and-restore now describe optional saved-line references, exact-revision report scope, explicit report opt-in, and schema-10 migration without inferred links. This is not a full-site or release-candidate freshness review. Targeted October 19 v3 copy review (iOS 1.1.0 candidate): welcome headline/CTA, Overtime and premiums vs Advanced rules sections, Possible difference / No difference within compared items / Unable to verify result titles, paystub-period-mismatch message and report title; getting-started, pay-rules, audit-results, troubleshooting and glossary updated. Screenshots in user-guide/data/screenshots.json predate this copy and must be recaptured before release; not a release approval.",
   "sources": [
     {
       "path": "apps/ios/App/Sources/OnboardingFlowView.swift",
@@ -18,7 +18,7 @@
         "getting-started"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "624e60ca7cbfb852466055212813f5357b9f5b5e",
+      "blob": "de8217db1393a643d20ad886ece18e5044859e64",
       "reason": "Targeted October17 review: an optional unreleased crew-draft inspection entry prepares the existing setup flow without activating rules. Existing manual/restore/agreement setup steps are unchanged. New crew instructions remain internal pending native runtime/Files/visual acceptance."
     },
     {
@@ -28,7 +28,7 @@
         "expected-pay"
       ],
       "disposition": "reviewed",
-      "blob": "8699fb7afed5684484d6ae79052090b12b56e817"
+      "blob": "deb3648610529a034b03d87efba381873a572687"
     },
     {
       "path": "apps/ios/App/Sources/PayProfileSetupView.swift",
@@ -39,7 +39,7 @@
         "changing-rules"
       ],
       "disposition": "reviewed",
-      "blob": "caacabf200076c4c29d4ca401e59429dce0b851f",
+      "blob": "9f6b7cbbf5ad6faf0b3be3fad3a99ae3c2901c44",
       "reason": "Targeted native crew candidate review October18: future-only imported scope is read-only, manual edit choices remain unchanged. Updated profile/change guidance and linked the explicit candidate crew workflow; release and physical acceptance remain pending."
     },
     {
@@ -77,7 +77,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "a2597672525a8179c1d29492949fa18c635d38db"
+      "blob": "4ed8af5c6b77042e4c5ae9984222e374eeb16e2a"
     },
     {
       "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",
@@ -94,7 +94,7 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "8a80855f0a0755a72e2cc55b6cfd2c34a0570970"
+      "blob": "7e77d22227a333b0fd1ce83b4f01bea2712aaf92"
     },
     {
       "path": "apps/ios/App/Sources/PayLedgerView.swift",
@@ -104,7 +104,7 @@
         "pay-rules"
       ],
       "disposition": "reviewed",
-      "blob": "1412ac8b23ae95e1f894267b5b9ab9661ff6fda9",
+      "blob": "a4c8442147c9ae7e37d5afdf965a53bc1b77a496",
       "reason": "Targeted October 17 assessment v4 review: Forward the separate legacy-assessment review flag without repricing the ledger. Targeted expected-pay/audit guidance covers unchanged amounts and explicit re-review; cadence and weekly-reference steps are unchanged."
     },
     {
@@ -145,7 +145,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "e411782fa118198ce220ffd55d18f23156ea8047",
+      "blob": "5b429af26f114aaa676f37941fc37aa36fe7c791",
       "reason": "Targeted October18 native result review: comparison links retain stable IDs; a newly confirmed receipt resets the live form to its verdict. Existing guide steps remain valid. Largest-text premium correction/archive/relaunch passed; broader release and physical acceptance remain separate."
     },
     {
@@ -164,7 +164,7 @@
         "benefits"
       ],
       "disposition": "reviewed",
-      "blob": "4a6a4df51f885df6ec2e6c7b4cf89ad0a5196ba6",
+      "blob": "7490949b7cf35bbd007214bcf292e7704041af73",
       "reason": "Targeted October 19 review: report copies now bind follow-up notes and optional comparison-item labels to the selected paycheck revision. Updated evidence-and-reports; benefits exports use a separate flow."
     },
     {
@@ -315,7 +315,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "4cdea829618bd78cfaa92866fcd29fe4fc4d35cc",
+      "blob": "24f595f7b67f1a3c885f235b463cff242089335e",
       "reason": "Targeted October 19 review: opted-in PDF follow-up history names its linked comparison item; default report privacy remains unchanged. Updated evidence-and-reports."
     },
     {
@@ -580,7 +580,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "3c4a1599f0c3fb392e302f2906fe90ec9800212d"
+      "blob": "9644e3d7360c8c9c0920bb72c96d38a3a6d832e0"
     },
     {
       "path": "apps/ios/App/Sources/AppModel.swift",
@@ -589,7 +589,7 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed",
-      "blob": "297de4dd98a7067de2d57f5eadeaa785316630fe"
+      "blob": "16dc67b6302ac709614e90588a5fe6f9312da0a1"
     }
   ]
 }

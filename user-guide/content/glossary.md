@@ -46,7 +46,7 @@ keywords: [definitions, terms, OT, CBA, per diem, gross, net, daylight saving, c
 
 **Possible difference:** expected minus confirmed paid on a comparable basis. Positive means expected was higher; negative means paid was higher.
 
-**Not comparable:** the prerequisites do not support a full-paycheck comparison. It is not a zero difference or a clean match.
+**Unable to verify (not comparable):** the prerequisites do not support a full-paycheck comparison. It is not a zero difference or a clean match.
 
 **Audit revision:** a saved record of an assessment’s work, rules, calculation, and confirmed facts at that time. Corrections preserve earlier revisions.
 

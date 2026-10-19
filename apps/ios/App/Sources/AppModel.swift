@@ -491,7 +491,7 @@ final class AppModel {
                 == localDate(from: context.window.startDate, timeZoneIdentifier: zone),
             localDate(from: end, timeZoneIdentifier: zone)
                 == localDate(from: context.window.displayEndDate, timeZoneIdentifier: zone)
-        else { throw AppModelError.invalidPayPeriod }
+        else { throw AppModelError.paystubPeriodMismatch }
         // Confirming a new review is explicit; closed records themselves are never recalculated on read.
         let reviewedCalculation: CalculationResult?
         if context.isClosed {
@@ -1843,6 +1843,7 @@ enum AppModelError: LocalizedError, Equatable {
     case missingWorkInterval
     case workOutsideCurrentPayPeriod
     case invalidPayPeriod
+    case paystubPeriodMismatch
     case calculationUnavailable
     case persistenceFailed
     case otherPaystubDraft
@@ -1895,6 +1896,8 @@ enum AppModelError: LocalizedError, Equatable {
             "This shift is outside the current pay period. Choose a date inside it, or correct the period dates in Settings."
         case .invalidPayPeriod:
             "Check the pay-period dates."
+        case .paystubPeriodMismatch:
+            "The paystub's pay period does not match this work period, so nothing was compared. Check the dates printed on the paystub."
         case .calculationUnavailable:
             "Expected pay could not be calculated with the current facts and rules."
         case .persistenceFailed:

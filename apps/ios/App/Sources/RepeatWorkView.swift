@@ -242,8 +242,11 @@ struct RepeatWorkView: View {
                         }
                     }
                     Section("Note") {
-                        TextField("Storm, crew, ticket", text: $draft.note, axis: .vertical)
-                            .lineLimit(1...5)
+                        TextField(
+                            "Job site, ticket number, or reminder", text: $draft.note,
+                            axis: .vertical
+                        )
+                        .lineLimit(1...5)
                     }
                 }
 

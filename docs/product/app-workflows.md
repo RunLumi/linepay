@@ -58,11 +58,11 @@ When the profile includes the restricted weekly overtime rule, Pay also offers *
 
 | Outcome | Meaning | Next action |
 |---|---|---|
-| Matches within stated scope | Comparable totals/confirmed lines agree under the recorded rules | Inspect scope; save the audit |
-| Possible shortfall | A supported comparable expected amount exceeds confirmed paid | Review implicated work, rule and paycheck evidence |
-| Possible overpayment | Confirmed paid exceeds the supported expected amount | Review missing work, adjustment lines and rules; do not infer a repayment debt |
+| No difference within compared items | Comparable totals/confirmed lines agree under the recorded rules | Inspect scope; save the audit |
+| Possible difference: paystub is lower | A supported comparable expected amount exceeds confirmed paid | Review implicated work, rule and paycheck evidence |
+| Possible difference: paystub is higher | Confirmed paid exceeds the supported expected amount | Review missing work, adjustment lines and rules; do not infer a repayment debt |
 | Needs review | There are conflicts, missing material coverage, stale facts, or uncertain mappings | Correct or explicitly qualify the evidence |
-| Not comparable | A meaningful expected-versus-paid comparison cannot be made | Resolve period, currency, gross basis, completeness or unsupported structure |
+| Unable to verify (not comparable) | A meaningful expected-versus-paid comparison cannot be made | Resolve period, currency, gross basis, completeness or unsupported structure |
 
 The amount is never a legal conclusion. “Matched” does not prove that an unmodeled bonus, weekly overtime requirement, rest premium, or prevailing-wage fringe was paid.
 

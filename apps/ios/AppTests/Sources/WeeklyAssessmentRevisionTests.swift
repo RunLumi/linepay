@@ -150,7 +150,9 @@ struct WeeklyAssessmentRevisionTests {
         defer { try? TemporaryExports.removeReport(url) }
         let text = try #require(PDFDocument(url: url)?.string)
         #expect(text.contains("Earlier weekly comparison") && text.contains("Recorded verdict"))
-        #expect(text.contains("Gross total matches") && context.paystub?.assessment == original)
+        #expect(
+            text.contains("No difference within compared items: gross total only")
+                && context.paystub?.assessment == original)
     }
 
     @Test func unrelatedLegacyScopeStaysUsableButForgedV4WeeklyMatchIsRejected() throws {

@@ -158,7 +158,8 @@ final class CrewRuleJourneyTests: XCTestCase {
         app.tabBars.buttons["Pay"].tap()
         tap("pay.open-audit")
         XCTAssertTrue(
-            app.staticTexts["Gross total matches"].firstMatch.waitForExistence(timeout: 15))
+            app.staticTexts["No difference within compared items: gross total only"].firstMatch
+                .waitForExistence(timeout: 15))
         XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.exists)
         capture("v2-crew-existing-paycheck-stays-550", large: large)
         app.terminate()
@@ -169,7 +170,8 @@ final class CrewRuleJourneyTests: XCTestCase {
         app.tabBars.buttons["Pay"].tap()
         tap("pay.open-audit")
         XCTAssertTrue(
-            app.staticTexts["Gross total matches"].firstMatch.waitForExistence(timeout: 10))
+            app.staticTexts["No difference within compared items: gross total only"].firstMatch
+                .waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["$550.00"].firstMatch.exists)
         capture("v2-crew-relaunch-retains-current-paycheck", large: large)
         app.tabBars.buttons["Settings"].tap()

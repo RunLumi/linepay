@@ -4,7 +4,7 @@ linkTitle: Read an audit result
 weight: 110
 group: Check a paycheck
 description: Read the verdict, comparison scope, difference direction, and evidence before taking action.
-keywords: [match, shortfall, overpayment, needs review, discrepancy, not ready]
+keywords: [no difference, possible difference, unable to verify, needs review, discrepancy, shortfall, overpayment]
 ---
 ## Read the scope with the result
 
@@ -18,12 +18,12 @@ Open **Pay → View paycheck result**, or choose **View paycheck result** for th
 
 | Status | How to read it |
 | --- | --- |
-| **Not audited** | No completed paycheck comparison is available for this context. |
-| **Not ready to compare** | A prerequisite, such as complete work or confirmed gross basis, is missing. Read the reason before making a full-paycheck conclusion. |
-| **Gross total matches** | The gross totals match on the confirmed basis. This does not verify every line or entitlement. |
-| **Compared values match** | The supported, supplied values match within the comparison’s scope. This is not certification of all wages owed. |
-| **Possible shortfall** | Comparable expected pay is higher than confirmed paid pay. Review facts and coverage before contacting payroll. |
-| **Possible overpayment** | Confirmed paid pay is higher than expected. This can reflect missing work, rules, adjustments, or categorization; it is not automatically money you can treat as extra earnings. |
+| **Not compared yet** | No completed paycheck comparison is available for this context. |
+| **Unable to verify** | A prerequisite, such as complete work or confirmed gross basis, is missing. Read the reason before making a full-paycheck conclusion. A pay-period mismatch is stopped before any comparison: the app tells you the dates do not match and compares nothing. |
+| **No difference within compared items: gross total only** | The gross totals match on the confirmed basis. This does not verify every line or entitlement. |
+| **No difference within compared items** | The supported, supplied values match within the comparison’s scope. This is not certification of all wages owed. |
+| **Possible difference: paystub is lower** | Comparable expected pay is higher than confirmed paid pay. Review facts and coverage before contacting payroll. |
+| **Possible difference: paystub is higher** | Confirmed paid pay is higher than expected. This can reflect missing work, rules, adjustments, or categorization; it is not automatically money you can treat as extra earnings. |
 | **Needs review** | Conflicting details, incomplete mapping/rules, or stale work can prevent a clean conclusion. Read every reason. |
 
 **Awaiting paycheck** in History describes a closed work period without a paycheck yet. It is not a pay-error verdict.

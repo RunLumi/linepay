@@ -31,7 +31,7 @@ A repeated shift copies payroll-local wall-clock facts, not elapsed-hour offsets
 
 Review in this order: correct period → complete work → unpaid breaks → base rate and applied rule version → supported premium combination → paystub current-period values → gross basis → earnings layout.
 
-**Not ready to compare** usually requires confirming complete work or what gross includes. **Needs review** can reflect missing coverage, conflicting lines, uncertain mapping, or work changed after the audit. Read the specific reasons before re-entering anything.
+**Unable to verify** usually requires confirming complete work or what gross includes. **Needs review** can reflect missing coverage, conflicting lines, uncertain mapping, or work changed after the audit. Read the specific reasons before re-entering anything.
 
 If gross matches but a component differs, check full-rate versus premium-only reporting and guarantee placement. If the paystub is higher than expected, check missing work and pay types as carefully as you would a shortfall.
 
