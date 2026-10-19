@@ -5,35 +5,26 @@ struct LiveAuditView: View {
     let model: AppModel
     let subscriptionStore: SubscriptionStore
     let periodID: UUID
+    @Environment(\.dynamicTypeSize) private var textSize
     @State private var correction = false
     @State private var paywall = false
     var body: some View {
         Group {
             if let context = model.periodContext(id: periodID) {
-                AuditDetailView(model: model, context: context, onCorrect: { correction = true })
-                    .id(context.paystub?.id)
+                AuditDetailView(
+                    model: model, context: context, onCorrect: { correction = true },
+                    // Large text needs the viewport for the result, with the offer after it.
+                    proOffer: textSize.isAccessibilitySize ? proOffer : nil
+                )
+                .id(context.paystub?.id)
             } else {
                 ContentUnavailableView("Period unavailable", systemImage: "doc")
             }
         }
         // An inset, not a bottom toolbar: a toolbar renders beneath the floating tab bar.
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled {
-                // The moment a worker has seen what one check shows is when Pro's value is
-                // clearest; offer it plainly, with the free trial when Apple reports one.
-                LinePayBottomBar {
-                    Button(
-                        subscriptionStore.annualTrialDuration.map { "Try Pro free for \($0)" }
-                            ?? "Check every paycheck with Pro"
-                    ) { paywall = true }
-                    .buttonStyle(LinePayPrimaryButtonStyle())
-                    .accessibilityIdentifier("audit.view-pro")
-                    Text(offerNote)
-                        .font(.footnote)
-                        .foregroundStyle(LinePayColor.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+            if !textSize.isAccessibilitySize, let proOffer {
+                LinePayBottomBar { proOffer }
             }
         }
         .sheet(isPresented: $correction) {
@@ -43,6 +34,14 @@ struct LiveAuditView: View {
         }
         .sheet(isPresented: $paywall) {
             ProPaywallView(store: subscriptionStore) { paywall = false }
+        }
+    }
+
+    private var proOffer: AuditProOfferView? {
+        guard !subscriptionStore.isPro, model.hasUsedFreeAudit, SubscriptionStore.commerceEnabled
+        else { return nil }
+        return AuditProOfferView(subscriptionStore: subscriptionStore, note: offerNote) {
+            paywall = true
         }
     }
 
@@ -67,10 +66,33 @@ struct LiveAuditView: View {
     }
 }
 
+struct AuditProOfferView: View {
+    let subscriptionStore: SubscriptionStore
+    let note: String
+    let onViewPro: () -> Void
+
+    var body: some View {
+        Group {
+            Button(
+                subscriptionStore.annualTrialDuration.map { "Try Pro free for \($0)" }
+                    ?? "Check every paycheck with Pro"
+            ) { onViewPro() }
+            .buttonStyle(LinePayPrimaryButtonStyle())
+            .accessibilityIdentifier("audit.view-pro")
+            Text(note)
+                .font(.footnote)
+                .foregroundStyle(LinePayColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
 struct AuditDetailView: View {
     let model: AppModel
     let context: PayPeriodContext
     var onCorrect: (() -> Void)? = nil
+    var proOffer: AuditProOfferView? = nil
     @State private var showingReport = false
     @State private var showingRemove = false
     @State private var errorMessage: String?
@@ -233,6 +255,9 @@ struct AuditDetailView: View {
             }
             if let errorMessage {
                 Section { Text(errorMessage).foregroundStyle(LinePayColor.review) }
+            }
+            if let proOffer {
+                Section { proOffer }
             }
         }
         .linePayCanvas()
