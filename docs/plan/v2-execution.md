@@ -2312,3 +2312,29 @@ created; describe and verify each property separately.
   resources and reported false inventory drift. A synthetic regression proves actual resources
   and package declarations remain included while generated descendant caches stay excluded.
   No recorded resource hashes or approval requirements were changed.
+
+## Hosted verification recovery and web delivery, October 19
+
+- PR [#114](https://github.com/RunLumi/linepay/pull/114) passed its exact-head hosted docs, legal
+  and complete browser/Worker HTTP gates and was merged as
+  `ce4be563c08d14d5b82cbb5e011832ddf53ff713`. The merged source deployed to isolated staging
+  (version `1171d604-f90b-4432-a759-cd70158919a6`); exact HTTP and both browser journeys passed.
+- After a fresh explicit production confirmation, the same source deployed to
+  `https://app.linepaycheck.com`, version `c8159e8a-59b6-4f74-950c-18f070d65a11`. Public DNS,
+  TLS and all32runtime byte checks passed. The live WebKit journey passed, but Chromium caught
+  an injected Cloudflare Web Analytics script absent on staging. Therefore this is not a
+  complete privacy/browser acceptance receipt. PR [#116](https://github.com/RunLumi/linepay/pull/116)
+  adds documented `no-transform`, exact browser HTML verification and a waiting cache refresh.
+  Its production redeployment and both browser readbacks remain pending. Marketing apex/www
+  ownership is preserved, and no pay-data backend was added.
+- Existing iOS runner registration works in a temporary foreground listener; launchd SSD access
+  remains unresolved. PR113's full native run passed both Apple accessibility journeys and two
+  benefits journeys, then failed the saved-comma-draft locale journey before reaching its segment
+  action. The failed run was canceled for focused investigation; its aggregate bundle lacks
+  `Info.plist` and cannot serve as a completed result. The retained CI log is partial evidence,
+  not a native PASS. A dedicated capture/reproduction is being prepared.
+- PR113 Android JVM/build/release/lint passed. Its emulator stage remained in unbounded ADB
+  discovery and was canceled; no connected or Maestro PASS is claimed. Startup now has an explicit
+  hosted KVM preflight, bounded AVD/ADB/boot commands, process-liveness checks, cleanup and retained
+  diagnostics. Seven subprocess regressions cover crash, hung/offline ADB, missing acceleration,
+  incomplete boot and successful startup. Real hosted recovery remains pending.
