@@ -2267,3 +2267,18 @@ created; describe and verify each property separately.
   deprecation notice; the downloaded SDK components are pinned locally. AGP 9.2 emits migration
   warnings because KGP 2.4.0 still requires the
   temporary legacy DSL opt-out. Keep this visible for a deliberate compiler/plugin migration.
+
+## Published browser preview, October 19
+
+- The owner explicitly approved `app.linepaycheck.com`. PR114 and privacy correction PR116
+  passed their exact-head hosted gates and merged. Production now serves source
+  `d3f61837aa3af25f4930802dc8d1441376fe9511`, Worker version
+  `9ea7453f-6c26-4838-a473-48dfe4a2b971`; normal DNS/TLS,32byte-matched assets,11refusals and
+  POST405 passed. Fresh Chromium and WebKit journeys passed exact HTML, same-origin GET-only
+  traffic, saved comparison, report/print, protected backup and retained records after reload.
+- The first production Chromium attempt caught inherited zone-level analytics injection. The
+  app's `no-transform` response policy and cachev13 corrected it without changing marketing
+  settings or forcing open clients to reload. Ordinary CDN request metadata remains disclosed.
+- The [publication receipt](../release/evidence/web-2026-10-19.md) retains actual provider/source
+  evidence. It does not close complete feature parity, engine3 corrections, native interchange,
+  installed/physical PWA, localization, source rights or App Store gates.
