@@ -28,6 +28,8 @@ has none. Cloudflare documents that this directive prevents automatic beacon inj
 Verify both actual browser HTML bytes and network requests on the production hostname; a plain
 HTTP client's byte check alone does not prove the browser receives the same HTML. Ordinary CDN
 request metadata remains part of static hosting; this directive does not disable edge inspection.
+The cache version also advances so a closed/reopened app adopts responses from this delivery
+policy. Activation still waits for open clients; editing is never interrupted by a forced reload.
 
 ## Reproducible checks
 
