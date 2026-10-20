@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "app_version": "1.1.0",
+  "locale": "en-US",
+  "status": "candidate-local-not-uploaded",
+  "generated_on": "2026-10-20",
+  "source": "OpenAI built-in ImageGen; original generated files are retained outside the repository.",
+  "derivation": "PNG exports were resized to Apple target dimensions with macOS sips. No text, payroll values, logos, app UI, or alpha channel were added.",
+  "assets": [
+    {
+      "placement": "product_page_header",
+      "file": "product-page-header-21x9.png",
+      "width": 3840,
+      "height": 1646,
+      "format": "png",
+      "alpha": false,
+      "sha256": "9ec24f458f9b7933af4c5ac1a66113096838f7d8b60a28efddd5420e5079e1d5",
+      "visual": "Two blank ruled ledgers and one graphite pencil, joined by a restrained teal rule."
+    },
+    {
+      "placement": "search_results",
+      "file": "search-results-3x2.png",
+      "width": 1920,
+      "height": 1280,
+      "format": "png",
+      "alpha": false,
+      "sha256": "55eff6c6c4ebd14cd9a79276e1ce6ab163b29e27e122d2b7874a1d95867bb4a0",
+      "visual": "Two blank ruled ledgers with a modest offset on one teal comparison line; no result is declared."
+    }
+  ]
+}
