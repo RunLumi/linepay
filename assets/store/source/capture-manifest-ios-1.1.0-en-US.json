@@ -1,0 +1,142 @@
+{
+  "platform": "ios",
+  "locale": "en-US",
+  "displayType": "APP_IPHONE_69",
+  "fixtureID": "store-week-2026-08-v1",
+  "captureTest": "LinePayUITests/PaydayJourneyTests/testV3StoreScreenshotsFromSamplePaycheck",
+  "sourceCommit": "f3e4947",
+  "appVersion": "1.1.0",
+  "buildNumber": "12",
+  "device": "iPhone 16 (Simulator, iOS 18.5)",
+  "osVersion": "iOS 18.5",
+  "appearance": "light",
+  "payrollTimeZone": "America/Chicago",
+  "images": [
+    {
+      "id": "01-is-your-paycheck-correct",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/01-is-your-paycheck-correct.png",
+      "exportSHA256": "dbdf763ea5e13b7a99c2142b3f51caf0656010ebc0049c340543089a9e963d6d",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-01-paycheck-result.png",
+      "rawSHA256": "8f52aabff9a7c3b13af588582fba12d1479e5d34d7e396c22fac5bb0822d4073",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Is Your Paycheck Correct?",
+      "caption": "Compare expected gross with your paystub.",
+      "qualifier": "Illustrative data \u00b7 First paycheck check free. Pro for ongoing checks.",
+      "productState": "confirmed-line-comparison-possible-difference-paystub-lower",
+      "accessRequirement": "First check free; Pro for later periods"
+    },
+    {
+      "id": "02-track-hours-know-expected-pay",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/02-track-hours-know-expected-pay.png",
+      "exportSHA256": "72492496b550bb7b71bfa35d7335f56e3b6f95fdd23a750316d134d4858eda5d",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-02-today.png",
+      "rawSHA256": "ec47c64dab6de34d73b49235548e652ebd11e994ba6b2c31fee0f85586733b40",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Track Hours. Know Expected Pay.",
+      "caption": "Log shifts. See expected wages from your rules.",
+      "qualifier": "Illustrative data",
+      "productState": "today-expected-wages-before-paycheck",
+      "accessRequirement": "Free"
+    },
+    {
+      "id": "03-scan-review-compare",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/03-scan-review-compare.png",
+      "exportSHA256": "284b233a4cc61923b0ed08779eb97850248e4bee329c799b53a3e6d7e130072a",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-03-scan-review.png",
+      "rawSHA256": "7ad42ca244d476904f46fa8bd3355a3fc41f959e4722b0ca71e0591a42ebc404",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Scan. Review. Compare.",
+      "caption": "Read on your iPhone. Nothing counts until you confirm it.",
+      "qualifier": "Illustrative data \u00b7 First paycheck check free. Pro for ongoing checks.",
+      "productState": "paystub-ocr-review-unconfirmed-dates-and-gross",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "04-possible-overtime-gaps",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/04-possible-overtime-gaps.png",
+      "exportSHA256": "855e77fa51da5bca226663286c391853764481a9443cc2b0b16d6e488e548c14",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-04-line-differences.png",
+      "rawSHA256": "0de309d11b7531951fedeed853c995daea316a559d75f265da606d1a1efd0511",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Find Possible Overtime Gaps.",
+      "caption": "Line by line: expected double time vs. your paystub.",
+      "qualifier": "Illustrative data \u00b7 First paycheck check free. Pro for ongoing checks.",
+      "productState": "confirmed-line-comparison-double-time-hours-difference",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "05-keep-the-evidence",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/05-keep-the-evidence.png",
+      "exportSHA256": "34b096286efa8b516a366d875e4ff3e14eec4956ac2fe41a185cfd1a0be2f59e",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-05-line-evidence.png",
+      "rawSHA256": "d02e43301d2e418d8c8038cccfdfffc05f0fbfa7940a75f74c4e51dbb45dccfc",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Keep the Evidence.",
+      "caption": "Work, rule and paystub value behind every line.",
+      "qualifier": "Illustrative data",
+      "productState": "double-time-line-evidence-with-retained-paystub",
+      "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
+    },
+    {
+      "id": "06-complex-pay",
+      "export": "assets/store/exports/ios/1.1.0/en-US/6.9/06-complex-pay.png",
+      "exportSHA256": "b86745c2ca806aabff09db660662cb2cd69e7ecdf6df8509ddcebb0363fd966b",
+      "exportPixels": [
+        1320,
+        2868
+      ],
+      "rawCapture": "assets/store/raw/ios/1.1.0-12/en-US/iPhone-16/light/store-v3-06-advanced-rules.png",
+      "rawSHA256": "c25219a236290b20cf3e1fb3a7be884f89be09564b9f61fa1e3e349e5cadd964",
+      "sourceCropPixels": null,
+      "scaledCapturePixels": [
+        980,
+        2126
+      ],
+      "headline": "Built for Complex Pay, Too.",
+      "caption": "Optional callout minimum and per diem rules.",
+      "qualifier": "Illustrative data",
+      "productState": "rule-editor-advanced-callout-minimum-and-per-diem-on",
+      "accessRequirement": "Free"
+    }
+  ]
+}

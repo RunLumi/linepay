@@ -19,7 +19,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-W, H = 1284, 2778  # Apple's 6.5-inch portrait bucket
+DEFAULT_SIZE = (1284, 2778)  # Apple's 6.5-inch portrait bucket; v3 uses 1320x2868 (6.9-inch)
 CANVAS = (0xF4, 0xF1, 0xE8)  # DESIGN.md canvas
 TEXT = (0x13, 0x17, 0x1A)  # text.primary
 SECONDARY = (0x5C, 0x64, 0x68)  # text.secondary
@@ -48,7 +48,8 @@ def rounded(image: Image.Image, radius: int) -> Image.Image:
     return out
 
 
-def compose(raw: Path, frame: dict, dest: Path) -> tuple[int, int]:
+def compose(raw: Path, frame: dict, dest: Path, size: tuple[int, int]) -> tuple[int, int]:
+    W, H = size
     headline, caption, small = font(100, "Bold"), font(46, "Regular"), font(34, "Medium")
     shot = Image.open(raw).convert("RGB")
     canvas = Image.new("RGB", (W, H), CANVAS)
@@ -74,16 +75,16 @@ def compose(raw: Path, frame: dict, dest: Path) -> tuple[int, int]:
 
     top = box[3] + 64
     scale = min((H - top - BOTTOM_MARGIN) / shot.height, MAX_SHOT_WIDTH / shot.width)
-    size = round(shot.width * scale), round(shot.height * scale)
-    window = rounded(shot.resize(size, Image.LANCZOS), 64)
-    x = (W - size[0]) // 2
-    border = Image.new("RGBA", (size[0] + 8, size[1] + 8), (0, 0, 0, 0))
+    scaled = round(shot.width * scale), round(shot.height * scale)
+    window = rounded(shot.resize(scaled, Image.LANCZOS), 64)
+    x = (W - scaled[0]) // 2
+    border = Image.new("RGBA", (scaled[0] + 8, scaled[1] + 8), (0, 0, 0, 0))
     ImageDraw.Draw(border).rounded_rectangle(
-        (0, 0, size[0] + 7, size[1] + 7), 68, outline=LINE, width=4)
+        (0, 0, scaled[0] + 7, scaled[1] + 7), 68, outline=LINE, width=4)
     canvas.paste(border, (x - 4, top - 4), border)
     canvas.paste(window, (x, top), window)
     canvas.save(dest, "PNG", optimize=True)
-    return size
+    return scaled
 
 
 def main() -> int:
@@ -97,22 +98,34 @@ def main() -> int:
     parser.add_argument("--build", required=True)
     parser.add_argument("--device", required=True)
     parser.add_argument("--os", required=True)
+    parser.add_argument("--size", default="%dx%d" % DEFAULT_SIZE, help="export WIDTHxHEIGHT")
+    parser.add_argument("--display-type", default="APP_IPHONE_65")
+    parser.add_argument(
+        "--capture-test",
+        default="LinePayUITests/PaydayJourneyTests/testStoreScreenshotsFromSamplePaycheck")
     args = parser.parse_args()
+    width, height = (int(part) for part in args.size.lower().split("x"))
 
     captions = json.loads(args.captions.read_text(encoding="utf-8"))
     args.export_dir.mkdir(parents=True, exist_ok=True)
     root = Path.cwd().resolve()
+
+    def shown(path: Path) -> str:
+        """Repository-relative when inside the checkout, otherwise absolute (private output)."""
+        resolved = path.resolve()
+        return (resolved.relative_to(root) if resolved.is_relative_to(root) else resolved).as_posix()
+
     images = []
     for frame in captions["frames"]:
         raw = args.raw_dir / frame["raw"]
         dest = args.export_dir / f"{frame['id']}.png"
-        scaled = compose(raw, frame, dest)
+        scaled = compose(raw, frame, dest, (width, height))
         images.append({
             "id": frame["id"],
-            "export": dest.resolve().relative_to(root).as_posix(),
+            "export": shown(dest),
             "exportSHA256": sha256(dest),
-            "exportPixels": [W, H],
-            "rawCapture": raw.resolve().relative_to(root).as_posix(),
+            "exportPixels": [width, height],
+            "rawCapture": shown(raw),
             "rawSHA256": sha256(raw),
             "sourceCropPixels": None,
             "scaledCapturePixels": list(scaled),
@@ -126,9 +139,9 @@ def main() -> int:
     manifest = {
         "platform": "ios",
         "locale": "en-US",
-        "displayType": "APP_IPHONE_65",
+        "displayType": args.display_type,
         "fixtureID": captions["fixtureID"],
-        "captureTest": "LinePayUITests/PaydayJourneyTests/testStoreScreenshotsFromSamplePaycheck",
+        "captureTest": args.capture_test,
         "sourceCommit": args.source_commit,
         "appVersion": args.app_version,
         "buildNumber": args.build,

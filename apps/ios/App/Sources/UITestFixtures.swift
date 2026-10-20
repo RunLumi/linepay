@@ -313,7 +313,12 @@
         /// 46 hours (40 regular, 6 double time) expecting $3,016.00, against a synthetic paystub of
         /// 40 + 5 hours and $2,900.00 gross. `store-week` stops before the paycheck,
         /// `store-week-checked` confirms it, and `store-week-archived` also closes the period.
+        /// `store-week-scan` stops at an unconfirmed review of a synthetic paystub read by the real
+        /// on-device OCR; `store-week-sourced` confirms that same retained paystub's values.
+        /// `store-week-advanced` is a separate fixture (Mon 8 h, one short callout,
+        /// callout minimum and flat per diem on); its totals are never the sample paycheck's.
         private static func seedStoreWeek(_ model: AppModel, scenario: String) throws {
+            let advanced = scenario == "store-week-advanced"
             var profile = PayProfileDraft()
             profile.hourlyRate = "58"
             profile.currencyCode = "USD"
@@ -322,13 +327,29 @@
             profile.useDailyOvertime = true
             profile.overtimeAfterHours = "8"
             profile.overtimeMultiplier = "2"
+            if advanced {
+                profile.useCalloutMinimum = true
+                profile.calloutMinimumHours = "4"
+                profile.usePerDiem = true
+                profile.perDiemAmount = "60"
+            }
             var calendar = Calendar(identifier: .gregorian)
             calendar.timeZone = TimeZone(identifier: "America/Chicago")!
-            let day = { (date: Int, hour: Int) in
-                calendar.date(from: DateComponents(year: 2026, month: 8, day: date, hour: hour))!
+            let moment = { (date: Int, hour: Int, minute: Int) in
+                calendar.date(
+                    from: DateComponents(
+                        year: 2026, month: 8, day: date, hour: hour, minute: minute))!
             }
+            let day = { (date: Int, hour: Int) in moment(date, hour, 0) }
             profile.periodStartDate = day(24, 0)
             try model.saveProfile(profile)
+            if advanced {
+                try model.addWork(start: day(24, 7), end: day(24, 15), kind: .regular, note: "")
+                try model.addWork(
+                    start: day(25, 19), end: moment(25, 20, 30), kind: .callout, note: "")
+                try model.completeFirstResult()
+                return
+            }
             for (date, start, end) in [
                 (24, 7, 15), (25, 7, 15), (26, 7, 15), (27, 6, 20), (28, 7, 15),
             ] {
@@ -339,6 +360,10 @@
             guard scenario != "store-week" else { return }
             guard let id = model.activePeriod?.id else {
                 throw AppModelError.missingActivePayPeriod
+            }
+            if scenario == "store-week-scan" || scenario == "store-week-sourced" {
+                try stageSamplePaystub(model, periodID: id)
+                if scenario == "store-week-scan" { return }
             }
             var stub = try model.paycheckDraft(for: id)
             stub.grossPay = "2900"
@@ -357,6 +382,84 @@
             ]
             try model.confirmPaystub(stub)
             if scenario == "store-week-archived" { try model.archiveCurrentPeriod() }
+        }
+
+        /// A clearly synthetic paystub for `store-week-2026-08-v1`, retained and read by the same
+        /// `PaystubOCRService` as a user import. Nothing is confirmed: the draft is what the review
+        /// screen shows before the user checks each value against the original.
+        private static func stageSamplePaystub(_ model: AppModel, periodID: UUID) throws {
+            let lines = [
+                "SAMPLE PAYSTUB - ILLUSTRATIVE DATA",
+                "Pay period starts 08/24/2026",
+                "Pay period ends 08/30/2026",
+                "Regular hours 40.00",
+                "Regular pay $2,320.00",
+                "Double time hours 5.00",
+                "Double time pay $580.00",
+                "Gross pay $2,900.00",
+            ]
+            let bounds = CGRect(x: 0, y: 0, width: 612, height: 792)
+            let data = UIGraphicsPDFRenderer(bounds: bounds).pdfData { context in
+                context.beginPage()
+                UIColor.white.setFill()
+                context.fill(bounds)
+                for (index, line) in lines.enumerated() {
+                    (line as NSString).draw(
+                        at: CGPoint(x: 48, y: 72 + index * 44),
+                        withAttributes: [
+                            .font: UIFont.systemFont(ofSize: index == 0 ? 20 : 24),
+                            .foregroundColor: UIColor.black,
+                        ])
+                }
+            }
+            var draft = try model.stagePaystub(
+                data: data, filename: "sample-paystub.pdf", mediaType: "application/pdf",
+                kind: .file, periodID: periodID)
+            let result = try recognizeBlocking(data)
+            draft.suggestions = result.suggestions
+            draft.recognizedText = result.recognizedText
+            draft.processingNotice = result.notice
+            draft.sourcePageCount = result.pageCount
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: "America/Chicago")!
+            for (field, suggestion) in result.suggestions {
+                guard let value = suggestion.value else { continue }
+                guard field.isDate else {
+                    draft[field] = value
+                    continue
+                }
+                let parts = value.split(separator: "-").compactMap { Int($0) }
+                guard parts.count == 3,
+                    let date = calendar.date(
+                        from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+                else { continue }
+                if field == .periodStart {
+                    draft.payPeriodStartDate = date
+                } else {
+                    draft.payPeriodEndDate = date
+                }
+            }
+            try model.savePaystubDraft(draft)
+        }
+
+        /// The app session is built synchronously at launch; spin the main run loop until the real
+        /// OCR service finishes instead of replacing its output with canned lines.
+        private static func recognizeBlocking(_ data: Data) throws -> OCRPaystubResult {
+            var outcome: Result<OCRPaystubResult, any Error>?
+            Task {
+                do {
+                    outcome = .success(
+                        try await PaystubOCRService().recognize(data: data, fileExtension: "pdf"))
+                } catch {
+                    outcome = .failure(error)
+                }
+            }
+            let deadline = Date().addingTimeInterval(60)
+            while outcome == nil, Date() < deadline {
+                RunLoop.main.run(mode: .default, before: Date().addingTimeInterval(0.05))
+            }
+            guard let outcome else { throw LocalStateStoreError.invalidState }
+            return try outcome.get()
         }
     }
 #endif
