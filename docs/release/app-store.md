@@ -125,6 +125,17 @@ Use real candidate captures with clearly synthetic facts and the appropriate Fre
 
 Inspect small-screen, large-text and dark appearances in the actual app. The submission set must remain legible at thumbnail size. Screenshot 4 is omitted if a meaningful, supported overtime comparison cannot be captured; an unresolved-rule warning must never be dressed up as a detected gap. In particular, more than 40 actual weekly hours without mapped weekly coverage remains **Needs review**, even when entered gross amounts match. A configured difference in that state is not a verified overtime shortfall.
 
+### Product Page Header and Search Results creative candidates
+
+Apple treats these as creative assets separate from the screenshot set. Current creative assets appear on iOS 27 and iPadOS 27 and later. For these iPhone candidates, the selected specifications are 21:9 at 3840 × 1646 for the Product Page Header and 3:2 at 1920 × 1280 for Search Results. Keep the real, source/build-bound screenshots above as their own assets.
+
+| Placement | Local candidate | Size | Visual |
+|---|---|---:|---|
+| Product Page Header | [PNG](../../assets/store/creative/ios/1.1.0/en-US/product-page-header-21x9.png) | 3840 × 1646 | Two blank ledgers and a graphite pencil joined by a restrained teal rule |
+| Search Results | [PNG](../../assets/store/creative/ios/1.1.0/en-US/search-results-3x2.png) | 1920 × 1280 | Two blank ledgers with a modest offset on one comparison line |
+
+Both are ImageGen-created conceptual artwork. They contain no interface, text, payroll values, logo or claim, and have no alpha channel. The [manifest](../../assets/store/creative/ios/1.1.0/en-US/manifest.json) records source, dimensions and checksums. These files are **local candidates only**: they have not been uploaded, submitted or approved. They complement the actual app screenshots and do not replace them. Apple recommends one clear header idea and a search-result creative that makes the app's purpose obvious; the art still needs the final App Store preview and owner review before submission. See Apple's [creative asset specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/creative-assets-specifications/) and [asset best practices](https://developer.apple.com/app-store/asset-best-practices/).
+
 ## 6. App preview and icon
 
 Retain the recognizable Line Gap geometry and the Precision Industrial Minimalism system. No icon redesign is required to publish this copy. Review any actual asset change separately at Home Screen and App Store sizes.
