@@ -138,6 +138,7 @@ struct SettingsView: View {
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
                 Text(title)
+                    .font(.body)
                     .foregroundStyle(LinePayColor.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)

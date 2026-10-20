@@ -40,6 +40,7 @@ struct BackupRestoreEntryPoint: View {
                     Image(systemName: "icloud.and.arrow.up")
                         .accessibilityHidden(true)
                     Text(title)
+                        .font(.body)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                 }

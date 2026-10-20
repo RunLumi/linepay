@@ -99,3 +99,10 @@ warnings remain unchanged. The iPhone 16 / iOS 18.5 UI journey passed for backup
 the final device-local activity action; the full Apple accessibility audit still reports open
 Dynamic Type, clipping, and contrast findings under Xcode 27.1. This is not a full-site or release
 approval.
+
+Targeted accessibility presentation review (October 21, 2026): `DesignTokens.swift`,
+`SettingsView.swift`, and `LocalDiagnosticsView.swift` now make system body text and wrapping explicit;
+the local activity clear label uses the existing contrast-checked difference token. Navigation,
+local-only recording, diagnostic export, clear scope, pay backup, privacy, billing, Support, and
+benefit instructions remain unchanged. No public guide edit is needed; the full-site release review
+and Apple accessibility audit remain open.

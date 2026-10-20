@@ -173,8 +173,8 @@
         "backup-and-restore"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "4d7d17a06974d9daa47be8f023632a81f71c8109",
-      "reason": "Targeted October 21 review: the Settings backup entry only changes its multiline rendering and accessible label; the manual Files workflow, protection, restore, and privacy instructions remain unchanged."
+      "blob": "ba7ba5270a967cdc9e9e2b0231b586838294269c",
+      "reason": "Targeted October 21 review: the Settings backup entry uses the system body text style and wraps at larger sizes; the manual Files workflow, protection, restore, and privacy instructions remain unchanged."
     },
     {
       "path": "apps/ios/App/Sources/SettingsView.swift",
@@ -185,8 +185,8 @@
         "benefits"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "7113f6e79713ee7aa1862891f87d81cef263cf15",
-      "reason": "Targeted October 19 guide review: rechecked privacy-and-deletion, pro-and-billing, support, and benefits against the Settings navigation and accessibility-title changes. Destination labels, actions, and public instructions remain accurate; no guide edit is needed."
+      "blob": "fe87002ccae4cb3bcb04742715e95243187a0987",
+      "reason": "Targeted October 21 review: Settings navigation labels now state the existing system body text style; destinations and actions are unchanged. Privacy, Pro, Support, and benefits instructions remain accurate; no guide edit is needed."
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -450,8 +450,8 @@
         "backup-and-restore"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "373c47a7a400095df0b2916188384e584b6869f2",
-      "reason": "Targeted October 19 review: privacy disclosures use larger body text and sentence-case headings; local-only recording, export, retention, and backup boundaries are unchanged."
+      "blob": "99c5298aad8a9e9bc80d7594c8f137f500bb34f8",
+      "reason": "Targeted October 21 review: the local activity view uses explicit body text styles, a contrast-safe destructive label, and wrapping value labels; recording, export, retention, clear scope, and backup boundaries are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/AppSession.swift",

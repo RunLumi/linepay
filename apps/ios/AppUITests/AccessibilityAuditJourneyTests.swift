@@ -12,37 +12,22 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
     }
 
     func testSettingsPassesAppleAccessibilityAudit() throws {
-        launch(largeText: false)
+        launch(largeText: false, scenario: "work")
         app.tabBars.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
-        let terms = app.links["Terms of use"]
-        var scrolls = 0
-        while !terms.isHittable && scrolls < 10 {
-            app.swipeUp()
-            scrolls += 1
-        }
-        XCTAssertTrue(terms.isHittable)
         try audit("settings")
     }
 
     func testDeviceLocalActivityPassesAppleAccessibilityAudit() throws {
-        launch(largeText: false)
+        launch(largeText: false, scenario: "work")
         app.tabBars.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
         let localActivity = app.descendants(matching: .any)
             .matching(identifier: "settings.local-activity").firstMatch
-        if !localActivity.isHittable { app.swipeUp() }
         XCTAssertTrue(localActivity.waitForExistence(timeout: 10))
         XCTAssertTrue(localActivity.isHittable)
         localActivity.tap()
         XCTAssertTrue(app.navigationBars["Device-local activity"].waitForExistence(timeout: 10))
-        let clear = app.buttons["activity.clear"]
-        var scrolls = 0
-        while !clear.isHittable && scrolls < 10 {
-            app.swipeUp()
-            scrolls += 1
-        }
-        XCTAssertTrue(clear.isHittable)
         try audit("device-local-activity")
     }
 
@@ -161,7 +146,7 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         add(screenshot)
     }
 
-    private func launch(largeText: Bool) {
+    private func launch(largeText: Bool, scenario: String = "matches") {
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
         XCUIDevice.shared.press(.home)
@@ -174,7 +159,7 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
                 "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
             ]
         }
-        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "matches"
+        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = scenario
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 20))

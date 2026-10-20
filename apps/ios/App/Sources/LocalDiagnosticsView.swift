@@ -85,8 +85,14 @@ struct LocalDiagnosticsView: View {
                             "The diagnostic preview could not be prepared. Existing records are unchanged."
                     }
                 }.linePayRowAction().accessibilityIdentifier("activity.preview")
-                Button("Clear only local activity", role: .destructive) { clearing = true }
-                    .accessibilityIdentifier("activity.clear")
+                Button(role: .destructive) {
+                    clearing = true
+                } label: {
+                    Text("Clear only local activity")
+                        .font(.body)
+                        .foregroundStyle(LinePayColor.difference)
+                }
+                .accessibilityIdentifier("activity.clear")
             } header: {
                 localSectionHeader("Manual diagnostic export")
             }
