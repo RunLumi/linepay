@@ -22,7 +22,8 @@ Small fixes stay small.
 
 These are deliberately different:
 
-- Public product name: **LinePaycheck**
+- Public product brand: **LinePaycheck**
+- vNext display-name candidate: **Lineman Pay** (selected Oct 20; pending release)
 - Repository: `streamentry/linepay`
 - iOS bundle ID: **`com.streamentry.linepay`**
 - Xcode project / scheme / target: `LinePay`
@@ -212,4 +213,4 @@ Follow the [complexity budget and anti-goals](docs/engineering/agentic-developme
 
 Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
 
-ASC keys: Verify team issuer, app `6808889292`, and least role from protected records; never infer pairing from `.p8` filenames or commit key material. Owner candidates (2026-10-19): `2HR347AH8Q`, `3XJ664VDDN`, `HSDB3PQ6ST`, `P8ZK4BPD78` (pairing unverified). See [release procedure](docs/release/api-and-testflight.md).
+ASC key `2HR347AH8Q` (App Manager): UI + GET verified team `7MBXZKYSY4`, app `6808889292`. Keep its `.p8` private; see [release procedure](docs/release/api-and-testflight.md).
