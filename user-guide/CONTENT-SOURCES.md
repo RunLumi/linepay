@@ -91,3 +91,11 @@ October17 assessment-v4 candidate review: result/history/import/report/expected-
 covers active legacy weekly re-review, retained frozen comparisons and Recorded verdict context.
 Source and SDK checks do not prove native migration, rendering, PDF or VoiceOver behavior; no new
 native screenshot was substituted for those missing receipts.
+
+Targeted backup-entry layout review (October 21, 2026): `BackupRestoreView.swift` now wraps the
+existing Settings backup title at Accessibility XXXL and keeps the same `backup.open` action. The
+manual Files destination, optional per-copy password protection, replace semantics, and privacy
+warnings remain unchanged. The iPhone 16 / iOS 18.5 UI journey passed for backup-row reachability and
+the final device-local activity action; the full Apple accessibility audit still reports open
+Dynamic Type, clipping, and contrast findings under Xcode 27.1. This is not a full-site or release
+approval.

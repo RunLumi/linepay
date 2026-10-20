@@ -4,8 +4,46 @@ import XCTest
 final class AccessibilityAuditJourneyTests: XCTestCase {
     private var app = XCUIApplication()
 
-    func testPrimaryWorkerScreensPassAppleAccessibilityAudit() throws {
-        try auditWorkerScreens()
+    func testTodayPassesAppleAccessibilityAudit() throws {
+        launch(largeText: false)
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
+        assertTodayStatusAndWorkRow()
+        try audit("today")
+    }
+
+    func testSettingsPassesAppleAccessibilityAudit() throws {
+        launch(largeText: false)
+        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        let terms = app.links["Terms of use"]
+        var scrolls = 0
+        while !terms.isHittable && scrolls < 10 {
+            app.swipeUp()
+            scrolls += 1
+        }
+        XCTAssertTrue(terms.isHittable)
+        try audit("settings")
+    }
+
+    func testDeviceLocalActivityPassesAppleAccessibilityAudit() throws {
+        launch(largeText: false)
+        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        let localActivity = app.descendants(matching: .any)
+            .matching(identifier: "settings.local-activity").firstMatch
+        if !localActivity.isHittable { app.swipeUp() }
+        XCTAssertTrue(localActivity.waitForExistence(timeout: 10))
+        XCTAssertTrue(localActivity.isHittable)
+        localActivity.tap()
+        XCTAssertTrue(app.navigationBars["Device-local activity"].waitForExistence(timeout: 10))
+        let clear = app.buttons["activity.clear"]
+        var scrolls = 0
+        while !clear.isHittable && scrolls < 10 {
+            app.swipeUp()
+            scrolls += 1
+        }
+        XCTAssertTrue(clear.isHittable)
+        try audit("device-local-activity")
     }
 
     func testTodayStatusWrapLeavesWorkRowReadableAndReachable() {
@@ -39,10 +77,24 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Pay period"].waitForExistence(timeout: 10))
         app.navigationBars.buttons.firstMatch.tap()
 
+        let backup = app.buttons["backup.open"]
+        var backupScrolls = 0
+        while !backup.isHittable && backupScrolls < 8 {
+            app.swipeUp()
+            backupScrolls += 1
+        }
+        XCTAssertTrue(backup.isHittable)
+        XCTAssertTrue(backup.label.contains("Backup and restore"))
+        XCTAssertGreaterThanOrEqual(backup.frame.height, 44)
+        let backupScreenshot = XCTAttachment(screenshot: app.screenshot())
+        backupScreenshot.name = "large-text-settings-backup-row"
+        backupScreenshot.lifetime = .keepAlways
+        add(backupScreenshot)
+
         let localActivity = app.buttons["settings.local-activity"]
         var attempts = 0
-        while !localActivity.isHittable && attempts < 5 {
-            app.swipeUp()
+        while !localActivity.isHittable && attempts < 10 {
+            app.swipeDown()
             attempts += 1
         }
         XCTAssertTrue(localActivity.isHittable)
@@ -57,26 +109,20 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         }
         XCTAssertTrue(recording.waitForExistence(timeout: 10))
         XCTAssertTrue(recording.isHittable)
-    }
-
-    private func auditWorkerScreens() throws {
-        launch(largeText: false)
-        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
-        assertTodayStatusAndWorkRow()
-        try audit("today")
-
-        app.tabBars.buttons["Settings"].tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
-        try audit("settings")
-
-        let localActivity = app.descendants(matching: .any)
-            .matching(identifier: "settings.local-activity").firstMatch
-        if !localActivity.isHittable { app.swipeUp() }
-        XCTAssertTrue(localActivity.waitForExistence(timeout: 10))
-        XCTAssertTrue(localActivity.isHittable)
-        localActivity.tap()
-        XCTAssertTrue(app.navigationBars["Device-local activity"].waitForExistence(timeout: 10))
-        try audit("device-local-activity")
+        let clear = app.buttons["activity.clear"]
+        let activityList = app.collectionViews.firstMatch
+        XCTAssertTrue(activityList.exists)
+        var clearScrolls = 0
+        while (!clear.exists || !clear.isHittable) && clearScrolls < 20 {
+            activityList.swipeUp()
+            clearScrolls += 1
+        }
+        XCTAssertTrue(clear.exists)
+        XCTAssertTrue(clear.isHittable)
+        let activityScreenshot = XCTAttachment(screenshot: app.screenshot())
+        activityScreenshot.name = "large-text-device-local-activity-controls"
+        activityScreenshot.lifetime = .keepAlways
+        add(activityScreenshot)
     }
 
     private func assertTodayStatusAndWorkRow() {

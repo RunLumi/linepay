@@ -36,9 +36,17 @@ struct BackupRestoreEntryPoint: View {
             Button {
                 isPresented = true
             } label: {
-                Label(title, systemImage: "icloud.and.arrow.up")
-                    .frame(minHeight: 44)
+                HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.compact) {
+                    Image(systemName: "icloud.and.arrow.up")
+                        .accessibilityHidden(true)
+                    Text(title)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel(title)
             .accessibilityIdentifier("backup.open")
             .sheet(isPresented: $isPresented) {
                 BackupRestoreView(session: session)

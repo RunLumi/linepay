@@ -172,8 +172,9 @@
       "guides": [
         "backup-and-restore"
       ],
-      "disposition": "reviewed",
-      "blob": "101cbc4406d85651f07b592e79c1d3d3fd2e9abf"
+      "disposition": "reviewed-no-guide-change",
+      "blob": "4d7d17a06974d9daa47be8f023632a81f71c8109",
+      "reason": "Targeted October 21 review: the Settings backup entry only changes its multiline rendering and accessible label; the manual Files workflow, protection, restore, and privacy instructions remain unchanged."
     },
     {
       "path": "apps/ios/App/Sources/SettingsView.swift",
