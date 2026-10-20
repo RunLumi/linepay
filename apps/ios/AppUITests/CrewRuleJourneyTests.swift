@@ -90,10 +90,26 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(message.label.contains("Saved to the selected location"), message.label)
         tap("crew-rules.choose-file")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
-        let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", marker)).firstMatch
-        if !file.waitForExistence(timeout: 5), app.searchFields.firstMatch.exists {
-            app.searchFields.firstMatch.tap()
-            app.searchFields.firstMatch.typeText(marker)
+        let localFolder = app.staticTexts["On My iPhone"].firstMatch
+        if !localFolder.exists {
+            let browse = app.buttons["Browse"].firstMatch
+            XCTAssertTrue(browse.waitForExistence(timeout: 10))
+            browse.tap()
+            XCTAssertTrue(localFolder.waitForExistence(timeout: 10))
+            localFolder.tap()
+        }
+        let file = app.cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
+        ).firstMatch
+        if !file.waitForExistence(timeout: 5) {
+            let search = app.searchFields.firstMatch
+            if search.waitForExistence(timeout: 5) {
+                search.tap()
+                search.typeText(marker)
+                let submit = app.keyboards.buttons.matching(identifier: "Search").firstMatch
+                XCTAssertTrue(submit.waitForExistence(timeout: 5))
+                submit.tap()
+            }
         }
         if !file.waitForExistence(timeout: 15) {
             capture("v2-crew-import-file-missing", large: large)

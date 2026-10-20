@@ -72,12 +72,25 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         tap("backup.restore")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
         capture("v2-backup-restore-picker-initial")
-        let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", filename)).firstMatch
+        let localFolder = app.staticTexts["On My iPhone"].firstMatch
+        if !localFolder.exists {
+            let browse = app.buttons["Browse"].firstMatch
+            XCTAssertTrue(browse.waitForExistence(timeout: 10))
+            browse.tap()
+            XCTAssertTrue(localFolder.waitForExistence(timeout: 10))
+            localFolder.tap()
+        }
+        let file = app.cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", filename, filename)
+        ).firstMatch
         if !file.waitForExistence(timeout: 5) {
             let search = app.searchFields.firstMatch
-            if search.exists {
+            if search.waitForExistence(timeout: 5) {
                 search.tap()
                 search.typeText(filename)
+                let submit = app.keyboards.buttons.matching(identifier: "Search").firstMatch
+                XCTAssertTrue(submit.waitForExistence(timeout: 5))
+                submit.tap()
             }
         }
         if !file.waitForExistence(timeout: 15) {
