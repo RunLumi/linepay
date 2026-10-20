@@ -30,6 +30,31 @@ paid-access qualifier, or if a concept enters the upload folders.
 Removed in 1.0.5: "storm work" as a tracked category; Pro "paystub scanning, reconciliation history,
 and advanced audit tools"; the eight concept screenshots (fake UI, logo and employer).
 
+## vNext App Store candidate (1.1.0, en-US; not approved)
+
+The exact copy is in [app-store.md](../release/app-store.md); the owner selected **Lineman Pay** for the 1.1.0 listing and home-screen display on October 20. This mapping is a review aid, not
+owner/counsel approval or permission to publish. Build 12 is internal TestFlight only; the native
+receipt records a new Today clipping issue and other unresolved checks. Any submitted screenshots
+must be recaptured from the final selected build, and every row below needs final source/build-bound
+review before submission. A local focused build 13 E2E passed on iOS 18.5 / Xcode 27.1: the long
+status wraps and the work row stays readable and reachable below it. The full accessibility audit
+still fails on 16 other pre-v3 Dynamic Type, contrast and clipping findings; this is not full native
+release evidence or Xcode 26.6 validation. The proposed public name and subtitle also need App Store
+availability and trademark/confusability review. The official [USPTO wordmark search](https://tmsearch.uspto.gov/search/search-information)
+on October 20 surfaced a live registered **LINE PAY** mark, serial `97491295`, owned by LY
+Corporation in classes 009, 036, and 042, including mobile software. This is a material
+confusability signal. An exact Lineman Pay clearance has not been established; owner/counsel
+review and App Store availability checks remain open, and no clearance is claimed.
+
+| Candidate claim | Current implementation and evidence | Boundary / release gap |
+|---|---|---|
+| Hourly workers can enter their rate, period, and actual work and see expected wages | Generic first-paycheck journey in `OnboardingFlowView`, `PayProfileSetupView`, `TodayView`, and `PayLedgerView`; `PaydayJourneyTests` and exact `LinePayDomain` tests | The estimate covers only entered work and confirmed supported rules; the full native release gate is not green. |
+| Workers can compare a paystub and understand a possible difference | `PaycheckAssessment`, `AuditDetailView`, and `PaycheckResolutionView`; audit-scope and verdict regressions | A match covers only compared values; incomplete work, unsupported rules, or incompatible periods remain review states, not legal findings. |
+| Imported paystub fields can be reviewed and confirmed before comparison | On-device `PaystubOCRService`, review flow, and parser/PDF test suites | OCR is evidence, not truth. The clean-head native release gate and final build-bound screenshots remain pending. |
+| Lineworkers retain supported callout, per-diem, overtime, and dated-rule settings | Existing advanced pay-rule editor and deterministic domain tests | No named agreement, universal CBA, or complete jurisdictional coverage is claimed. |
+| Work and paystub processing are private by default; records are user-exported | Local persistence, Vision processing, no account/pay-data backend, privacy manifest, and manual export/backup flows | Exported files may contain sensitive information; the current App Store privacy and support snapshots must be rechecked for submission. |
+| The first comparable audit is free; Pro adds ongoing checks | `AppModel.canRunAudit`, `SubscriptionStore`, and subscription behavior/lifecycle tests | Final sandbox/TestFlight purchase, restore, expiry and offer eligibility evidence is still required for the selected build. |
+
 ## linepaycheck.com
 
 | Claim | Substantiation | Limitation shown |

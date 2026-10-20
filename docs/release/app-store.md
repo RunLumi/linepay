@@ -1,12 +1,12 @@
-# Paycheck Audit: LinePay — App Store candidate
+# Lineman Pay — App Store candidate
 
 [Release home](README.md) · [v3 plan](../plan/v3.md) · [Pricing](../product/pricing.md) · [Claims](../legal/claim-register.md)
 
-> **Canonical App Store copy and presentation. Updated October 19, 2026.** The owner selected the v3 positioning and requested implementation, submission and manual public release after Apple approval. The copy below is a **candidate for vNext**, not evidence of an App Store Connect write, name availability, trademark clearance, passing release gate or public release. The candidate's actual version/build is assigned during release preparation.
+> **Canonical App Store copy and presentation. Updated October 20, 2026.** The owner selected the v3 positioning and, on October 20, selected Lineman Pay as the next-version listing and home-screen display name; implementation, submission and manual public release after Apple approval remain requested. The copy below is a **candidate for vNext**, not evidence of an App Store Connect write, name availability, trademark clearance, passing release gate or public release. The candidate source is set to version 1.1.0, build 13; its signed binary, Apple build record, and final release evidence are still pending. The current shared CI job fell back to Xcode 27.1; the repository's Xcode 26.6 / Swift 6.3 baseline remains unverified.
 
 ## Decision and release boundary
 
-The target public listing is **Paycheck Audit: LinePay**, with the subtitle **Verify Pay & Track Hours**. Its promise is:
+The target public listing is **Lineman Pay**, with the subtitle **Verify Pay & Track Hours**. Its promise is:
 
 > Track what you worked. Compare expected pay with your paystub. Understand possible differences.
 
@@ -18,7 +18,7 @@ Start with US hourly workers with variable schedules or supported overtime and p
 | vNext candidate | Generic hourly setup and direct paycheck comparison, with advanced rules retained. Copy and review routes below require acceptance against the final candidate. |
 | Submitted / public vNext | Record the actual selected build, metadata, screenshots, release mode and Apple state in a new source-bound release receipt. No vNext submission or public-state claim is made here. |
 
-Keep `com.streamentry.linepay`, the `LinePay` project/scheme/target, `LinePayDomain`, StoreKit product IDs and stored data identifiers unchanged. The home-screen label remains **LinePay**. Existing technical and subscription names are not an instruction to rename those identities. Check brand availability/confusability through the existing [legal review](../legal/README.md) before using the new name publicly.
+Keep `com.streamentry.linepay`, the `LinePay` project/scheme/target, `LinePayDomain`, StoreKit product IDs and stored data identifiers unchanged. For the 1.1.0 candidate, set the home-screen display name to **Lineman Pay**; keep the technical product name and existing subscription names unchanged. This does not rename the bundle, project, domain module, or stored data. Availability and trademark/confusability review remain open. The prior USPTO readback found a live registered **LINE PAY** mark (serial 97491295, LY Corporation); an exact Lineman Pay clearance has not been established.
 
 ## 1. Store-page job
 
@@ -36,7 +36,7 @@ The app does not retrieve paystubs from an employer portal, provide direct depos
 
 | Field | Exact candidate | Measured length / limit |
 |---|---|---:|
-| App Store name | **Paycheck Audit: LinePay** | 23 / 30 characters |
+| App Store name | **Lineman Pay** | 11 / 30 characters |
 | Subtitle | **Verify Pay & Track Hours** | 24 / 30 characters |
 | Promotional text | **Track hours, review paystub figures, and understand possible pay differences—privately.** | 87 / 170 characters |
 | Keywords | `paystub,discrepancy,overtime,checker,timesheet,underpaid,shift,earnings,callout` | 79 / 100 UTF-8 bytes |
@@ -54,7 +54,7 @@ Do not copy the old `LinePaycheck: Lineman Pay` / `Overtime, Callout & Per Diem`
 Use the following plain text only after the final build supports every advertised route. Keep the working Standard EULA and Privacy links; 1.0.2 was rejected for omitting the EULA link. Do not print a USD price in a description reused across storefronts.
 
 ```text
-Not sure your paycheck matches the hours you worked? LinePay helps hourly workers estimate expected earnings, compare a paystub, and understand possible differences.
+Not sure your paycheck matches the hours you worked? Lineman Pay helps hourly workers estimate expected earnings, compare a paystub, and understand possible differences.
 
 START WITH YOUR WORK
 
@@ -74,7 +74,7 @@ Lineworkers can keep using advanced settings for supported callout minimums, per
 
 PRIVATE BY DEFAULT
 
-No LinePaycheck account or employer login is required. LinePay does not connect to your employer's payroll portal. Calculations and paystub processing happen on your iPhone. You choose when to export a report or create a manual backup; those files may contain sensitive pay information.
+No account or employer login is required. The app does not connect to your employer's payroll portal. Calculations and paystub processing happen on your iPhone. You choose when to export a report or create a manual backup; those files may contain sensitive pay information.
 
 FREE TO START
 
@@ -84,7 +84,7 @@ LinePaycheck Pro adds ongoing paycheck checks after your free first check. Saved
 
 Pro is an optional auto-renewing monthly or yearly subscription, charged to your Apple ID and managed in your App Store account settings. Local prices and any eligible introductory offer are shown before purchase.
 
-Results depend on complete and accurate inputs, supported rules and correctly matched periods. LinePay does not determine legal entitlement or calculate every tax, deduction or pay requirement. Estimates and possible differences are for review, not legal, tax, payroll or employment advice.
+Results depend on complete and accurate inputs, supported rules and correctly matched periods. The app does not determine legal entitlement or calculate every tax, deduction or pay requirement. Estimates and possible differences are for review, not legal, tax, payroll or employment advice.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://linepaycheck.com/privacy
@@ -171,7 +171,7 @@ Retain existing subscription display names unless separately reviewed. Candidate
 The route below follows the v3 implementation labels. It is **pending final native/UI acceptance**, not a tested review receipt. Replace it with the exact shipped steps and supply a synthetic paystub attachment or the verified in-app review sample before submission. Do not leave a reviewer to invent real payroll evidence.
 
 ```text
-Paycheck Audit: LinePay is a private work-record and paycheck-comparison utility. No account or employer login is required. It estimates earnings only under confirmed, supported rules and does not certify legal entitlement.
+Lineman Pay is a private work-record and paycheck-comparison utility. No account or employer login is required. It estimates earnings only under confirmed, supported rules and does not certify legal entitlement.
 
 Suggested review path:
 1. On a fresh launch, tap "Check my paycheck". For specialist settings, the alternative is "Set up lineworker or advanced pay".

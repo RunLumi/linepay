@@ -102,10 +102,10 @@ else
     fail "apps/ios/project.yml must keep PRODUCT_BUNDLE_IDENTIFIER com.streamentry.linepay"
 fi
 
-if grep -q 'INFOPLIST_KEY_CFBundleDisplayName: LinePay' "$IOS_PROJECT"; then
-    ok "iOS home-screen display name is LinePay"
+if grep -q 'INFOPLIST_KEY_CFBundleDisplayName: Lineman Pay' "$IOS_PROJECT"; then
+    ok "vNext iOS home-screen display-name candidate is Lineman Pay"
 else
-    fail "apps/ios/project.yml must expose LinePay as the home-screen display name"
+    fail "apps/ios/project.yml must expose the owner-selected Lineman Pay candidate name"
 fi
 
 if grep -q 'INFOPLIST_KEY_CFBundleName: LinePaycheck' "$IOS_PROJECT"; then

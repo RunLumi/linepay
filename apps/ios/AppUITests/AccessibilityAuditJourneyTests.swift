@@ -8,6 +8,16 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         try auditWorkerScreens()
     }
 
+    func testTodayStatusWrapLeavesWorkRowReadableAndReachable() {
+        launch(largeText: false)
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
+        assertTodayStatusAndWorkRow()
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "today-status-wrapped-work-row"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testLargestTextDarkWorkerScreensKeepKeyActionsReachable() throws {
         launch(largeText: true)
         XCTAssertTrue(app.buttons["today.add-work"].waitForExistence(timeout: 15))
@@ -52,6 +62,7 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
     private func auditWorkerScreens() throws {
         launch(largeText: false)
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
+        assertTodayStatusAndWorkRow()
         try audit("today")
 
         app.tabBars.buttons["Settings"].tap()
@@ -66,6 +77,19 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         localActivity.tap()
         XCTAssertTrue(app.navigationBars["Device-local activity"].waitForExistence(timeout: 10))
         try audit("device-local-activity")
+    }
+
+    private func assertTodayStatusAndWorkRow() {
+        let status = app.descendants(matching: .any).matching(identifier: "audit.status").firstMatch
+        XCTAssertTrue(status.waitForExistence(timeout: 10))
+        XCTAssertEqual(status.label, "No difference within compared items: gross total only")
+        XCTAssertGreaterThan(status.frame.height, 24, "The long status should wrap onto two lines")
+        let workRow = app.buttons["today.edit-work"].firstMatch
+        XCTAssertTrue(workRow.waitForExistence(timeout: 10))
+        XCTAssertTrue(workRow.isHittable)
+        XCTAssertTrue(workRow.label.contains("Regular work"))
+        XCTAssertTrue(workRow.label.contains("Synthetic test shift"))
+        XCTAssertGreaterThan(workRow.frame.minY, status.frame.maxY)
     }
 
     private func audit(_ screen: String) throws {

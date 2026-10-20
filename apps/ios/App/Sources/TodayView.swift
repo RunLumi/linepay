@@ -153,7 +153,9 @@ struct TodayView: View {
                                             .foregroundStyle(LinePayColor.textSecondary)
                                     }
                                 }
-                                .foregroundStyle(LinePayColor.textPrimary).padding(.vertical, 6)
+                                .foregroundStyle(LinePayColor.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.vertical, 6)
                                 .accessibilityElement(children: .combine)
                                 .accessibilityHint("Opens this shift to edit or delete it")
                             }
