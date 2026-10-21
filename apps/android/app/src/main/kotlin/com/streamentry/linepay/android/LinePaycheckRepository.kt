@@ -46,7 +46,6 @@ data class AndroidPaycheckInput(
     val basis: GrossBasisChoice,
     val completeWorkConfirmed: Boolean,
     val ruleCoverageConfirmed: Boolean,
-    val weeklyReviewConfirmed: Boolean,
 )
 
 object LinePaycheckRepository {
@@ -157,7 +156,9 @@ object LinePaycheckRepository {
             unreviewedFields = !input.sourcePeriodConfirmed,
             unsupportedRules = !input.ruleCoverageConfirmed ||
                 !profile.rulesReviewedByWorker || partial,
-            weeklyReviewPending = !input.weeklyReviewConfirmed,
+            // There is no source-approved paycheck-line mapping gate yet. A worker checkbox or
+            // separate weekly receipt cannot establish that the weekly comparison is complete.
+            weeklyReviewPending = true,
         )
         val sourceStart = LocalDate.parse(input.sourceStartDate)
         val sourceLast = LocalDate.parse(input.sourceLastDate)
@@ -200,7 +201,6 @@ object LinePaycheckRepository {
             grossBasis = input.basis,
             completeWorkConfirmed = input.completeWorkConfirmed,
             ruleCoverageConfirmed = input.ruleCoverageConfirmed && profile.rulesReviewedByWorker,
-            weeklyReviewConfirmed = input.weeklyReviewConfirmed,
             expectedGross = assessment.expectedGross?.amount?.toPlainString(),
             difference = assessment.difference?.amount?.toPlainString(),
             verdict = assessment.verdict.name,

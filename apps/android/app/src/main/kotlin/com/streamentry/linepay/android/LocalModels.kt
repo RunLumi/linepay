@@ -88,7 +88,6 @@ data class AndroidPaycheckSnapshot(
     val grossBasis: GrossBasisChoice,
     val completeWorkConfirmed: Boolean,
     val ruleCoverageConfirmed: Boolean,
-    val weeklyReviewConfirmed: Boolean,
     val expectedGross: String?,
     val difference: String?,
     val verdict: String,
@@ -105,11 +104,13 @@ data class AndroidLocalState(
     val profile: AndroidRuleProfile? = null,
     val work: List<AndroidWorkEntry> = emptyList(),
     val checks: List<AndroidPaycheckSnapshot> = emptyList(),
+    val weeklyReviews: List<AndroidWeeklyReviewReceipt> = emptyList(),
 ) {
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 1
+        const val CURRENT_SCHEMA_VERSION = 3
         const val MAXIMUM_WORK_ENTRIES = 10_000
         const val MAXIMUM_SAVED_CHECKS = 2_000
+        const val MAXIMUM_WEEKLY_REVIEWS = 128
 
         fun empty() = AndroidLocalState()
     }
@@ -129,6 +130,9 @@ object AndroidLocalStateValidator {
         require(state.checks.size <= AndroidLocalState.MAXIMUM_SAVED_CHECKS) {
             "This file has too many saved checks."
         }
+        require(state.weeklyReviews.size <= AndroidLocalState.MAXIMUM_WEEKLY_REVIEWS) {
+            "This file has too many weekly review records."
+        }
         require(state.work.map { it.id }.toSet().size == state.work.size) {
             "Work entry identities must be unique."
         }
@@ -138,6 +142,7 @@ object AndroidLocalStateValidator {
         state.profile?.let(::validateProfile)
         state.work.forEach(::validateWork)
         state.checks.forEach(::validateCheck)
+        AndroidWeeklyReviewRepository.validateState(state)
         return state
     }
 
@@ -228,6 +233,14 @@ object AndroidLocalStateValidator {
                 "NOT_COMPARABLE",
             )
         ) { "Saved check verdict is invalid." }
+        require(check.verdict != "MATCHES") {
+            "Android paycheck receipts cannot clear weekly-rate review without a source-approved mapping."
+        }
+        if (check.expectedGross != null) {
+            require("WEEKLY_REVIEW_PENDING" in check.reviewReasons && check.verdict == "NEEDS_REVIEW") {
+                "Comparable paycheck receipts must retain the unresolved weekly-rate review."
+            }
+        }
         requireDecimal(check.paidGross, minimum = BigDecimal.ZERO, maximum = BigDecimal("1000000000000"))
         check.expectedGross?.let {
             requireDecimal(it, minimum = BigDecimal.ZERO, maximum = BigDecimal("1000000000000"))
