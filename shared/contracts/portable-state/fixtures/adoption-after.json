@@ -1,0 +1,1022 @@
+{
+  "format": "com.streamentry.linepay.portable-state",
+  "version": 1,
+  "exportedAtEpochSeconds": 1793030400,
+  "source": {
+    "client": "ios",
+    "localStateSchema": 12,
+    "exporterVersion": "2.0"
+  },
+  "sourceInventory": {
+    "profileCount": 2,
+    "ruleSnapshotCount": 2,
+    "ruleChangeCount": 0,
+    "ruleTimelineCount": 0,
+    "periodCount": 2,
+    "periodWindowCount": 2,
+    "workSnapshotCount": 3,
+    "workEntryCount": 15,
+    "workBreakCount": 0,
+    "workCorrectionCount": 0,
+    "calculationComponentCount": 5,
+    "workweekCount": 0,
+    "weeklyAllocationCount": 0,
+    "paycheckReceiptCount": 1,
+    "auditRevisionCount": 0,
+    "attachmentCount": 0,
+    "unsupportedFinancialRecordKinds": [],
+    "unsupportedDraftKinds": [],
+    "omittedFinancialRecordCount": 0,
+    "adoptionCount": 1
+  },
+  "identityCrosswalk": [
+    {
+      "entityType": "profile",
+      "portableID": "profile.android-1",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-profile-1"
+    },
+    {
+      "entityType": "ruleSnapshot",
+      "portableID": "rule.android-1.v1",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-rule-1@1"
+    },
+    {
+      "entityType": "period",
+      "portableID": "period.current-1",
+      "originClient": "android",
+      "originKind": "derived",
+      "originLocalID": null
+    },
+    {
+      "entityType": "periodWindow",
+      "portableID": "window.current-1",
+      "originClient": "android",
+      "originKind": "derived",
+      "originLocalID": null
+    },
+    {
+      "entityType": "workSnapshot",
+      "portableID": "snapshot.current-ledger-1",
+      "originClient": "android",
+      "originKind": "derived",
+      "originLocalID": null
+    },
+    {
+      "entityType": "workSnapshot",
+      "portableID": "snapshot.paycheck-input-1",
+      "originClient": "android",
+      "originKind": "derived",
+      "originLocalID": null
+    },
+    {
+      "entityType": "workEntry",
+      "portableID": "android-work-1",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-work-1"
+    },
+    {
+      "entityType": "workEntry",
+      "portableID": "android-work-2",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-work-2"
+    },
+    {
+      "entityType": "workEntry",
+      "portableID": "android-work-3",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-work-3"
+    },
+    {
+      "entityType": "workEntry",
+      "portableID": "android-work-4",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-work-4"
+    },
+    {
+      "entityType": "workEntry",
+      "portableID": "android-work-5",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-work-5"
+    },
+    {
+      "entityType": "paycheckReceipt",
+      "portableID": "receipt.android-1",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "android-check-1"
+    },
+    {
+      "entityType": "paystub",
+      "portableID": "paystub.android-1",
+      "originClient": "android",
+      "originKind": "derived",
+      "originLocalID": null
+    },
+    {
+      "entityType": "calculationComponent",
+      "portableID": "android-component-1",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "00000000-0000-5000-8000-000000000001"
+    },
+    {
+      "entityType": "calculationComponent",
+      "portableID": "android-component-2",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "00000000-0000-5000-8000-000000000002"
+    },
+    {
+      "entityType": "calculationComponent",
+      "portableID": "android-component-3",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "00000000-0000-5000-8000-000000000003"
+    },
+    {
+      "entityType": "calculationComponent",
+      "portableID": "android-component-4",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "00000000-0000-5000-8000-000000000004"
+    },
+    {
+      "entityType": "calculationComponent",
+      "portableID": "android-component-5",
+      "originClient": "android",
+      "originKind": "native",
+      "originLocalID": "00000000-0000-5000-8000-000000000005"
+    },
+    {
+      "entityType": "profile",
+      "portableID": "profile.ios-adopted-1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-profile-adopted-1"
+    },
+    {
+      "entityType": "ruleSnapshot",
+      "portableID": "rule.ios-adopted-1.v1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-agreement-adopted-1@confirmed-1"
+    },
+    {
+      "entityType": "period",
+      "portableID": "period.ios-adopted-current-1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-period-adopted-1"
+    },
+    {
+      "entityType": "periodWindow",
+      "portableID": "window.ios-adopted-current-1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-window-adopted-1"
+    },
+    {
+      "entityType": "workSnapshot",
+      "portableID": "snapshot.ios-adopted-current-1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-work-snapshot-adopted-1"
+    },
+    {
+      "entityType": "profileAdoption",
+      "portableID": "adoption.ios-1",
+      "originClient": "ios",
+      "originKind": "native",
+      "originLocalID": "ios-adoption-1"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "profile.android-1",
+      "name": null,
+      "timeZone": "America/Denver",
+      "cadence": "weekly",
+      "cycleStartDate": "2026-10-19",
+      "customEndDate": null,
+      "ruleRef": "rule.android-1.v1",
+      "baselineRuleRef": null,
+      "ruleChangeRefs": [],
+      "currentPeriodRef": null,
+      "currentWorkSnapshotRef": "snapshot.current-ledger-1",
+      "fieldsNotRecorded": [
+        "name",
+        "baselineRuleRef",
+        "currentPeriodRef"
+      ],
+      "adoptedFromProfileRef": null
+    },
+    {
+      "id": "profile.ios-adopted-1",
+      "name": "Adopted confirmed profile",
+      "timeZone": "America/Denver",
+      "cadence": "weekly",
+      "cycleStartDate": "2026-10-19",
+      "customEndDate": null,
+      "ruleRef": "rule.ios-adopted-1.v1",
+      "baselineRuleRef": "rule.ios-adopted-1.v1",
+      "ruleChangeRefs": [],
+      "currentPeriodRef": "period.ios-adopted-current-1",
+      "currentWorkSnapshotRef": "snapshot.ios-adopted-current-1",
+      "adoptedFromProfileRef": "profile.android-1",
+      "fieldsNotRecorded": []
+    }
+  ],
+  "ruleSnapshots": [
+    {
+      "id": "rule.android-1.v1",
+      "ruleID": "android-rule-1",
+      "version": "1",
+      "displayName": null,
+      "effectiveStartDate": null,
+      "effectiveEndDateInclusive": null,
+      "currency": "USD",
+      "hourlyRate": "20",
+      "regularSchedule": null,
+      "dailyOvertimeTiers": [
+        {
+          "afterHours": "8",
+          "multiplier": "1.5"
+        }
+      ],
+      "outsideScheduleMultiplier": "1",
+      "weekdayPremiums": [],
+      "datePremiums": [],
+      "calloutMinimumHours": null,
+      "perDiemPerWorkDate": null,
+      "weeklyOvertime": null,
+      "rounding": null,
+      "sources": null,
+      "unsupportedRuleNotes": null,
+      "confirmedAtEpochSeconds": null,
+      "confirmedByWorker": true,
+      "fieldsNotRecorded": [
+        "displayName",
+        "effectiveStartDate",
+        "effectiveEndDateInclusive",
+        "regularSchedule",
+        "calloutMinimumHours",
+        "perDiemPerWorkDate",
+        "weeklyOvertime",
+        "rounding",
+        "sources",
+        "unsupportedRuleNotes",
+        "confirmedAtEpochSeconds"
+      ]
+    },
+    {
+      "id": "rule.ios-adopted-1.v1",
+      "ruleID": "ios-agreement-adopted-1",
+      "version": "confirmed-1",
+      "displayName": "Worker-confirmed configured rules",
+      "effectiveStartDate": "2026-10-19",
+      "effectiveEndDateInclusive": null,
+      "currency": "USD",
+      "hourlyRate": "20.00",
+      "regularSchedule": [],
+      "dailyOvertimeTiers": [
+        {
+          "afterHours": "8",
+          "multiplier": "1.5"
+        }
+      ],
+      "outsideScheduleMultiplier": "1",
+      "weekdayPremiums": [],
+      "datePremiums": [],
+      "calloutMinimumHours": null,
+      "perDiemPerWorkDate": null,
+      "weeklyOvertime": null,
+      "rounding": {
+        "scope": "payCategory",
+        "scale": 2,
+        "mode": "halfUp"
+      },
+      "sources": [],
+      "unsupportedRuleNotes": null,
+      "confirmedAtEpochSeconds": 1793034000,
+      "confirmedByWorker": true,
+      "fieldsNotRecorded": [
+        "effectiveEndDateInclusive",
+        "weeklyOvertime",
+        "unsupportedRuleNotes"
+      ]
+    }
+  ],
+  "ruleChanges": [],
+  "ruleTimelines": [],
+  "periods": [
+    {
+      "id": "period.current-1",
+      "profileRef": "profile.android-1",
+      "calendarWindow": {
+        "startDate": "2026-10-19",
+        "endDateInclusive": "2026-10-25",
+        "endExclusiveDate": "2026-10-26",
+        "timeZone": "America/Denver",
+        "boundaryModel": "localDatesOnly",
+        "startEpochSeconds": null,
+        "endExclusiveEpochSeconds": null,
+        "fieldsNotRecorded": [
+          "startEpochSeconds",
+          "endExclusiveEpochSeconds"
+        ]
+      },
+      "cadence": "weekly",
+      "isCurrent": null,
+      "closed": null,
+      "archivedAtEpochSeconds": null,
+      "calculationIssue": null,
+      "ruleRef": "rule.android-1.v1",
+      "ruleChangeRefs": [],
+      "currentWorkSnapshotRef": null,
+      "workSnapshotRefs": [
+        "snapshot.paycheck-input-1"
+      ],
+      "workCorrections": [],
+      "windowRef": "window.current-1",
+      "ruleTimelineRefs": [],
+      "calculation": null,
+      "auditCompletedAtEpochSeconds": null,
+      "workRevision": null,
+      "fieldsNotRecorded": [
+        "archivedAtEpochSeconds",
+        "calculationIssue",
+        "calculation",
+        "auditCompletedAtEpochSeconds",
+        "workRevision",
+        "isCurrent",
+        "closed",
+        "currentWorkSnapshotRef"
+      ]
+    },
+    {
+      "id": "period.ios-adopted-current-1",
+      "profileRef": "profile.ios-adopted-1",
+      "calendarWindow": {
+        "startDate": "2026-10-19",
+        "endDateInclusive": "2026-10-25",
+        "endExclusiveDate": "2026-10-26",
+        "timeZone": "America/Denver",
+        "boundaryModel": "exactInstants",
+        "startEpochSeconds": 1792389600,
+        "endExclusiveEpochSeconds": 1792994400,
+        "fieldsNotRecorded": []
+      },
+      "cadence": "weekly",
+      "isCurrent": true,
+      "closed": false,
+      "archivedAtEpochSeconds": null,
+      "calculationIssue": null,
+      "ruleRef": "rule.ios-adopted-1.v1",
+      "ruleChangeRefs": [],
+      "currentWorkSnapshotRef": "snapshot.ios-adopted-current-1",
+      "workSnapshotRefs": [
+        "snapshot.ios-adopted-current-1"
+      ],
+      "workCorrections": [],
+      "windowRef": "window.ios-adopted-current-1",
+      "ruleTimelineRefs": [],
+      "calculation": null,
+      "auditCompletedAtEpochSeconds": null,
+      "workRevision": 0,
+      "fieldsNotRecorded": [
+        "archivedAtEpochSeconds",
+        "calculationIssue",
+        "calculation",
+        "auditCompletedAtEpochSeconds"
+      ]
+    }
+  ],
+  "workSnapshots": [
+    {
+      "id": "snapshot.current-ledger-1",
+      "profileRef": "profile.android-1",
+      "periodRef": null,
+      "role": "currentLedger",
+      "revision": null,
+      "sourceRef": null,
+      "work": [
+        {
+          "id": "android-work-1",
+          "startEpochSeconds": 1792418400,
+          "endEpochSeconds": 1792447200,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-2",
+          "startEpochSeconds": 1792504800,
+          "endEpochSeconds": 1792533600,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-3",
+          "startEpochSeconds": 1792591200,
+          "endEpochSeconds": 1792620000,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-4",
+          "startEpochSeconds": 1792677600,
+          "endEpochSeconds": 1792706400,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-5",
+          "startEpochSeconds": 1792764000,
+          "endEpochSeconds": 1792792800,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        }
+      ],
+      "fieldsNotRecorded": [
+        "revision",
+        "sourceRef"
+      ]
+    },
+    {
+      "id": "snapshot.paycheck-input-1",
+      "profileRef": "profile.android-1",
+      "periodRef": "period.current-1",
+      "role": "paycheckInput",
+      "revision": null,
+      "sourceRef": "receipt.android-1",
+      "work": [
+        {
+          "id": "android-work-1",
+          "startEpochSeconds": 1792418400,
+          "endEpochSeconds": 1792447200,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-2",
+          "startEpochSeconds": 1792504800,
+          "endEpochSeconds": 1792533600,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-3",
+          "startEpochSeconds": 1792591200,
+          "endEpochSeconds": 1792620000,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-4",
+          "startEpochSeconds": 1792677600,
+          "endEpochSeconds": 1792706400,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-5",
+          "startEpochSeconds": 1792764000,
+          "endEpochSeconds": 1792792800,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        }
+      ],
+      "fieldsNotRecorded": [
+        "revision"
+      ]
+    },
+    {
+      "id": "snapshot.ios-adopted-current-1",
+      "profileRef": "profile.ios-adopted-1",
+      "periodRef": "period.ios-adopted-current-1",
+      "role": "currentLedger",
+      "revision": 0,
+      "sourceRef": "snapshot.current-ledger-1",
+      "work": [
+        {
+          "id": "android-work-1",
+          "startEpochSeconds": 1792418400,
+          "endEpochSeconds": 1792447200,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-2",
+          "startEpochSeconds": 1792504800,
+          "endEpochSeconds": 1792533600,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-3",
+          "startEpochSeconds": 1792591200,
+          "endEpochSeconds": 1792620000,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-4",
+          "startEpochSeconds": 1792677600,
+          "endEpochSeconds": 1792706400,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        },
+        {
+          "id": "android-work-5",
+          "startEpochSeconds": 1792764000,
+          "endEpochSeconds": 1792792800,
+          "timeZone": "America/Denver",
+          "kind": "regular",
+          "calloutEventRef": null,
+          "unpaidBreaks": [],
+          "note": "",
+          "fieldsNotRecorded": []
+        }
+      ],
+      "fieldsNotRecorded": []
+    }
+  ],
+  "paycheckReceipts": [
+    {
+      "receiptKind": "paycheck-v1",
+      "id": "receipt.android-1",
+      "periodRef": "period.current-1",
+      "workSnapshotRef": "snapshot.paycheck-input-1",
+      "createdAtEpochSeconds": 1793026800,
+      "supersedesReceiptRef": null,
+      "producer": {
+        "client": "android",
+        "localStateSchema": 3,
+        "calculationEngineID": null,
+        "calculationEngineVersion": null,
+        "assessmentEngineID": "linepay.android.configured-lines/1",
+        "assessmentEngineVersion": null,
+        "fieldsNotRecorded": [
+          "calculationEngineID",
+          "calculationEngineVersion",
+          "assessmentEngineVersion"
+        ]
+      },
+      "ruleRefs": [
+        "rule.android-1.v1"
+      ],
+      "sourcePeriod": {
+        "startDate": "2026-10-19",
+        "endDateInclusive": "2026-10-25",
+        "timeZone": "America/Denver",
+        "confirmed": true,
+        "fieldsNotRecorded": []
+      },
+      "paystubFacts": {
+        "id": "paystub.android-1",
+        "periodStartDate": "2026-10-19",
+        "periodEndDateInclusive": "2026-10-25",
+        "currency": "USD",
+        "grossPay": "800.00",
+        "regularHours": null,
+        "regularPay": null,
+        "overtimeHours": null,
+        "overtimePay": null,
+        "doubleTimeHours": null,
+        "doubleTimePay": null,
+        "calloutPay": null,
+        "perDiemPay": null,
+        "notes": null,
+        "confirmedAtEpochSeconds": null,
+        "confirmed": null,
+        "evidenceRef": null,
+        "fieldsNotRecorded": [
+          "regularHours",
+          "regularPay",
+          "overtimeHours",
+          "overtimePay",
+          "doubleTimeHours",
+          "doubleTimePay",
+          "calloutPay",
+          "perDiemPay",
+          "notes",
+          "confirmedAtEpochSeconds",
+          "confirmed",
+          "evidenceRef"
+        ]
+      },
+      "lineFacts": {
+        "grossBasis": "wagesOnly",
+        "lineLayout": null,
+        "hoursBasis": null,
+        "guaranteeLayout": null,
+        "amounts": [],
+        "hours": [],
+        "reviewedFields": [],
+        "suggestions": [],
+        "hasAdditionalUnmappedPay": null,
+        "workComplete": true,
+        "earningsLinesComplete": null,
+        "fieldsNotRecorded": [
+          "lineLayout",
+          "hoursBasis",
+          "guaranteeLayout",
+          "hasAdditionalUnmappedPay",
+          "earningsLinesComplete"
+        ]
+      },
+      "reviewFacts": {
+        "completeWorkConfirmed": true,
+        "ruleCoverageConfirmed": true,
+        "unreviewedFields": null,
+        "weeklyReviewPending": true,
+        "fieldsNotRecorded": [
+          "unreviewedFields"
+        ]
+      },
+      "calculation": {
+        "agreementID": null,
+        "agreementVersion": null,
+        "primaryRuleRef": null,
+        "agreementSnapshotRefs": [
+          "rule.android-1.v1"
+        ],
+        "currency": "USD",
+        "total": null,
+        "provenance": null,
+        "weeklyRegularRate": null,
+        "components": [
+          {
+            "id": "android-component-1",
+            "category": "workedHours",
+            "workRef": null,
+            "localDate": "2026-10-19",
+            "hours": null,
+            "workedSeconds": "28800",
+            "multiplier": "1",
+            "amount": {
+              "amount": "160.00",
+              "currency": "USD"
+            },
+            "explanation": "Actual work at configured rate.",
+            "ruleKeys": [
+              "base"
+            ],
+            "baseRate": null,
+            "appliedAgreement": {
+              "ruleRef": "rule.android-1.v1",
+              "ruleID": "android-rule-1",
+              "version": "1",
+              "hourlyRate": null
+            },
+            "unroundedAmount": null,
+            "baseTimeNumerator": null,
+            "fieldsNotRecorded": [
+              "workRef",
+              "hours",
+              "baseRate",
+              "appliedAgreement.hourlyRate",
+              "unroundedAmount",
+              "baseTimeNumerator"
+            ]
+          },
+          {
+            "id": "android-component-2",
+            "category": "workedHours",
+            "workRef": null,
+            "localDate": "2026-10-20",
+            "hours": null,
+            "workedSeconds": "28800",
+            "multiplier": "1",
+            "amount": {
+              "amount": "160.00",
+              "currency": "USD"
+            },
+            "explanation": "Actual work at configured rate.",
+            "ruleKeys": [
+              "base"
+            ],
+            "baseRate": null,
+            "appliedAgreement": {
+              "ruleRef": "rule.android-1.v1",
+              "ruleID": "android-rule-1",
+              "version": "1",
+              "hourlyRate": null
+            },
+            "unroundedAmount": null,
+            "baseTimeNumerator": null,
+            "fieldsNotRecorded": [
+              "workRef",
+              "hours",
+              "baseRate",
+              "appliedAgreement.hourlyRate",
+              "unroundedAmount",
+              "baseTimeNumerator"
+            ]
+          },
+          {
+            "id": "android-component-3",
+            "category": "workedHours",
+            "workRef": null,
+            "localDate": "2026-10-21",
+            "hours": null,
+            "workedSeconds": "28800",
+            "multiplier": "1",
+            "amount": {
+              "amount": "160.00",
+              "currency": "USD"
+            },
+            "explanation": "Actual work at configured rate.",
+            "ruleKeys": [
+              "base"
+            ],
+            "baseRate": null,
+            "appliedAgreement": {
+              "ruleRef": "rule.android-1.v1",
+              "ruleID": "android-rule-1",
+              "version": "1",
+              "hourlyRate": null
+            },
+            "unroundedAmount": null,
+            "baseTimeNumerator": null,
+            "fieldsNotRecorded": [
+              "workRef",
+              "hours",
+              "baseRate",
+              "appliedAgreement.hourlyRate",
+              "unroundedAmount",
+              "baseTimeNumerator"
+            ]
+          },
+          {
+            "id": "android-component-4",
+            "category": "workedHours",
+            "workRef": null,
+            "localDate": "2026-10-22",
+            "hours": null,
+            "workedSeconds": "28800",
+            "multiplier": "1",
+            "amount": {
+              "amount": "160.00",
+              "currency": "USD"
+            },
+            "explanation": "Actual work at configured rate.",
+            "ruleKeys": [
+              "base"
+            ],
+            "baseRate": null,
+            "appliedAgreement": {
+              "ruleRef": "rule.android-1.v1",
+              "ruleID": "android-rule-1",
+              "version": "1",
+              "hourlyRate": null
+            },
+            "unroundedAmount": null,
+            "baseTimeNumerator": null,
+            "fieldsNotRecorded": [
+              "workRef",
+              "hours",
+              "baseRate",
+              "appliedAgreement.hourlyRate",
+              "unroundedAmount",
+              "baseTimeNumerator"
+            ]
+          },
+          {
+            "id": "android-component-5",
+            "category": "workedHours",
+            "workRef": null,
+            "localDate": "2026-10-23",
+            "hours": null,
+            "workedSeconds": "28800",
+            "multiplier": "1",
+            "amount": {
+              "amount": "160.00",
+              "currency": "USD"
+            },
+            "explanation": "Actual work at configured rate.",
+            "ruleKeys": [
+              "base"
+            ],
+            "baseRate": null,
+            "appliedAgreement": {
+              "ruleRef": "rule.android-1.v1",
+              "ruleID": "android-rule-1",
+              "version": "1",
+              "hourlyRate": null
+            },
+            "unroundedAmount": null,
+            "baseTimeNumerator": null,
+            "fieldsNotRecorded": [
+              "workRef",
+              "hours",
+              "baseRate",
+              "appliedAgreement.hourlyRate",
+              "unroundedAmount",
+              "baseTimeNumerator"
+            ]
+          }
+        ],
+        "engine": null,
+        "coverage": null,
+        "wages": null,
+        "allowances": null,
+        "ruleTimelineRef": null,
+        "ruleChangeRefs": [],
+        "fieldsNotRecorded": [
+          "agreementID",
+          "agreementVersion",
+          "primaryRuleRef",
+          "total",
+          "provenance",
+          "weeklyRegularRate",
+          "engine",
+          "coverage",
+          "wages",
+          "allowances",
+          "ruleTimelineRef"
+        ]
+      },
+      "assessment": {
+        "engineID": "linepay.android.configured-lines/1",
+        "engineVersion": null,
+        "verdict": "needsReview",
+        "scope": "grossOnly",
+        "expectedGross": {
+          "amount": "800.00",
+          "currency": "USD"
+        },
+        "paidGross": {
+          "amount": "800.00",
+          "currency": "USD"
+        },
+        "difference": {
+          "amount": "0.00",
+          "currency": "USD"
+        },
+        "comparisons": [
+          {
+            "id": "grossPay",
+            "field": "grossPay",
+            "expected": "800.00",
+            "paid": "800.00",
+            "difference": "0.00",
+            "unit": "money",
+            "currency": "USD",
+            "componentRefs": [
+              "android-component-1",
+              "android-component-2",
+              "android-component-3",
+              "android-component-4",
+              "android-component-5"
+            ]
+          }
+        ],
+        "reviewReasons": [
+          "WEEKLY_REVIEW_PENDING"
+        ],
+        "scopeNotes": [],
+        "weeklyContextCount": null,
+        "weeklyReviewRefs": [],
+        "periodMatch": "confirmedSamePeriod",
+        "reportedPeriod": {
+          "startDate": "2026-10-19",
+          "endDateInclusive": "2026-10-25",
+          "timeZone": "America/Denver",
+          "confirmed": true,
+          "fieldsNotRecorded": []
+        },
+        "fieldsNotRecorded": [
+          "engineVersion",
+          "weeklyContextCount"
+        ]
+      },
+      "reconciliation": null,
+      "attachmentRefs": [],
+      "auditRevisionRef": null,
+      "targetWindowRef": "window.current-1",
+      "targetWindow": {
+        "startDate": "2026-10-19",
+        "endDateInclusive": "2026-10-25",
+        "endExclusiveDate": "2026-10-26",
+        "timeZone": "America/Denver",
+        "boundaryModel": "localDatesOnly",
+        "startEpochSeconds": null,
+        "endExclusiveEpochSeconds": null,
+        "fieldsNotRecorded": [
+          "startEpochSeconds",
+          "endExclusiveEpochSeconds"
+        ]
+      },
+      "targetCadence": "weekly",
+      "targetRuleChangeRefs": [],
+      "fieldsNotRecorded": [
+        "supersedesReceiptRef",
+        "auditRevisionRef",
+        "reconciliation"
+      ]
+    }
+  ],
+  "attachments": [],
+  "activeProfileRef": "profile.ios-adopted-1",
+  "adoptions": [
+    {
+      "id": "adoption.ios-1",
+      "sourceProfileRef": "profile.android-1",
+      "adoptedProfileRef": "profile.ios-adopted-1",
+      "sourcePeriodRef": "period.current-1",
+      "adoptedPeriodRef": "period.ios-adopted-current-1",
+      "sourceWorkSnapshotRef": "snapshot.current-ledger-1",
+      "adoptedWorkSnapshotRef": "snapshot.ios-adopted-current-1",
+      "sourceRuleRefs": [
+        "rule.android-1.v1"
+      ],
+      "adoptedRuleRefs": [
+        "rule.ios-adopted-1.v1"
+      ],
+      "confirmedAtEpochSeconds": 1793034000,
+      "confirmedFields": [
+        "timeZone",
+        "cadence",
+        "cycleStartDate",
+        "currency",
+        "hourlyRate",
+        "regularSchedule",
+        "dailyOvertimeTiers",
+        "outsideScheduleMultiplier",
+        "weekdayPremiums",
+        "datePremiums",
+        "calloutMinimumHours",
+        "perDiemPerWorkDate",
+        "rounding",
+        "currentWork",
+        "periodWindow"
+      ],
+      "fieldsNotRecorded": []
+    }
+  ]
+}

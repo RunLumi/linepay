@@ -1,0 +1,33 @@
+name: Portable financial-state contract
+
+on:
+  pull_request:
+    paths:
+      - 'shared/contracts/portable-state/**'
+      - '.github/workflows/portable-state.yml'
+  push:
+    branches: [dev, testing]
+    paths:
+      - 'shared/contracts/portable-state/**'
+      - '.github/workflows/portable-state.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portable-state-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify typed financial records and refusal fixtures
+        run: python3 shared/contracts/portable-state/verify.py check
+      - name: Test validation and frozen-history invariants
+        run: python3 -m unittest discover -s shared/contracts/portable-state/tests -p 'test_*.py'
