@@ -4,7 +4,8 @@
   "locale": "en-US",
   "status": "candidate-local-not-uploaded",
   "generated_on": "2026-10-20",
-  "source": "OpenAI built-in ImageGen; original generated files are retained outside the repository.",
+  "source": "OpenAI built-in ImageGen (origin attributed in the asset record).",
+  "source_materials_status": "Original generated files, prompts, and run metadata are not present in this repository or the audited worktree; no external locator is recorded.",
   "derivation": "PNG exports were resized to Apple target dimensions with macOS sips. No text, payroll values, logos, app UI, or alpha channel were added.",
   "assets": [
     {
