@@ -77,6 +77,8 @@ private enum class AppPage(val title: String) {
     SETUP("Pay rules"),
     ADD_WORK("Add work"),
     RECORD_PAYCHECK("Record paycheck"),
+    WEEKLY_REVIEW("Weekly rate review"),
+    WEEKLY_RECEIPT("Weekly review receipt"),
 }
 
 @Composable
@@ -93,6 +95,7 @@ fun LinePaycheckApp(
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.TODAY) }
     var page by rememberSaveable { mutableStateOf(AppPage.ROOT) }
     var editingProfile by rememberSaveable { mutableStateOf(false) }
+    var selectedWeeklyReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
     val activeProfile = state.profile
 
     if (loadError != null) {
@@ -181,6 +184,29 @@ fun LinePaycheckApp(
                         }
                     },
                 )
+                page == AppPage.WEEKLY_REVIEW -> WeeklyRateReviewScreen(
+                    state = state,
+                    saveError = saveError,
+                    onSave = onSaveState,
+                    onOpenHistory = {
+                        selectedTab = MainTab.HISTORY
+                        page = AppPage.ROOT
+                    },
+                    onOpenWeeklyReceipt = { id ->
+                        selectedWeeklyReceiptId = id
+                        page = AppPage.WEEKLY_RECEIPT
+                    },
+                )
+                page == AppPage.WEEKLY_RECEIPT -> {
+                    val receipt = state.weeklyReviews.singleOrNull { it.id == selectedWeeklyReceiptId }
+                    if (receipt == null) {
+                        PageContent {
+                            Text("This weekly review receipt is no longer available.")
+                        }
+                    } else {
+                        WeeklyReviewReceiptDetailScreen(receipt)
+                    }
+                }
                 page == AppPage.SETUP -> PayRuleSetupScreen(
                     initial = if (editingProfile) activeProfile else null,
                     saveError = saveError,
@@ -202,8 +228,24 @@ fun LinePaycheckApp(
                         state = state,
                         onRecordPaycheck = { page = AppPage.RECORD_PAYCHECK },
                         onOpenHistory = { selectedTab = MainTab.HISTORY },
+                        onWeeklyReview = { page = AppPage.WEEKLY_REVIEW },
+                        onOpenWeeklyReceipt = { id ->
+                            selectedWeeklyReceiptId = id
+                            page = AppPage.WEEKLY_RECEIPT
+                        },
                     )
-                    MainTab.HISTORY -> HistoryScreen(state = state)
+                    MainTab.HISTORY -> HistoryScreen(
+                        state = state,
+                        saveError = saveError,
+                        onDeleteCheck = { id ->
+                            runCatching { AndroidWeeklyReviewRepository.deletePaycheckPeriod(state, id) }
+                                .fold(onSuccess = onSaveState, onFailure = { false })
+                        },
+                        onOpenWeeklyReceipt = { id ->
+                            selectedWeeklyReceiptId = id
+                            page = AppPage.WEEKLY_RECEIPT
+                        },
+                    )
                     MainTab.SETTINGS -> SettingsScreen(
                         state = state,
                         activity = activity,

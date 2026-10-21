@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 previous.profile == null && next.profile != null -> "profile-saved"
                 next.work.size > previous.work.size -> "work-saved"
                 next.checks.size > previous.checks.size -> "check-saved"
+                next.weeklyReviews.size > previous.weeklyReviews.size -> "weekly-review-saved"
                 else -> null
             }
             if (event != null) runCatching { activityStore.record(event) }

@@ -19,14 +19,18 @@ account, backend, network permission, ad/analytics SDK, or Android automatic bac
   settings. Saved checks keep the work/rule/source facts and result that were used at the time.
 - A versioned `AtomicFile` stores worker data in the app sandbox. Android cloud backup is disabled.
   The separate device-local activity ledger is opt-in and excluded from pay-data backups.
+- Complete-workweek reviews can be prepared from explicitly selected saved paycheck periods. Their
+  versioned receipts freeze the selected period, work, rule, remuneration, input and result evidence;
+  they stay separate from paycheck gross and never clear a saved `Needs review` verdict.
 - The Files picker supports password-protected manual pay-data backup and an explicit review before
   replacing local data. Diagnostic export contains only opt-in coarse usage counts, not wages or
   pay dates.
-- User confirmation can remove review reasons only for the stated configured-rule scope. Weekly-rate
-  review, agreement applicability, eligibility, and unconfigured rules are not inferred or verified.
+- User confirmation can remove review reasons only for the stated configured-rule scope. Weekly
+  receipts are a separate restricted reference; agreement applicability, eligibility and unconfigured
+  rules are not inferred or verified.
 
 This is a first Android vertical slice, not full feature parity. Android OCR/voice/StoreKit, line-level
-paystub entry, full weekly overtime review, multiple employer profiles, Spanish localization, and
+paystub entry, broader weekly legal coverage, multiple employer profiles, Spanish localization, and
 Play distribution remain outside this tested slice. App Store release evidence remains an iOS gate.
 
 ## Restricted weekly reference milestone
@@ -52,9 +56,14 @@ historical Android weekly receipts to migrate.
 Focused Android regressions also cover threshold seconds, half-cent ties, credit before rounding,
 rounding modes, residual conservation with zero-basis periods, immutable inputs and fixed-duration
 DST boundaries.
-This milestone does not connect the reference to Compose, persist weekly evidence, map it to a
-paycheck or change any saved gross-check verdict. Those native collection/history/mapping gates
-remain pending; passing arithmetic does not establish legal, agreement or source approval.
+The Compose review flow requires explicit selection of intersecting saved periods, separate worker
+confirmations, and reviewed remuneration classifications. Schema 2 stores append-only weekly
+receipts; schema 1 states migrate with an empty collection. Load validation checks each period link,
+rebuilds weekly work facts from the frozen source period/work/rule snapshots, and replays the recorded
+engine/result. Recalculating creates a new receipt. Deleting a source paycheck period also deletes
+weekly receipts linked to it. Results and allocations remain separate from saved gross checks and do
+not clear their warnings. These receipts do not establish legal, agreement, applicability or source
+approval.
 
 ## Toolchain
 

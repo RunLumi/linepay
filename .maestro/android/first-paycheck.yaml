@@ -145,11 +145,7 @@ appId: com.streamentry.linepay.android
     direction: DOWN
 - tapOn:
     id: check.rules-reviewed
-- scrollUntilVisible:
-    element:
-      id: check.weekly-reviewed
-    direction: DOWN
-- tapOn:
+- assertNotVisible:
     id: check.weekly-reviewed
 - scrollUntilVisible:
     element:
@@ -159,12 +155,13 @@ appId: com.streamentry.linepay.android
     id: check.save
 - scrollUntilVisible:
     element:
-      text: "Compared values match"
+      text: "Needs review"
     direction: DOWN
-- assertVisible: "Compared values match"
+- assertVisible: "Needs review"
 - tapOn:
     id: nav.history
 - assertVisible: "Confirmed gross: USD 200.00"
+- assertVisible: "Needs review: weekly-rate review is pending"
 - tapOn:
     id: nav.settings
 - scrollUntilVisible:
@@ -216,4 +213,5 @@ appId: com.streamentry.linepay.android
 - assertVisible: "The reviewed backup replaced local pay data."
 - tapOn:
     id: nav.history
-- assertVisible: "Compared values match"
+- assertVisible: "Needs review"
+- assertVisible: "Needs review: weekly-rate review is pending"
