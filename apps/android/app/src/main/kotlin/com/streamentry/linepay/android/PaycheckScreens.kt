@@ -170,6 +170,7 @@ fun HistoryScreen(
     state: AndroidLocalState,
     saveError: String?,
     onDeleteCheck: (String) -> Boolean,
+    onOpenBenefitReceipt: (String) -> Unit,
     onOpenWeeklyReceipt: (String) -> Unit,
 ) {
     var deleteCandidate by remember { mutableStateOf<AndroidPaycheckSnapshot?>(null) }
@@ -203,6 +204,9 @@ fun HistoryScreen(
         )
     }
     PageContent {
+        if (state.benefitReviews.isNotEmpty()) {
+            BenefitHistoryRows(state.benefitReviews, onOpenBenefitReceipt)
+        }
         Text("Saved checks", style = MaterialTheme.typography.headlineSmall)
         InlineMessage("Each check keeps the work, rules, statement period and result that were saved at that time.")
         saveError?.let { InlineMessage(it, isError = true) }

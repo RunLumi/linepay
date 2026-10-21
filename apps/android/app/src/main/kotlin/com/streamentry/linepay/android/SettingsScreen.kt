@@ -36,6 +36,8 @@ fun SettingsScreen(
     activityError: String?,
     saveError: String?,
     onEditRules: () -> Unit,
+    onBenefits: () -> Unit,
+    onOpenBenefitReceipt: (String) -> Unit,
     onSaveState: (AndroidLocalState) -> Boolean,
     onSaveActivity: (AndroidLocalActivitySnapshot) -> Boolean,
 ) {
@@ -103,6 +105,11 @@ fun SettingsScreen(
             onClick = onEditRules,
             modifier = Modifier.fillMaxWidth().testTag("settings.edit-rules"),
         ) { Text("Edit pay rules") }
+
+        SectionHeading("Employer contributions")
+        Text("Compare one explicitly confirmed fund and period using your source rules and eligible quantities.")
+        OutlinedButton(onClick = onBenefits, modifier = Modifier.fillMaxWidth().testTag("settings.benefits")) { Text("Review employer contributions") }
+        BenefitHistoryRows(state.benefitReviews, onOpenBenefitReceipt)
 
         SectionHeading("Privacy")
         Text("Pay, work, saved checks and rules stay in this app's private local files. There is no LinePaycheck account, pay-data server or analytics collector.")
@@ -225,6 +232,7 @@ fun SettingsScreen(
             Text(
                 "Selected backup: ${candidate.work.size} $workLabel and ${candidate.checks.size} $checkLabel. Local activity is not included."
             )
+            Text("Additional review receipts: ${candidate.weeklyReviews.size} weekly and ${candidate.benefitReviews.size} employer-contribution receipts.")
             Button(
                 onClick = {
                     if (onSaveState(candidate)) {

@@ -1,0 +1,10 @@
+<resources>
+    <style name="Base.Theme.LinePaycheck" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#55C9BE</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#111417</item>
+        <item name="android:statusBarColor">#111417</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

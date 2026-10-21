@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.LinePaycheck" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="Base.Theme.LinePaycheck" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#0B6D66</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -7,4 +7,5 @@
         <item name="android:statusBarColor">#F4F1E8</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
+    <style name="Theme.LinePaycheck" parent="Base.Theme.LinePaycheck" />
 </resources>
