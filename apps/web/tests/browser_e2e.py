@@ -76,6 +76,10 @@ with sync_playwright() as pw:
     page.on('pageerror', lambda e: errors.append(str(e)))
     try:
         page.goto(origin + '/')
+        expect(page).to_have_title('Lineman Pay — Compare Pay & Track Hours')
+        expect(page.locator('header')).to_contain_text('Lineman Pay')
+        expect(page.locator('header')).to_contain_text('Compare Pay & Track Hours · development preview')
+        expect(page.locator('meta[name="description"]')).to_have_attribute('content', 'Track hours and confirmed pay rules, compare expected pay with a paystub, and review possible differences. Records stay in this browser.')
         expect(page.get_by_role('heading', name='Is Your Paycheck Correct?')).to_be_visible()
         profile(page, '19.99')
         page.get_by_label('First work date', exact=True).fill('2026-10-01')
@@ -114,7 +118,7 @@ with sync_playwright() as pw:
         checks.append('worker-recorded correction appends follow-up without changing original 1.00 possible-shortfall comparison')
         tools.get_by_role('button', name='Review evidence report', exact=True).click()
         reviewed = tools.frame_locator('iframe')
-        expect(reviewed.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
+        expect(reviewed.get_by_role('heading', name='Lineman Pay evidence report', exact=True)).to_be_visible()
         body = reviewed.locator('body').inner_text()
         assert 'USD 10.00' in body and 'USD 9.00' in body and 'USD 1.00' in body and 'Possible shortfall' in body
         assert 'PRIVATE SYNTHETIC' not in body and 'Correction confirmed by me' not in body and frozen_check['work'][0]['startUTC'] not in body
@@ -316,8 +320,9 @@ with sync_playwright() as pw:
         own_backup = OUTPUT / 'synthetic-recipient.linepaybackup'
         own_backup_event.value.save_as(own_backup)
         recipient.get_by_role('button', name='Review removal', exact=True).click()
+        expect(recipient.locator('#clear-preview')).to_contain_text('Remove all local activity and pay records from this browser?')
         recipient.get_by_role('button', name='Confirm remove all local records', exact=True).click()
-        expect(recipient.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(recipient.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(recipient)['templateOrigins'] == []
         recipient.get_by_label('Protected web backup', exact=True).set_input_files(own_backup)
         recipient.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -398,7 +403,7 @@ with sync_playwright() as pw:
         saved_tools = timeline_page.locator(f'[data-audit-tools="{dated_audit["id"]}"]')
         saved_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         historical_report = saved_tools.frame_locator('iframe')
-        expect(historical_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
+        expect(historical_report.get_by_role('heading', name='Lineman Pay evidence report', exact=True)).to_be_visible()
         assert 'USD 1005.00' in historical_report.locator('body').inner_text() and 'USD 55/hour' in historical_report.locator('body').inner_text()
         with timeline_page.expect_download() as dated_report_event:
             saved_tools.get_by_role('button', name='Download reviewed report (HTML)', exact=True).click()
@@ -430,7 +435,7 @@ with sync_playwright() as pw:
         timeline_backup_event.value.save_as(timeline_backup)
         timeline_page.get_by_role('button', name='Review removal', exact=True).click()
         timeline_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
-        expect(timeline_page.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(timeline_page.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(timeline_page)['ruleTimelines'] == []
         timeline_page.get_by_label('Protected web backup', exact=True).set_input_files(timeline_backup)
         timeline_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -496,7 +501,7 @@ with sync_playwright() as pw:
         mismatch_tools = calendar_page.locator(f'[data-audit-tools="{mismatched["id"]}"]')
         mismatch_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         mismatch_report = mismatch_tools.frame_locator('iframe')
-        expect(mismatch_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
+        expect(mismatch_report.get_by_role('heading', name='Lineman Pay evidence report', exact=True)).to_be_visible()
         mismatch_body = mismatch_report.locator('body').inner_text()
         assert '2026-03-09 through 2026-03-15' in mismatch_body and 'Different work period / context' in mismatch_body and 'USD 25.00' not in mismatch_body
         calendar_page.screenshot(path=str(OUTPUT / 'mismatched-period-review.png'), full_page=True)
@@ -552,7 +557,7 @@ with sync_playwright() as pw:
         calendar_backup_event.value.save_as(calendar_backup)
         calendar_page.get_by_role('button', name='Review removal', exact=True).click()
         calendar_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
-        expect(calendar_page.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(calendar_page.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(calendar_page)['paycheckScopes'] == [] and read_state(calendar_page)['paycycleSchedules'] == []
         calendar_page.get_by_label('Protected web backup', exact=True).set_input_files(calendar_backup)
         calendar_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -678,7 +683,7 @@ with sync_playwright() as pw:
         weekly_before = read_state(weekly_page)
         weekly_page.get_by_role('button', name='Review removal', exact=True).click()
         weekly_page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
-        expect(weekly_page.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(weekly_page.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(weekly_page)['weeklyReviews'] == []
         weekly_page.get_by_label('Protected web backup', exact=True).set_input_files(weekly_backup)
         weekly_page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -833,7 +838,7 @@ with sync_playwright() as pw:
         page.get_by_role('button', name='Backup', exact=True).click()
         page.get_by_role('button', name='Review removal', exact=True).click()
         page.get_by_role('button', name='Confirm remove all local records', exact=True).click()
-        expect(page.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(page.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(page)['periods'] == []
         page.get_by_label('Protected web backup', exact=True).set_input_files(backup)
         page.get_by_label('Backup password', exact=True).fill(PASSWORD)
@@ -953,7 +958,7 @@ with sync_playwright() as pw:
         line_backup_event.value.save_as(line_backup)
         line_page.get_by_role('button',name='Review removal',exact=True).click()
         line_page.get_by_role('button',name='Confirm remove all local records',exact=True).click()
-        expect(line_page.locator('#status')).to_contain_text('activity and pay records were removed')
+        expect(line_page.locator('#status')).to_have_text('Local activity and pay records were removed from this browser.')
         assert read_state(line_page)['paycheckLineScopes'] == []
         line_page.get_by_label('Protected web backup',exact=True).set_input_files(line_backup)
         line_page.get_by_label('Backup password',exact=True).fill(PASSWORD)
@@ -1091,7 +1096,7 @@ with sync_playwright() as pw:
         offline_tools = page.locator(f'[data-audit-tools="{check_id}"]')
         offline_tools.get_by_role('button', name='Review evidence report', exact=True).click()
         offline_report = offline_tools.frame_locator('iframe')
-        expect(offline_report.get_by_role('heading', name='Paycheck Audit: LinePay evidence report', exact=True)).to_be_visible()
+        expect(offline_report.get_by_role('heading', name='Lineman Pay evidence report', exact=True)).to_be_visible()
         assert 'USD 1.00' in offline_report.locator('body').inner_text()
         assert 'PRIVATE SYNTHETIC' not in offline_report.locator('body').inner_text()
         offline_tools.locator('iframe').scroll_into_view_if_needed()
