@@ -1,7 +1,7 @@
 {
   "status": "mechanical inventory, not ownership approval",
   "files": {
-    "apps/ios/App/Info.plist": "cf3e8f0ba1aa2adb575c7af0537b299c66cd9707c69374a130a32a397f62144b",
+    "apps/ios/App/Info.plist": "714d8b1a160a6f1bc2dc32c8629df264d3aadcad0020584212739e41be569cf5",
     "apps/ios/App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png": "61110be652b87f654c831b0ffd316aacc2692aec165e4bf572ee6881200c27eb",
     "apps/ios/App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json": "9cf2928dad89427abd581b6852db081352417f400afb65e60c479228cdc4f4da",
     "apps/ios/App/Resources/Assets.xcassets/Contents.json": "0fd49ba3c3585c709678e0046a821c3c60685ec7063720d30d3a3448be3a208b",

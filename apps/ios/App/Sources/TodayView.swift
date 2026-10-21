@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TodayView: View {
     let model: AppModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     var onOpenHistory: () -> Void = {}
     var onOpenPay: () -> Void = {}
     @State private var showingAdd = false
@@ -210,6 +211,11 @@ struct TodayView: View {
             .listStyle(.plain)
             .linePayCanvas()
             .navigationTitle("Today")
+            .navigationBarTitleDisplayMode(
+                dynamicTypeSize.isAccessibilitySize
+                    ? .inline
+                    : .large
+            )
             .safeAreaInset(edge: .bottom) {
                 if let undo {
                     HStack {

@@ -73,7 +73,7 @@ struct LinePayValueStyle: LabeledContentStyle {
             HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
                 configuration.label
                     .foregroundStyle(LinePayColor.textPrimary)
-                    .fixedSize()
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
                 configuration.content.fixedSize()
             }
@@ -121,6 +121,7 @@ extension View {
     /// label. Textual actions on neutral surfaces use the action color and a comfortable target.
     func linePayRowAction(minHeight: CGFloat = 48) -> some View {
         foregroundStyle(LinePayColor.actionText)
+            .font(.body)
             .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
             .contentShape(Rectangle())
     }

@@ -42,10 +42,17 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         tap("backup.choose-location")
         let picker = app.navigationBars["FullDocumentManagerViewControllerNavigationBar"].firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 20))
-        let filename = try XCTUnwrap(
-            app.textFields.allElementsBoundByIndex.first(where: {
-                ($0.value as? String)?.hasPrefix("LinePaycheck-") == true
-            })?.value as? String)
+        let filenameField = app.textFields.matching(
+            NSPredicate(format: "value BEGINSWITH %@", "LinePaycheck-")
+        ).firstMatch
+        if !filenameField.waitForExistence(timeout: 10) {
+            capture("v2-backup-export-filename-field-missing")
+            let hierarchy = XCTAttachment(string: app.debugDescription)
+            hierarchy.name = "v2-backup-export-picker-accessibility"
+            hierarchy.lifetime = .keepAlways
+            add(hierarchy)
+        }
+        let filename = try XCTUnwrap(filenameField.value as? String)
         if !picker.staticTexts["On My iPhone"].exists {
             if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
             let local = app.staticTexts["On My iPhone"].firstMatch
@@ -72,6 +79,13 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         tap("backup.restore")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
         capture("v2-backup-restore-picker-initial")
+        if !picker.staticTexts["On My iPhone"].exists {
+            if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
+            let local = app.staticTexts["On My iPhone"].firstMatch
+            XCTAssertTrue(local.waitForExistence(timeout: 10), "Choose the local Files location")
+            local.tap()
+        }
+        XCTAssertTrue(picker.staticTexts["On My iPhone"].waitForExistence(timeout: 10))
         let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", filename)).firstMatch
         if !file.waitForExistence(timeout: 5) {
             let search = app.searchFields.firstMatch

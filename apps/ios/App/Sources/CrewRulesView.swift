@@ -88,8 +88,8 @@ struct CrewRulesView: View {
         .onDisappear { task?.cancel() }
         .sheet(isPresented: $showingSetup) { PayProfileSetupView(model: model) }
         .fileExporter(
-            isPresented: $exporting, document: prepared, contentType: .data,
-            defaultFilename: "Crew rules.linepayrules"
+            isPresented: $exporting, document: prepared, contentType: .linePayCrewRules,
+            defaultFilename: "Crew rules"
         ) { result in
             messageArea = .exportFile
             switch result {
@@ -100,7 +100,9 @@ struct CrewRulesView: View {
                 message = "The draft was not saved. Check the selected destination and retry."
             }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.data, .json]) { result in
+        .fileImporter(
+            isPresented: $importing, allowedContentTypes: [.linePayCrewRules, .json]
+        ) { result in
             messageArea = .inspectDraft
             message = nil
             guard case .success(let url) = result else {

@@ -3,8 +3,13 @@ import SwiftUI
 import Synchronization
 import UniformTypeIdentifiers
 
+extension UTType {
+    static let linePayCrewRules = UTType(
+        exportedAs: "com.streamentry.linepay.crew-rules", conformingTo: .json)
+}
+
 struct CrewRuleFileDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.data] }
+    static var readableContentTypes: [UTType] { [.linePayCrewRules] }
     let data: Data
 
     init(data: Data) { self.data = data }
