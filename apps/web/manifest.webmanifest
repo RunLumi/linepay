@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Paycheck Audit: LinePay",
-  "short_name": "LinePay",
+  "name": "Lineman Pay",
+  "short_name": "Lineman Pay",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

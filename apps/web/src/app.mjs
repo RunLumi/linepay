@@ -745,14 +745,14 @@ async function action(name) {
     );
   } else if (name === "clear") {
     document.querySelector("#clear-preview").innerHTML =
-      '<div class="preview"><p>Remove local activity and every Paycheck Audit: LinePay pay record from this browser? Activity is cleared first; if it cannot be cleared, pay records remain.</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
+      '<div class="preview"><p>Remove all local activity and pay records from this browser? Activity is cleared first; if it cannot be cleared, pay records remain.</p><button class="danger" id="confirm-clear">Confirm remove all local records</button></div>';
     document.querySelector("#confirm-clear").onclick = () =>
       run(async () => {
         await activityLedger?.clear();
         state = await store.write(emptyState(), state.revision);
         selection = null;
         render();
-        message("Paycheck Audit: LinePay activity and pay records were removed from this browser.");
+        message("Local activity and pay records were removed from this browser.");
       });
   }
 }

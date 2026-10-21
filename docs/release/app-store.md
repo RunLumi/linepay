@@ -6,7 +6,7 @@
 
 ## Decision and release boundary
 
-The target public listing is **Lineman Pay**, with the subtitle **Verify Pay & Track Hours**. Its promise is:
+The target public listing is **Lineman Pay**, with the subtitle **Compare Pay & Track Hours**. Its promise is:
 
 > Track what you worked. Compare expected pay with your paystub. Understand possible differences.
 
@@ -24,7 +24,7 @@ Keep `com.streamentry.linepay`, the `LinePay` project/scheme/target, `LinePayDom
 
 The first three screenshots must make sense without knowing what a lineman or CBA is. They should show:
 
-1. A comparison between recorded work, expected earnings and confirmed paystub values.
+1. A comparison between recorded work, expected gross wages and confirmed paystub values.
 2. Simple hourly setup with optional, explicitly confirmed rules.
 3. Paystub review with editable extracted values and matching pay-period dates.
 
@@ -37,7 +37,7 @@ The app does not retrieve paystubs from an employer portal, provide direct depos
 | Field | Exact candidate | Measured length / limit |
 |---|---|---:|
 | App Store name | **Lineman Pay** | 11 / 30 characters |
-| Subtitle | **Verify Pay & Track Hours** | 24 / 30 characters |
+| Subtitle | **Compare Pay & Track Hours** | 25 / 30 characters |
 | Promotional text | **Track hours, review paystub figures, and understand possible pay differences—privately.** | 87 / 170 characters |
 | Keywords | `paystub,discrepancy,overtime,checker,timesheet,underpaid,shift,earnings,callout` | 79 / 100 UTF-8 bytes |
 | Primary category | **Finance** | Retain only if it accurately describes the final product |
@@ -54,7 +54,7 @@ Do not copy the old `LinePaycheck: Lineman Pay` / `Overtime, Callout & Per Diem`
 Use the following plain text only after the final build supports every advertised route. Keep the working Standard EULA and Privacy links; 1.0.2 was rejected for omitting the EULA link. Do not print a USD price in a description reused across storefronts.
 
 ```text
-Not sure your paycheck matches the hours you worked? Lineman Pay helps hourly workers estimate expected earnings, compare a paystub, and understand possible differences.
+Want to compare your paycheck with the work you logged? Lineman Pay helps hourly workers estimate gross wages from the hours and pay rules they confirm, then compare that estimate with confirmed paystub figures.
 
 START WITH YOUR WORK
 
@@ -66,7 +66,7 @@ Scan or import a paystub, or enter its details by hand. Review extracted figures
 
 UNDERSTAND THE RESULT
 
-Compare like-for-like earnings under the rules you confirmed. Review possible differences with the work facts, rule versions and statement values behind them. Missing work, unclear rules or incompatible pay periods need review; a match covers only the items compared.
+Compare like-for-like gross wages under the rules you confirmed. Review possible differences alongside the work facts, rule versions and paystub values. If you cannot confirm that your work log is complete, a rule is unclear, or pay periods do not align, keep the result in review. A match covers only the items compared.
 
 BUILT FOR COMPLEX PAY, TOO
 
@@ -110,20 +110,20 @@ The dated release record refers to that older text; it is not silently rewritten
 
 ## 5. Screenshot sequence and acceptance
 
-Follow [DESIGN.md](../../DESIGN.md) and the [store screenshot system](../design/app-stores/screenshots.md). These are composition requirements, **not existing captures or approved assets**.
+Follow [DESIGN.md](../../DESIGN.md) and the [store screenshot system](../design/app-stores/screenshots.md). The table below defines composition requirements, not rendered assets. A real synthetic-data capture/export set for iOS 1.1.0 build 12 exists under `assets/store/raw/` and `assets/store/exports/`, with its source/build binding recorded in [`capture-manifest-ios-1.1.0-en-US.json`](../../assets/store/source/capture-manifest-ios-1.1.0-en-US.json). Those images are candidate evidence for build 12 only. Recapture and revalidate them from the final signed candidate before submission; they do not prove build 13's screens.
 
 | Order | Headline | Actual screen evidence required |
 |---:|---|---|
 | 1 | **Is Your Paycheck Correct?** | Expected vs confirmed paystub amount with `Possible difference` or the actual scoped result label and visible coverage explanation |
-| 2 | **Track Hours. Know Expected Pay.** | Generic hourly setup and actual work, with an explicit rate and estimate scope |
-| 3 | **Scan. Review. Compare.** | Editable paystub review, source-period dates and human confirmation |
-| 4 | **Review Possible Overtime Gaps.** | A supported overtime component traced to work and a confirmed rule; show unresolved coverage honestly |
-| 5 | **Keep the Evidence.** | Source facts, rule snapshot, comparison and preview of the actual shareable report |
+| 2 | **Track Hours. See Expected Gross.** | Pay ledger showing the period, recorded hours, estimated gross wages and the route to rules used |
+| 3 | **Import. Review. Compare.** | Imported paystub review, source-period dates and human confirmation |
+| 4 | **Possible Double-Time Difference.** | A daily double-time comparison traced to the recorded hours and the configured rule; do not imply general overtime coverage |
+| 5 | **Keep the Evidence.** | Comparison line, paystub source/value and the link to its recorded work component; do not imply the full rule snapshot is on this screen |
 | 6 | **Built for Complex Pay, Too.** | Retained advanced lineworker settings with supported callout/per-diem scenarios |
 
 Use real candidate captures with clearly synthetic facts and the appropriate Free/Pro qualifier. Keep historical 1.0.5 captures and their manifest intact; new screenshots need a new source/build-bound capture record. Do not use generated UI, worker testimonials, union badges, fictional employer replies or dramatic “money owed” banners. A question headline must be answered by a visibly scoped comparison, not an unqualified correct/incorrect verdict.
 
-Inspect small-screen, large-text and dark appearances in the actual app. The submission set must remain legible at thumbnail size. Screenshot 4 is omitted if a meaningful, supported overtime comparison cannot be captured; an unresolved-rule warning must never be dressed up as a detected gap. In particular, more than 40 actual weekly hours without mapped weekly coverage remains **Needs review**, even when entered gross amounts match. A configured difference in that state is not a verified overtime shortfall.
+Inspect small-screen, large-text and dark appearances in the actual app. The submission set must remain legible at thumbnail size. Screenshot 4 is omitted if the configured daily double-time comparison cannot be captured with its scope visible. An unresolved-rule warning must never be dressed up as a detected gap. More than 40 actual weekly hours without mapped weekly coverage remains **Needs review**, even when entered gross amounts match; a configured daily double-time difference is not evidence of a weekly-overtime shortfall.
 
 ### Product Page Header and Search Results creative candidates
 
@@ -140,7 +140,7 @@ Both are ImageGen-created conceptual artwork. They contain no interface, text, p
 
 Retain the recognizable Line Gap geometry and the Precision Industrial Minimalism system. No icon redesign is required to publish this copy. Review any actual asset change separately at Home Screen and App Store sizes.
 
-Add a preview only after the journey is accepted. Use real captured UI: confirmed rules → actual work → expected earnings → reviewed paystub → scoped result → evidence. No stock footage, fake employer text or recovery claim.
+Add a preview only after the journey is accepted. Use real captured UI: confirmed rules → actual work → estimated gross wages → reviewed paystub → scoped result → evidence. No stock footage, fake employer text or recovery claim.
 
 ## 7. Privacy, URLs and web presentation
 

@@ -28,7 +28,7 @@ An implementation, test result, upload, review submission and public release are
 | Workstream | State | Acceptance still required |
 |---|---|---|
 | Foundation: funnel measurement | Native device-local milestones/manual export passed the full native gate; PWA local ledger/export browser-verified | Final release-candidate/device checks; no production cohort/completeness claim |
-| Website/store consistency | Readback and tested local correction complete; publication approval pending | Approved push/PR/deploy, then public readback |
+| Website/store consistency | October 21 built-in Browser readback confirms the live local PWA still uses `Paycheck Audit: LinePay` / `Verify Pay & Track Hours` with a development-preview label; a copy-alignment change is underway | Green PR, staging + production Worker deploy/readback, and a later public App Store listing update; full PWA parity/public release remains separate |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Broader calendar UI, physical timezone/provider checks and final release gate |
 | Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, persistent evidence and Android/PWA adoption remain pending |

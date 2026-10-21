@@ -1,15 +1,16 @@
-# Paycheck Audit: LinePay local browser client
+# Lineman Pay local browser client
 
-The browser shell uses the [v3 positioning](../../docs/plan/v3.md): public name **Paycheck Audit: LinePay**,
-subtitle **Verify Pay & Track Hours**, headline **Is Your Paycheck Correct?**. Results are labelled
+The browser shell uses the [v3 positioning](../../docs/plan/v3.md): display name **Lineman Pay**,
+subtitle **Compare Pay & Track Hours**, headline **Is Your Paycheck Correct?**. Results are labelled
 *Match within compared scope*, *Possible shortfall/overpayment* (a possible difference), *Needs review*
 or *Unable to verify*; none is a legal verdict. Calculations, stored-state schema, technical identifiers
 (`linepaycheck-web` Worker, IndexedDB names, backup/state formats) and the development-preview label
 with `noindex` are unchanged. Native apps carry their own copy and are not changed by this client.
 
-Development preview for the owner's all-stage v2 request. This is an implemented local workflow,
-not yet full native feature parity, a deployed service, a released/installed PWA or a legal-pay audit.
-[Execution evidence](../../docs/plan/v2-execution.md) tracks the remaining delivery work.
+Development preview for the owner's all-stage v2 request. This implemented local workflow is
+deployed at the separate Cloudflare Worker origin as a `noindex` preview. It is not full native
+feature parity, a signed/released PWA, or a legal-pay audit. [Execution evidence](../../docs/plan/v2-execution.md)
+tracks the remaining delivery work.
 
 From the repository root, with Node 22+ and Python 3:
 

@@ -12,11 +12,12 @@ const sources = readdirSync(web("src"))
 const app = read("src/app.mjs");
 
 test("browser shell uses the v3 public name and subtitle", () => {
-  assert.match(index, /<title>Paycheck Audit: LinePay — Verify Pay &amp; Track Hours<\/title>/);
-  assert.match(index, /<span class="wordmark">Paycheck Audit: LinePay<\/span\s*>/);
-  assert.match(index, /Verify Pay &amp; Track Hours · development preview/);
-  assert.equal(manifest.name, "Paycheck Audit: LinePay");
-  assert.equal(manifest.short_name, "LinePay");
+  assert.match(index, /<title>Lineman Pay — Compare Pay &amp; Track Hours<\/title>/);
+  assert.match(index, /<meta\s+name="description"\s+content="Track hours and confirmed pay rules, compare expected pay with a paystub, and review possible differences\. Records stay in this browser\."\s*\/>/);
+  assert.match(index, /<span class="wordmark">Lineman Pay<\/span\s*>/);
+  assert.match(index, /Compare Pay &amp; Track Hours · development preview/);
+  assert.equal(manifest.name, "Lineman Pay");
+  assert.equal(manifest.short_name, "Lineman Pay");
 });
 
 test("technical identity and the preview boundary are unchanged", () => {
@@ -25,7 +26,15 @@ test("technical identity and the preview boundary are unchanged", () => {
   assert.equal(manifest.scope, "./");
   assert.ok(index.includes("development preview"));
   assert.match(read("deploy/_headers"), /X-Robots-Tag: noindex, nofollow/);
-  assert.match(read("sw.js"), /const CACHE = "linepaycheck-web-shell-v\d+";/);
+  assert.match(read("sw.js"), /const CACHE = "linepaycheck-web-shell-v16";/);
+});
+
+test("clear-record and evidence-report copy use the current display name", () => {
+  assert.ok(app.includes("Remove all local activity and pay records from this browser?"));
+  assert.ok(app.includes("Local activity and pay records were removed from this browser."));
+  const report = read("src/report.mjs");
+  assert.ok(report.includes("<h1>Lineman Pay evidence report</h1>"));
+  assert.ok(report.includes("<title>Lineman Pay evidence report</title>"));
 });
 
 test("the empty Pay view leads with the v3 headline and promise", () => {
@@ -68,5 +77,5 @@ test("shipped copy makes none of the claims v3 forbids", () => {
     for (const pattern of forbidden)
       assert.equal(text.match(pattern), null, `${name} contains forbidden claim ${pattern}`);
   assert.match(index, /not a legal-pay\s+audit/);
-  assert.match(index, /No LinePay\s+account/);
+  assert.match(index, /No account is required/);
 });
