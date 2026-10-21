@@ -25,6 +25,8 @@ import {
   snapshot,
   inspectSnapshot,
 } from "./state.mjs";
+import { portableReceiptHistory, portableSourceNotice } from "./portable-ui.mjs";
+import { readPortable, portableSnapshot, PORTABLE_FORMAT, importedCoverage, importedConfirmationRequired, confirmedImportedCopy, pendingImportedCurrent, pendingImportedDefault } from "./portable-state.mjs";
 import { encryptBackup, decryptBackup } from "./backup.mjs";
 import { LocalActivityLedger } from "./local-activity.mjs";
 import { renderLocalDiagnostics } from "./diagnostics-ui.mjs";
@@ -43,7 +45,8 @@ let state,
   pendingLineScope = null,
   pendingRestore = null,
   activityLedger = null,
-  diagnosticsGeneration = 0;
+  diagnosticsGeneration = 0,
+  unsavedFinancialInput = false;
 const main = document.querySelector("main"),
   status = document.querySelector("#status");
 const esc = (value) =>
@@ -120,10 +123,12 @@ function render() {
   else if (tab === "history") renderHistory();
   else if (tab === "backup") renderBackup();
   else if (tab === "benefits") renderBenefits();
+  else if (tab === "weekly" && state.portableArchive && state.periods.some(period=>!period.closed && importedConfirmationRequired(state,period.id)))
+    main.innerHTML="<h1>Confirm imported settings first</h1><p>Open Pay and independently confirm a new configuration before using imported work in a current expected-pay review. Original receipts remain available in History.</p>";
   else if (tab === "weekly")
     renderWeeklyUI({
       container: main,
-      state,
+      state: state.portableArchive ? {...state, periods:state.periods.filter(period=>!state.portableArchive.mappings.some(mapping=>mapping.entityType==="period" && mapping.localID===period.id && (state.portableArchive.activationConfirmations.some(confirmation=>confirmation.periodID===period.id) || state.portableArchive.document.periods.find(source=>source.id===mapping.portableID)?.isCurrent===false)))} : state,
       run,
       uid,
       now,
@@ -157,6 +162,7 @@ function render() {
     return;
   }
   else renderPay();
+  if (state.portableArchive && tab !== "backup" && tab !== "history") main.insertAdjacentHTML("afterbegin", portableSourceNotice(state,esc));
   bind();
 }
 function renderBenefits() {
@@ -199,11 +205,11 @@ function renderBenefits() {
   });
 }
 function renderProfiles() {
-  const latest = state.profiles.at(-1);
-  main.innerHTML = `<h1>Confirmed pay rules</h1><p>Each saved profile is a new version. Existing periods keep their exact saved rules.</p>${latest ? `<p class="rule-note">Latest profile: ${money(latest.hourlyRate, latest.currency)}/hour. ${latest.dailyOvertimeTiers.length ? "Daily premium configured." : "No daily premium configured."}</p>` : ""}<form id="profile-form"><div class="fields">${label("Hourly rate", "rate", 'inputmode="decimal" required maxlength="42"')}
+  const latest = state.profiles.at(-1), sourceMapping=state.portableArchive?.mappings.find(mapping=>mapping.entityType==="profile" && mapping.localID===latest?.id), sourceProfile=state.portableArchive?.document.profiles.find(profile=>profile.id===sourceMapping?.portableID), sourceRule=state.portableArchive?.document.ruleSnapshots.find(rule=>rule.id===sourceProfile?.ruleRef);
+  main.innerHTML = `<h1>Pay rule snapshots</h1><p>New browser profiles require your confirmation. Existing periods keep their saved rule snapshots. Imported source settings remain distinct from a separately confirmed new browser configuration.</p>${latest ? `<p class="rule-note">${sourceRule ? "Retained source profile" : "Latest browser profile"}: ${money(latest.hourlyRate, latest.currency)}/hour. ${sourceRule?.dailyOvertimeTiers===null ? "Source daily overtime settings were not recorded." : latest.dailyOvertimeTiers.length ? "Daily premium configured." : "No daily premium configured."}</p>` : ""}<form id="profile-form"><div class="fields">${label("Hourly rate", "rate", 'inputmode="decimal" required maxlength="42"')}
   <label>Currency<select name="currency"><option>USD</option><option>CAD</option></select></label></div>
   <fieldset><legend>Optional configured rules</legend><div class="fields">${label("Daily overtime after hours", "threshold", 'inputmode="decimal" placeholder="Not configured"')}${label("Overtime multiplier", "multiplier", 'inputmode="decimal" value="1.5"')}${label("Isolated callout minimum hours", "minimum", 'inputmode="decimal" placeholder="Not configured"')}${label("Per diem per worked local date", "perdiem", 'inputmode="decimal" placeholder="Not configured"')}</div></fieldset>
-  <p class="note">Weekly overtime, travel, rest/meal rules, effective-date transitions, benefits and taxes need separate review. An empty optional field means unconfigured, not waived.</p>${check("I confirmed these inputs against my pay rules.", "confirmed", true)}<button class="primary">Save a new profile</button></form><section id="rule-template-tools"></section>`;
+  <p class="note">A new profile uses 2 decimal places, half-up rounding by pay category. Weekly overtime, travel, rest/meal rules, effective-date transitions, benefits and taxes need separate review. An empty optional field means unconfigured, not waived.</p>${check("I confirmed these inputs against my pay rules.", "confirmed", true)}<button class="primary">Save a new profile</button></form><section id="rule-template-tools"></section>`;
   renderRuleTemplateUI({
     container: main.querySelector("#rule-template-tools"),
     state,
@@ -223,8 +229,18 @@ function renderProfiles() {
 }
 function renderPay() {
   const period = current();
+  if (!period && pendingImportedCurrent(state)) {main.innerHTML=`<h1>Imported work context needs review</h1><p>The original rules and work are retained in History. This calculator cannot activate the saved context. No current expected-pay estimate is active. Confirm a separate supported configuration before starting new work.</p><button data-action="source-history">Open source history</button>`;return;}
   if (!period) {
     main.innerHTML = `<h1>Is Your Paycheck Correct?</h1><p>Track what you worked. Compare expected pay with your paystub. Understand possible differences.</p><p>Start with the pay rules you explicitly confirm. Record actual work, then compare a paycheck covering the same period. A result shows a match within the compared scope, a possible difference or that it is unable to verify.</p>${state.profiles.length ? periodForm() : `<p>No pay profile is saved yet.</p><button class="primary" data-action="profile">Confirm pay rules</button>`}`;
+    return;
+  }
+  const sourceMapping=state.portableArchive?.mappings.find(mapping=>mapping.entityType==="period" && mapping.localID===period.id),sourcePeriod=state.portableArchive?.document.periods.find(source=>source.id===sourceMapping?.portableID),retired=state.portableArchive?.activationConfirmations.some(confirmation=>confirmation.periodID===period.id),inactiveSource=sourcePeriod && (sourcePeriod.closed===true || sourcePeriod.isCurrent===false);
+  if (retired || inactiveSource) {
+    main.innerHTML=`<h1>Retained source context</h1><p>${esc(period.start)} through ${esc(period.end)} · ${esc(period.zone)}</p><p>The original work, source rules and frozen receipts remain read-only in imported source evidence in History. This source context is not an active browser estimate. Any separately confirmed editable copy has its own rules, work period and lineage.</p><button data-action="source-history">Open source history</button>${state.periods.some(p=>!p.closed)?"":periodForm()}`;
+    return;
+  }
+  if (importedConfirmationRequired(state,period.id)) {
+    main.innerHTML = `<h1>Confirm a new browser configuration</h1><p>The source did not record calculation settings needed for an active browser estimate, or whether this work period was closed. No current expected-pay estimate or new paycheck check is active yet. Original source records and historical verdicts are unchanged in History.</p><p>Proposed browser work period: ${esc(period.start)} through ${esc(period.end)} · ${esc(period.zone)} · ${period.work.length} recorded work entry/entries. Source base rate: ${money(period.rule.hourlyRate,period.rule.currency)}/hour.</p><p>Review the retained source rules first. The browser proposes an editable copy of this period’s work and a separate rule snapshot. Confirm rounding independently; other unresolved source rules will still keep new checks at Needs review.</p><form id="imported-activation-form"><label for="imported-rounding-scale">New rounding decimal places</label><select id="imported-rounding-scale" name="scale"><option>2</option><option>0</option><option>3</option><option>4</option></select><label for="imported-rounding-mode">New rounding method</label><select id="imported-rounding-mode" name="mode"><option value="halfUp">Half up</option><option value="bankers">Ties to even</option><option value="down">Down</option><option value="up">Up</option></select>${check("Use this new browser configuration for future periods.","future-default")}${check("I independently confirmed these rounding settings for a new browser rule snapshot and an editable copy of this work period.","confirmed",true)}<p>This creates new native rule identity/version. It does not fill unknown source fields or clear unrepresented rule coverage. A supported portable export preserves the original source records and the separately confirmed browser copy with explicit lineage.</p><button>Confirm new browser rule snapshot</button></form>`;
     return;
   }
   const schedule = state.paycycleSchedules.find(
@@ -332,6 +348,7 @@ function observeVisibleExpectedPay(periodID) {
   };
 }
 function periodForm() {
+  if(pendingImportedDefault(state))return `<h2>Next-period settings need review</h2><p>The source selected settings this calculator cannot activate. They remain the retained default in History. Explicitly confirm a new browser profile before starting another period.</p><button data-action="profile">Confirm new pay rules</button>`;
   return `<h2>Start a pay period</h2><form id="period-form" data-period-owned><label for="paycycle-cadence">Paycycle</label><select id="paycycle-cadence" name="cadence"><option value="manual">Custom dates</option><option value="weekly">Weekly</option><option value="biweekly">Every two weeks</option><option value="semimonthly">Twice monthly (1–15, 16–end)</option></select><div class="fields">${label("First work date", "start", 'type="date" required')}${label("Last work date (included)", "end", 'type="date" required')}${label("Payroll timezone", "zone", `required value="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)}"`)}</div><p class="note">Confirm the payroll timezone. Device timezone changes will not reinterpret saved work. The newest profile will be copied into this period.</p><button>Review pay period</button><section class="period-preview" aria-live="polite"></section></form>`;
 }
 function workForm() {
@@ -346,13 +363,13 @@ function renderHistory() {
       .toReversed()
       .map(
         (p) =>
-          `<li><span>${esc(p.start)} → ${esc(p.end)}<small>${p.closed ? "Closed" : "Open"} · ${p.audits.length} saved check(s) · ${esc(p.zone)}</small></span><button data-period="${esc(p.id)}">Open record</button></li>`,
+          `<li><span>${esc(p.start)} → ${esc(p.end)}<small>${state.portableArchive?.activationConfirmations.some(confirmation=>confirmation.periodID===p.id) ? "Retained source context" : importedConfirmationRequired(state,p.id) ? "Awaiting independent confirmation" : p.closed ? "Closed" : "Open"} · ${p.audits.length} saved check(s) · ${esc(p.zone)}</small></span><button data-period="${esc(p.id)}">Open record</button></li>`,
       )
       .join("") || "<li>No periods yet.</li>"
-  }</ul>`;
+  }</ul>${portableReceiptHistory(state,esc)}`;
 }
 function renderBackup() {
-  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">This preview opens web snapshots only. iOS/Android state transfer is not yet supported. The protected envelope uses the shared encryption format; compatible encryption does not imply compatible financial records.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected web backup</h2>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePay. Device-local activity is kept in a separate database and is not included.</p><button class="primary">Download encrypted backup</button></form><form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This clears local activity first, then removes pay profiles, periods, work and saved checks from this browser. If activity cannot be cleared, pay records are left intact.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
+  main.innerHTML = `<h1>Keep a copy you control</h1><p>Records are stored in this browser. They can be removed by clearing site data, private browsing or storage eviction. A downloaded backup is your separate recovery copy.</p><p class="rule-note">Protected web backups preserve this browser’s complete supported state. Portable transfers use a shared typed financial format. Import is all-or-nothing: unpreservable originals or records refuse the entire file before replacement. Retained source contexts this calculator cannot activate remain pending review. Historical source receipts remain read-only. Device-local activity and destination-owned purchases are never imported.</p><button data-action="persist">Request persistent browser storage</button><form id="export-form"><h2>Export protected backup</h2><label for="backup-format">Backup format</label><select id="backup-format" name="export-format"><option value="web">Complete web recovery copy</option><option value="portable">Portable financial transfer</option></select><p>Portable export refuses the entire file if any current financial record cannot be represented. Keep a complete web copy as your recovery copy.</p>${label("New backup password", "password", 'type="password" required minlength="12" autocomplete="new-password"')}${label("Repeat password", "repeat", 'type="password" required autocomplete="new-password"')}<p class="note">Use at least 12 characters. Keep the password separately; there is no reset service. No password is saved by LinePay. Device-local activity is kept in a separate database and is not included.</p><button class="primary">Download encrypted backup</button></form>${unsavedFinancialInput ? '<p class="rule-note">Unsaved financial form input blocks portable export. Save it first, or explicitly discard those inputs. A complete web recovery copy includes saved records only.</p><button data-action="discard-unsaved">Discard unsaved form inputs</button>' : ""}<form id="restore-form"><h2>Inspect a backup</h2>${label("Protected web backup", "file", 'type="file" required accept=".linepaybackup,.lpb"')}${label("Backup password", "password", 'type="password" required autocomplete="off"')}<button>Unlock and inspect</button></form><section id="restore-preview" aria-live="polite"></section><hr><h2>Remove this browser’s records</h2><p>Export a copy first. This clears local activity first, then removes pay profiles, periods, work and saved checks from this browser. If activity cannot be cleared, pay records are left intact.</p><button class="danger" data-action="clear">Review removal</button><section id="clear-preview"></section>`;
 }
 async function commit(change) {
   const previous = state;
@@ -361,6 +378,7 @@ async function commit(change) {
   validateState(replacement);
   message("Saving local records…");
   state = await store.write(replacement, state.revision);
+  unsavedFinancialInput = false;
   await observeCommittedChange(previous, state);
   render();
   message("Saved in this browser.");
@@ -537,7 +555,13 @@ async function submit(form) {
     get = (name) => data.get(name),
     checked = (name) => data.has(name),
     nullable = (name) => (get(name) === "" ? null : get(name));
-  if (form.id === "profile-form") {
+  if (form.id === "imported-activation-form") {
+    if (!checked("confirmed")) throw Error("Independently confirm the proposed new settings before activating an estimate.");
+    const p=current();
+    await commit(s=>confirmedImportedCopy(s,p.id,{scale:Number(get("scale")),mode:get("mode"),scope:"payCategory"},now(),uid,checked("future-default")));
+    selection=state.portableArchive.activationConfirmations.at(-1).adoptedPeriodID;
+    render();
+  } else if (form.id === "profile-form") {
     const profile = {
       id: uid(),
       version: "1",
@@ -583,14 +607,15 @@ async function submit(form) {
     };
     await commit((s) => s.periods.find((x) => x.id === p.id).work.push(entry));
   } else if (form.id === "audit-form") {
+    if (importedConfirmationRequired(state,current().id)) throw Error("Confirm an independent new browser rule configuration first.");
     const p = current(),
       calculation = currentCalculation(state, p),
       facts = {
         completeWork: checked("complete"),
         grossBasis: get("basis"),
         unreviewedFields: checked("unreviewed"),
-        unsupportedRules: checked("unsupported"),
-        weeklyReviewPending: checked("weekly"),
+        unsupportedRules: checked("unsupported") || importedCoverage(state,p.id).unknownRules,
+        weeklyReviewPending: checked("weekly") || importedCoverage(state,p.id).weeklyPending,
         paidGross: get("gross"),
         paidPerDiem: nullable("perdiem"),
       };
@@ -643,15 +668,17 @@ async function submit(form) {
     if (get("password") !== get("repeat"))
       throw Error("The passwords do not match.");
     for (const element of form.elements) element.disabled = true;
-    message("Protecting the web backup…");
+    if (get("export-format") === "portable" && unsavedFinancialInput) throw Error("Portable export refused: unsaved financial input exists. Save it or explicitly discard it before exporting.");
+    message("Protecting the backup…");
     try {
-      const encoded = await encryptBackup(snapshot(state), get("password")),
+      const portable = get("export-format") === "portable",
+        encoded = await encryptBackup(portable ? portableSnapshot(validateState(state)) : snapshot(state), get("password")),
         url = URL.createObjectURL(
           new Blob([encoded], { type: "application/octet-stream" }),
         ),
         a = document.createElement("a");
       a.href = url;
-      a.download = "LinePaycheck-web.linepaybackup";
+      a.download = portable ? "Lineman-Pay-portable.linepaybackup" : "LinePaycheck-web.linepaybackup";
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
       message(
@@ -670,18 +697,15 @@ async function submit(form) {
     for (const element of form.elements) element.disabled = true;
     message("Unlocking the selected backup…");
     try {
-      pendingRestore = inspectSnapshot(
-        await decryptBackup(
-          new Uint8Array(await file.arrayBuffer()),
-          get("password"),
-        ),
-      );
+      const plaintext = await decryptBackup(new Uint8Array(await file.arrayBuffer()), get("password"));
+      const format = JSON.parse(new TextDecoder("utf-8", {fatal:true}).decode(plaintext)).format;
+      pendingRestore = format === PORTABLE_FORMAT ? validateState(readPortable(plaintext, emptyState)) : inspectSnapshot(plaintext);
     } finally {
       form.reset();
       for (const element of form.elements) element.disabled = false;
     }
     main.querySelector("#restore-preview").innerHTML =
-      `<div class="preview"><h2>Backup inspected; records unchanged</h2><p>${pendingRestore.profiles.length} profile(s), ${pendingRestore.periods.length} period(s), ${pendingRestore.periods.reduce((n, p) => n + p.audits.length, 0)} saved paycheck check(s), ${pendingRestore.benefitChecks.length} fund check(s).</p><p>Replacing removes this browser’s current records. Export them first if you need to keep them.</p><button class="danger" id="confirm-restore">Replace with inspected backup</button></div>`;
+      `<div class="preview"><h2>Backup inspected; records unchanged</h2><p>${pendingRestore.profiles.length} profile(s), ${pendingRestore.periods.length} period(s), ${pendingRestore.periods.reduce((n, p) => n + p.audits.length, 0)} saved paycheck check(s), ${pendingRestore.benefitChecks.length} fund check(s), ${pendingRestore.portableArchive?.document.paycheckReceipts.length ?? 0} read-only imported paycheck receipt(s).</p><p>Replacing removes this browser’s current records. Export them first if you need to keep them.</p><button class="danger" id="confirm-restore">Replace with inspected backup</button></div>`;
     document.querySelector("#confirm-restore").onclick = () =>
       run(async () => {
         if (!pendingRestore) throw Error("Inspect the backup again.");
@@ -691,17 +715,19 @@ async function submit(form) {
         fundSelection = null;
         fundEditing = false;
         render();
-        message("Inspected web backup restored in this browser.");
+        message("Inspected backup restored in this browser. Imported source receipts retain their original verdicts.");
       });
   }
 }
 async function action(name) {
+  if (name === "source-history") { tab="history"; render(); return; }
+  if (name === "discard-unsaved") { unsavedFinancialInput = false; render(); message("Unsaved form inputs discarded. Saved financial records are unchanged."); return; }
   if (name === "profile") {
     tab = "profile";
     render();
   } else if (name === "discard") {
     const p = current();
-    if (p.closed || p.work.length || p.audits.length)
+    if (p.closed || p.work.length || p.audits.length || state.portableArchive?.mappings.some(m => m.entityType === "period" && m.localID === p.id))
       throw Error("Only an empty, unaudited open period can be discarded.");
     const section = document.createElement("section");
     section.className = "preview";
@@ -756,13 +782,29 @@ async function action(name) {
       });
   }
 }
+main.addEventListener("input", event => {
+  const form = event.target.closest("form");
+  if (form && !["export-form", "restore-form"].includes(form.id)) unsavedFinancialInput = true;
+}, true);
 document.querySelectorAll("[data-tab]").forEach((button) =>
   button.addEventListener("click", () => {
     if (busy) return;
-    tab = button.dataset.tab;
-    message("");
-    render();
-    main.focus();
+    const navigate = () => { tab = button.dataset.tab; message(""); render(); main.focus(); };
+    if (unsavedFinancialInput) {
+      main.querySelector("#unsaved-navigation")?.remove();
+      const prompt = document.createElement("section");
+      prompt.id = "unsaved-navigation";
+      prompt.className = "preview";
+      prompt.setAttribute("role", "alertdialog");
+      prompt.setAttribute("aria-label", "Unsaved financial input");
+      prompt.innerHTML = '<h2>Keep or discard unsaved input</h2><p>This form has unsaved financial input. Backups contain saved records only. Cancel to keep editing, or explicitly discard these inputs before leaving.</p><button id="cancel-unsaved-navigation">Cancel; keep editing</button><button class="danger" id="discard-unsaved-navigation">Discard input and continue</button>';
+      main.append(prompt);
+      prompt.querySelector("#cancel-unsaved-navigation").onclick = () => { prompt.remove(); button.focus(); };
+      prompt.querySelector("#discard-unsaved-navigation").onclick = () => { unsavedFinancialInput = false; navigate(); };
+      prompt.querySelector("button").focus();
+      return;
+    }
+    navigate();
   }),
 );
 try {

@@ -6,6 +6,7 @@ import { calculate } from "../src/payroll.mjs";
 import { assess } from "../src/assessment.mjs";
 import {
   emptyState,
+  decodeState,
   validateState,
   snapshot,
   inspectSnapshot,
@@ -205,4 +206,19 @@ test("one immutable rule identity cannot acquire conflicting definitions", () =>
   const state = JSON.parse(JSON.stringify(populated()));
   state.periods[0].rule.hourlyRate = "999";
   assert.throws(() => validateState(state), /conflicting definitions/);
+});
+
+test("schema8 migrates only portable metadata and keeps every existing financial field", () => {
+  const legacy = JSON.parse(readFileSync(new URL("./fixtures/web-state-v8.json", import.meta.url)));
+  assert.equal(legacy.version, 8);
+  assert.equal(legacy.paycheckLineScopes.length, 1);
+  const migrated = decodeState(legacy);
+  assert.equal(migrated.version, 9);
+  assert.equal(migrated.portableArchive, null);
+  const comparable = structuredClone(migrated);
+  delete comparable.portableArchive;
+  comparable.version = 8;
+  assert.deepEqual(comparable, legacy);
+  const smuggled = {...legacy,portableArchive:{document:{}}};
+  assert.throws(() => decodeState(smuggled), /Unsupported saved fields/);
 });

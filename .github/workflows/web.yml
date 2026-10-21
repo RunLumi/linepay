@@ -18,7 +18,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,6 +51,14 @@ jobs:
         env:
           BROWSER: webkit
         run: '"$RUNNER_TEMP/web-qa-venv/bin/python" apps/web/tests/browser_e2e.py'
+      - name: Chromium encrypted transfer workflow
+        env:
+          BROWSER: chromium
+        run: '"$RUNNER_TEMP/web-qa-venv/bin/python" apps/web/tests/portable_browser_e2e.py'
+      - name: WebKit encrypted transfer workflow
+        env:
+          BROWSER: webkit
+        run: '"$RUNNER_TEMP/web-qa-venv/bin/python" apps/web/tests/portable_browser_e2e.py'
       - name: Actual Worker HTTP and browser policies
         env:
           WRANGLER_SEND_METRICS: 'false'
@@ -76,6 +84,7 @@ jobs:
             .build/web-e2e/**/failure.txt
             .build/web-e2e/**/synthetic-*-report.html
             .build/web-e2e/**/synthetic-*-report.pdf
+            .build/web-portable-e2e/**
             .build/web-worker/asset-manifest.json
             .build/web-worker/local-worker.log
             .build/web-worker/browser-*/**

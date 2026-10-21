@@ -187,7 +187,7 @@ test("schemas1–6 preserve all original records and never invent weekly reviews
     const old = legacy(version),
       copy = structuredClone(old),
       current = decodeState(old);
-    assert.equal(current.version, 8);
+    assert.equal(current.version, 9);
     assert.deepEqual(current.weeklyReviews, []);
     assert.deepEqual(current.periods, old.periods);
     assert.deepEqual(current.profiles, old.profiles);

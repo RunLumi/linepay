@@ -26,7 +26,7 @@ test("technical identity and the preview boundary are unchanged", () => {
   assert.equal(manifest.scope, "./");
   assert.ok(index.includes("development preview"));
   assert.match(read("deploy/_headers"), /X-Robots-Tag: noindex, nofollow/);
-  assert.match(read("sw.js"), /const CACHE = "linepaycheck-web-shell-v16";/);
+  assert.match(read("sw.js"), /const CACHE = "linepaycheck-web-shell-v17";/);
 });
 
 test("clear-record and evidence-report copy use the current display name", () => {

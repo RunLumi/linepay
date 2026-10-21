@@ -698,6 +698,9 @@ with sync_playwright() as pw:
         weekly_page.wait_for_function('() => !!navigator.serviceWorker.controller')
         checks.append('later ledger removal leaves saved48h weekly evidence unchanged; actual encrypted export/reset/inspect/replace preserves original inputs, classifications and paycheck context')
         page.get_by_role('button', name='Backup', exact=True).click()
+        # The earlier reviewed rule-file export left an unsaved source form on this page.
+        expect(page.get_by_role('alertdialog', name='Unsaved financial input')).to_be_visible()
+        page.get_by_role('button', name='Discard input and continue', exact=True).click()
         page.get_by_label('New backup password', exact=True).fill(PASSWORD)
         page.get_by_label('Repeat password', exact=True).fill(PASSWORD)
         with page.expect_download() as event:
@@ -980,8 +983,8 @@ with sync_playwright() as pw:
         line_page.wait_for_function('() => !!navigator.serviceWorker.controller')
         checks.append('actual encrypted line export/reset/inspect/restore preserves both receipts; 320px enlarged dark form remains within viewport')
 
-        # Both actual old schemas migrate only through explicit authenticated replacement.
-        for old_version in [1, 2, 3, 4, 5, 6, 7]:
+        # Actual historical schemas migrate only through explicit authenticated replacement.
+        for old_version in [1, 2, 3, 4, 5, 6, 7, 8]:
             legacy_context = browser.new_context(accept_downloads=True, service_workers='block')
             observe_context(legacy_context)
             legacy_context.on('request', lambda r: requests.append((r.url, r.method)))
@@ -1004,7 +1007,7 @@ with sync_playwright() as pw:
             assert read_state(legacy_page)['periods'] == []
             legacy_page.get_by_role('button', name='Replace with inspected backup', exact=True).click()
             migrated = read_state(legacy_page)
-            assert migrated['version'] == 8 and migrated['weeklyReviews'] == prior.get('weeklyReviews', []) and migrated['paycheckLineScopes'] == []
+            assert migrated['version'] == 9 and migrated['weeklyReviews'] == prior.get('weeklyReviews', []) and migrated['paycheckLineScopes'] == prior.get('paycheckLineScopes', [])
             assert migrated['paycheckScopes'] == prior.get('paycheckScopes', []) and migrated['paycycleSchedules'] == prior.get('paycycleSchedules', [])
             assert migrated['ruleTimelines'] == prior.get('ruleTimelines', [])
             assert migrated['resolutionEvents'] == prior.get('resolutionEvents', [])
@@ -1027,7 +1030,7 @@ with sync_playwright() as pw:
                 assert read_state(legacy_page) == retained
                 checks.append('a deliberately reset app-module request shows recoverable load error; real reload preserves existing restored wage/fund records exactly')
             legacy_context.close()
-        checks.append('actual encrypted schema-v1/v2/v3/v4/v5/v6/v7 backups inspect without mutation then migrate with original wage/fund histories unchanged')
+        checks.append('actual encrypted schema-v1/v2/v3/v4/v5/v6/v7/v8 backups inspect without mutation then migrate with original wage/fund histories unchanged')
         page.evaluate('navigator.serviceWorker.ready.then(() => true)')
         page.reload()
         page.wait_for_function('navigator.serviceWorker.controller !== null')
@@ -1090,6 +1093,8 @@ with sync_playwright() as pw:
         page.screenshot(path=str(OUTPUT / 'fund-percent-preview-dark-viewport.png'))
         checks.append('offline percentage editor labels quantity as explicit eligible earnings in currency and preview leaves saved history untouched')
         page.get_by_role('button', name='Pay', exact=True).click()
+        expect(page.get_by_role('alertdialog', name='Unsaved financial input')).to_be_visible()
+        page.get_by_role('button', name='Discard input and continue', exact=True).click()
         saved_check = page.locator(f'[data-paycheck-audit="{check_id}"]')
         if saved_check.get_attribute('open') is None:
             saved_check.locator(':scope > summary').click()

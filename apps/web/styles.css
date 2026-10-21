@@ -292,7 +292,9 @@ hr {
     gap: 6px;
   }
   nav button {
-    flex: 1;
+    flex: 1 1 7rem;
+    min-width: min(7rem, 100%);
+    overflow-wrap: normal;
     padding-inline: 10px;
   }
   h1 {

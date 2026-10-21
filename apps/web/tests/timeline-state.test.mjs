@@ -182,7 +182,7 @@ test("actual v1/v2/v3/v4 fixtures gain empty rule-plan metadata without repricin
       ),
       copy = structuredClone(original),
       migrated = decodeState(original);
-    assert.equal(migrated.version, 8);
+    assert.equal(migrated.version, 9);
     assert.deepEqual(migrated.ruleTimelines, []);
     for (const key of ["profiles", "periods"])
       assert.deepEqual(migrated[key], original[key]);

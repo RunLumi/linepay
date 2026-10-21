@@ -82,6 +82,58 @@ implement weekly entitlement, complete CBA coverage, complete benefit/eligibilit
 OCR/agreement imports, voice, evidence originals, complete report/physical print parity, commerce or localization.
 These remain part of the full v2 objective, not silently waived by this preview.
 
+## Portable financial transfer
+
+Backup offers two encrypted formats. **Complete web recovery copy** keeps all supported saved browser
+records, including retained imported source evidence. **Portable financial transfer** uses the typed
+`com.streamentry.linepay.portable-state` v1 contract inside the existing LPBENC01 envelope. Existing
+web snapshots remain readable. The financial database migrates schema8 to schema9 by adding an empty
+portable-provenance field; historical calculations and receipts are preserved.
+
+Portable import validates the entire closed schema, origin crosswalk, record inventory, references,
+exact decimals/timezones and receiver capabilities before showing a replacement preview. Original
+attachments and unpreservable records refuse the entire transfer. Typed source contexts this
+calculator cannot activate remain retained with review gates. Native weekly review receipts, benefit
+receipts, crew origins and follow-up records still block portable export. There is no partial restore or automatic merge. Inspection writes
+nothing; a separate replacement confirmation uses the existing revision-checked storage transaction.
+Destination activity and purchase state remain destination-owned.
+
+A supported transfer restores usable native pay profiles, period facts and work entries. Historical
+source paycheck receipts are retained as typed, read-only evidence with exact producing engine, source
+facts, rule versions, calculation components and original verdict. They are never recalculated into a
+new result. Source fields that were not recorded remain explicit unknowns. Material settings that the source did not record, including rounding and a current-period relationship,
+block an active expected-pay estimate and new checks until the worker independently confirms a new
+configuration and editable work-period copy. Confirmation creates separate profile, rule and period
+identities with typed adoption lineage; original unknowns remain unknown. Once confirmed, estimates
+are labelled **Needs review — configured subset** for remaining unrecorded source coverage, and new native checks
+cannot uncheck that source limitation into a clean match. An imported pending complete-workweek review
+also stays pending despite equal gross amounts. Independently confirmed new rules create a separate
+profile; they do not rewrite imported source history.
+
+The portable-to-local crosswalk and original source fields persist through web recovery and relaunch.
+Re-export preserves original financial facts and receipt producers while advancing the transport exporter header to this browser. Combined supported
+exports preserve original source records and frozen receipts alongside new native work revisions,
+checks and explicit adoption lineage. A mutable current-work revision appends a new snapshot while
+retaining the earlier snapshot. Retired source contexts remain read-only. Changes to source rule
+identity or period boundaries require a separate context; closed source contexts cannot be reopened.
+The exporter never emits an old archive while silently omitting new work. Portable export of browser-created
+supported records retains exact instants, date-only versus stored instant boundaries, source scope,
+line facts, calculation traces and frozen assessments. Unsupported financial collections block export.
+Navigating to another main tab with unsaved financial form input requires an explicit discard;
+cancelling keeps the current form values. Neither backup format claims to include unsaved forms.
+
+Focused tests and real-browser roundtrip journey:
+
+```bash
+node --test apps/web/tests/portable-state.test.mjs
+python apps/web/tests/portable_browser_e2e.py
+```
+
+Run both Chromium and WebKit with the existing Playwright test environment. The positive contract
+fixture retains an Android equal-gross **Needs review** receipt with weekly review pending through
+actual encrypted download, replacement, relaunch and re-export. A local green gate does not establish
+production deployment or all-client native interchange.
+
 IndexedDB stores one versioned state with revision-checked atomic replacement. A write succeeds only
 on transaction completion, requesting strict durability; the app cannot guarantee physical disk or
 browser retention. Unknown formats/fields, conflicting definitions for one rule identity/version and changed saved
@@ -91,18 +143,21 @@ never change a saved result silently. Limits: 8 MiB payload, 100 profiles/period
 including audit snapshots and 1,000 paycheck checks. Fund history is bounded to 100 checks,
 100 revisions per check (1,000 total) and 10,000 eligibility segments; the editor allows 100 segments
 per revision. State validation independently reproduces same-version
-receipts without overwriting them.
+native web receipts without overwriting them. Imported source receipts are validated and retained
+read-only with their original result, not reproduced by a different engine.
 
 Backups use the [shared AES-GCM/PBKDF2 envelope](../../shared/contracts/backup/README.md), fresh random
 salt/nonce and fixed bounded derivation parameters. Passwords are used transiently and not written
 to local state. The encrypted JSON payload is deliberately `com.streamentry.linepay.web.snapshot`
-version 1 with `com.streamentry.linepay.web.state` version 8. Known v1/v2/v3/v4/v5/v6/v7 schemas migrate explicitly
+version 1 with `com.streamentry.linepay.web.state` version 9. Known v1/v2/v3/v4/v5/v6/v7/v8 schemas migrate explicitly
 by adding only empty fund/origin/follow-up metadata after validating all existing records; unknown fields/
 versions are rejected. Reading migration does not write, advance revision, reprice wage history or invent a fund
 check. `tests/fixtures/web-state-v1.json` is synthetic and was generated/validated using actual
-commit `192cab9` source. Actual encrypted old-version recovery is tested in both browsers.
-**Native snapshots are rejected** until
-an explicit complete financial-state migrator exists. Matching encryption is not state portability.
+commit `192cab9` source. The schema8 fixture was generated and validated by the unchanged `325b09c` Web modules, including
+a confirmed saved line receipt; the schema9 migration preserves it without repricing. Actual encrypted
+old-version recovery is tested through browser inspection/replacement.
+**Raw native snapshots remain rejected.** Cross-client transfer uses the separately validated typed
+portable format described above; matching encryption alone is not state portability.
 Browser download evidence does not establish actual OS Files/iCloud delivery or two-device restore.
 
 ## Device-local activity and manual diagnostics
@@ -278,7 +333,7 @@ Statev7 adds weekly reviews; v1–6 migrate only with empty missing metadata. Ac
 produced the retained v6 fixture. Comparison engine3 captures the known weekly-review prefix and
 references so a new check cannot waive indicated weekly scope. Older checks remain exactly saved,
 with an earlier-context note after new evidence. No weekly amount is added to Pay or automatically
-mapped/cleared against a paycheck. Native financial-state portability, full platform parity, actual
+mapped/cleared against a paycheck. Full native-client interchange, platform parity, actual
 OS provider transfer, physical/installed PWA and public deployment remain separate requirements.
 
 
@@ -304,3 +359,13 @@ validated by actual3312c73 sources; it retains weekly evidence and its original 
 Both browser engines exercise actual encrypted migration/recovery, including those older records.
 This is browser history compatibility; native/Android financial-state interchange remains pending.
 See [ADR0028](../../docs/adr/0028-browser-confirmed-paycheck-lines-and-hours.md).
+
+For cross-client provider proof, the durable portable browser journey accepts `PORTABLE_INPUT_BACKUP`
+and `PORTABLE_INPUT_PASSWORD` to upload actual producer bytes, with `PORTABLE_FIXTURE` pointing to
+the corresponding canonical JSON and `PORTABLE_CONTRACT_ROOT` to the shared contract. Without a
+provider file it seals a synthetic fixture for local CI. Both modes retain immutable SHA-named actual
+UI downloads and manifests under ignored `.build/web-portable-e2e`, including runtime, schema, Git
+HEAD, dirty Web source/test digest, shared refusal outcomes and capture time. Retained typed source
+contexts that this calculator cannot activate remain visible in source History and block silent
+next-period fallback. Adopting a current context preserves the saved future default unless the
+worker explicitly selects the new configuration for future periods.
