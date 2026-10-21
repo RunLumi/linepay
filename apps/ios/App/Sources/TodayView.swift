@@ -124,25 +124,11 @@ struct TodayView: View {
                                 editing = entry
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    ViewThatFits(in: .horizontal) {
-                                        HStack(alignment: .firstTextBaseline) {
-                                            Text(workKindTitle(entry.interval.kind))
-                                                .font(.headline)
-                                            Spacer(minLength: LinePaySpacing.compact)
-                                            Text(
-                                                "\(LinePayFormat.hours(entry.interval.durationHours)) h"
-                                            )
-                                            .font(.headline).monospacedDigit()
-                                        }
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(workKindTitle(entry.interval.kind))
-                                                .font(.headline)
-                                            Text(
-                                                "\(LinePayFormat.hours(entry.interval.durationHours)) h"
-                                            )
-                                            .font(.headline).monospacedDigit()
-                                        }
-                                    }
+                                    Text(
+                                        "\(workKindTitle(entry.interval.kind)) · \(LinePayFormat.hours(entry.interval.durationHours)) h"
+                                    )
+                                    .font(.headline).monospacedDigit()
+                                    .fixedSize(horizontal: false, vertical: true)
                                     Text(LinePayFormat.shiftTimes(entry.interval))
                                         .font(.subheadline)
                                     if let text = LinePayFormat.breakDuration(entry.interval) {

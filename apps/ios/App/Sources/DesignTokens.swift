@@ -68,23 +68,27 @@ enum LinePaySpacing {
 
 /// Keeps exact values readable when a row no longer has room for two columns.
 struct LinePayValueStyle: LabeledContentStyle {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     func makeBody(configuration: Configuration) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
-                configuration.label
-                    .foregroundStyle(LinePayColor.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                configuration.content.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                configuration.label.foregroundStyle(LinePayColor.textPrimary)
-                configuration.content
-                    .foregroundStyle(LinePayColor.textPrimary)
-            }
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        let stacked = horizontalSizeClass == .compact || dynamicTypeSize >= .xxxLarge
+        let layout =
+            stacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: LinePaySpacing.compact))
+            : AnyLayout(
+                HStackLayout(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard))
+        layout {
+            configuration.label
+                .foregroundStyle(LinePayColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            if !stacked { Spacer(minLength: 0) }
+            configuration.content
+                .foregroundStyle(LinePayColor.textPrimary)
+                .multilineTextAlignment(stacked ? .leading : .trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
