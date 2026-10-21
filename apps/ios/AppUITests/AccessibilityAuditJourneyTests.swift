@@ -284,9 +284,26 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
             app.swipeUp()
             settingsScrolls += 1
         }
+        let settingsNavigationBar = app.navigationBars["Settings"].firstMatch
+        let settingsTabBar = app.tabBars.firstMatch
+        for _ in 0..<20 {
+            if agreementDocuments.frame.minY < settingsNavigationBar.frame.maxY {
+                app.swipeDown()
+            } else if crewRuleDrafts.frame.maxY > settingsTabBar.frame.minY {
+                app.swipeUp()
+            } else {
+                break
+            }
+        }
         XCTAssertTrue(agreementDocuments.isHittable)
         XCTAssertTrue(crewRuleDrafts.isHittable)
-        XCTAssertLessThanOrEqual(crewRuleDrafts.frame.maxY, app.tabBars.firstMatch.frame.minY)
+        XCTAssertGreaterThanOrEqual(
+            agreementDocuments.frame.minY, settingsNavigationBar.frame.maxY)
+        XCTAssertLessThanOrEqual(crewRuleDrafts.frame.maxY, settingsTabBar.frame.minY)
+        let alignedSettings = XCTAttachment(screenshot: app.screenshot())
+        alignedSettings.name = "accessibility-settings-aligned-before-audit"
+        alignedSettings.lifetime = .keepAlways
+        add(alignedSettings)
         try audit("settings")
 
         let localActivity = app.descendants(matching: .any)
