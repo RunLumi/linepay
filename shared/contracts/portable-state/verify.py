@@ -695,17 +695,19 @@ IOS_WEEKLY_MAPPING_REVIEW_REASON = (
     "paycheck comparison. A pay-period hour total or a separate weekly result does not "
     "establish that mapping. Review the complete workweek before relying on the gross difference."
 )
+WEB_WEEKLY_REVIEW_PENDING_REASON = "A separate complete-workweek review is pending."
+WEEKLY_REVIEW_PENDING_REASON_TOKEN = "WEEKLY_REVIEW_PENDING"
+RECOGNIZED_WEEKLY_PENDING_REASONS = frozenset({
+    IOS_WEEKLY_MAPPING_REVIEW_REASON,
+    WEB_WEEKLY_REVIEW_PENDING_REASON,
+    WEEKLY_REVIEW_PENDING_REASON_TOKEN,
+})
 
 
 def _check_pending_weekly(receipt: dict[str, Any], index: int) -> None:
     pending = receipt["reviewFacts"]["weeklyReviewPending"]
     reasons = receipt["assessment"]["reviewReasons"]
-    reason_pending = any(
-        "weekly_review_pending" in r.lower()
-        or ("weekly" in r.lower() and "pending" in r.lower())
-        or r == IOS_WEEKLY_MAPPING_REVIEW_REASON
-        for r in reasons
-    )
+    reason_pending = any(reason in RECOGNIZED_WEEKLY_PENDING_REASONS for reason in reasons)
     verdict = receipt["assessment"]["verdict"]
     path = f"paycheckReceipts[{index}]"
     if pending is True and verdict in {"matches", "possibleShortfall", "possibleOverpayment"}:

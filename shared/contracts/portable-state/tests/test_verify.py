@@ -287,6 +287,21 @@ class PortableStateContractTests(unittest.TestCase):
         verify.validate_document(doc)
         self.assertEqual(verify.IOS_WEEKLY_MAPPING_REVIEW_REASON, receipt["assessment"]["reviewReasons"][0])
 
+    def test_web_frozen_weekly_pending_reason_is_recognized_without_rewriting(self):
+        doc = self.load("common-weekly-pending.json")
+        receipt = doc["paycheckReceipts"][0]
+        receipt["assessment"]["reviewReasons"] = [verify.WEB_WEEKLY_REVIEW_PENDING_REASON]
+        verify.validate_document(doc)
+        self.assertEqual(verify.WEB_WEEKLY_REVIEW_PENDING_REASON, receipt["assessment"]["reviewReasons"][0])
+
+    def test_unrelated_weekly_pending_text_cannot_satisfy_weekly_reason_guard(self):
+        doc = self.load("common-weekly-pending.json")
+        receipt = doc["paycheckReceipts"][0]
+        receipt["assessment"]["reviewReasons"] = ["A separate weekly schedule review is pending."]
+        with self.assertRaises(verify.VerificationFailure) as caught:
+            verify.validate_document(doc)
+        self.assertEqual("receipt.pendingWeeklyReasonLost", caught.exception.issue.code)
+
     def test_schema_verifier_fails_closed_on_unimplemented_assertions(self):
         schema = verify.load_json(verify.SCHEMA_PATH)
         self.assertEqual([], verify.schema_vocabulary_issues(schema))
