@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {emptyState,decodeState,validateState,snapshot,inspectSnapshot} from '../src/state.mjs';
 import {validatePortable,readPortable,portableSnapshot,importedCoverage,importedConfirmationRequired,confirmedImportedCopy} from '../src/portable-state.mjs';
@@ -13,6 +13,7 @@ const read=path=>JSON.parse(readFileSync(new URL(path,import.meta.url)));
 const source=()=>decodeState(read('./fixtures/web-state-v1.json'));
 const exported=state=>JSON.parse(new TextDecoder().decode(portableSnapshot(state)));
 const bytes=value=>new TextEncoder().encode(JSON.stringify(value));
+const captureReview=(name,document)=>{if(process.env.PORTABLE_REVIEW_ARTIFACT_DIR)writeFileSync(process.env.PORTABLE_REVIEW_ARTIFACT_DIR+'/'+name+'.json',JSON.stringify(document));};
 const financial=value=>{const {source,exportedAtEpochSeconds,...facts}=value;return facts;};
 const sameFinancial=(actual,expected)=>{assert.deepEqual(financial(actual),financial(expected));assert.equal(actual.source.client,'web');assert.equal(actual.source.localStateSchema,9);};
 const contractRoot=process.env.PORTABLE_CONTRACT_ROOT??new URL('../../../shared/contracts/portable-state/',import.meta.url).pathname;
@@ -242,4 +243,38 @@ test('frozen embedded weekly results and repeating Decimal traces roundtrip with
 test('date-only Android windows preserve source-unknown exclusive dates without inventing them',()=>{
  const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));for(const window of [doc.periods[0].calendarWindow,doc.paycheckReceipts[0].targetWindow]){window.endExclusiveDate=null;window.fieldsNotRecorded.push('endExclusiveDate');}
  const state=validateState(readPortable(bytes(doc),emptyState));assert.ok(state.periods[0].work.length);sameFinancial(exported(state),doc);
+});
+
+test('selected high-precision source rule stays exact and read-only; missing profile context remains unknown',()=>{
+  const native=source();native.periods[0].closed=false;native.periods[0].closedCalculation=null;
+  const doc=exported(native),rate='0.'+'1234567890'.repeat(5);doc.ruleSnapshots[0].hourlyRate=rate;
+  // The stored native profile never owned these calendar selections; do not infer them from its period.
+  captureReview('selected-high-precision',doc);const state=validateState(readPortable(bytes(doc),emptyState));assert.equal(state.profiles.length,0);assert.equal(state.periods.length,0);
+  sameFinancial(exported(state),doc);assert.equal(exported(state).ruleSnapshots[0].hourlyRate,rate);
+  for(const field of ['timeZone','cadence','cycleStartDate']){assert.equal(state.portableArchive.document.profiles[0][field],null);assert.ok(state.portableArchive.document.profiles[0].fieldsNotRecorded.includes(field));}
+});
+test('missing profile calendar metadata does not prevent usable known period work or invent calendar defaults',()=>{
+  const native=source();native.periods[0].closed=false;native.periods[0].closedCalculation=null;const doc=exported(native),state=validateState(readPortable(bytes(doc),emptyState));
+  assert.ok(state.periods[0].work.length);assert.equal(currentCalculation(state,state.periods[0]).wages,native.periods[0].audits[0].calculation.wages);
+  const result=exported(state);captureReview('missing-profile-calendar',doc);for(const field of ['timeZone','cadence','cycleStartDate'])assert.equal(result.profiles[0][field],null);sameFinancial(result,doc);
+});
+test('period-owned future changes at exclusive end and later stay stored without changing current work window or future default',()=>{
+  const native=source();native.periods[0].closed=false;native.periods[0].closedCalculation=null;
+  const doc=exported(native),period=doc.periods[0],profile=doc.profiles[0],baseline=doc.ruleSnapshots[0],timelineID='retained-future-timeline',futureRules=[],changes=[];
+  const nextDate=day=>new Date(Date.parse(day+'T00:00:00Z')+86400000).toISOString().slice(0,10);
+  for(const [index,date] of [period.calendarWindow.endExclusiveDate,nextDate(period.calendarWindow.endExclusiveDate)].entries()){
+    const rule={...structuredClone(baseline),id:'future-rule-'+index,ruleID:'future-rule-id-'+index,version:'future-version-'+index,hourlyRate:String(30+index)},nextProfile={...structuredClone(profile),id:'future-profile-'+index,ruleRef:rule.id,baselineRuleRef:null,ruleChangeRefs:[],currentPeriodRef:null,currentWorkSnapshotRef:null},change={id:'future-change-'+index,profileRef:profile.id,periodRef:period.id,effectiveDate:date,sourceProfileRef:nextProfile.id,ruleRef:rule.id,confirmed:true,createdAtEpochSeconds:1792627200,fieldsNotRecorded:[]};
+    nextProfile.fieldsNotRecorded=[...new Set([...nextProfile.fieldsNotRecorded,'baselineRuleRef','currentPeriodRef','currentWorkSnapshotRef'])];doc.profiles.push(nextProfile);doc.ruleSnapshots.push(rule);doc.ruleChanges.push(change);futureRules.push(rule);changes.push(change.id);
+    for(const [entityType,portableID] of [['profile',nextProfile.id],['ruleSnapshot',rule.id],['ruleChange',change.id]])doc.identityCrosswalk.push({entityType,portableID,originClient:'web',originKind:'native',originLocalID:portableID});
+  }
+  doc.activeProfileRef=doc.profiles.at(-1).id;doc.ruleTimelines.push({id:timelineID,periodRef:period.id,baselineRuleRef:baseline.id,ruleChangeRefs:changes,createdAtEpochSeconds:1792627200,confirmed:true,fieldsNotRecorded:[]});period.ruleTimelineRefs=[timelineID];period.ruleChangeRefs=changes;doc.identityCrosswalk.push({entityType:'ruleTimeline',portableID:timelineID,originClient:'web',originKind:'native',originLocalID:timelineID});
+  Object.assign(doc.sourceInventory,{profileCount:doc.profiles.length,ruleSnapshotCount:doc.ruleSnapshots.length,ruleChangeCount:changes.length,ruleTimelineCount:1});
+  captureReview('future-period-rules',doc);const state=validateState(readPortable(bytes(doc),emptyState)),current=state.periods[0],before=currentCalculation(state,current).wages;assert.equal(current.end,period.calendarWindow.endDateInclusive);assert.equal(current.start,period.calendarWindow.startDate);assert.equal(state.ruleTimelines[0].changes.length,2);sameFinancial(exported(state),doc);
+  current.work.push({...structuredClone(current.work[0]),id:'new-current-work'});current.work.at(-1).startUTC=current.work[0].endUTC;current.work.at(-1).endUTC=new Date(Date.parse(current.work[0].endUTC)+3600000).toISOString().replace('.000Z','Z');state.revision++;
+  const calculation=currentCalculation(state,current),facts={completeWork:true,grossBasis:'wagesOnly',unreviewedFields:false,unsupportedRules:true,weeklyReviewPending:false,paidGross:calculation.wages,paidPerDiem:null};current.audits.push({id:'future-plan-current-check',createdAt:'2026-10-22T00:00:00Z',work:structuredClone(current.work),facts,calculation,assessment:assess(calculation,facts,current.rule.rounding)});
+  validateState(state);const result=exported(state);assert.deepEqual(new Set(result.paycheckReceipts.at(-1).ruleRefs),new Set([baseline.id,...futureRules.map(rule=>rule.id)]));captureReview('future-period-rules-with-new-work',result);assert.equal(result.activeProfileRef,doc.activeProfileRef);assert.deepEqual(result.ruleChanges,doc.ruleChanges);assert.deepEqual(result.ruleTimelines,doc.ruleTimelines);assert.deepEqual(result.paycheckReceipts.slice(0,doc.paycheckReceipts.length),doc.paycheckReceipts);assert.deepEqual(result.periods[0].calendarWindow,period.calendarWindow);assert.notEqual(currentCalculation(state,current).wages,before);
+});
+test('only exact recognized frozen source reasons satisfy a pending-weekly verdict',()=>{
+ const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));doc.paycheckReceipts[0].assessment.reviewReasons=['A separate complete-workweek review is pending.'];validateState(readPortable(bytes(doc),emptyState));
+ doc.paycheckReceipts[0].assessment.reviewReasons=['A separate weekly schedule review is pending.'];assert.throws(()=>readPortable(bytes(doc),emptyState),/pending weekly review/);
 });

@@ -5,6 +5,7 @@ const encoder = new TextEncoder();
 export const PORTABLE_FORMAT = 'com.streamentry.linepay.portable-state';
 const need = (ok, message) => { if (!ok) throw Error(message); };
 const clone = value => structuredClone(value);
+const weeklyPendingReasons=new Set(['WEEKLY_REVIEW_PENDING','A separate complete-workweek review is pending.','Complete workweek coverage and any additional weekly premium are not mapped into this paycheck comparison. A pay-period hour total or a separate weekly result does not establish that mapping. Review the complete workweek before relying on the gross difference.']);
 const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
 function shape(value, spec, path = 'transfer') {
   if (Array.isArray(spec.type)) { need(spec.type.some(type => type === 'integer' ? Number.isSafeInteger(value) : typeof value === type), `Invalid ${path} type.`); if (typeof value === 'string' && spec.maxLength) need([...value].length <= spec.maxLength, `Invalid ${path} length.`); }
@@ -156,8 +157,8 @@ export function validatePortable(document) {
     const currency=receipt.paystubFacts.currency;
     need(receipt.assessment.paidGross.currency===currency && receipt.assessment.paidGross.amount===receipt.paystubFacts.grossPay,'Saved paid gross differs from its facts.');
     const monies=[receipt.calculation?.total,receipt.assessment.expectedGross,receipt.assessment.difference,...(receipt.calculation?.components.map(c=>c.amount)??[])].filter(Boolean);need(monies.every(m=>m.currency===currency),'Mixed currency in source receipt.');
-    if(receipt.reviewFacts.weeklyReviewPending)need(receipt.assessment.verdict==='notComparable' || (receipt.assessment.verdict==='needsReview' && receipt.assessment.reviewReasons.some(reason=>/weekly.*pending|WEEKLY_REVIEW_PENDING|complete-workweek review is pending/i.test(reason))),'A pending weekly review must retain its Needs review or Unable-to-verify verdict.');
-    if(receipt.reviewFacts.weeklyReviewPending===false)need(!receipt.assessment.reviewReasons.some(reason=>/weekly.*pending|WEEKLY_REVIEW_PENDING/i.test(reason)),'A retained pending reason conflicts with a false weekly-review flag.');
+    if(receipt.reviewFacts.weeklyReviewPending)need(receipt.assessment.verdict==='notComparable' || (receipt.assessment.verdict==='needsReview' && receipt.assessment.reviewReasons.some(reason=>weeklyPendingReasons.has(reason))),'A pending weekly review must retain its Needs review or Unable-to-verify verdict.');
+    if(receipt.reviewFacts.weeklyReviewPending===false)need(!receipt.assessment.reviewReasons.some(reason=>weeklyPendingReasons.has(reason)),'A retained pending reason conflicts with a false weekly-review flag.');
     for(const component of receipt.calculation?.components??[]){if(component.workRef!==null)need(snapshot.work.some(work=>work.id===component.workRef),'Component references another snapshot’s work.');if(component.appliedAgreement!==null)need(receipt.ruleRefs.includes(component.appliedAgreement.ruleRef),'Component is missing its exact rule snapshot.');}
     for(const comparison of receipt.assessment.comparisons){need(comparison.currency===currency,'Mixed comparison currency.');comparison.componentRefs.forEach(id=>need((receipt.calculation?.components??[]).some(c=>c.id===id),'Comparison has no retained component.'));}
   }
@@ -374,6 +375,8 @@ function exportNative(state,archive=null,validateResult=true) {
   }, money=(amount,currency)=>amount===null?null:{amount,currency}, nextDate=date=>new Date(Date.parse(date+'T00:00:00Z')+86400000).toISOString().slice(0,10);
   const window=(start,end,zone)=>({startDate:start,endDateInclusive:end,endExclusiveDate:end===null?null:nextDate(end),timeZone:zone,boundaryModel:start===null?'sourcePeriodUnknown':'localDatesOnly',startEpochSeconds:null,endExclusiveEpochSeconds:null,fieldsNotRecorded:['startEpochSeconds','endExclusiveEpochSeconds']});
   const ruleRef=rule=>{
+    const retainedChange=archive?.nativeBaseline.ruleTimelines.flatMap(timeline=>timeline.changes).find(change=>same(change.agreement,rule)),sourceMapping=archive?.mappings.find(mapping=>mapping.entityType==='profile' && mapping.localID===retainedChange?.sourceProfileID),retainedChangeRule=archive?.document.profiles.find(profile=>profile.id===sourceMapping?.portableID)?.ruleRef??archive?.mappings.find(mapping=>mapping.entityType==='ruleSnapshot' && mapping.localID===retainedChange?.sourceProfileID)?.portableID;
+    if(retainedChangeRule)return retainedChangeRule;
     const mappedRule=archive?.mappings.find(mapping=>mapping.entityType==='ruleSnapshot' && mapping.localID===rule.id),mappedProfile=archive?.mappings.find(mapping=>mapping.entityType==='profile' && mapping.localID===rule.id),sourceProfile=archive?.document.profiles.find(profile=>profile.id===mappedProfile?.portableID),identityRule=archive?.document.ruleSnapshots.find(source=>source.id===(mappedRule?.portableID??sourceProfile?.ruleRef)),sourceRule=archive?.document.ruleSnapshots.find(source=>source.ruleID===identityRule?.ruleID && source.version===rule.version && same(nativeRule(source,rule.id),rule));
     if(sourceRule && same(nativeRule(sourceRule,rule.id),rule))return sourceRule.id;
     const id=origin('ruleSnapshot',rule.id,rule.version);
@@ -401,7 +404,7 @@ function exportNative(state,archive=null,validateResult=true) {
       need(applied,'Calculation component is missing its exact rule snapshot.');
       return {id:componentID,category:component.category,workRef:component.workID===null?null:workMap.get(component.workID),localDate:component.date,hours:null,workedSeconds:component.workedSeconds,multiplier:component.multiplier,amount:money(component.amount,component.currency),explanation:component.explanation,ruleKeys:null,baseRate:component.baseRate?money(component.baseRate,currency):null,appliedAgreement:{ruleRef:ruleRef(applied),ruleID:(document.ruleSnapshots.find(rule=>rule.id===ruleRef(applied))??archive?.document.ruleSnapshots.find(rule=>rule.id===ruleRef(applied))).ruleID,version:component.reference.version,hourlyRate:null},unroundedAmount:null,baseTimeNumerator:null,fieldsNotRecorded:['appliedAgreement.hourlyRate','hours','ruleKeys',...(!component.baseRate?['baseRate']:[]),'unroundedAmount','baseTimeNumerator']};
     });
-    const timeline=calculation.ruleTimelineID?document.ruleTimelines.find(timeline=>timeline.id===origin('ruleTimeline',calculation.ruleTimelineID)):null;
+    const timeline=calculation.ruleTimelineID?(document.ruleTimelines.find(timeline=>timeline.id===origin('ruleTimeline',calculation.ruleTimelineID))??archive?.document.ruleTimelines.find(timeline=>timeline.id===origin('ruleTimeline',calculation.ruleTimelineID))):null;
     const primaryRule=document.ruleSnapshots.find(rule=>rule.id===primaryRuleRef)??archive?.document.ruleSnapshots.find(rule=>rule.id===primaryRuleRef);
     const result={agreementID:primaryRule.ruleID,agreementVersion:period.rule.version,primaryRuleRef,agreementSnapshotRefs:ruleRefs,currency,total:money(calculation.total,currency),engine:calculation.engine,coverage:calculation.coverage,wages:money(calculation.wages,currency),allowances:money(calculation.allowances,currency),ruleTimelineRef:timeline?.id??null,ruleChangeRefs:timeline?.ruleChangeRefs??[],provenance:null,weeklyRegularRate:null,components,fieldsNotRecorded:[...(!timeline?['ruleTimelineRef']:[]),'provenance','weeklyRegularRate']};
     return {result,componentMap,ruleRefs};
@@ -419,6 +422,8 @@ function exportNative(state,archive=null,validateResult=true) {
     if(sourcePeriod){savedPeriod.calendarWindow=clone(sourcePeriod.calendarWindow);savedPeriod.cadence=sourcePeriod.cadence;if(sourcePeriod.cadence!==null)savedPeriod.fieldsNotRecorded=savedPeriod.fieldsNotRecorded.filter(field=>field!=='cadence');}
     document.periods.push(savedPeriod);
     for(const timeline of state.ruleTimelines.filter(item=>item.periodID===period.id)) {
+      const original=archive?.nativeBaseline.ruleTimelines.find(baseline=>baseline.id===timeline.id),mapping=archive?.mappings.find(mapping=>mapping.entityType==='ruleTimeline' && mapping.localID===timeline.id);
+      if(original && mapping && same(timeline,original)){const retained=archive.document.ruleTimelines.find(source=>source.id===mapping.portableID);document.ruleTimelines.push(clone(retained));document.ruleChanges.push(...retained.ruleChangeRefs.map(id=>clone(archive.document.ruleChanges.find(change=>change.id===id))));savedPeriod.ruleTimelineRefs.push(retained.id);savedPeriod.ruleChangeRefs.push(...retained.ruleChangeRefs);continue;}
       const timelineID=origin('ruleTimeline',timeline.id),changes=timeline.changes.map((change,index)=>{
         const id=origin('ruleChange',String(index),timeline.id,true);
         document.ruleChanges.push({id,profileRef:profileID,periodRef:periodID,effectiveDate:change.effectiveDate,sourceProfileRef:origin('profile',change.sourceProfileID),ruleRef:ruleRef(change.agreement),confirmed:timeline.confirmed,createdAtEpochSeconds:Date.parse(timeline.createdAt)/1000,fieldsNotRecorded:[]});return id;

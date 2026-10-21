@@ -213,8 +213,8 @@ export function validateState(state) {
       keys(change, ["effectiveDate", "sourceProfileID", "agreement"]);
       date(change.effectiveDate);
       need(
-        change.effectiveDate >= period.start &&
-          change.effectiveDate <= period.end,
+        (change.effectiveDate >= period.start && change.effectiveDate <= period.end) ||
+          (change.effectiveDate > period.end && state.portableArchive?.nativeBaseline.ruleTimelines.some(source=>JSON.stringify(source)===JSON.stringify(timeline))),
         "Effective change lies outside its period.",
       );
       admitRule(change.agreement);
