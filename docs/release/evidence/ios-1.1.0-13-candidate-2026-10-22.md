@@ -33,3 +33,11 @@ Built-in Browser connected using its official client. App Store Connect is at pa
 - This IPA was not validated against Apple, uploaded or submitted. Build-number reservations must be read back before any upload. Manual release is intended but has not been saved/read back for a new App Store version.
 
 If further app fixes are merged, archive and verify the new source before submission; do not describe this IPA as containing those fixes.
+
+## Fresh Apple readback, October 22
+
+The existing App Manager key `2HR347AH8Q` successfully read the intended app, builds, build-upload reservations, App Store versions and App Info. The app ID and bundle matched the intended product. All 12 build records and all 12 upload reservations were inspected; neither a processed build 13 nor a `1.1.0 (13)` upload reservation was observed. This observation must be refreshed before upload to handle concurrent activity.
+
+The current App Store version is `1.0.5`, `READY_FOR_SALE`; `1.1.0 (12)` is a valid processed TestFlight build. No `1.1.0` App Store version or editable App Info was present. There is therefore no new-version release setting to place on a manual hold yet. The public U.S. listing independently showed `LinePaycheck: Lineman Pay`, subtitle `Overtime, Callout & Per Diem`, version `1.0.5`.
+
+These were GET requests only. No version, build reservation, metadata, agreement, upload or submission was created or changed. The exact proposed name/subtitle/keywords/description and the verified credential reference are retained privately with the signed candidate. The issuer and private key are not included in this repository.
