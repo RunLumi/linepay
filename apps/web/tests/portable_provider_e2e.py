@@ -88,6 +88,18 @@ with sync_playwright() as pw:
         expect(page.get_by_role('heading', name='Is Your Paycheck Correct?', exact=True)).to_be_visible()
         page.get_by_role('button', name='Backup', exact=True).click()
         before = read()
+        # The protected negative case keeps the fractional raw token through encryption.
+        epoch = fixture['workSnapshots'][0]['work'][0]['startEpochSeconds']
+        raw = json.dumps(fixture, separators=(',', ':')).replace('"startEpochSeconds":' + str(epoch), '"startEpochSeconds":' + str(epoch) + '.0000000001', 1)
+        assert '.0000000001' in raw
+        invalid_bytes = page.evaluate("""async ([raw,phrase])=>Array.from(await(await import('./src/backup.mjs')).encryptBackup(new TextEncoder().encode(raw),phrase))""", [raw, phrase])
+        invalid = output / 'fractional-epoch-refusal.linepaybackup'
+        invalid.write_bytes(bytes(invalid_bytes))
+        inspect(invalid)
+        expect(page.locator('#status')).to_have_attribute('role', 'alert')
+        expect(page.locator('#status')).to_contain_text('This transfer contains numeric facts this app cannot preserve exactly. No records were replaced.')
+        assert read() == before
+        assert page.get_by_role('button', name='Replace with inspected backup', exact=True).count() == 0
         inspect(protected)
         expect(page.get_by_role('heading', name='Backup inspected; records unchanged', exact=True)).to_be_visible()
         assert read() == before
@@ -145,7 +157,7 @@ with sync_playwright() as pw:
         assert read()['portableArchive']['document'] == result
         assert not errors, errors
         assert tree_hash(True) == runtime_sha and tree_hash() == source_sha
-        report = {'passed': True, 'captureIteration': datetime.now(timezone.utc).isoformat(), 'browser': engine, 'browserVersion': browser.version, 'runtimeSHA256': runtime_sha, 'sourceHEAD': source_head, 'dirtyWebSourceAndTestsSHA256': source_sha, 'schemaSHA256': sha(ROOT / 'shared/contracts/portable-state/schema-v1.json'), 'providerManifest': str(CAPTURE), 'providerManifestSHA256': sha(CAPTURE), 'providerInputSHA256': sha(protected), 'providerPlaintextSHA256': sha(plaintext), 'download': str(retained), 'downloadSHA256': encrypted_sha, 'downloadPlaintext': str(retained_plain), 'downloadPlaintextSHA256': sha(retained_plain), 'sharedValidation': validation.stdout.strip(), 'syntheticPhrase': phrase, 'checks': ['actual iOS protected provider bytes uploaded; no reseal', 'inspect leaves destination unchanged until explicit replace', 'original two and fresh native USD1000 Needs review receipts frozen', 'unknown null+marker remains distinct from known-empty arrays', 'current A and selected future B remain distinct', 'actual browser encrypted download preserves all financial fields', 'shared verifier accepts resulting Web file', 'UI reimport and relaunch preserve the graph']}
+        report = {'passed': True, 'captureIteration': datetime.now(timezone.utc).isoformat(), 'browser': engine, 'browserVersion': browser.version, 'runtimeSHA256': runtime_sha, 'sourceHEAD': source_head, 'dirtyWebSourceAndTestsSHA256': source_sha, 'schemaSHA256': sha(ROOT / 'shared/contracts/portable-state/schema-v1.json'), 'providerManifest': str(CAPTURE), 'providerManifestSHA256': sha(CAPTURE), 'providerInputSHA256': sha(protected), 'providerPlaintextSHA256': sha(plaintext), 'download': str(retained), 'downloadSHA256': encrypted_sha, 'downloadPlaintext': str(retained_plain), 'downloadPlaintextSHA256': sha(retained_plain), 'sharedValidation': validation.stdout.strip(), 'syntheticPhrase': phrase, 'checks': ['protected raw fractional epoch refused before replacement preview; destination unchanged', 'actual iOS protected provider bytes uploaded; no reseal', 'inspect leaves destination unchanged until explicit replace', 'original two and fresh native USD1000 Needs review receipts frozen', 'unknown null+marker remains distinct from known-empty arrays', 'current A and selected future B remain distinct', 'actual browser encrypted download preserves all financial fields', 'shared verifier accepts resulting Web file', 'UI reimport and relaunch preserve the graph']}
         retained.with_suffix('.manifest.json').write_text(json.dumps(report, indent=2) + '\n')
         (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps({'passed': True, 'browser': engine, 'download': str(retained), 'runtimeSHA256': runtime_sha}))

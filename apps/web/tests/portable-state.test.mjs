@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {emptyState,decodeState,validateState,snapshot,inspectSnapshot} from '../src/state.mjs';
-import {validatePortable,readPortable,portableSnapshot,importedCoverage,importedConfirmationRequired,confirmedImportedCopy} from '../src/portable-state.mjs';
+import {validatePortable,readPortable,parsePortableJSON,portableSnapshot,importedCoverage,importedConfirmationRequired,confirmedImportedCopy} from '../src/portable-state.mjs';
 import schema from '../src/portable-schema.mjs';
 import {encryptBackup,decryptBackup} from '../src/backup.mjs';
 import {assess} from '../src/assessment.mjs';
@@ -296,4 +296,18 @@ test('nested assessment array markers reject known-empty contradictions before c
   const destination=source(),before=structuredClone(destination);let replacementConstructed=false;
   assert.throws(()=>readPortable(bytes(invalid),()=>{replacementConstructed=true;return destination;}),/Source unknown marker weeklyReviewRefs.*explicit null/);
   assert.equal(replacementConstructed,false);assert.deepEqual(destination,before);
+});
+
+
+test('raw numeric tokens cannot round into admissible integer financial facts before restore',()=>{
+ const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json')),text=JSON.stringify(doc),epoch=doc.workSnapshots[0].work[0].startEpochSeconds;
+ for(const token of [String(epoch)+'.0000000001',String(epoch)+'e0',String(epoch)+'.0','9007199254740991.1','9007199254740992','9007199254740993']){
+  const raw=text.replace('"startEpochSeconds":'+epoch,'"startEpochSeconds":'+token),destination=source(),before=structuredClone(destination);let replacementConstructed=false;
+  assert.throws(()=>readPortable(new TextEncoder().encode(raw),()=>{replacementConstructed=true;return destination;}),/numeric facts this app cannot preserve exactly/);assert.equal(replacementConstructed,false);assert.deepEqual(destination,before);
+ }
+ const exact=readPortable(new TextEncoder().encode(text),emptyState);sameFinancial(exported(exact),doc);
+ const longDecimal='0.'+'3'.repeat(128),scalars=parsePortableJSON(new TextEncoder().encode(JSON.stringify({integer:1792418400,zero:0,negative:-1,truth:true,falsity:false,unknown:null,decimal:longDecimal})));
+ assert.equal(parsePortableJSON(new TextEncoder().encode('9007199254740991')),9007199254740991);assert.equal(parsePortableJSON(new TextEncoder().encode('-9007199254740991')),-9007199254740991);
+ assert.deepEqual(scalars,{integer:1792418400,zero:0,negative:-1,truth:true,falsity:false,unknown:null,decimal:longDecimal});
+ for(const malformed of ['{"a":1,}','[1,]','{"a" 1}','[true false]','{"a":1}null','{"a":"unterminated}'])assert.throws(()=>parsePortableJSON(new TextEncoder().encode(malformed)));
 });

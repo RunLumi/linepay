@@ -237,17 +237,26 @@ function projectPortable(document,emptyState,existingMappings=null) {
 export function parsePortableJSON(bytes) {
   need(bytes instanceof Uint8Array && bytes.byteLength<=8388608,'Portable transfer exceeds 8 MiB.');
   const text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-  // JSON.parse accepts duplicate keys. Financial state refuses them instead of choosing the last value.
-  JSON.parse(text);
+  // Inspect raw tokens before JSON.parse can round a fractional or unsafe numeric fact.
   let at=0;
-  const whitespace=()=>{while(/\s/.test(text[at]??'') && at<text.length)at++;};
-  const string=()=>{const start=at++;while(at<text.length){if(text[at]==='\\'){at+=2;continue;}if(text[at++]==='"')return JSON.parse(text.slice(start,at));}throw Error('Invalid transfer JSON.');};
+  const whitespace=()=>{while(at<text.length && /[ \t\r\n]/.test(text[at]))at++;};
+  const string=()=>{need(text[at]==='"','Invalid transfer JSON string.');const start=at++;while(at<text.length){if(text[at]==='\\'){at+=2;continue;}if(text[at++]==='"')return JSON.parse(text.slice(start,at));}throw Error('Invalid transfer JSON.');};
   const value=(depth=0)=>{need(depth<128,'Portable JSON nesting exceeds the limit.');whitespace();
-    if(text[at]==='{'){at++;whitespace();const keys=new Set();if(text[at]==='}'){at++;return;}
-      while(at<text.length){whitespace();const key=string();need(!keys.has(key),'Duplicate portable JSON field; no records were replaced.');keys.add(key);whitespace();at++;value(depth+1);whitespace();if(text[at++]==='}')return;}
-    }else if(text[at]==='['){at++;whitespace();if(text[at]===']'){at++;return;}while(at<text.length){value(depth+1);whitespace();if(text[at++]===']')return;}}
-    else if(text[at]==='"')string();else while(at<text.length && !/[\s,}\]]/.test(text[at]))at++;
-  };value();return JSON.parse(text);
+    if(text[at]==='{'){
+      at++;whitespace();const keys=new Set();if(text[at]==='}'){at++;return;}
+      while(at<text.length){const key=string();need(!keys.has(key),'Duplicate portable JSON field; no records were replaced.');keys.add(key);whitespace();need(text[at++]===':','Invalid transfer JSON separator.');value(depth+1);whitespace();const end=text[at++];if(end==='}')return;need(end===',','Invalid transfer JSON separator.');whitespace();}
+    }else if(text[at]==='['){
+      at++;whitespace();if(text[at]===']'){at++;return;}
+      while(at<text.length){value(depth+1);whitespace();const end=text[at++];if(end===']')return;need(end===',','Invalid transfer JSON separator.');}
+    }else if(text[at]==='"'){string();return;}
+    else {
+      const start=at;while(at<text.length && !/[ \t\r\n,}\]]/.test(text[at]))at++;
+      const token=text.slice(start,at);if(['true','false','null'].includes(token))return;
+      need(/^-?(?:0|[1-9][0-9]*)$/.test(token),'This transfer contains numeric facts this app cannot preserve exactly. No records were replaced.');
+      need(token.length<=17,'This transfer contains numeric facts this app cannot preserve exactly. No records were replaced.');const integer=BigInt(token);need(integer>=-9007199254740991n && integer<=9007199254740991n,'This transfer contains numeric facts this app cannot preserve exactly. No records were replaced.');return;
+    }
+    throw Error('Incomplete transfer JSON.');
+  };value();whitespace();need(at===text.length,'Unexpected trailing transfer JSON.');return JSON.parse(text);
 }
 export function readPortable(bytes,emptyState) {
   need(bytes instanceof Uint8Array && bytes.byteLength<=8388608,'Portable transfer exceeds 8 MiB.');
