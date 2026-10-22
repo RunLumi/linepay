@@ -91,6 +91,17 @@
       ]
     },
     {
+      "id": "marked-unknown-array-must-be-null",
+      "expectedCode": "source.markerContradiction",
+      "operations": [
+        {
+          "op": "add",
+          "path": "/paycheckReceipts/0/assessment/fieldsNotRecorded/-",
+          "value": "weeklyReviewRefs"
+        }
+      ]
+    },
+    {
       "id": "work-range-reversed",
       "expectedCode": "time.invalidWorkRange",
       "operations": [
