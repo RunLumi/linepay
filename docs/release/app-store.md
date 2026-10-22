@@ -2,7 +2,7 @@
 
 [Release home](README.md) · [v3 plan](../plan/v3.md) · [Pricing](../product/pricing.md) · [Claims](../legal/claim-register.md)
 
-> **Canonical App Store copy and presentation. Updated October 20, 2026.** The owner selected the v3 positioning and, on October 20, selected Lineman Pay as the next-version listing and home-screen display name; implementation, submission and manual public release after Apple approval remain requested. The copy below is a **candidate for vNext**, not evidence of an App Store Connect write, name availability, trademark clearance, passing release gate or public release. The candidate source is set to version 1.1.0, build 13; its signed binary, Apple build record, and final release evidence are still pending. The current shared CI job fell back to Xcode 27.1; the repository's Xcode 26.6 / Swift 6.3 baseline remains unverified.
+> **Canonical App Store copy and presentation. Updated October 22, 2026.** The owner selected Lineman Pay as the next-version listing and home-screen display name. A signed 1.1.0 (13) archive and IPA from clean main `32f4641` are recorded in the [candidate receipt](evidence/ios-1.1.0-13-candidate-2026-10-22.md). That binary excludes later native and portable-state changes. Upload, metadata save, submission and manual public release after Apple approval remain pending. The copy below is a **candidate for vNext**; the archive does not prove name availability, trademark clearance or the full release gate. Xcode 27.1 produced the archive; the repository's Xcode 26.6 / Swift 6.3 baseline remains unverified.
 
 ## Decision and release boundary
 
@@ -14,9 +14,11 @@ Start with US hourly workers with variable schedules or supported overtime and p
 
 | State | Evidence and meaning |
 |---|---|
-| Existing 1.0.5 | The October 19 US listing readback retained **LinePaycheck: Lineman Pay**, version 1.0.5. The [submission receipt](evidence/release-1.0.5-2026-10-05.md) and [claim register](../legal/claim-register.md) retain the dated build 11, specialist-copy and screenshot evidence. |
-| vNext candidate | Generic hourly setup and direct paycheck comparison, with advanced rules retained. Copy and review routes below require acceptance against the final candidate. |
+| Existing 1.0.5 | The October 22 public listing and Apple GET readbacks retained **LinePaycheck: Lineman Pay**, version 1.0.5. The [submission receipt](evidence/release-1.0.5-2026-10-05.md) and [claim register](../legal/claim-register.md) retain the dated build 11, specialist-copy and screenshot evidence. |
+| vNext candidate | Signed local 1.1.0 (13) is retained privately. October 22 GET readback found processed TestFlight 1.1.0 (12), no observed build 13 reservation/upload, and no editable 1.1.0 App Store version. Copy, screenshots and review routes below still require acceptance against the final selected binary. |
 | Submitted / public vNext | Record the actual selected build, metadata, screenshots, release mode and Apple state in a new source-bound release receipt. No vNext submission or public-state claim is made here. |
+
+Built-in Browser is available, but App Store Connect requires secure user sign-in. Paid Applications Agreement acceptance remains unverified; the owner's “I’ll handle it” reply is not an acceptance receipt. Recheck the selected build, editable version, metadata and manual release setting before any authorized write. If source changes require another archive, first check Apple's build reservations to avoid reusing an uploaded build number.
 
 Keep `com.streamentry.linepay`, the `LinePay` project/scheme/target, `LinePayDomain`, StoreKit product IDs and stored data identifiers unchanged. For the 1.1.0 candidate, set the home-screen display name to **Lineman Pay**; keep the technical product name and existing subscription names unchanged. This does not rename the bundle, project, domain module, or stored data. Availability and trademark/confusability review remain open. The prior USPTO readback found a live registered **LINE PAY** mark (serial 97491295, LY Corporation); an exact Lineman Pay clearance has not been established.
 
