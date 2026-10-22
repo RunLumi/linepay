@@ -33,7 +33,7 @@ struct LocalDiagnosticsView: View {
             Section {
                 Text(
                     "These local usage counts help explain which steps were reached. No wages, payroll dates, employer or union names, documents or free-text attributes are recorded. Nothing is sent to a collector."
-                )
+                ).fixedSize(horizontal: false, vertical: true)
                 Toggle(
                     isOn: Binding(
                         get: { ledger.snapshot.recordingEnabled },
@@ -50,11 +50,12 @@ struct LocalDiagnosticsView: View {
                     Text("Record device-local activity")
                         .font(.body)
                         .foregroundStyle(LinePayColor.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .accessibilityIdentifier("activity.recording")
                 Text(
                     "This is not an install counter or a global conversion report. Existing subscriptions, renewals and restored pay data are different from new paid customers. Turning recording off keeps prior observations until you clear them."
-                ).font(.body)
+                ).font(.body).fixedSize(horizontal: false, vertical: true)
                 if let issue = ledger.issue {
                     Label(issue, systemImage: "exclamationmark.triangle")
                 }
@@ -68,14 +69,14 @@ struct LocalDiagnosticsView: View {
                 }
                 Text(
                     "Daily breakdown is limited to 400 observed UTC days. Internal deduplication is bounded; counts can be incomplete after failures, disabled recording or retention. Pay backups do not contain this ledger and do not backfill it."
-                ).font(.body)
+                ).font(.body).fixedSize(horizontal: false, vertical: true)
             } header: {
                 localSectionHeader("Observed since the local ledger started")
             }
             Section {
                 Text(
                     "The export contains event labels, counts, usage days and recording status. Usage patterns can still be personal; it is not anonymous. It is not a pay-data backup."
-                )
+                ).fixedSize(horizontal: false, vertical: true)
                 Button("Preview local diagnostic file") {
                     do {
                         preview = DiagnosticPreview(data: try ledger.diagnosticData())

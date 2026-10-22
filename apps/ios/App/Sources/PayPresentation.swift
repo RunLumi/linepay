@@ -141,19 +141,19 @@ struct CheckSummaryRows: View {
 struct ComparisonAmounts: View {
     let expected: Money?
     let paid: Money
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: 24) {
-                PayAmount(label: "Expected, same basis", money: expected)
-                    .fixedSize(horizontal: true, vertical: true)
-                Spacer(minLength: 0)
-                PayAmount(label: "Confirmed paid", money: paid)
-                    .fixedSize(horizontal: true, vertical: true)
-            }
-            VStack(alignment: .leading, spacing: 16) {
-                PayAmount(label: "Expected, same basis", money: expected)
-                PayAmount(label: "Confirmed paid", money: paid)
-            }
+        let layout =
+            horizontalSizeClass == .compact || dynamicTypeSize >= .xxxLarge
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: LinePaySpacing.standard))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: LinePaySpacing.section))
+        layout {
+            PayAmount(label: "Expected, same basis", money: expected)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            PayAmount(label: "Confirmed paid", money: paid)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

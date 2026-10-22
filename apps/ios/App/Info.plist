@@ -8,6 +8,19 @@
     <array>
         <dict>
             <key>UTTypeIdentifier</key>
+            <string>com.streamentry.linepay.crew-rules</string>
+            <key>UTTypeDescription</key>
+            <string>LinePaycheck Crew Rule Draft</string>
+            <key>UTTypeConformsTo</key>
+            <array><string>public.json</string></array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array><string>linepayrules</string></array>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeIdentifier</key>
             <string>com.streamentry.linepay.backup</string>
             <key>UTTypeDescription</key>
             <string>LinePaycheck Backup</string>
