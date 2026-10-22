@@ -237,7 +237,9 @@ object AndroidPortableStateCodec {
             require(check.components.all { it.id != null } || check.comparisons.isEmpty() || check.engine == "linepay.android.configured-lines/1") {
                 "UNREPRESENTABLE_COMPONENT_REFERENCES: Legacy component order is not proven for this source engine/version."
             }
-            check.comparisons.forEach { comparison ->
+            // Only gross/per-diem comparisons have the proven legacy category-order recovery rule.
+            // New line comparisons already retain their actual component IDs, including empty zero lines.
+            check.comparisons.filter { it.field in setOf("GROSS_PAY", "PER_DIEM_PAY") }.forEach { comparison ->
                 val indexes = check.components.indices.filter { index -> comparison.field == "PER_DIEM_PAY" && check.components[index].category == "PER_DIEM" || comparison.field == "GROSS_PAY" && (check.grossBasis == GrossBasisChoice.WAGES_AND_PER_DIEM || check.components[index].category != "PER_DIEM") }
                 require(indexes.size == comparison.componentIds.size) { "UNREPRESENTABLE_COMPONENT_REFERENCES: Native receipt references do not match its retained component order." }
                 indexes.zip(comparison.componentIds).forEach { (index, originalID) ->
@@ -246,6 +248,9 @@ object AndroidPortableStateCodec {
                 }
             }
             require(nativeComponentIDs.values.toSet().size == nativeComponentIDs.size) { "UNREPRESENTABLE_COMPONENT_REFERENCES: Legacy comparison IDs ambiguously name more than one component." }
+            require(check.comparisons.all { comparison -> comparison.componentIds.all { it in nativeComponentIDs.values } }) {
+                "UNREPRESENTABLE_COMPONENT_REFERENCES: Comparison refers to an unretained native component."
+            }
             val componentRefs = check.components.indices.associateWith { index -> id("calculationComponent", nativeComponentIDs[index] ?: "check-component:${check.id}:$index", nativeComponentIDs[index] == null) }
             val components = check.components.mapIndexed { index, component ->
                 require(component.agreementId == (check.profile.calculationRuleID ?: check.profile.id) && component.agreementVersion == check.profile.version) { "Unsupported historical rule reference." }

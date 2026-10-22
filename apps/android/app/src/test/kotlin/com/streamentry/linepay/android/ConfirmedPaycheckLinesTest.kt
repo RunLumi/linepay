@@ -207,6 +207,12 @@ class ConfirmedPaycheckLinesTest {
         val oldWire = PortableStateJson.parse(AndroidPortableStateCodec.encode(legacy, 1792195200)).getAsJsonArray("paycheckReceipts").single().asJsonObject
         assertTrue(oldWire.getAsJsonObject("lineFacts").get("amounts").isJsonNull)
         assertTrue(oldWire.getAsJsonObject("lineFacts").get("hours").isJsonNull)
+        val unknownReference = legacy.copy(checks = listOf(legacy.checks.single().let { saved ->
+            saved.copy(comparisons = saved.comparisons.map { comparison ->
+                if (comparison.field == "REGULAR_PAY") comparison.copy(componentIds = listOf(java.util.UUID.randomUUID().toString())) else comparison
+            })
+        }))
+        assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.encode(unknownReference, 1792195200) }
         System.getenv("ANDROID_LINE_ARTIFACT_DIR")?.let { dir -> File(dir).mkdirs(); File(dir, "android-confirmed-lines.json").writeText(wire.toString()) }
     }
 }
