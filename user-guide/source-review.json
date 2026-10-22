@@ -68,8 +68,8 @@
         "recording-work"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "676b82852821befc9debe38be5797de11fe47459",
-      "reason": "Targeted October 22 review: accessibility-size title presentation changes from large to inline; work logging, pay period, action names and saved-work behavior are unchanged. getting-started and recording-work remain accurate."
+      "blob": "f5ef481f762cd5f97399440e1df7f54b33ca34a7",
+      "reason": "Targeted October 22 review: work-row kind and duration now share one vertically wrapping headline; entry editing, dates, expected pay, action names and saved-work behavior are unchanged. getting-started and recording-work remain accurate. This does not close the separately recorded accessibility audit findings."
     },
     {
       "path": "apps/ios/App/Sources/AddWorkView.swift",
