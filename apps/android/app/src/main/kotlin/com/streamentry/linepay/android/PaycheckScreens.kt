@@ -91,11 +91,25 @@ fun RecordPaycheckScreen(
     var sourceZone by rememberSaveable(profile.id) {
         mutableStateOf(profile.payrollTimeZone)
     }
+    var sourceCurrency by rememberSaveable(profile.id) { mutableStateOf(profile.currencyCode) }
     var paidGross by rememberSaveable(profile.id) { mutableStateOf("") }
     var basis by rememberSaveable(profile.id) { mutableStateOf(GrossBasisChoice.WAGES_ONLY) }
     var sourceConfirmed by rememberSaveable(profile.id) { mutableStateOf(false) }
     var completeWork by rememberSaveable(profile.id) { mutableStateOf(false) }
     var rulesReviewed by rememberSaveable(profile.id) { mutableStateOf(false) }
+    var showLines by rememberSaveable(profile.id) { mutableStateOf(false) }
+    var lineLayout by rememberSaveable(profile.id) { mutableStateOf("UNCONFIRMED") }
+    var hoursBasis by rememberSaveable(profile.id) { mutableStateOf("UNCONFIRMED") }
+    var guaranteeLayout by rememberSaveable(profile.id) { mutableStateOf("UNCONFIRMED") }
+    var regularPay by rememberSaveable(profile.id) { mutableStateOf("") }
+    var overtimePay by rememberSaveable(profile.id) { mutableStateOf("") }
+    var doubleTimePay by rememberSaveable(profile.id) { mutableStateOf("") }
+    var calloutPay by rememberSaveable(profile.id) { mutableStateOf("") }
+    var regularHours by rememberSaveable(profile.id) { mutableStateOf("") }
+    var overtimeHours by rememberSaveable(profile.id) { mutableStateOf("") }
+    var doubleTimeHours by rememberSaveable(profile.id) { mutableStateOf("") }
+    var paidPerDiem by rememberSaveable(profile.id) { mutableStateOf("") }
+    var completeEarningsLines by rememberSaveable(profile.id) { mutableStateOf(false) }
     var inputError by rememberSaveable(profile.id) { mutableStateOf<String?>(null) }
 
     PageContent {
@@ -104,6 +118,8 @@ fun RecordPaycheckScreen(
         LocalTextField(sourceStart, { sourceStart = it }, "Statement period starts (YYYY-MM-DD)", "check.period-start")
         LocalTextField(sourceLast, { sourceLast = it }, "Statement period ends (YYYY-MM-DD)", "check.period-end")
         LocalTextField(sourceZone, { sourceZone = it }, "Statement payroll time zone", "check.time-zone")
+        LocalTextField(sourceCurrency, { sourceCurrency = it }, "Statement currency (three-letter code)", "check.currency")
+        Text("All entered money uses this statement currency. It must match ${profile.currencyCode}; this comparison does not convert currencies.")
         LocalTextField(paidGross, { paidGross = it }, "Paystub gross amount", "check.gross")
         Text("What the gross amount includes", style = MaterialTheme.typography.titleMedium)
         ChoiceRow(
@@ -117,10 +133,40 @@ fun RecordPaycheckScreen(
             tag = "check.basis.total",
         ) { basis = GrossBasisChoice.WAGES_AND_PER_DIEM }
 
+        androidx.compose.material3.TextButton(onClick = { showLines = !showLines }, modifier = Modifier.testTag("check.show-lines")) {
+            Text(if (showLines) "Hide source lines" else "Add hours and earnings lines (optional)")
+        }
+        if (showLines) {
+            SectionHeading("Source hours and earnings")
+            Text("Enter only current-period values you identified on this statement. Typed values count as your confirmation. Blank means unknown; enter 0 only when the source confirms zero. Money and hours are different quantities.")
+            Text("Full rates include base pay in each overtime bucket. Base plus premiums puts all applicable base pay in the regular line and only the extra premium in the overtime/double-time lines.")
+            for ((value, label) in listOf("UNCONFIRMED" to "Earnings layout not confirmed", "FULL_RATE_BUCKETS" to "Full rates in separate buckets", "BASE_PLUS_PREMIUM" to "Base pay plus extra premiums")) {
+                ChoiceRow(label, lineLayout == value, "check.layout.$value") { lineLayout = value }
+            }
+            Text("Actual hours exclude guarantee top-ups. Paid-equivalent hours can include a configured guarantee only when it is mapped into hourly lines.")
+            for ((value, label) in listOf("UNCONFIRMED" to "Hours basis not confirmed", "ACTUAL_WORK" to "Actual worked hours", "PAID_EQUIVALENTS" to "Paid-equivalent hours")) {
+                ChoiceRow(label, hoursBasis == value, "check.hours-basis.$value") { hoursBasis = value }
+            }
+            Text("Callout mapping describes the statement only. This native profile does not configure a callout guarantee; choosing a mapping does not add one or establish eligibility.")
+            for ((value, label) in listOf("UNCONFIRMED" to "Callout mapping not confirmed", "SEPARATE_LINE" to "Callout guarantee shown separately", "INCLUDED_IN_HOURLY_LINES" to "Callout guarantee included in hourly lines")) {
+                ChoiceRow(label, guaranteeLayout == value, "check.guarantee.$value") { guaranteeLayout = value }
+            }
+            LocalTextField(regularPay, { regularPay = it }, "Regular/base pay (optional)", "check.line.regular-pay")
+            LocalTextField(overtimePay, { overtimePay = it }, "Overtime pay (optional)", "check.line.overtime-pay")
+            LocalTextField(doubleTimePay, { doubleTimePay = it }, "Double-time pay (optional)", "check.line.double-time-pay")
+            LocalTextField(calloutPay, { calloutPay = it }, "Separate callout pay (optional)", "check.line.callout-pay")
+            LocalTextField(paidPerDiem, { paidPerDiem = it }, "Observed per diem (optional)", "check.line.per-diem-pay")
+            LocalTextField(regularHours, { regularHours = it }, "Regular/base hours (optional)", "check.line.regular-hours")
+            LocalTextField(overtimeHours, { overtimeHours = it }, "Overtime hours (optional)", "check.line.overtime-hours")
+            LocalTextField(doubleTimeHours, { doubleTimeHours = it }, "Double-time hours (optional)", "check.line.double-time-hours")
+            Text("Hour comparisons use exact worked seconds and four-place half-up hour differences. Money differences use the configured wage rounding policy. Original typed observations stay saved.")
+            ConfirmationRow(completeEarningsLines, "check.complete-lines", "These entered earnings lines are the complete breakdown of this stated gross, including any observed per diem it includes.") { completeEarningsLines = it }
+        }
+
         ConfirmationRow(
             checked = sourceConfirmed,
             tag = "check.confirm-period",
-            label = "I confirmed the dates and payroll time zone from this statement.",
+            label = "I confirmed the dates, payroll time zone and currency from this statement.",
         ) { sourceConfirmed = it }
         ConfirmationRow(
             checked = completeWork,
@@ -148,6 +194,15 @@ fun RecordPaycheckScreen(
                         basis = basis,
                         completeWorkConfirmed = completeWork,
                         ruleCoverageConfirmed = rulesReviewed,
+                        confirmedLineFacts = AndroidConfirmedPaycheckLines(
+                            currencyCode = sourceCurrency.trim().uppercase(),
+                            layout = lineLayout, hoursBasis = hoursBasis, guaranteeLayout = guaranteeLayout,
+                            regularPay = regularPay.trim().takeIf { it.isNotEmpty() }, overtimePay = overtimePay.trim().takeIf { it.isNotEmpty() },
+                            doubleTimePay = doubleTimePay.trim().takeIf { it.isNotEmpty() }, calloutPay = calloutPay.trim().takeIf { it.isNotEmpty() },
+                            regularHours = regularHours.trim().takeIf { it.isNotEmpty() }, overtimeHours = overtimeHours.trim().takeIf { it.isNotEmpty() },
+                            doubleTimeHours = doubleTimeHours.trim().takeIf { it.isNotEmpty() }, paidPerDiem = paidPerDiem.trim().takeIf { it.isNotEmpty() },
+                            completeEarningsLines = completeEarningsLines,
+                        ),
                     )
                     val (next, _) = LinePaycheckRepository.savePaycheck(
                         state = state,
@@ -240,6 +295,7 @@ fun HistoryScreen(
                 check.reviewReasons.forEach { reason ->
                     Text("Needs review: ${reviewReasonLabel(reason)}")
                 }
+                PaycheckLineHistory(check)
                 AndroidWeeklyReviewRepository.relatedReviews(state, check.id).forEach { receipt ->
                     OutlinedButton(
                         onClick = { onOpenWeeklyReceipt(receipt.id) },
@@ -258,6 +314,53 @@ fun HistoryScreen(
             }
         }
     }
+}
+
+@Composable
+private fun PaycheckLineHistory(check: AndroidPaycheckSnapshot) {
+    val capture = check.confirmedLineFacts
+    if (capture == null) {
+        Text("Earlier source lines were not recorded; the original saved result remains unchanged.")
+        return
+    }
+    if (check.comparisons.any { it.field != "GROSS_PAY" && java.math.BigDecimal(it.difference).signum() != 0 }) {
+        Text("A saved line comparison differs. Matching gross does not cancel individual money or hour differences.")
+    }
+    var expanded by rememberSaveable(check.id) { mutableStateOf(false) }
+    androidx.compose.material3.TextButton(onClick = { expanded = !expanded }, modifier = Modifier.testTag("history.check.${check.id}.lines")) {
+        Text(if (expanded) "Hide source lines and comparisons" else "Show source lines and comparisons")
+    }
+    if (expanded) {
+        Text("Layout: ${capture.layout.lowercase().replace('_', ' ')} · hours: ${capture.hoursBasis.lowercase().replace('_', ' ')}")
+        Text("Callout mapping: ${capture.guaranteeLayout.lowercase().replace('_', ' ')}")
+        Text(if (capture.completeEarningsLines) "Worker confirmed a complete earnings breakdown." else "Earnings breakdown completeness was not confirmed.")
+        SectionHeading("Observed source values · ${capture.currencyCode}")
+        if (capture.amounts().isEmpty() && capture.hours().isEmpty() && capture.paidPerDiem == null) Text("No earnings or hour lines were entered. Blank observations remain unknown.")
+        capture.amounts().forEach { (field, value) -> Text("${lineFieldLabel(field.name)}: ${check.profile.currencyCode} $value", fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace) }
+        capture.hours().forEach { (field, value) -> Text("${lineFieldLabel(field.name)}: $value hours", fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace) }
+        capture.paidPerDiem?.let { Text("Observed per diem: ${check.profile.currencyCode} $it") }
+        SectionHeading("Frozen comparisons")
+        if (check.comparisons.isEmpty()) Text("No values were comparable for the saved statement period and scope.")
+        check.comparisons.forEach { part ->
+            val suffix = if (part.unit == "HOURS") " hours" else " ${part.currencyCode}"
+            Text("${lineFieldLabel(part.field)} · expected ${part.expected}$suffix · source ${part.paid}$suffix · expected minus source ${part.difference}$suffix", fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.testTag("history.check.${check.id}.comparison.${part.field}"))
+            Text("${part.componentIds.size} original ledger components · rule ${check.profile.calculationRuleID ?: check.profile.id} / ${check.profile.version}")
+        }
+        Text("These values use the original work, rule and source snapshots. Line comparisons do not verify weekly statutory treatment or complete legal coverage.")
+    }
+}
+
+private fun lineFieldLabel(field: String): String = when (field) {
+    "GROSS_PAY" -> "Gross pay"
+    "PER_DIEM_PAY" -> "Per diem"
+    "REGULAR_PAY" -> "Regular/base pay"
+    "OVERTIME_PAY" -> "Overtime pay"
+    "DOUBLE_TIME_PAY" -> "Double-time pay"
+    "CALLOUT_PAY" -> "Separate callout pay"
+    "REGULAR_HOURS" -> "Regular/base hours"
+    "OVERTIME_HOURS" -> "Overtime hours"
+    "DOUBLE_TIME_HOURS" -> "Double-time hours"
+    else -> field
 }
 
 @Composable

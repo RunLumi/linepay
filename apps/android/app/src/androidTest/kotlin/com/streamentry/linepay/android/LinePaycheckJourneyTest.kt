@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -568,6 +569,74 @@ class LinePaycheckJourneyTest {
             checked++
         }
         assertEquals(cases.count { !it.asJsonObject.has("target") || it.asJsonObject.get("target").asString == "android" }, checked)
+    }
+
+    @Test
+    fun confirmedPaycheckLinesKeepOffsetsUnknownsAndMismatchedPeriodThroughHistoryAndBackup() {
+        var source = AndroidLocalState(profile = AndroidRuleProfile(hourlyRate = "50", dailyOvertimeAfterHours = "8", dailyOvertimeMultiplier = "1.5",
+            cycleStartDate = "2026-10-12", payrollTimeZone = "UTC", rulesReviewedByWorker = true))
+        source = LinePaycheckRepository.addWork(source, "2026-10-12 08:00", "2026-10-12 18:00", "", "", "Synthetic confirmed-line work")
+        val store = LocalStateStore(compose.activity.filesDir)
+        store.save(source)
+        compose.activityRule.scenario.recreate()
+        compose.waitForIdle()
+        enterLineStatement("350.00", "200.00", "2026-10-12", "2026-10-18")
+        val offset = store.load().checks.first()
+        assertEquals("NEEDS_REVIEW", offset.verdict)
+        assertEquals("350.00", offset.confirmedLineFacts!!.regularPay)
+        assertTrue("WEEKLY_REVIEW_PENDING" in offset.reviewReasons)
+        assertEquals(0, java.math.BigDecimal(requireNotNull(offset.difference)).signum())
+        assertEquals(0, java.math.BigDecimal("50").compareTo(java.math.BigDecimal(offset.comparisons.single { it.field == "REGULAR_PAY" }.difference)))
+        assertEquals(0, java.math.BigDecimal("-50").compareTo(java.math.BigDecimal(offset.comparisons.single { it.field == "OVERTIME_PAY" }.difference)))
+        compose.onNodeWithTag("nav.history").performClick()
+        compose.onNodeWithTag("history.check.${offset.id}.lines").performScrollTo().performClick()
+        compose.onNodeWithTag("history.check.${offset.id}.comparison.REGULAR_PAY").performScrollTo().assertTextContains("expected minus source 50.00 USD", substring = true)
+        compose.onNodeWithTag("history.check.${offset.id}.comparison.OVERTIME_PAY").performScrollTo().assertTextContains("expected minus source -50.00 USD", substring = true)
+        captureSyntheticScreen("LinePaycheck-confirmed-lines-offset.png")
+        enterLineStatement("400", null, "2026-10-12", "2026-10-18")
+        val incomplete = store.load().checks.first()
+        assertEquals(null, incomplete.confirmedLineFacts!!.overtimePay)
+        assertFalse(incomplete.comparisons.any { it.field == "OVERTIME_PAY" })
+        assertTrue("CONFLICTING_EARNINGS" in incomplete.reviewReasons)
+        enterLineStatement("350", "200", "2026-10-13", "2026-10-19")
+        val mismatch = store.load().checks.first()
+        assertEquals("NOT_COMPARABLE", mismatch.verdict)
+        assertEquals(null, mismatch.expectedGross)
+        assertTrue(mismatch.comparisons.isEmpty())
+        assertEquals("350", mismatch.confirmedLineFacts!!.regularPay)
+        compose.activityRule.scenario.recreate()
+        compose.waitForIdle()
+        assertEquals(listOf(mismatch, incomplete, offset), store.load().checks)
+        compose.onNodeWithTag("nav.history").performClick()
+        if (compose.onAllNodesWithTag("history.check.${offset.id}.comparison.REGULAR_PAY").fetchSemanticsNodes().isEmpty()) {
+            compose.onNodeWithTag("history.check.${offset.id}.lines").performScrollTo().performClick()
+        }
+        compose.onNodeWithTag("history.check.${offset.id}.comparison.REGULAR_PAY").performScrollTo().assertTextContains("source 350 USD", substring = true)
+        val reopened = store.restoreEncryptedBackup(store.createEncryptedBackup(store.load(), "Synthetic confirmed lines password"), "Synthetic confirmed lines password")
+        assertEquals(store.load(), reopened)
+        val portable = store.restoreEncryptedBackup(store.createPortableEncryptedBackup(store.load(), "Synthetic confirmed lines password"), "Synthetic confirmed lines password")
+        assertEquals(3, portable.portableArchive!!.document.getAsJsonArray("paycheckReceipts").size())
+        val original = portable.portableArchive.document.getAsJsonArray("paycheckReceipts").single { it.asJsonObject.getAsJsonObject("paystubFacts").get("regularPay").takeUnless { value -> value.isJsonNull }?.asString == "350.00" }.asJsonObject
+        assertEquals("confirmedLines", original.getAsJsonObject("assessment").get("scope").asString)
+        assertTrue(original.getAsJsonObject("reviewFacts").get("weeklyReviewPending").asBoolean)
+    }
+
+    private fun enterLineStatement(regular: String, overtime: String?, first: String, last: String) {
+        compose.onNodeWithTag("nav.pay").performClick()
+        compose.onNodeWithTag("pay.record-check").performScrollTo().performClick()
+        enter("check.period-start", first); enter("check.period-end", last)
+        enter("check.currency", "USD"); enter("check.gross", "550")
+        compose.onNodeWithTag("check.show-lines").performScrollTo().performClick()
+        compose.onNodeWithTag("check.layout.FULL_RATE_BUCKETS").performScrollTo().performClick()
+        compose.onNodeWithTag("check.hours-basis.ACTUAL_WORK").performScrollTo().performClick()
+        enter("check.line.regular-pay", regular)
+        if (overtime != null) enter("check.line.overtime-pay", overtime) else compose.onNodeWithTag("check.line.overtime-pay").performScrollTo().performTextClearance()
+        compose.onNodeWithTag("check.complete-lines").performScrollTo().performClick()
+        compose.onNodeWithTag("check.confirm-period").performScrollTo().performClick()
+        compose.onNodeWithTag("check.complete-work").performScrollTo().performClick()
+        compose.onNodeWithTag("check.rules-reviewed").performScrollTo().performClick()
+        compose.onNodeWithTag("check.save").performScrollTo().performClick()
+        compose.waitForIdle()
     }
 
     private fun captureSyntheticScreen(filename: String) {

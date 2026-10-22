@@ -107,6 +107,7 @@ data class AndroidPaycheckSnapshot(
     val components: List<AndroidPayComponentSnapshot>,
     val engine: String,
     val coverage: String,
+    val confirmedLineFacts: AndroidConfirmedPaycheckLines? = null,
 )
 
 data class AndroidLocalState(
@@ -119,7 +120,7 @@ data class AndroidLocalState(
     val portableArchive: AndroidPortableArchive? = null,
 ) {
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 5
+        const val CURRENT_SCHEMA_VERSION = 6
         const val MAXIMUM_WORK_ENTRIES = 10_000
         const val MAXIMUM_SAVED_CHECKS = 2_000
         const val MAXIMUM_WEEKLY_REVIEWS = 128
@@ -223,6 +224,7 @@ object AndroidLocalStateValidator {
     }
 
     private fun validateCheck(check: AndroidPaycheckSnapshot) {
+        require(check.work.size <= AndroidLocalState.MAXIMUM_WORK_ENTRIES) { "Saved check contains too many work facts." }
         check.components.forEach { component ->
             component.id?.let { require(UUID.fromString(it).toString() == it) { "Invalid saved component identity." } }
             component.workId?.let { require(check.work.any { work -> work.id == it }) { "Saved component references unknown work." } }
@@ -274,6 +276,13 @@ object AndroidLocalStateValidator {
         }
         check.difference?.let {
             requireDecimal(it, minimum = BigDecimal("-1000000000000"), maximum = BigDecimal("1000000000000"))
+        }
+        check.confirmedLineFacts?.let {
+            require(check.comparisons.size <= 9) { "Saved check contains unsupported comparison fields." }
+            it.validate()
+            require(check == LinePaycheckRepository.replayCapturedPaycheck(check)) {
+                "Saved paycheck result or evidence does not match its frozen source inputs."
+            }
         }
     }
 

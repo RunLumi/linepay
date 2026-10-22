@@ -90,6 +90,7 @@ class LocalStateStore(filesDirectory: File) {
             if (!tree.isJsonObject) throw InvalidLocalState("This file contains no LinePaycheck state.")
             val root = tree.asJsonObject
             migrateAndroidLocalState(root)
+            validateCapturedLineJson(root)
             gson.fromJson(root, AndroidLocalState::class.java)
                 ?: throw InvalidLocalState("This file contains no LinePaycheck state.")
         } catch (failure: JsonParseException) {
@@ -153,7 +154,7 @@ internal fun migrateAndroidLocalState(root: JsonObject) {
                 throw InvalidLocalState("This saved state is missing its weekly review collection.")
             }
         }
-        4 -> {
+        4, 5 -> {
             if (root.get("weeklyReviews")?.isJsonArray != true || root.get("benefitReviews")?.isJsonArray != true) {
                 throw InvalidLocalState("This saved state is missing its review collections.")
             }
@@ -178,7 +179,17 @@ internal fun migrateAndroidLocalState(root: JsonObject) {
             throw InvalidLocalState("Legacy data contains unsupported portable evidence.")
         }
         root.add("portableArchive", com.google.gson.JsonNull.INSTANCE)
-        root.addProperty("schemaVersion", AndroidLocalState.CURRENT_SCHEMA_VERSION)
+        root.addProperty("schemaVersion", 5)
+    }
+    if (version < 6) {
+        val checks = root.get("checks")
+        if (checks?.isJsonArray != true) throw InvalidLocalState("Saved paycheck checks are missing or invalid.")
+        checks.asJsonArray.forEach { encoded ->
+            if (!encoded.isJsonObject) throw InvalidLocalState("A saved paycheck check is invalid.")
+            val capture = encoded.asJsonObject.get("confirmedLineFacts")
+            if (capture != null && !capture.isJsonNull) throw InvalidLocalState("Legacy data contains unsupported captured paycheck-line inputs.")
+        }
+        root.addProperty("schemaVersion", 6)
     }
 }
 

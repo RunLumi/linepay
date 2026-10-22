@@ -106,10 +106,11 @@ class PortableStateCodecTest {
         val legacy = JsonParser.parseString(Gson().toJson(state)).asJsonObject
         legacy.addProperty("schemaVersion", 4)
         legacy.remove("portableArchive")
+        legacy.getAsJsonArray("checks").forEach { it.asJsonObject.remove("confirmedLineFacts") }
         val old = legacy.deepCopy()
         migrateAndroidLocalState(legacy)
         for (key in listOf("profile", "work", "checks", "weeklyReviews", "benefitReviews")) assertEquals(old[key], legacy[key])
-        assertEquals(5, legacy.get("schemaVersion").asInt)
+        assertEquals(AndroidLocalState.CURRENT_SCHEMA_VERSION, legacy.get("schemaVersion").asInt)
         assertTrue(legacy.get("portableArchive").isJsonNull)
         AndroidLocalStateValidator.validate(Gson().fromJson(legacy, AndroidLocalState::class.java))
     }
@@ -119,7 +120,7 @@ class PortableStateCodecTest {
         assertEquals(5, check.components.size)
         assertEquals(1, check.components.map { it.amount }.toSet().size)
         assertTrue(check.components.all { it.id != null && it.workId != null })
-        val legacy = check.copy(components = check.components.map { it.copy(id = null, workId = null) })
+        val legacy = check.copy(confirmedLineFacts = null, components = check.components.map { it.copy(id = null, workId = null) })
         val exported = PortableStateJson.parse(AndroidPortableStateCodec.encode(state.copy(checks = listOf(legacy)), 1792195200))
         val components = exported.getAsJsonArray("paycheckReceipts").single().asJsonObject
             .getAsJsonObject("calculation").getAsJsonArray("components")
@@ -474,6 +475,7 @@ class PortableStateCodecTest {
         val newFields = listOf("hasIndependentEffectiveDates", "effectiveStartDate", "effectiveEndDateInclusive", "requiresPortableRuleConfirmation", "importedSourceProfileRef", "calculationRuleID", "portableRuleFieldsNeedingConfirmation")
         newFields.forEach { tree.getAsJsonObject("profile").remove(it) }
         tree.getAsJsonArray("checks").forEach { check ->
+            check.asJsonObject.remove("confirmedLineFacts")
             newFields.forEach { check.asJsonObject.getAsJsonObject("profile").remove(it) }
             check.asJsonObject.getAsJsonArray("components").forEach { it.asJsonObject.remove("id"); it.asJsonObject.remove("workId") }
         }
