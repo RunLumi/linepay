@@ -7,6 +7,8 @@ import functools
 import hashlib
 import json
 import os
+import re
+from urllib.parse import urlsplit
 from pathlib import Path
 import subprocess
 import threading
@@ -55,6 +57,16 @@ assert fresh['assessment']['verdict'] == 'needsReview'
 assert fresh['assessment']['weeklyReviewRefs'] is None
 assert 'weeklyReviewRefs' in fresh['assessment']['fieldsNotRecorded']
 
+def validated_https_origin(value):
+    parsed = urlsplit(value)
+    label = r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?'
+    if (not re.fullmatch(r'https://[a-z0-9.-]+/?', value) or parsed.scheme != 'https' or
+        parsed.hostname is None or parsed.netloc != parsed.hostname or parsed.hostname.replace('.', '').isdigit() or
+        len(parsed.hostname) > 253 or not re.fullmatch(label + r'(?:\.' + label + r')+', parsed.hostname) or
+        parsed.path not in {'', '/'} or parsed.query or parsed.fragment or '?' in value or '#' in value):
+        raise ValueError('Provider origin must be an HTTPS root with a DNS hostname and no credentials, port, path, query or fragment.')
+    return 'https://' + parsed.hostname
+
 class Quiet(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -63,17 +75,39 @@ class LocalServer(ThreadingHTTPServer):
     request_queue_size = 64
 
 engine = os.environ.get('BROWSER', 'chromium')
-output = ROOT / '.build/web-provider-e2e' / engine
+output = Path(os.environ.get('PORTABLE_PROVIDER_OUTPUT', ROOT / '.build/web-provider-e2e')) / engine
 output.mkdir(parents=True, exist_ok=True)
-server = LocalServer(('127.0.0.1', 0), functools.partial(Quiet, directory=str(WEB)))
-threading.Thread(target=server.serve_forever, daemon=True).start()
-origin = f'http://127.0.0.1:{server.server_port}'
+remote_origin = os.environ.get('PORTABLE_PROVIDER_ORIGIN')
+server = None
+if remote_origin:
+    origin = validated_https_origin(remote_origin)
+else:
+    server = LocalServer(('127.0.0.1', 0), functools.partial(Quiet, directory=str(WEB)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    origin = f'http://127.0.0.1:{server.server_port}'
 with sync_playwright() as pw:
     options = {'headless': True}
     if engine == 'chromium' and os.environ.get('CHROMIUM_EXECUTABLE'):
         options['executable_path'] = os.environ['CHROMIUM_EXECUTABLE']
     browser = getattr(pw, engine).launch(**options)
-    context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
+    context = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True, service_workers='block' if remote_origin else 'allow')
+    allowed_requests = []
+    blocked_requests = []
+    if remote_origin:
+        allowed_paths = {'/', '/favicon.ico'} | {'/' + str(file.relative_to(WEB)) for file in WEB.rglob('*') if file.is_file() and 'tests' not in file.relative_to(WEB).parts and file.suffix in {'.mjs', '.js', '.html', '.css', '.png', '.svg', '.webmanifest'}}
+        def guard(route):
+            request = route.request
+            parsed = urlsplit(request.url)
+            allowed = (request.method == 'GET' and request.post_data is None and
+                       parsed.scheme + '://' + parsed.netloc == origin and
+                       parsed.path in allowed_paths and not parsed.query and not parsed.fragment)
+            if allowed:
+                allowed_requests.append({'method': request.method, 'path': parsed.path})
+                route.continue_()
+            else:
+                blocked_requests.append({'method': request.method, 'resourceType': request.resource_type})
+                route.abort('blockedbyclient')
+        context.route('**/*', guard)
     page = context.new_page()
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
@@ -84,7 +118,19 @@ with sync_playwright() as pw:
         page.get_by_label('Backup password', exact=True).fill(phrase)
         page.get_by_role('button', name='Unlock and inspect', exact=True).click()
     try:
+        served_runtime_sha = None
         page.goto(origin)
+        if remote_origin:
+            files = [file for file in sorted(WEB.rglob('*')) if file.is_file() and 'tests' not in file.relative_to(WEB).parts and file.suffix in {'.mjs', '.js', '.html', '.css', '.png', '.svg', '.webmanifest'}]
+            paths = [str(file.relative_to(WEB)) for file in files]
+            received = page.evaluate("""async paths=>Object.fromEntries(await Promise.all(paths.map(async path=>{const response=await fetch('/'+path,{signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Asset verification failed: '+path);const hash=await crypto.subtle.digest('SHA-256',await response.arrayBuffer());return [path,Array.from(new Uint8Array(hash),x=>x.toString(16).padStart(2,'0')).join('')];})))""", paths)
+            served = hashlib.sha256()
+            for file, relative in zip(files, paths):
+                assert received[relative] == sha(file), relative
+                served.update(relative.encode())
+                served.update(bytes.fromhex(received[relative]))
+            served_runtime_sha = served.hexdigest()
+            assert served_runtime_sha == runtime_sha
         expect(page.get_by_role('heading', name='Is Your Paycheck Correct?', exact=True)).to_be_visible()
         page.get_by_role('button', name='Backup', exact=True).click()
         before = read()
@@ -156,8 +202,9 @@ with sync_playwright() as pw:
         expect(page.locator('.answer')).to_have_text('USD 1000.00')
         assert read()['portableArchive']['document'] == result
         assert not errors, errors
+        assert not blocked_requests, blocked_requests
         assert tree_hash(True) == runtime_sha and tree_hash() == source_sha
-        report = {'passed': True, 'captureIteration': datetime.now(timezone.utc).isoformat(), 'browser': engine, 'browserVersion': browser.version, 'runtimeSHA256': runtime_sha, 'sourceHEAD': source_head, 'dirtyWebSourceAndTestsSHA256': source_sha, 'schemaSHA256': sha(ROOT / 'shared/contracts/portable-state/schema-v1.json'), 'providerManifest': str(CAPTURE), 'providerManifestSHA256': sha(CAPTURE), 'providerInputSHA256': sha(protected), 'providerPlaintextSHA256': sha(plaintext), 'download': str(retained), 'downloadSHA256': encrypted_sha, 'downloadPlaintext': str(retained_plain), 'downloadPlaintextSHA256': sha(retained_plain), 'sharedValidation': validation.stdout.strip(), 'syntheticPhrase': phrase, 'checks': ['protected raw fractional epoch refused before replacement preview; destination unchanged', 'actual iOS protected provider bytes uploaded; no reseal', 'inspect leaves destination unchanged until explicit replace', 'original two and fresh native USD1000 Needs review receipts frozen', 'unknown null+marker remains distinct from known-empty arrays', 'current A and selected future B remain distinct', 'actual browser encrypted download preserves all financial fields', 'shared verifier accepts resulting Web file', 'UI reimport and relaunch preserve the graph']}
+        report = {'passed': True, 'origin': origin, 'servedRuntimeSHA256': served_runtime_sha, 'remoteNetworkPolicy': 'Service workers blocked; only allowlisted same-origin static-asset GETs without body/query; browser file reads and encryption stay local' if remote_origin else 'Local origin', 'allowedAssetRequests': allowed_requests, 'blockedRequestCount': len(blocked_requests), 'captureIteration': datetime.now(timezone.utc).isoformat(), 'browser': engine, 'browserVersion': browser.version, 'runtimeSHA256': runtime_sha, 'sourceHEAD': source_head, 'dirtyWebSourceAndTestsSHA256': source_sha, 'schemaSHA256': sha(ROOT / 'shared/contracts/portable-state/schema-v1.json'), 'providerManifest': str(CAPTURE), 'providerManifestSHA256': sha(CAPTURE), 'providerInputSHA256': sha(protected), 'providerPlaintextSHA256': sha(plaintext), 'download': str(retained), 'downloadSHA256': encrypted_sha, 'downloadPlaintext': str(retained_plain), 'downloadPlaintextSHA256': sha(retained_plain), 'sharedValidation': validation.stdout.strip(), 'syntheticPhrase': phrase, 'checks': ['protected raw fractional epoch refused before replacement preview; destination unchanged', 'actual iOS protected provider bytes selected through local browser file input; exact provider bytes, no reseal', 'inspect leaves destination unchanged until explicit replace', 'original two and fresh native USD1000 Needs review receipts frozen', 'unknown null+marker remains distinct from known-empty arrays', 'current A and selected future B remain distinct', 'actual browser encrypted download preserves all financial fields', 'shared verifier accepts resulting Web file', 'UI reimport and relaunch preserve the graph']}
         retained.with_suffix('.manifest.json').write_text(json.dumps(report, indent=2) + '\n')
         (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps({'passed': True, 'browser': engine, 'download': str(retained), 'runtimeSHA256': runtime_sha}))
@@ -167,5 +214,6 @@ with sync_playwright() as pw:
         raise
     finally:
         browser.close()
-        server.shutdown()
-        server.server_close()
+        if server is not None:
+            server.shutdown()
+            server.server_close()

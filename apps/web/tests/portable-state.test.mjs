@@ -311,3 +311,29 @@ test('raw numeric tokens cannot round into admissible integer financial facts be
  assert.deepEqual(scalars,{integer:1792418400,zero:0,negative:-1,truth:true,falsity:false,unknown:null,decimal:longDecimal});
  for(const malformed of ['{"a":1,}','[1,]','{"a" 1}','[true false]','{"a":1}null','{"a":"unterminated}'])assert.throws(()=>parsePortableJSON(new TextEncoder().encode(malformed)));
 });
+
+
+test('portable timezone namespace rejects ambiguous abbreviations and wrong case before replacement',()=>{
+ const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));
+ for(const zone of ['PST','CST','IST','america/denver','utc']){
+  const invalid=structuredClone(doc);invalid.profiles[0].timeZone=zone;let constructed=false;
+  assert.throws(()=>readPortable(bytes(invalid),()=>{constructed=true;return emptyState();}));assert.equal(constructed,false);
+ }
+});
+test('official timezone aliases remain exact source strings through restore and re-export',()=>{
+ for(const zone of ['US/Mountain','America/Shiprock','Etc/UTC']){
+  const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));
+  const replace=value=>{if(!value || typeof value!=='object')return;for(const [key,child] of Object.entries(value)){if(key==='timeZone' && typeof child==='string')value[key]=zone;else replace(child);}};replace(doc);
+  const restored=validateState(readPortable(bytes(doc),emptyState));sameFinancial(exported(restored),doc);assert.equal(restored.portableArchive.document.profiles[0].timeZone,zone);
+ }
+});
+
+
+test('canonical timezone unavailable in native calendar refuses before destination construction',t=>{
+ const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json')),zone='America/Denver',destination=source(),before=structuredClone(destination),original=Intl.DateTimeFormat;
+ assert.ok(schema.$defs.timeZone.enum.includes(zone));doc.profiles[0].timeZone=zone;
+ t.mock.method(Intl,'DateTimeFormat',function(...args){if(args[1]?.timeZone===zone)throw new RangeError('Synthetic unavailable calendar zone');return new original(...args);});
+ let constructed=false;
+ assert.throws(()=>readPortable(bytes(doc),()=>{constructed=true;return destination;}),/This browser does not support a timezone in this transfer. No records were replaced./);
+ assert.equal(constructed,false);assert.deepEqual(destination,before);
+});

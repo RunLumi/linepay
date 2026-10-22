@@ -8,6 +8,7 @@
 - [Browser preview publication, October 19, 2026](evidence/web-2026-10-19.md)
 - [Browser v3 copy publication, October 19, 2026](evidence/web-v3-2026-10-19.md)
 - [Lineman Pay v3 copy deployment, October 21, 2026](evidence/web-v3-2026-10-21.md)
+- [Portable browser candidate staging, October 22, 2026](evidence/web-portable-staging-2026-10-22.md)
 - [Android Play release and signing recovery](android-play.md)
 - [Android 1.0.1 (2) review and internal update, October 19](evidence/android-1.0.1-2026-10-19.md)
 - [iOS 1.1.0 (12) internal TestFlight, October 20](evidence/ios-1.1.0-12-testflight-2026-10-20.md)

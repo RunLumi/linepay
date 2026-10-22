@@ -98,6 +98,11 @@ receipts, crew origins and follow-up records still block portable export. There 
 nothing; a separate replacement confirmation uses the existing revision-checked storage transaction.
 Destination activity and purchase state remain destination-owned.
 
+Portable timezone names must match the pinned shared namespace exactly. Import also requires the
+browser’s native calendar support for every retained timezone so period/date checks can run.
+The namespace does not guarantee that all 598 names work in every browser or that its timezone
+transition rules are current. An unavailable timezone refuses the entire transfer before replacement.
+
 A supported transfer restores usable native pay profiles, period facts and work entries. Historical
 source paycheck receipts are retained as typed, read-only evidence with exact producing engine, source
 facts, rule versions, calculation components and original verdict. They are never recalculated into a

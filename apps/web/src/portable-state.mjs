@@ -37,7 +37,7 @@ function shape(value, spec, path = 'transfer') {
 }
 const iso = epoch => new Date(epoch * 1000).toISOString().replace('.000Z','Z');
 function validDate(value) { need(new Date(value+'T00:00:00Z').toISOString().slice(0,10) === value, 'Invalid transfer calendar date.'); }
-function validZone(zone) { new Intl.DateTimeFormat('en',{timeZone:zone}); }
+function validZone(zone) { try { new Intl.DateTimeFormat('en',{timeZone:zone}); } catch { throw Error('This browser does not support a timezone in this transfer. No records were replaced.'); } }
 function compatibleNativeRule(rule,id) {
   if(!rule || rule.weeklyOvertime!==null)return null;
   try {const projected=nativeRule(rule,id);calculate([],projected);return projected;} catch {return null;}
