@@ -337,6 +337,7 @@ struct PaystubReviewView: View {
     @State private var errorMessage: String?
     @State private var isClosing = false
     @State private var selectedField: PaystubField?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     init(
         model: AppModel, subscriptionStore: SubscriptionStore, draft: PaystubConfirmationDraft,
         onConfirmed: @escaping () -> Void
@@ -462,6 +463,18 @@ struct PaystubReviewView: View {
                 TextField("What still needs checking?", text: $draft.notes, axis: .vertical)
                     .lineLimit(2...5)
             }
+            if dynamicTypeSize.isAccessibilitySize {
+                Section {
+                    if let errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline).foregroundStyle(LinePayColor.review)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Text(actionHint)
+                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
         .navigationTitle("Review paystub").navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedField) { field in
@@ -471,7 +484,7 @@ struct PaystubReviewView: View {
         .linePayKeyboardDismiss()
         .safeAreaInset(edge: .bottom, spacing: 0) {
             LinePayBottomBar {
-                if let errorMessage {
+                if !dynamicTypeSize.isAccessibilitySize, let errorMessage {
                     Label(errorMessage, systemImage: "exclamationmark.triangle")
                         .font(.subheadline)
                         .foregroundStyle(LinePayColor.review)
@@ -491,13 +504,14 @@ struct PaystubReviewView: View {
                 }
                 .disabled(!minimumConfirmed)
                 .accessibilityIdentifier("paystub.audit")
-                Text(actionHint)
-                    .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Text(actionHint)
+                        .font(.footnote).foregroundStyle(LinePayColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .onChange(of: draft) { _, value in
             guard !isClosing else { return }
@@ -658,7 +672,9 @@ struct PaystubReviewView: View {
     }
 
     /// Paystub amounts are in the pay profile's currency.
-    private var currency: String { model.profile?.agreement.hourlyRate.currencyCode ?? "USD" }
+    private var currency: String {
+        model.periodContext(id: draft.targetPeriodID)?.agreement.hourlyRate.currencyCode ?? "USD"
+    }
 
     private func fieldRow(_ field: PaystubField) -> some View {
         Button {
@@ -758,7 +774,8 @@ struct PaystubFieldReviewView: View {
                                 ? NumberEntry.hours(draft[field])
                                 : NumberEntry.amount(
                                     draft[field],
-                                    currencyCode: model.profile?.agreement.hourlyRate.currencyCode
+                                    currencyCode: model.periodContext(id: draft.targetPeriodID)?
+                                        .agreement.hourlyRate.currencyCode
                                         ?? "USD")
                         }
                         draft.reviewedFields.insert(field)

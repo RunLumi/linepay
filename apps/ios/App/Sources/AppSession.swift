@@ -66,6 +66,22 @@ final class AppSession {
         return try await io.create(state: state, sources: sources, password: password)
     }
 
+    func prepareFinancialTransfer(password: String) async throws -> Data {
+        guard !isBusy else { throw BackupError.operationInProgress }
+        isBusy = true
+        defer { isBusy = false }
+        guard model.persistenceIssue == nil else { throw BackupError.currentDataUnreadable }
+        let state = try store.load() ?? AppPersistentState()
+        try PortableStateMapping.inventory(state)
+        let sources = try BackupArchive.evidence(in: state).map { reference in
+            guard let url = evidenceStore.url(for: reference) else {
+                throw BackupError.missingEvidence
+            }
+            return BackupSource(id: reference.id, url: url)
+        }
+        return try await io.createPortable(state: state, sources: sources, password: password)
+    }
+
     func inspectBackup(at url: URL, password: String? = nil) async throws -> BackupArchive {
         guard !isBusy else { throw BackupError.operationInProgress }
         isBusy = true

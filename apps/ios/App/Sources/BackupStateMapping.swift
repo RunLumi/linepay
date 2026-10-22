@@ -10,7 +10,7 @@ extension AppPersistentState {
             + (agreementDocuments ?? []).map(\.evidence)
             + [benefitAuditDraft?.statementEvidence]
             + (benefitAudits ?? []).flatMap { $0.revisions.map { $0.input.statementEvidence } }
-        return originals.compactMap { $0 }
+        return originals.compactMap { $0 } + portableOriginals
     }
 
     /// Restore uses fresh physical filenames, without changing logical evidence or payroll facts.
@@ -26,6 +26,7 @@ extension AppPersistentState {
         -> AppPersistentState
     {
         var result = self
+        result.portableOriginals = portableOriginals.compactMap(transform)
         if var draft = result.benefitAuditDraft {
             draft.statementEvidence = draft.statementEvidence.flatMap(transform)
             result.benefitAuditDraft = draft

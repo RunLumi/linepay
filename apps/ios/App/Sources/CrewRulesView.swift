@@ -60,7 +60,7 @@ struct CrewRulesView: View {
                                     "Draft revision \(packet.revision) · confirmed for \(LinePayFormat.timeZoneName(origin.timeZoneIdentifier))"
                                 )
                                 Text(
-                                    "Worker-confirmed rate: \(LinePayFormat.money(origin.adoption.hourlyRate))/hour"
+                                    "Worker-confirmed rate: \(LinePayFormat.rate(origin.adoption.hourlyRate))/hour"
                                 )
                                 .monospacedDigit()
                                 Text(

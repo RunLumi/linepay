@@ -27,6 +27,10 @@ struct StartPayPeriodView: View {
                 Section {
                     if let profile = model.profile {
                         LabeledContent("Cadence", value: profile.preferredCadence.title)
+                    } else if model.importedFinancialEvidence != nil {
+                        Text(
+                            "The saved future default needs review. Review imported evidence and separately choose a confirmed future default before starting another period."
+                        )
                     }
                     DatePicker("Starts", selection: $startDate, displayedComponents: .date)
                         .accessibilityIdentifier("pay-period.start")
@@ -62,6 +66,7 @@ struct StartPayPeriodView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Start") { start() }
                         .fontWeight(.semibold)
+                        .disabled(model.profile == nil)
                 }
             }
         }

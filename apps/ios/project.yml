@@ -145,6 +145,8 @@ targets:
         buildPhase: resources
       - path: ../../shared/contracts/backup/encryption-v1.json
         buildPhase: resources
+      - path: AppTests/Resources/portable-common-weekly-pending.json
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay.uitests

@@ -5,7 +5,13 @@ struct PayProfileSetupView: View {
     let model: AppModel
     let showsIntro: Bool
     let onSaved: (() -> Void)?
+    let onPortableReviewed: ((PayProfileDraft, Set<String>, Bool) throws -> Void)?
+    let portableSource: PortableWorkSnapshot?
+    let portableInheritedScope: String
+    @State private var portableConfirmations = Set<String>()
+    @State private var portableMakeDefaultForFuture = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var draft: PayProfileDraft
     @State private var errorMessage: String?
     @State private var showingUnsupported = false
@@ -14,16 +20,24 @@ struct PayProfileSetupView: View {
     @State private var isClosing = false
     @FocusState private var editingField: String?
 
-    init(model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil) {
+    init(
+        model: AppModel, showsIntro: Bool = true, onSaved: (() -> Void)? = nil,
+        initialDraft: PayProfileDraft? = nil, portableSource: PortableWorkSnapshot? = nil,
+        portableInheritedScope: String = "",
+        onPortableReviewed: ((PayProfileDraft, Set<String>, Bool) throws -> Void)? = nil
+    ) {
         self.model = model
         self.showsIntro = showsIntro
         self.onSaved = onSaved
+        self.onPortableReviewed = onPortableReviewed
+        self.portableSource = portableSource
+        self.portableInheritedScope = portableInheritedScope
         _draft = State(
-            initialValue: model.setupDraft ?? model.profile.map {
+            initialValue: initialDraft ?? model.setupDraft ?? model.profile.map {
                 PayProfileDraft(profile: $0, activePeriod: model.activePeriod)
             } ?? PayProfileDraft())
     }
-    private var editing: Bool { model.profile != nil }
+    private var editing: Bool { model.profile != nil && onPortableReviewed == nil }
     private var currencySelection: Binding<String> {
         Binding(get: { draft.resolvedCurrencyCode }, set: { draft.currencyCode = $0 })
     }
@@ -116,13 +130,11 @@ struct PayProfileSetupView: View {
                 }
             }
         }
-        // Dense rule editing remains readable without allowing the largest Dynamic Type size
-        // to turn every field into a multi-line control. Reading/result screens keep full scale.
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .onAppear { model.localActivity.record(.profileStarted, once: .once) }
         .onChange(of: draft) { _, value in
+            portableConfirmations = []
             guard !isClosing else { return }
             do { try model.saveSetupDraft(value) } catch {
                 errorMessage =
@@ -188,8 +200,31 @@ struct PayProfileSetupView: View {
                 focus: $editingField, identifier: "pay-profile.hourly-rate"
             )
             .linePayNumberEntry()
-            Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
-                ForEach(timeZones, id: \.self) { Text(LinePayFormat.timeZoneName($0)).tag($0) }
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
+                    Text("Payroll timezone")
+                    Menu {
+                        Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
+                            ForEach(timeZones, id: \.self) {
+                                Text(LinePayFormat.timeZoneName($0)).tag($0)
+                            }
+                        }
+                    } label: {
+                        HStack(alignment: .top) {
+                            Text(LinePayFormat.timeZoneName(draft.timeZoneIdentifier))
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: LinePaySpacing.compact)
+                            Image(systemName: "chevron.up.chevron.down")
+                        }
+                    }
+                    .accessibilityLabel("Payroll timezone")
+                    .accessibilityValue(LinePayFormat.timeZoneName(draft.timeZoneIdentifier))
+                    .accessibilityIdentifier("pay-profile.selected-timezone")
+                }
+            } else {
+                Picker("Payroll timezone", selection: $draft.timeZoneIdentifier) {
+                    ForEach(timeZones, id: \.self) { Text(LinePayFormat.timeZoneName($0)).tag($0) }
+                }
             }
             LinePayTextField(
                 "Profile name", text: $draft.name, focus: $editingField,
@@ -424,6 +459,81 @@ struct PayProfileSetupView: View {
 
     @ViewBuilder private var review: some View {
         if let agreement = try? model.previewAgreement(draft) {
+            if let source = portableSource {
+                Section("Create a new native interpretation") {
+                    Text(
+                        "These are newly confirmed rules and copied work facts. Missing source facts remain missing in the original evidence. Original saved results will not be changed or recalculated."
+                    )
+                    if !portableInheritedScope.isEmpty {
+                        Label(
+                            "Unresolved weekly review stays attached to the new configuration. An equal gross total will still need review.",
+                            systemImage: "exclamationmark.triangle")
+                        DisclosureGroup("Source review references") {
+                            Text(portableInheritedScope).textSelection(.enabled)
+                        }
+                    }
+                    ForEach(source.work, id: \.id) { work in
+                        VStack(alignment: .leading) {
+                            Text(
+                                "\(work.startEpochSeconds)–\(work.endEpochSeconds) · \(work.timeZone)"
+                            ).monospacedDigit()
+                            Text("Work kind: " + work.kind)
+                            ForEach(work.unpaidBreaks, id: \.id) { rest in
+                                Text(
+                                    "Unpaid break: \(rest.startEpochSeconds)–\(rest.endEpochSeconds)"
+                                ).monospacedDigit()
+                            }
+                            Text(
+                                work.note
+                                    ?? "Source note was not recorded; the new copy will have a blank note."
+                            )
+                        }
+                    }
+                    portableCheck(
+                        "payRules",
+                        "I independently confirmed the base rate, currency, and the selected pay rules below"
+                    )
+                    portableCheck(
+                        "scheduleAndPremiums",
+                        "I confirmed the schedule, daily overtime, premiums, callout minimum, and per diem choices, including choices left off"
+                    )
+                    Picker("New rounding scale", selection: portableScale) {
+                        ForEach(0...8, id: \.self) { Text("\($0) decimal places").tag($0) }
+                    }
+                    Picker("New rounding mode", selection: portableMode) {
+                        Text("Half up").tag(MoneyRoundingMode.halfUp)
+                        Text("Ties to even").tag(MoneyRoundingMode.bankers)
+                        Text("Down").tag(MoneyRoundingMode.down)
+                        Text("Up").tag(MoneyRoundingMode.up)
+                    }
+                    Picker("New rounding scope", selection: portableScope) {
+                        Text("Once per pay category").tag(PayRoundingScope.payCategory)
+                        Text("Each legacy segment").tag(PayRoundingScope.legacySegments)
+                    }
+                    portableCheck(
+                        "rounding",
+                        "I independently confirmed this displayed rounding scale, mode, and scope for the new records"
+                    )
+                    portableCheck(
+                        "periodContext",
+                        "I confirmed the displayed new pay-period dates, cadence, and payroll timezone"
+                    )
+                    portableCheck(
+                        "workFacts",
+                        "I confirmed every displayed work interval, break, kind, and note for the new copies"
+                    )
+                    Toggle(
+                        "Also use these new rules as the default for future pay periods",
+                        isOn: $portableMakeDefaultForFuture
+                    )
+                    .accessibilityIdentifier("portable.future-default")
+                    Text(
+                        "This separate choice is off by default. Keeping it off preserves the transfer's saved future default, which may still need review before a new period can start."
+                    )
+                    .font(.footnote)
+
+                }
+            }
             Section("What LinePaycheck will calculate") {
                 AgreementSummaryView(agreement: agreement)
                 LabeledContent(
@@ -455,14 +565,22 @@ struct PayProfileSetupView: View {
                             }
                             .accessibilityIdentifier("pay-profile.scope.current")
                         } label: {
-                            HStack {
+                            let layout =
+                                dynamicTypeSize.isAccessibilitySize
+                                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                                : AnyLayout(HStackLayout(spacing: 12))
+                            layout {
                                 Text("Scope")
-                                Spacer()
-                                Text(editScopeTitle).foregroundStyle(LinePayColor.actionText)
-                                Image(systemName: "chevron.up.chevron.down")
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(LinePayColor.actionText)
+                                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(editScopeTitle)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.footnote.weight(.semibold))
+                                }
+                                .foregroundStyle(LinePayColor.actionText)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .frame(minHeight: 44)
                             .contentShape(Rectangle())
                         }
@@ -488,9 +606,9 @@ struct PayProfileSetupView: View {
                         DisclosureGroup("Previous current-period rules") {
                             AgreementSummaryView(agreement: old)
                         }
-                        LabeledContent("Current rate", value: LinePayFormat.money(old.hourlyRate))
+                        LabeledContent("Current rate", value: LinePayFormat.rate(old.hourlyRate))
                         LabeledContent(
-                            "Reviewed rate", value: LinePayFormat.money(agreement.hourlyRate))
+                            "Reviewed rate", value: LinePayFormat.rate(agreement.hourlyRate))
                     }
                     Text(changeExplanation)
                         .accessibilityIdentifier("pay-profile.scope-explanation")
@@ -560,13 +678,65 @@ struct PayProfileSetupView: View {
     private func commitProfile() {
         do {
             isClosing = true
-            try model.saveProfile(draft, scope: selectedScope)
+            if let onPortableReviewed {
+                guard portableConfirmations == PortableNativeAdoption.requiredFields else {
+                    throw AppModelError.invalidField(
+                        "Independently review each material choice before adopting copied work")
+                }
+                var confirmed = draft
+                confirmed.roundingRule = portableRounding
+                try onPortableReviewed(
+                    confirmed, portableConfirmations, portableMakeDefaultForFuture)
+            } else {
+                try model.saveProfile(draft, scope: selectedScope)
+            }
             onSaved?()
             if onSaved == nil { dismiss() }
         } catch {
             isClosing = false
             errorMessage = error.localizedDescription
         }
+    }
+
+    private var portableRounding: MoneyRoundingRule { draft.roundingRule ?? MoneyRoundingRule() }
+    private var portableScale: Binding<Int> {
+        Binding(
+            get: { portableRounding.scale },
+            set: {
+                draft.roundingRule = MoneyRoundingRule(
+                    scale: $0, mode: portableRounding.mode, scope: portableRounding.scope)
+            })
+    }
+    private var portableMode: Binding<MoneyRoundingMode> {
+        Binding(
+            get: { portableRounding.mode },
+            set: {
+                draft.roundingRule = MoneyRoundingRule(
+                    scale: portableRounding.scale, mode: $0, scope: portableRounding.scope)
+            })
+    }
+    private var portableScope: Binding<PayRoundingScope> {
+        Binding(
+            get: { portableRounding.scope },
+            set: {
+                draft.roundingRule = MoneyRoundingRule(
+                    scale: portableRounding.scale, mode: portableRounding.mode, scope: $0)
+            })
+    }
+
+    private func portableCheck(_ key: String, _ title: String) -> some View {
+        ConfirmationCheckRow(
+            title,
+            isOn: Binding(
+                get: { portableConfirmations.contains(key) },
+                set: { value in
+                    if value {
+                        portableConfirmations.insert(key)
+                    } else {
+                        portableConfirmations.remove(key)
+                    }
+                })
+        ).accessibilityIdentifier("portable.confirm." + key)
     }
 
     private var stepPurpose: String {
@@ -658,7 +828,7 @@ struct PayProfileSetupView: View {
 struct AgreementSummaryView: View {
     let agreement: AgreementSnapshot
     var body: some View {
-        LabeledContent("Base rate", value: "\(LinePayFormat.money(agreement.hourlyRate))/hr")
+        LabeledContent("Base rate", value: "\(LinePayFormat.rate(agreement.hourlyRate))/hr")
         ForEach(Array(agreement.dailyOvertimeTiers.enumerated()), id: \.offset) { _, tier in
             LabeledContent(
                 "Daily overtime after \(LinePayFormat.hours(tier.afterHours)) h",

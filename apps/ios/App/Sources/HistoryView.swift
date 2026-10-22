@@ -8,6 +8,14 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let imported = model.importedFinancialEvidence {
+                    Section {
+                        NavigationLink("Imported financial evidence") {
+                            PortableReceiptEvidenceView(state: imported, model: model)
+                        }
+                        .accessibilityIdentifier("history.imported-evidence")
+                    }
+                }
                 if model.history.isEmpty {
                     Section {
                         Text("No finished work periods yet").font(.title2.bold())

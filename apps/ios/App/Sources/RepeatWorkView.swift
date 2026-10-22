@@ -247,6 +247,7 @@ struct RepeatWorkView: View {
                             axis: .vertical
                         )
                         .lineLimit(1...5)
+                        .accessibilityIdentifier("repeat.note")
                     }
                 }
 
@@ -334,7 +335,6 @@ struct RepeatWorkView: View {
                 }
             }
         }
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .interactiveDismissDisabled()

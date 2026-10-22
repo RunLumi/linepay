@@ -1,0 +1,251 @@
+{
+  "cases": [
+    {
+      "id": "unknown-property",
+      "expectedCode": "schema.additionalProperties",
+      "operations": [
+        {
+          "op": "add",
+          "path": "/unrecognizedFinancialBlob",
+          "value": {}
+        }
+      ]
+    },
+    {
+      "id": "unsupported-record-in-inventory",
+      "expectedCode": "inventory.unsupportedRecords",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/sourceInventory/unsupportedFinancialRecordKinds",
+          "value": [
+            "benefitReceipt"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wrong-inventory-count",
+      "expectedCode": "inventory.countMismatch",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/sourceInventory/workEntryCount",
+          "value": 9
+        }
+      ]
+    },
+    {
+      "id": "dangling-work-snapshot",
+      "expectedCode": "reference.danglingWorkSnapshot",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/workSnapshotRef",
+          "value": "missing-snapshot"
+        }
+      ]
+    },
+    {
+      "id": "dangling-component-reference",
+      "expectedCode": "reference.danglingComponent",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/assessment/comparisons/0/componentRefs/0",
+          "value": "missing-component"
+        }
+      ]
+    },
+    {
+      "id": "financial-decimal-exponent",
+      "expectedCode": "schema.anyOf",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/calculation/components/0/workedSeconds",
+          "value": "2.88e4"
+        }
+      ]
+    },
+    {
+      "id": "financial-decimal-fraction-over-bound",
+      "expectedCode": "schema.anyOf",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/calculation/components/0/workedSeconds",
+          "value": "1.111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    },
+    {
+      "id": "not-recorded-marker-contradiction",
+      "expectedCode": "source.markerContradiction",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/profiles/0/fieldsNotRecorded/0",
+          "value": "cadence"
+        }
+      ]
+    },
+    {
+      "id": "marked-unknown-array-must-be-null",
+      "expectedCode": "source.markerContradiction",
+      "operations": [
+        {
+          "op": "add",
+          "path": "/paycheckReceipts/0/assessment/fieldsNotRecorded/-",
+          "value": "weeklyReviewRefs"
+        }
+      ]
+    },
+    {
+      "id": "work-range-reversed",
+      "expectedCode": "time.invalidWorkRange",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/workSnapshots/0/work/0/endEpochSeconds",
+          "value": 1792418400
+        }
+      ]
+    },
+    {
+      "id": "period-end-date-disagrees",
+      "expectedCode": "time.inclusiveEndMismatch",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/periods/0/calendarWindow/endExclusiveDate",
+          "value": "2026-10-27"
+        },
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/targetWindow/endExclusiveDate",
+          "value": "2026-10-27"
+        }
+      ]
+    },
+    {
+      "id": "assessment-period-mismatch",
+      "expectedCode": "receipt.periodMatchContradiction",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/assessment/reportedPeriod/startDate",
+          "value": "2026-10-20"
+        }
+      ]
+    },
+    {
+      "id": "weekly-pending-erased-by-match",
+      "expectedCode": "receipt.pendingWeeklyLost",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/paycheckReceipts/0/assessment/verdict",
+          "value": "matches"
+        }
+      ]
+    },
+    {
+      "id": "corrupt-original-digest",
+      "baseFixture": "attachment-valid.json",
+      "expectedCode": "attachment.hashMismatch",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/attachments/0/sha256",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    {
+      "id": "invalid-original-base64",
+      "baseFixture": "attachment-valid.json",
+      "expectedCode": "attachment.invalidBase64",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/attachments/0/bytesBase64",
+          "value": "not base64!"
+        }
+      ]
+    },
+    {
+      "id": "web-original-attachment-refusal",
+      "baseFixture": "attachment-valid.json",
+      "target": "web",
+      "expectedCode": "target.attachmentsUnsupported",
+      "operations": []
+    },
+    {
+      "id": "android-original-attachment-refusal",
+      "baseFixture": "attachment-valid.json",
+      "target": "android",
+      "expectedCode": "target.attachmentsUnsupported",
+      "operations": []
+    },
+    {
+      "id": "android-callout-activation-review",
+      "target": "android",
+      "expectedCode": "activation.workKindNeedsReview",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/workSnapshots/0/work/0/kind",
+          "value": "callout"
+        }
+      ],
+      "activationReview": true
+    },
+    {
+      "id": "web-date-premium-activation-review",
+      "target": "web",
+      "expectedCode": "activation.ruleFeatureNeedsReview",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/ruleSnapshots/0/datePremiums",
+          "value": [
+            {
+              "date": "2026-10-21",
+              "multiplier": "2"
+            }
+          ]
+        }
+      ],
+      "activationReview": true
+    },
+    {
+      "id": "generic-adoption-checkbox-label",
+      "baseFixture": "adoption-after.json",
+      "expectedCode": "schema.enum",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/adoptions/0/confirmedFields/0",
+          "value": "configuredSubset"
+        }
+      ]
+    },
+    {
+      "id": "multiple-known-current-periods-refusal",
+      "baseFixture": "adoption-after.json",
+      "expectedCode": "period.multipleCurrent",
+      "operations": [
+        {
+          "op": "remove",
+          "path": "/periods/0/fieldsNotRecorded/5"
+        },
+        {
+          "op": "replace",
+          "path": "/periods/0/isCurrent",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

@@ -295,7 +295,7 @@ struct ClosedWorkRevision: Codable, Hashable, Sendable {
 }
 
 struct AppPersistentState: Codable, Hashable, Sendable {
-    static let currentSchemaVersion = 11
+    static let currentSchemaVersion = 12
     var schemaVersion = Self.currentSchemaVersion
     var profile: PayProfile?
     var activePeriod: ActivePayPeriod?
@@ -311,6 +311,11 @@ struct AppPersistentState: Codable, Hashable, Sendable {
     var workDraft: WorkDraft?
     var paystubDraft: PaystubConfirmationDraft?
     var pendingEvidenceDeletions: [PaystubEvidence] = []
+    var portableAdoptions: [PortableNativeAdoption] = []
+    var portableOriginals: [PaystubEvidence] = []
+    var portableCurrentProfile: PortableCurrentProfile?
+    var portableFinancialState: PortableState?
+    var portableIdentityCrosswalk: [PortableLocalIdentity] = []
 
     init() {}
 
@@ -328,7 +333,8 @@ struct AppPersistentState: Codable, Hashable, Sendable {
             agreementDocuments, benefitAudits, benefitAuditDraft
         case setupDraft, workDraft, paystubDraft, pendingEvidenceDeletions
         case onboardingProgress
-        case crewRuleOrigins
+        case crewRuleOrigins, portableFinancialState, portableIdentityCrosswalk, portableOriginals,
+            portableAdoptions, portableCurrentProfile
     }
 
     init(from decoder: any Decoder) throws {
@@ -337,7 +343,19 @@ struct AppPersistentState: Codable, Hashable, Sendable {
         guard (1...Self.currentSchemaVersion).contains(version) else {
             throw LocalStateStoreError.unsupportedSchema(version)
         }
-        // V1–v10 admission preserves recorded calculations and comparison versions unchanged.
+        portableCurrentProfile = try values.decodeIfPresent(
+            PortableCurrentProfile.self, forKey: .portableCurrentProfile)
+        portableAdoptions =
+            try values.decodeIfPresent([PortableNativeAdoption].self, forKey: .portableAdoptions)
+            ?? []
+        portableOriginals =
+            try values.decodeIfPresent([PaystubEvidence].self, forKey: .portableOriginals) ?? []
+        portableFinancialState = try values.decodeIfPresent(
+            PortableState.self, forKey: .portableFinancialState)
+        portableIdentityCrosswalk =
+            try values.decodeIfPresent(
+                [PortableLocalIdentity].self, forKey: .portableIdentityCrosswalk) ?? []
+        // V1–v11 admission preserves recorded calculations and comparison versions unchanged.
         schemaVersion = Self.currentSchemaVersion
         crewRuleOrigins = try values.decodeIfPresent(
             [CrewRuleOrigin].self, forKey: .crewRuleOrigins)

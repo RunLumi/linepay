@@ -14,7 +14,19 @@ final class LocalActivityJourneyTests: XCTestCase {
         let recording = app.switches["activity.recording"].firstMatch
         reveal(recording)
         XCTAssertEqual(recording.value as? String, "1")
-        recording.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertTrue(recording.isHittable)
+        // This native Toggle exposes the combined row, whose center misses its glyph.
+        // Retained video and AX geometry locate the 51-by-31 switch at the leading inset
+        // below its label on the approved device. Tap that measured control region.
+        let row = recording.frame
+        XCTAssertGreaterThan(row.height, 60)
+        let glyph = CGRect(x: row.minX + 20, y: row.maxY - 42, width: 51, height: 31)
+        XCTAssertTrue(row.contains(glyph))
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: glyph.midX, dy: glyph.midY)).tap()
+        let disabled = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "0"), object: recording)
+        XCTAssertEqual(XCTWaiter.wait(for: [disabled], timeout: 10), .completed)
         XCTAssertEqual(recording.value as? String, "0")
         tap("activity.preview")
         XCTAssertTrue(app.navigationBars["Review local diagnostics"].waitForExistence(timeout: 10))

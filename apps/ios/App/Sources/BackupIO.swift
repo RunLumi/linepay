@@ -9,10 +9,18 @@ struct BackupSource: Sendable {
 protocol BackupHandling: Sendable {
     func create(state: AppPersistentState, sources: [BackupSource], password: String?) async throws
         -> Data
+    func createPortable(state: AppPersistentState, sources: [BackupSource], password: String)
+        async throws -> Data
     func open(_ url: URL, password: String?) async throws -> BackupArchive
 }
 
 extension BackupHandling {
+    func createPortable(state: AppPersistentState, sources: [BackupSource], password: String)
+        async throws -> Data
+    {
+        throw BackupError.portableUnsupported(
+            "Financial transfers are unavailable from this storage adapter.")
+    }
     func create(state: AppPersistentState, sources: [BackupSource]) async throws -> Data {
         try await create(state: state, sources: sources, password: nil)
     }
@@ -42,6 +50,19 @@ actor BackupIO: BackupHandling {
         return try archive.encoded()
     }
 
+    func createPortable(state: AppPersistentState, sources: [BackupSource], password: String) throws
+        -> Data
+    {
+        try BackupEncryption.validateNewPassword(password)
+        let files = try sources.map { source in
+            BackupArchive.EvidenceFile(
+                id: source.id,
+                bytes: try Self.readBounded(source.url, limit: BackupArchive.maximumEvidenceBytes))
+        }
+        let portable = try PortableStateMapping.export(state, files: files)
+        return try BackupEncryption.seal(PortableStateCodec.encode(portable), password: password)
+    }
+
     func open(_ url: URL, password: String?) throws -> BackupArchive {
         guard url.isFileURL else { throw BackupError.unavailableFile }
         let accessed = url.startAccessingSecurityScopedResource()
@@ -63,7 +84,13 @@ actor BackupIO: BackupHandling {
         if BackupEncryption.isEncrypted(bytes) {
             let plaintext = try BackupEncryption.open(bytes, password: password)
             try Task.checkCancellation()
-            var archive = try BackupArchive.decodePortable(plaintext)
+            let header = try? JSONSerialization.jsonObject(with: plaintext) as? [String: Any]
+            var archive: BackupArchive
+            if header?["format"] as? String == PortableStateCodec.format {
+                archive = try PortableStateMapping.archive(PortableStateCodec.decode(plaintext))
+            } else {
+                archive = try BackupArchive.decodePortable(plaintext)
+            }
             archive.wasPasswordProtected = true
             return archive
         }

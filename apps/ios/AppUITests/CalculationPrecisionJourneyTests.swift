@@ -2,6 +2,40 @@ import XCTest
 
 @MainActor
 final class CalculationPrecisionJourneyTests: XCTestCase {
+    func testSavedFractionalRateRemainsExactInLedgerAndRules() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "fractional-rate"
+        app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
+        app.launch()
+        XCTAssertTrue(app.staticTexts["$400.04"].firstMatch.waitForExistence(timeout: 15))
+        app.tabBars.buttons["Pay"].tap()
+        let formula = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS %@", "at USD 50.005/h")
+        ).firstMatch
+        for _ in 0..<8 {
+            if formula.exists && formula.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(formula.exists && formula.isHittable)
+        let ledger = XCTAttachment(screenshot: app.screenshot())
+        ledger.name = "fractional-hourly-rate-exact-ledger"
+        ledger.lifetime = .keepAlways
+        add(ledger)
+        app.tabBars.buttons["Settings"].tap()
+        app.buttons["Pay profile: SAMPLE - synthetic work"].tap()
+        XCTAssertTrue(
+            app.staticTexts["Base rate, USD 50.005/hr"].firstMatch.waitForExistence(timeout: 10))
+        let rules = XCTAttachment(screenshot: app.screenshot())
+        rules.name = "fractional-hourly-rate-exact-rules"
+        rules.lifetime = .keepAlways
+        add(rules)
+    }
+
     func testMinuteWorkReachesTheCorrectCentThroughExplicitWorkReview() throws {
         continueAfterFailure = false
         let app = XCUIApplication()

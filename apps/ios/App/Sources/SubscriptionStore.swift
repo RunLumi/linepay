@@ -32,6 +32,17 @@ final class SubscriptionStore {
     @ObservationIgnored private var transactionTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
     @ObservationIgnored private var refreshGeneration = 0
+    @ObservationIgnored private var detailEntitlementIDs: Set<String> = []
+    @ObservationIgnored private let subscriptionDetailsLoader:
+        (@MainActor ([Product], Bool) async -> SubscriptionDetails)?
+
+    struct SubscriptionDetails: Sendable {
+        var notice: String?
+        var renewalDate: Date?
+        var willAutoRenew: Bool?
+        var isTrial = false
+        var activity: [(LocalMilestone, UInt64)] = []
+    }
     @ObservationIgnored private let operations: SubscriptionOperations
     @ObservationIgnored private let observesStoreKit: Bool
     @ObservationIgnored private var fixturePlans: [ProPlan]?
@@ -39,7 +50,9 @@ final class SubscriptionStore {
     init(
         commerceEnabled: Bool? = nil,
         productLoader: (@MainActor ([String]) async throws -> [Product])? = nil,
-        operations: SubscriptionOperations? = nil
+        operations: SubscriptionOperations? = nil,
+        subscriptionDetailsLoader: (@MainActor ([Product], Bool) async -> SubscriptionDetails)? =
+            nil
     ) {
         #if DEBUG
             purchasingEnabled = commerceEnabled ?? Self.commerceEnabled
@@ -51,6 +64,7 @@ final class SubscriptionStore {
             selected.loadProducts = { try await productLoader(Self.productIDs) }
         }
         self.operations = selected
+        self.subscriptionDetailsLoader = subscriptionDetailsLoader
         observesStoreKit = operations == nil
     }
     static func production() -> SubscriptionStore {
@@ -158,20 +172,51 @@ final class SubscriptionStore {
         refreshGeneration += 1
         let generation = refreshGeneration
         let identifiers = await operations.entitlementIDs()
-        let entitled = !identifiers.isDisjoint(with: Self.productIDs)
+        let proIdentifiers = identifiers.intersection(Self.productIDs)
+        let entitled = !proIdentifiers.isEmpty
         guard generation == refreshGeneration else { return }
         isPro = entitled
         hasCheckedEntitlements = true
-        // Never reject an entitlement just because its paid period expired: StoreKit includes grace.
-        notice = nil
-        renewalDate = nil
-        willAutoRenew = nil
-        isTrial = false
+        // Revoke access immediately, and never show a prior subscription's billing details.
+        if !entitled || detailEntitlementIDs != proIdentifiers {
+            publishDetails(SubscriptionDetails())
+        }
+        // Keep the last complete same-subscription details while StoreKit suspends. A newer
+        // refresh may supersede this one; only its complete result may replace that snapshot.
+        let details: SubscriptionDetails
+        if let subscriptionDetailsLoader {
+            details = await subscriptionDetailsLoader(products, entitled)
+        } else {
+            details = await Self.loadSubscriptionDetails(products: products, entitled: entitled)
+        }
+        guard generation == refreshGeneration else { return }
+        publishDetails(details)
+        detailEntitlementIDs = proIdentifiers
+        for (milestone, transactionID) in details.activity {
+            localActivity?.record(milestone, once: .transaction(transactionID))
+        }
+        // Only once Apple's signed status is known: a reminder about a trial that will no longer
+        // bill (cancelled, or already converted) is noise.
+        if observesStoreKit, renewalDate != nil, willAutoRenew == false || !isTrial {
+            TrialReminder.cancel()
+        }
+    }
+
+    private func publishDetails(_ details: SubscriptionDetails) {
+        notice = details.notice
+        renewalDate = details.renewalDate
+        willAutoRenew = details.willAutoRenew
+        isTrial = details.isTrial
+    }
+
+    private static func loadSubscriptionDetails(products: [Product], entitled: Bool) async
+        -> SubscriptionDetails
+    {
+        var details = SubscriptionDetails()
         for product in products {
             guard let subscription = product.subscription,
                 let statuses = try? await subscription.status
             else { continue }
-            guard generation == refreshGeneration else { return }
             for status in statuses {
                 guard case .verified(let renewal) = status.renewalInfo,
                     case .verified(let transaction) = status.transaction,
@@ -180,15 +225,13 @@ final class SubscriptionStore {
                 if entitled, transaction.revocationDate == nil, !transaction.isUpgraded,
                     status.state == .subscribed || status.state == .inGracePeriod
                 {
-                    renewalDate = transaction.expirationDate
-                    willAutoRenew = renewal.willAutoRenew
-                    isTrial = transaction.offer?.paymentMode == .freeTrial
-                    if isTrial {
-                        localActivity?.record(
-                            .verifiedTrialObserved, once: .transaction(transaction.id))
+                    details.renewalDate = transaction.expirationDate
+                    details.willAutoRenew = renewal.willAutoRenew
+                    details.isTrial = transaction.offer?.paymentMode == .freeTrial
+                    if details.isTrial {
+                        details.activity.append((.verifiedTrialObserved, transaction.id))
                     } else if let price = transaction.price, price > 0 {
-                        localActivity?.record(
-                            .verifiedPaidObserved, once: .transaction(transaction.id))
+                        details.activity.append((.verifiedPaidObserved, transaction.id))
                     }
                 }
                 // The verified subscription state is the source of truth for grace. The
@@ -196,24 +239,21 @@ final class SubscriptionStore {
                 // StoreKit test device, so do not suppress the user-facing notice while
                 // Apple's signed status is already in grace.
                 if status.state == .inGracePeriod {
-                    notice =
+                    details.notice =
                         "Pro remains active during Apple's billing grace period. Review payment details in your App Store account."
                 } else if renewal.isInBillingRetry && !entitled {
-                    notice =
+                    details.notice =
                         "Apple is retrying subscription payment. Existing records remain available."
                 } else if status.state == .expired && !entitled {
-                    notice = "Pro has expired. Existing audits and work records remain available."
+                    details.notice =
+                        "Pro has expired. Existing audits and work records remain available."
                 } else if status.state == .revoked && !entitled {
-                    notice =
+                    details.notice =
                         "The App Store entitlement is no longer active. Existing records remain available."
                 }
             }
         }
-        // Only once Apple's signed status is known: a reminder about a trial that will no longer
-        // bill (cancelled, or already converted) is noise.
-        if observesStoreKit, renewalDate != nil, willAutoRenew == false || !isTrial {
-            TrialReminder.cancel()
-        }
+        return details
     }
 
     func purchase(_ product: Product) async -> Bool {

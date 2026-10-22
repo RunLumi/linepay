@@ -34,11 +34,28 @@ struct BackupArchive: Sendable {
     var wasPasswordProtected = false
 
     var workCount: Int {
-        (state.activePeriod?.workEntries.count ?? 0)
+        if let imported = state.portableFinancialState {
+            let known = Set(
+                state.portableIdentityCrosswalk.filter { $0.entityType == "workEntry" }.map(
+                    \.localID))
+            let newWork =
+                (state.activePeriod?.workEntries ?? []) + state.history.flatMap(\.workEntries)
+            return Int(imported.sourceInventory.workEntryCount)
+                + newWork.filter { !known.contains($0.id) }.count
+        }
+        return (state.activePeriod?.workEntries.count ?? 0)
             + state.history.reduce(0) { $0 + $1.workEntries.count }
     }
 
-    var periodCount: Int { state.history.count + (state.activePeriod == nil ? 0 : 1) }
+    var periodCount: Int {
+        let native = state.history.map(\.id) + [state.activePeriod?.id].compactMap { $0 }
+        if let imported = state.portableFinancialState {
+            let known = Set(
+                state.portableIdentityCrosswalk.filter { $0.entityType == "period" }.map(\.localID))
+            return imported.periods.count + native.filter { !known.contains($0) }.count
+        }
+        return native.count
+    }
 
     func validate() throws {
         guard createdAt.timeIntervalSince1970.isFinite else { throw BackupError.invalidArchive }
@@ -130,6 +147,7 @@ struct BackupArchive: Sendable {
             Set(files.map(\.id)).count == files.count,
             Set(files.map(\.id)) == Set(references.map(\.id))
         else { throw BackupError.missingEvidence }
+        try PortableStateMapping.validateOriginals(state, files: files)
         var total = 0
         for file in files {
             guard !file.bytes.isEmpty, file.bytes.count <= maximumEvidenceBytes else {
@@ -142,7 +160,9 @@ struct BackupArchive: Sendable {
         guard Set(ids).count == ids.count, ids.count <= 2_000 else {
             throw BackupError.invalidArchive
         }
-        guard state.profile != nil || ids.isEmpty else { throw BackupError.invalidArchive }
+        guard state.profile != nil || ids.isEmpty || state.portableCurrentProfile != nil else {
+            throw BackupError.invalidArchive
+        }
         if let zone = state.profile?.timeZoneIdentifier, TimeZone(identifier: zone) == nil {
             throw BackupError.invalidArchive
         }
@@ -283,6 +303,7 @@ struct BackupArchive: Sendable {
 }
 
 enum BackupError: LocalizedError, Equatable {
+    case portableUnsupported(String)
     case passwordRequired, passwordRejected, passwordPolicy, encryptionFailed
     case operationInProgress
     case tooLarge
@@ -297,6 +318,8 @@ enum BackupError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
+        case .portableUnsupported(let reason):
+            "This financial transfer cannot be completed: \(reason) No records were changed or exported."
         case .passwordRequired:
             "This backup is password-protected. Enter its password to unlock it before reviewing or replacing data."
         case .passwordRejected:

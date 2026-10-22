@@ -12,6 +12,8 @@ In **Review paystub**, check **Pay period starts** and **Pay period ends** again
 
 {{< screenshot "paystub-review" >}}
 
+In the v2 portable-transfer candidate, paycheck amount entry uses the selected period's currency, which can differ from the saved default for future periods. Check that period context before entering values.
+
 The period dates must match the selected work period. Use the paycheck’s **current-period gross**, not year-to-date earnings, net pay, an hourly rate, or a bank deposit.
 
 The compare action stays unavailable until the dates and gross pay are confirmed. Editing a previously confirmed value removes its confirmation; confirm it again after correcting it.
@@ -34,7 +36,7 @@ Turn on **My work log covers this whole pay period** only after checking the com
 
 Under **What does the gross pay include?**, choose the confirmed **Gross basis**: wages only, or wages including the per diem represented in the ledger. Leave it unconfirmed when you do not know. See [gross and earnings layouts]({{< relref "/paystub-layouts" >}}) before guessing.
 
-Without complete work or a known gross basis, the action becomes **Save without comparing**, and the bar above it names exactly what is still missing. This preserves a limited record instead of presenting an unsupported full-paycheck difference. It does not consume the first comparable Free audit.
+Without complete work or a known gross basis, the action becomes **Save without comparing**, and the guidance names exactly what is still missing. In the v2 candidate at accessibility text sizes, scroll below **Note** to read this guidance and any save error; the save action remains at the bottom of the screen. This preserves a limited record instead of presenting an unsupported full-paycheck difference. It does not consume the first comparable Free audit.
 
 ## Review optional lines
 

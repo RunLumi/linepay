@@ -58,3 +58,9 @@ If original-file cleanup remains pending, use **Privacy and local data → Retry
 Check the Apple account and subscription state. Use **Restore Purchases** to refresh access. Pending approval, expiration, billing retry, or revoked access are not the same as an active verified subscription. An App Store product-loading failure should not make existing local records disappear.
 
 For unresolved problems, [send a focused support request]({{< relref "/support" >}}) with the app version, iOS version, affected action, and a redacted example. Do not include passwords or unredacted wage documents.
+
+## Portable transfer problems in the v2 candidate
+
+If **Export portable financial records** is unavailable, enable password protection and complete the password checks. A refusal naming unsupported saved records means the whole transfer was stopped; use a complete iPhone backup to preserve them. Do not discard evidence to obtain an export. A destination that cannot retain originals or represent the file's records can also refuse it.
+
+After restore, read-only imported evidence is not a failed recalculation. Review the original scope and missing facts, then use the explicit new-configuration flow if offered. Check **Current workspace rules** separately from **Future default** in Settings. An unresolved future default may prevent a new period even while the current workspace remains usable.

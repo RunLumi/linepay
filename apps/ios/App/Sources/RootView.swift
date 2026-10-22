@@ -18,6 +18,8 @@ struct RootView: View {
                 } else {
                     MainTabView(model: model, subscriptionStore: subscriptionStore)
                 }
+            } else if let imported = model.importedFinancialEvidence {
+                PortableImportedLandingView(model: model, state: imported)
             } else {
                 OnboardingFlowView(model: model) {}
             }

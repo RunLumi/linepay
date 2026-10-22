@@ -28,7 +28,8 @@ Paths below are relative to the repository root. These notes are outside `conten
 | Pay rules; weekly review; dated changes; expected pay | `PayProfileSetupView.swift`, `PayLedgerView.swift`, `WeeklyOvertimeReviewView.swift`, `AuditDetailView.swift`; domain `PayCalculator.swift`, `AgreementTimeline.swift`, `WeeklyRegularRate.swift`, `WeeklyRecordedWork.swift`, `PaycheckAssessment.swift`; root `AGENTS.md` |
 | Imports; confirmation; layouts | `PaystubImportView.swift` (includes the review and field-editor views); domain `PaycheckAssessment.swift` |
 | Audit results; evidence; reports | `AuditDetailView.swift`, `AuditStatusView.swift`, `PaycheckResolutionView.swift`, `PaycheckResolution.swift`, `ReconciliationReportExporter.swift`, `ReportSharingView.swift`, `AppState.swift`, `AppStateValidation.swift`, domain `PaycheckAssessment.swift` |
-| Backup; data; deletion | `BackupRestoreView.swift`, `SettingsView.swift`, `HistoryView.swift` |
+| Backup; data; deletion | `BackupRestoreView.swift`, `BackupArchive.swift`, `BackupStateMapping.swift`, `BackupIO.swift`, `AppSession.swift`, `SettingsView.swift`, `HistoryView.swift` |
+| Portable financial transfer; frozen imported evidence; explicit adoption | `PortableStateMapping.swift`, `NativePortableStateWriter.swift`, `PortableReceiptEvidenceView.swift`, `PortableAdoptionSetupView.swift`, `PayProfileSetupView.swift`; shared portable-state contract reviewed as a boundary, not runtime evidence |
 | Pro and billing | `SubscriptionStore.swift`, `SettingsView.swift`, `AuditDetailView.swift`, `docs/pricing.md` |
 | Support addresses | `apps/ios/App/Sources/AppLinks.swift` |
 
@@ -48,7 +49,7 @@ The machine-readable form of this map is [`source-review.json`](source-review.js
 - Current statuses are `No difference within compared items`, `No difference within compared items: gross total only`, `Unable to verify`, `Possible difference: paystub is lower`, `Possible difference: paystub is higher`, `Needs review`, and `Not compared yet`, with `Awaiting paycheck` as a history/workflow state.
 - Numeric guidance follows the field UI: amounts use the iPhone region's decimal separator (`58.40` or `58,40`), a lone `58.40` is accepted in comma regions, and whole-đồng amounts take no decimals. Money is in the profile's fixed pay currency (USD, CAD or VND).
 - `New rules from a date` is described using the explicit dated-timeline contract. The complete rule-change UX is tracked separately and must be re-reviewed under #15/#60.
-- Backup is manual, not live sync; it replaces rather than merges; it is not password-encrypted by the app. Restore Purchases is separate. JSON/PDF exports are not the complete backup format.
+- Backup is manual, not live sync, and replaces rather than merges. The v2 candidate offers optional password protection for complete native backups and requires protection for separate portable financial transfers. Restore Purchases is separate. JSON/PDF exports and portable transfers are not complete native backups.
 - Repeat Shift copies payroll-local wall-clock facts for the shift and every recorded break. A repeated DST fold requires an explicit occurrence choice; a nonexistent local time requires manual fact review; unresolved copies cannot be saved. The ordinary Add Work editor no longer owns a template-copy API.
 - Callout iOS 1.0 uses **one saved Callout row per confirmed physical callout event**. Adjacent continuation is explicitly merged; a separate adjacent event requires explicit confirmation. The row count itself must not silently decide a minimum entitlement, and legacy rows without event identity remain reviewable rather than auto-grouped.
 - Do not claim source verification, universal agreement coverage, tax treatment, legally owed wages, or a recovery amount. All numerical examples are synthetic and their arithmetic is checked.
@@ -91,3 +92,23 @@ October17 assessment-v4 candidate review: result/history/import/report/expected-
 covers active legacy weekly re-review, retained frozen comparisons and Recorded verdict context.
 Source and SDK checks do not prove native migration, rendering, PDF or VoiceOver behavior; no new
 native screenshot was substituted for those missing receipts.
+
+
+Targeted portable financial-state candidate review (October 22, 2026; release pending): reviewed
+all 19 changed mapped sources individually, retaining their exact reviewed blobs/reasons in
+`source-review.json`. Added canonical transfer inventory/writer, imported evidence/adoption and
+backup-count mappings. Updated backup, history, profile, period, field review, audit, reports,
+privacy, support, troubleshooting and supported limits. Portable export is password-required and
+refuses the whole file when saved financial kinds cannot be represented; complete native backup
+remains the fallback. Frozen source receipts are read-only and do not certify another engine or
+legal coverage. Current-workspace rules and future defaults are separate; adoption's future-default
+choice starts off. Imported pending weekly scope survives equal-gross native checks. No account,
+sync, backend, physical-provider delivery or complete Android/web parity is claimed. Exact hourly
+rate rendering, editor text-size cap removal, the wrapping Today work row and atomic StoreKit
+billing-detail refresh were separately reviewed without claiming new commerce/accessibility proof.
+
+The global October 4 full-site review date/version/footer remain the baseline because this is a
+targeted candidate review, not a complete current-distribution walkthrough. Existing screenshots
+predate the v3 copy and need real release-candidate recapture; no generated/relabelled image was
+substituted. Native full gates, physical/VoiceOver, actual provider delivery and release acceptance
+remain separate evidence.

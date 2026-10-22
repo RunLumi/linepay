@@ -63,3 +63,9 @@ original values remain in the earlier revision. **Earlier recorded comparison** 
 scope note identify preserved historical results, including their **Recorded verdict** in reports.
 Missing exact evidence keeps a new line comparison in review until recalculated from original work
 and rules. This does not verify missing weekly or agreement coverage.
+
+## Imported financial evidence in the v2 candidate
+
+After a supported portable transfer, open **History → Imported financial evidence**. Inspect the **Original result**, **Compared scope**, producer, original engine when recorded, saved amounts and review reasons. **Original calculation and source references** shows retained references and component explanations. Earlier work snapshots remain separate from current ledger facts.
+
+These are frozen source records. This iPhone has not recalculated them or certified another engine, source document or legal coverage. **Weekly review remains pending** stays a limitation even when expected and paid gross are equal. A new confirmed copy and a later native paycheck check are separate records; they do not replace the imported receipt. See [portable transfers]({{< relref "/backup-and-restore" >}}).

@@ -6,12 +6,13 @@ group: Keep control
 description: Make a complete manual copy and understand exactly what replacing local data will do.
 keywords: [backup, restore, iCloud, new phone, migration, recovery, Files, export]
 ---
-## Three different operations
+## Choose the right operation
 
 | Operation | What it gives you |
 | --- | --- |
 | **Complete LinePaycheck backup** | A restorable snapshot of saved work, profiles, rule snapshots, notes, periods, saved drafts, audit history and its follow-up comparison links, and retained original paystub and agreement PDFs. |
 | **Audit PDF or JSON data export** | A report or structured data for your use. A JSON export does not include original document bytes and is not the complete backup format. |
+| **Portable financial records (v2 candidate)** | A protected transfer of supported financial facts and frozen receipts between compatible clients. It is not a complete iPhone backup. |
 | **Restore Purchases** | A check of App Store purchase access. It does not restore work, paystubs, or history. |
 
 The app’s backup is **manual**. It does not turn on automatic backup or live sync. A backup represents the data saved when you created it, not changes made afterward.
@@ -57,3 +58,17 @@ Do not uninstall the only installation holding valuable records before you have 
 Keep the source file unchanged. Check device storage, Files availability, and app-version compatibility. Follow the recovery screen’s available export option before replacing unreadable current data. If a backup was made by a newer app, update the destination app rather than editing the file’s version markers.
 
 Do not reset data as your first troubleshooting step. See [troubleshooting]({{< relref "/troubleshooting" >}}) and contact support with a description—not an unredacted backup.
+
+## Portable financial records in the v2 candidate
+
+**Development preview:** this is a separate transfer workflow in the unreleased candidate. It does not promise complete Android/web feature parity, physical-device or cloud-provider delivery, or a released App Store version.
+
+In **Settings → Backup and restore**, enable **Protect this copy with a password**, complete both password fields and keep the passphrase separately. Then choose **Export portable financial records** and save to a private Files location. This operation requires password protection. Use **Restore from iCloud Drive** to select a compatible protected transfer, then **Unlock and review**. Check the counts, including **Work snapshot entries** and **Frozen imported receipts**, before the separate replace confirmations. Multiple frozen snapshots can contain the same work entry; that count need not mean distinct shifts.
+
+A portable transfer preserves supported profiles, rule versions and dated changes, period and work snapshots, frozen paycheck facts/results, and supported retained originals. Original receipt values and review reasons remain read-only; importing does not run another client's calculator over them. Missing source facts stay unknown. A rule or number that this iPhone cannot safely use may remain available as evidence while requiring a separately confirmed configuration for new estimates.
+
+The exporter refuses the **whole transfer** when saved financial records cannot be represented. Examples include saved benefits checks, follow-up/resolution records, crew-rule adoption records, agreement review records, unfinished saved drafts, legacy paycheck facts without a frozen assessment, missing originals, or pending original-file deletion. It does not silently export a supported subset. Keep a **complete iPhone backup** instead; do not delete valuable records just to force a transfer. Other clients can reject the whole file when they cannot retain its originals or financial record types. Exceeding file or record limits also prevents transfer.
+
+App Store access, Free-audit/trial state, local activity and diagnostics remain owned by the destination device; a financial transfer does not copy or reset them. Files and any chosen storage provider handle the destination you select. There is no LinePaycheck account, automatic upload or ongoing synchronization. Verify the saved copy and inspect restored records before relying on another device.
+
+For new calculations after transfer, read [imported rules and current work]({{< relref "/pay-profile" >}}).
