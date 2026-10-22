@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "app_version": "1.1.0",
+  "display_name": "Lineman Pay",
+  "locale": "en-US",
+  "status": "candidate-local-not-uploaded",
+  "generated_on": "2026-10-22",
+  "source": "OpenAI built-in ImageGen",
+  "generation_parameters": {
+    "transparent_background": false,
+    "references": "none; independent text-to-image generation per placement",
+    "model_and_seed": "not reported by the tool; not inferred"
+  },
+  "source_materials_status": "Exact prompts and untouched generated originals are retained alongside the exports. Returned generated filenames are recorded per asset.",
+  "derivation": "macOS sips --resampleHeightWidth 1646 3840 for the header; 1280 1920 for search. Outputs are upsampled, not native-resolution originals. No text, interface, money, logos or claim was added.",
+  "limits": [
+    "Conceptual artwork only; not an app screenshot or real worker evidence.",
+    "Owner selection, App Store Connect preview/cropping and submission remain unverified.",
+    "No ownership or trademark clearance is inferred from image generation."
+  ],
+  "specifications_verified_on": "2026-10-22",
+  "specifications_source": "https://developer.apple.com/help/app-store-connect/reference/app-information/creative-assets-specifications/",
+  "assets": [
+    {
+      "placement": "product_page_header",
+      "file": "product-page-header-21x9.png",
+      "width": 3840,
+      "height": 1646,
+      "bit_depth": 8,
+      "color_type": "RGB",
+      "alpha": false,
+      "sha256": "a85e293d1400717ee72d1eb4a8af5d6672a1889b3cd7adef75cae372267f1d1c",
+      "original": {
+        "file": "header-original.png",
+        "width": 1914,
+        "height": 822,
+        "bit_depth": 8,
+        "color_type": "RGB",
+        "alpha": false,
+        "sha256": "bd21d58d4f2afde0a7688fea286d702a827b74a5887cb569f53e8aa6674dc789"
+      },
+      "prompt": {
+        "file": "header-prompt.txt",
+        "sha256": "e570bfcd6f01d4934ace975c98d9984cb932692d2d39d31ee0cf88abcafeb7fb"
+      },
+      "returned_generated_filename": "exec-0e3b1c2a-7c8a-4b45-a2e7-b9de1f43c8a8.png"
+    },
+    {
+      "placement": "search_results",
+      "file": "search-results-3x2.png",
+      "width": 1920,
+      "height": 1280,
+      "bit_depth": 8,
+      "color_type": "RGB",
+      "alpha": false,
+      "sha256": "3ead16605fabce12148b351607508285950b4410d8d72cc7bb81d8066eee96be",
+      "original": {
+        "file": "search-original.png",
+        "width": 1536,
+        "height": 1024,
+        "bit_depth": 8,
+        "color_type": "RGB",
+        "alpha": false,
+        "sha256": "3d7fa62020597eb24735ad3814e63525a6919ac3f556284682c72639ea0c62a5"
+      },
+      "prompt": {
+        "file": "search-prompt.txt",
+        "sha256": "8e3db5b76315ebd296ccbd97ee50519c9adb3f6e524a4c11085d452dea80e9c2"
+      },
+      "returned_generated_filename": "exec-c74a5668-6feb-472b-81e2-7602b28bf20d.png"
+    }
+  ]
+}
