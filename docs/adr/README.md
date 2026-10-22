@@ -46,3 +46,5 @@
 - [0031-cloudflare-static-web-release](0031-cloudflare-static-web-release.md)
 - [0032-weekly-zero-basis-allocation](0032-weekly-zero-basis-allocation.md)
 - [0033-android-confirmed-benefit-receipts](0033-android-confirmed-benefit-receipts.md)
+
+- [0034-portable-financial-state](0034-portable-financial-state.md)
