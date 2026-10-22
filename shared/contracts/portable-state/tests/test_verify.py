@@ -1,6 +1,7 @@
 import copy
 import datetime as dt
 import json
+import hashlib
 import sys
 import tempfile
 import unittest
@@ -11,6 +12,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import verify
+import generate_time_zones
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -18,6 +20,34 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 class PortableStateContractTests(unittest.TestCase):
     def load(self, name):
         return verify.load_json(FIXTURES / name)
+
+    def test_pinned_timezone_namespace_includes_real_links_but_not_parser_abbreviations(self):
+        schema = verify.load_json(verify.SCHEMA_PATH)
+        names = schema["$defs"]["timeZone"]["enum"]
+        self.assertEqual(sorted(set(names)), names)
+        self.assertEqual(598, len(names))
+        self.assertEqual(generate_time_zones.NAMESPACE_SHA256,
+                         hashlib.sha256(("\n".join(names) + "\n").encode("ascii")).hexdigest())
+        for name in ("UTC", "America/New_York", "US/Eastern", "Etc/UTC", "EST", "CET",
+                     "GMT+0", "GMT-0", "Etc/GMT+0", "Etc/GMT-0", "Factory"):
+            self.assertEqual([], verify.schema_issues(name, schema["$defs"]["timeZone"], root=schema))
+        for name in ("PST", "CST", "IST", "america/new_york", "utc", "GMT+01:00",
+                     "+01:00", "Asia/Hanoi"):
+            self.assertEqual("schema.enum", verify.schema_issues(
+                name, schema["$defs"]["timeZone"], root=schema)[0].code)
+            doc = self.load("common-weekly-pending.json")
+            doc["profiles"][0]["timeZone"] = name
+            with self.assertRaises(verify.VerificationFailure) as caught:
+                verify.validate_document(doc)
+            self.assertEqual("schema.anyOf", caught.exception.issue.code)
+
+    def test_timezone_source_parser_uses_zone_and_link_names_without_host_lookup(self):
+        source = "# Zone Ignored 0 - X\nZone Etc/UTC 0 - UTC\n  2000 1:00 - X\nLink Etc/UTC UTC # alias\n"
+        self.assertEqual({"Etc/UTC", "UTC"}, generate_time_zones.names_from_source(source))
+        with self.assertRaises(ValueError):
+            generate_time_zones.names_from_source("Link Etc/UTC")
+        with self.assertRaises(ValueError):
+            generate_time_zones.names_from_archive(b"not the pinned IANA archive")
 
     def test_common_pending_fixture_passes_all_targets_and_refusals(self):
         verify.check()

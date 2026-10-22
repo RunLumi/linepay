@@ -41,6 +41,43 @@ If material configuration is absent from the source, the target cannot calculate
 
 The source inventory counts serialized work/component occurrences across snapshots/calculations; the same portable work or component ID can therefore occur more than once. `periodWindowCount` counts distinct typed window identities. Unsupported record lists and omitted-record count must be empty/zero in any valid portable file.
 
+### Supported timezone namespace
+
+`$defs.timeZone.enum` contains 598 exact-case names from the normal data build of
+[IANA tzdata 2026e](https://www.iana.org/time-zones/releases/2026e), released September 29,
+2026. This is the supported v1 transfer namespace, not every optional published timezone.
+It includes `Zone` names and `Link` names from `africa`, `antarctica`, `asia`, `australasia`,
+`europe`, `northamerica`, `southamerica`, `etcetera`, `factory`, and `backward`: the release
+Makefile's `PRIMARY_YDATA`, `etcetera`, `NDATA`, and enabled backward compatibility data.
+Optional `PACKRATDATA=backzone` is excluded; its additional `Asia/Hanoi` name is outside this
+version's supported namespace. Real legacy names such as `US/Eastern`, `EST`, `CET`,
+`Etc/UTC`, and `GMT+0`/`GMT-0` remain accepted without rewriting their spelling. Parser-only
+abbreviations such as `PST`, `CST`, and `IST`, invented offsets, and case variants are refused.
+
+The enum is the sole shipped namespace resource. Public native parsers are insufficient for this
+boundary: some accept extra abbreviations, while browser enumeration omits real IANA aliases.
+Receivers still check native timezone availability before using a name for calendar calculations.
+Namespace admission does **not** establish that the installed transition rules are from 2026e,
+are current, or match another device. No offsets or transition tables are bundled here.
+
+The selected source files and `LICENSE` are public domain under the release's license notice.
+The official archive is pinned by SHA-256
+`b26882805f26aac59d5b222978e6580484b834ccdc98be89df2f05a6dc53a652`.
+The sorted names joined with one LF after every name have SHA-256
+`8725722643bf1f4ff4fc4b22268ade98b6fae047a86897219c3a13d4c4ced93d`.
+Regenerate only from the official archive, never from host timezone files:
+
+```sh
+curl --fail --location https://data.iana.org/time-zones/releases/tzdata2026e.tar.gz --output /tmp/linepay-tzdata2026e.tar.gz
+python3 shared/contracts/portable-state/generate_time_zones.py /tmp/linepay-tzdata2026e.tar.gz
+# After reviewing a deliberate namespace update, use the same command with --write.
+```
+
+The generator verifies the archive digest, release version, selected names and namespace digest;
+without `--write` it only compares the schema. A later namespace update requires reviewing the
+official release/license, updating pinned provenance and regression expectations, and synchronizing
+the exact schema bytes in each client. It does not silently update native calendar behavior.
+
 V1 intentionally excludes separate employer-benefit receipts, separate weekly-review receipts, crew rule origins/templates, follow-up/resolution events, agreement extraction/review workflow state, and in-progress financial drafts. If any are retained by the source, export refuses the whole file. A weekly-pending paycheck itself is supported and keeps its original verdict and reasons. It can remain `NOT_COMPARABLE` when a period-confirmation failure takes precedence; it may never become a clean match or directional result while weekly review is pending.
 
 ## Target capability preflight
