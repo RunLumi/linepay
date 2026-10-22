@@ -149,7 +149,7 @@ class ConfirmedPaycheckLinesTest {
             check.copy(confirmedLineFacts = check.confirmedLineFacts!!.copy(regularPay = "349")),
             check.copy(components = check.components.mapIndexed { index, part -> if (index == 0) part.copy(amount = "1") else part }),
             check.copy(comparisons = check.comparisons.map { if (it.field == "REGULAR_PAY") it.copy(componentIds = emptyList()) else it }),
-            check.copy(confirmedLineFacts = check.confirmedLineFacts!!.copy(version = 2)),
+            check.copy(confirmedLineFacts = check.confirmedLineFacts.copy(version = 2)),
         )
         wrong.forEach { assertThrows(IllegalArgumentException::class.java) { AndroidLocalStateValidator.validate(state.copy(checks = listOf(it))) } }
         val changedCurrent = state.copy(profile = state.profile!!.copy(hourlyRate = "60", version = "2"), work = emptyList())
