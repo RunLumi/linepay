@@ -4,6 +4,7 @@ import LinePayDomain
 /// Codable does not call validating initializers. Validate stored/imported semantics before use.
 enum AppStateValidation {
     static func validate(_ state: AppPersistentState) throws {
+        try PortableStateMapping.validateStored(state)
         let contexts =
             state.history.map { ($0.window, $0.workEntries, $0.agreement, $0.timeZoneIdentifier) }
             + [
@@ -13,9 +14,37 @@ enum AppStateValidation {
             ].compactMap { $0 }
         let ids = state.history.map(\.id) + [state.activePeriod?.id].compactMap { $0 }
         guard ids.count <= 2_000, Set(ids).count == ids.count,
-            state.profile != nil || ids.isEmpty,
+            state.profile != nil || ids.isEmpty || state.portableCurrentProfile != nil,
             state.schemaVersion == AppPersistentState.currentSchemaVersion
         else { throw invalid() }
+        if let owner = state.portableCurrentProfile {
+            guard ids.contains(owner.periodID), owner.profile(in: state) != nil else {
+                throw invalid()
+            }
+            if let source = state.portableFinancialState,
+                let period = source.periods.first(where: {
+                    PortableStateMapping.local("period", $0.id) == owner.periodID
+                }),
+                let ref = period.profileRef
+                    ?? source.workSnapshots.first(where: { $0.id == period.currentWorkSnapshotRef }
+                    )?.profileRef,
+                let profile = source.profiles.first(where: { $0.id == ref })
+            {
+                guard owner.profileID == PortableStateMapping.local("profile", ref),
+                    owner.sourceName == profile.name
+                else { throw invalid() }
+            } else if let adoption = state.portableAdoptions.first(where: {
+                $0.nativePeriodID == owner.periodID
+            }) {
+                guard owner.profileID == adoption.nativeProfileID,
+                    owner.sourceName == adoption.nativeProfileName
+                else { throw invalid() }
+            } else if state.portableFinancialState != nil {
+                guard let profile = state.profile, owner.profileID == profile.id,
+                    owner.sourceName == profile.name
+                else { throw invalid() }
+            }
+        }
         try BenefitAuditValidation.validate(
             records: state.benefitAudits ?? [], draft: state.benefitAuditDraft)
         try AgreementImportValidation.validate(state.agreementDocuments ?? [])

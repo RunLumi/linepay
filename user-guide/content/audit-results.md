@@ -86,3 +86,7 @@ original values remain in the earlier revision. **Earlier recorded comparison** 
 scope note identify preserved historical results, including their **Recorded verdict** in reports.
 Missing exact evidence keeps a new line comparison in review until recalculated from original work
 and rules. This does not verify missing weekly or agreement coverage.
+
+## Frozen imported results in the v2 candidate
+
+A result under **Imported financial evidence** is the original producer's recorded answer, not a new iPhone comparison. Its verdict, scope, amounts and reasons stay unchanged. Creating a new confirmed copy of imported work is a separate configuration review; it does not certify the source engine or resolve missing weekly/legal coverage. Save and inspect any new native paycheck comparison separately. See [History]({{< relref "/history" >}}).

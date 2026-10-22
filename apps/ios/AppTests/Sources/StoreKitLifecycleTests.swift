@@ -99,35 +99,55 @@ struct StoreKitLifecycleTests {
         var sawGrace = false
         var sawGraceEnd = false
         var observedStates: Set<String> = []
-        while clock.now < deadline {
-            await store.refreshEntitlements()
-            let statuses = try await subscription.status.filter { status in
+        var trace: [String] = []
+        func verifiedStatuses() async throws -> [Product.SubscriptionInfo.Status] {
+            try await subscription.status.filter { status in
                 guard case .verified(let transaction) = status.transaction,
                     case .verified = status.renewalInfo,
                     transaction.productID == SubscriptionStore.monthlyProductID
                 else { return false }
                 return true
             }
-            for status in statuses {
-                observedStates.insert(String(describing: status.state))
-            }
-            let receiptIDs = await SubscriptionOperations.live.entitlementIDs()
-            let graceEnds = statuses.compactMap { status -> Date? in
+        }
+        func signedGraceEnds(_ statuses: [Product.SubscriptionInfo.Status]) -> [Date] {
+            statuses.compactMap { status in
                 guard case .verified(let renewal) = status.renewalInfo else { return nil }
                 return renewal.gracePeriodExpirationDate
             }
+        }
+        while clock.now < deadline {
+            let beforeReadStarted = Date()
+            let before = try await verifiedStatuses()
+            let beforeReadEnded = Date()
+            let beforeGraceEnds = signedGraceEnds(before)
+            let noticeBeforeRefresh = store.notice
+            await store.refreshEntitlements()
+            let refreshEnded = Date()
+            let noticeAfterRefresh = store.notice
+            let statuses = try await verifiedStatuses()
+            let afterReadEnded = Date()
+            for status in before + statuses {
+                observedStates.insert(String(describing: status.state))
+            }
+            let receiptIDs = await SubscriptionOperations.live.entitlementIDs()
+            let graceEnds = signedGraceEnds(statuses)
             let observedAt = Date()
-            // StoreKitTest can retain the grace enum after its signed expiration has passed.
-            // Use the SDK's verified dates and receipt, not the app's notice, as the oracle.
-            if statuses.contains(where: { $0.state == .inGracePeriod }),
-                graceEnds.contains(where: { $0 > observedAt })
+            let diagnostic =
+                "beforeReadStarted=\(beforeReadStarted.timeIntervalSince1970); beforeReadEnded=\(beforeReadEnded.timeIntervalSince1970); beforeStates=\(before.map { String(describing: $0.state) }); beforeGraceEnds=\(beforeGraceEnds.map(\.timeIntervalSince1970)); refreshEnded=\(refreshEnded.timeIntervalSince1970); afterReadEnded=\(afterReadEnded.timeIntervalSince1970); afterStates=\(statuses.map { String(describing: $0.state) }); afterGraceEnds=\(graceEnds.map(\.timeIntervalSince1970)); observed=\(observedAt.timeIntervalSince1970); receiptIDs=\(receiptIDs.sorted()); isPro=\(store.isPro); noticeBeforeRefresh=\(String(describing: noticeBeforeRefresh)); noticeAfterRefresh=\(String(describing: noticeAfterRefresh)); noticeAtAssertion=\(String(describing: store.notice))"
+            trace.append(diagnostic)
+            // SDK status and the model refresh are separate async reads. Require the same
+            // signed, unexpired grace window on both sides before comparing model details.
+            // A transition first seen after refresh is observed again on the next normal poll.
+            let stableGraceEnds = Set(beforeGraceEnds).intersection(graceEnds)
+            if before.contains(where: { $0.state == .inGracePeriod }),
+                statuses.contains(where: { $0.state == .inGracePeriod }),
+                stableGraceEnds.contains(where: { $0 > observedAt })
             {
+                print("STOREKIT_COHERENT_GRACE \(diagnostic)")
+                try #require(store.isPro, "\(diagnostic)")
                 try #require(
-                    store.isPro,
-                    "Native grace; receipt IDs: \(receiptIDs.sorted()); grace ends: \(graceEnds.map(\.timeIntervalSince1970)); observed: \(observedAt.timeIntervalSince1970)"
-                )
-                try #require(receiptIDs.contains(SubscriptionStore.monthlyProductID))
-                try #require(store.notice?.contains("grace") == true)
+                    receiptIDs.contains(SubscriptionStore.monthlyProductID), "\(diagnostic)")
+                try #require(store.notice?.contains("grace") == true, "\(diagnostic)")
                 sawGrace = true
             } else if sawGrace, receiptIDs.isEmpty,
                 (!graceEnds.isEmpty && graceEnds.allSatisfy { $0 <= observedAt })
@@ -135,13 +155,24 @@ struct StoreKitLifecycleTests {
                         $0.state == .expired || $0.state == .inBillingRetryPeriod
                     })
             {
+                print("STOREKIT_GRACE_END \(diagnostic)")
                 await expectAccess(false, store: store)
                 sawGraceEnd = true
                 break
+            } else if before.contains(where: { $0.state == .inGracePeriod })
+                || statuses.contains(where: { $0.state == .inGracePeriod })
+            {
+                print("STOREKIT_TRANSITION_SAMPLE \(diagnostic)")
             }
             try await Task.sleep(for: .milliseconds(200))
         }
-        #expect(sawGrace, "Native StoreKit states observed: \(observedStates.sorted())")
+        #expect(
+            sawGrace,
+            "Native StoreKit states observed: \(observedStates.sorted()); SDK/model trace: \(trace.joined(separator: "\n"))"
+        )
+        if !sawGraceEnd {
+            print("STOREKIT_MISSING_GRACE_END_TRACE \(trace.joined(separator: "\n"))")
+        }
         #expect(sawGraceEnd, "Native StoreKit must leave grace before access is removed")
         try await resetSession(session)
     }

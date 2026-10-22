@@ -10,6 +10,7 @@ final class AppModel {
     @ObservationIgnored private let now: () -> Date
 
     @ObservationIgnored let localActivity: LocalActivityLedger
+    @ObservationIgnored private var importedWorkingProjection: PortableWorkingProjection?
     private var state: AppPersistentState
     private(set) var calculation: CalculationResult?
     private(set) var calculationError: String?
@@ -35,6 +36,11 @@ final class AppModel {
             persistenceIssue = error.localizedDescription
         }
 
+        if let document = state.portableFinancialState,
+            let baseline = try? PortableStateMapping.nativeState(document)
+        {
+            importedWorkingProjection = PortableWorkingProjection(baseline)
+        }
         recalculate()
         if persistenceIssue == nil {
             do { try discoverUnreferencedEvidence() } catch {
@@ -51,7 +57,11 @@ final class AppModel {
         )
     }
 
+    var importedFinancialEvidence: PortableState? { state.portableFinancialState }
     var profile: PayProfile? { state.profile }
+    var currentProfile: PayProfile? {
+        state.portableCurrentProfile?.profile(in: state) ?? state.profile
+    }
     var activePeriod: ActivePayPeriod? { state.activePeriod }
     var history: [CompletedPayPeriod] { state.history }
     var workEntries: [WorkEntry] { state.activePeriod?.workEntries ?? [] }
@@ -60,7 +70,10 @@ final class AppModel {
     var reconciliation: ReconciliationResult? { state.activePeriod?.reconciliation }
     var hasUsedFreeAudit: Bool { state.hasUsedFreeAudit }
     var onboardingProgress: OnboardingProgress? { state.onboardingProgress }
-    var isOnboarded: Bool { state.profile != nil }
+    var isOnboarded: Bool {
+        state.profile != nil || state.activePeriod != nil
+            || (state.portableCurrentProfile != nil && !state.history.isEmpty)
+    }
     var recoveryFileURL: URL? { store.recoveryFileURL }
 
     var currentTimeZoneIdentifier: String {
@@ -126,6 +139,97 @@ final class AppModel {
         try commit(candidateForProfile(draft, scope: selected))
     }
 
+    var canAdoptImportedContext: Bool {
+        guard state.portableFinancialState != nil, state.portableAdoptions.isEmpty,
+            importedWorkingProjection?.matches(state) == true
+        else { return false }
+        return state.workDraft == nil && state.paystubDraft == nil && state.benefitAuditDraft == nil
+    }
+
+    func adoptPortableWork(
+        _ draft: PayProfileDraft, sourceSnapshotID: String, confirmedFields: Set<String>,
+        makeDefaultForFuture: Bool = false
+    ) throws {
+        guard let imported = state.portableFinancialState,
+            let snapshot = imported.workSnapshots.first(where: { $0.id == sourceSnapshotID }),
+            let sourceProfile = imported.profiles.first(where: { $0.id == snapshot.profileRef }),
+            draft.roundingRule != nil, confirmedFields == PortableNativeAdoption.requiredFields
+        else {
+            throw AppModelError.invalidField(
+                "Review every material rule, rounding choice, period context, and work fact before creating new native records"
+            )
+        }
+        guard importedWorkingProjection?.matches(state) == true, state.portableAdoptions.isEmpty,
+            state.workDraft == nil, state.paystubDraft == nil, state.benefitAuditDraft == nil
+        else {
+            throw AppModelError.invalidField(
+                "Preserve your newer native records and finish saved drafts before adopting another imported context"
+            )
+        }
+        var reviewedDraft = draft
+        let inheritedScope = PortableAdoptionScope.note(document: imported, snapshot: snapshot)
+        if !inheritedScope.isEmpty && !reviewedDraft.unsupportedRuleNotes.contains(inheritedScope) {
+            reviewedDraft.unsupportedRuleNotes = [
+                reviewedDraft.unsupportedRuleNotes, inheritedScope,
+            ].filter { !$0.isEmpty }.joined(separator: "\n")
+        }
+        guard reviewedDraft.unsupportedRuleNotes.count <= 4_000 else {
+            throw BackupError.portableUnsupported(
+                "The inherited review references exceed this configuration's note limit. Preserve a full iPhone backup."
+            )
+        }
+        let agreement = try makeAgreement(from: reviewedDraft, newProfile: true)
+        let profile = PayProfile(
+            id: UUID(), name: normalizedProfileName(reviewedDraft.name),
+            timeZoneIdentifier: reviewedDraft.timeZoneIdentifier, agreement: agreement,
+            preferredCadence: reviewedDraft.preferredCadence, baselineAgreement: agreement)
+        let window = try makePeriodWindow(
+            cadence: reviewedDraft.preferredCadence, startDate: reviewedDraft.periodStartDate,
+            manualEndDate: reviewedDraft.manualPeriodEndDate,
+            timeZoneIdentifier: reviewedDraft.timeZoneIdentifier)
+        var active = try makeActivePeriod(window: window, profile: profile)
+        var candidate = state
+        candidate.setupDraft = nil
+        if makeDefaultForFuture { candidate.profile = profile }
+        candidate.portableCurrentProfile = PortableCurrentProfile(
+            periodID: active.id, profileID: profile.id, sourceName: profile.name)
+        active.workEntries = try snapshot.work.map { work in
+            guard let kind = WorkKind(rawValue: work.kind) else { throw BackupError.invalidArchive }
+            let breaks = try work.unpaidBreaks.map {
+                try WorkBreak(
+                    id: UUID(), startEpochSeconds: $0.startEpochSeconds,
+                    endEpochSeconds: $0.endEpochSeconds)
+            }
+            return WorkEntry(
+                interval: try WorkInterval(
+                    id: UUID(), startEpochSeconds: work.startEpochSeconds,
+                    endEpochSeconds: work.endEpochSeconds, timeZoneIdentifier: work.timeZone,
+                    kind: kind,
+                    unpaidBreaks: breaks,
+                    calloutEventID: work.calloutEventRef.map {
+                        PortableStateMapping.local("adoptedCalloutEvent", $0)
+                    }),
+                note: work.note ?? "")
+        }
+        try validate(period: active)
+        candidate.activePeriod = active
+        candidate.onboardingProgress = nil
+        candidate.portableAdoptions.append(
+            PortableNativeAdoption(
+                id: UUID(), sourceProfileRef: sourceProfile.id,
+                sourcePeriodRef: snapshot.periodRef, sourceWorkSnapshotRef: snapshot.id,
+                sourceRuleRefs: [sourceProfile.ruleRef],
+                nativeProfileName: profile.name, makesFutureDefault: makeDefaultForFuture,
+                nativeProfileID: profile.id, nativePeriodID: active.id,
+                nativeRuleID: profile.agreement.id,
+                nativeRuleVersion: profile.agreement.version, nativeAgreement: profile.agreement,
+                nativeWindow: active.window,
+                nativeTimeZone: draft.timeZoneIdentifier, nativeWork: active.workEntries,
+                confirmedEpochSeconds: Int64(now().timeIntervalSince1970.rounded()),
+                confirmedFields: confirmedFields.sorted()))
+        try commit(candidate)
+    }
+
     func previewProfileChange(_ draft: PayProfileDraft, scope: RuleChangeScope) throws
         -> ProfileChangePreview
     {
@@ -139,6 +243,11 @@ final class AppModel {
     private func candidateForProfile(
         _ draft: PayProfileDraft, scope: RuleChangeScope = .prospective
     ) throws -> AppPersistentState {
+        guard state.portableFinancialState == nil else {
+            throw AppModelError.invalidField(
+                "Review imported evidence and create a new confirmed rule context. A general profile edit cannot replace imported current rules or the separate future default."
+            )
+        }
         if draft.crewRuleAdoption != nil, state.profile != nil, scope != .futurePeriods {
             throw AppModelError.invalidField("Worker-provided drafts apply only to future periods")
         }
@@ -323,6 +432,12 @@ final class AppModel {
         try validateNewWindow(window)
         var candidate = state
         candidate.activePeriod = try makeActivePeriod(window: window, profile: profile)
+        if state.portableFinancialState != nil {
+            candidate.portableCurrentProfile = candidate.activePeriod.map {
+                PortableCurrentProfile(
+                    periodID: $0.id, profileID: profile.id, sourceName: profile.name)
+            }
+        }
         try commit(candidate)
     }
 
@@ -650,9 +765,7 @@ final class AppModel {
         guard let active = state.activePeriod else {
             throw AppModelError.missingActivePayPeriod
         }
-        guard let profile = state.profile else {
-            throw AppModelError.missingPayProfile
-        }
+        let profile = state.profile
         let calculation: CalculationResult? =
             if active.auditCompletedEpochSeconds != nil {
                 active.auditRevisions?.last?.calculation ?? calculate(period: active)
@@ -671,7 +784,7 @@ final class AppModel {
             window: active.window,
             agreement: active.agreement,
             timeZoneIdentifier: active.agreementTimeZone(
-                fallback: profile.timeZoneIdentifier
+                fallback: currentProfile?.timeZoneIdentifier
             ),
             workEntries: active.workEntries,
             calculation: calculation,
@@ -687,6 +800,11 @@ final class AppModel {
         var candidate = state
         candidate.history.insert(completed, at: 0)
         candidate.workDraft = nil
+        guard let profile else {
+            candidate.activePeriod = nil
+            try commit(candidate)
+            return
+        }
 
         // A new timezone can place its midnight before the old period's end.
         // Close safely, then ask for an explicit nonoverlapping start in the new zone.
@@ -720,6 +838,10 @@ final class AppModel {
             candidate.activePeriod = nil
         }
 
+        if state.portableFinancialState != nil, let next = candidate.activePeriod {
+            candidate.portableCurrentProfile = PortableCurrentProfile(
+                periodID: next.id, profileID: profile.id, sourceName: profile.name)
+        }
         try commit(candidate)
     }
 
@@ -739,7 +861,8 @@ final class AppModel {
         draft.timeZoneIdentifier = zone
         draft.statementTimeZoneIdentifier = zone
         draft.currencyCode =
-            profile?.agreement.hourlyRate.currencyCode ?? PayProfileDraft.suggestedCurrencyCode
+            currentProfile?.agreement.hourlyRate.currencyCode
+            ?? PayProfileDraft.suggestedCurrencyCode
         draft.statementCurrencyCode = draft.currencyCode
         draft.roundingScale = NumberEntry.amountFractionDigits(currencyCode: draft.currencyCode)
         return draft
@@ -919,6 +1042,9 @@ final class AppModel {
         guard let period = state.history.first(where: { $0.id == id }) else { return }
         var candidate = state
         candidate.history.removeAll { $0.id == id }
+        if candidate.portableCurrentProfile?.periodID == id {
+            candidate.portableCurrentProfile = nil
+        }
         candidate.resolutionEvents?.removeAll { $0.periodID == id }
         let draftEvidence =
             candidate.paystubDraft?.targetPeriodID == id
@@ -1522,7 +1648,9 @@ final class AppModel {
         work.sorted { $0.interval.startEpochSeconds < $1.interval.startEpochSeconds }
     }
 
-    private func makeAgreement(from draft: PayProfileDraft) throws -> AgreementSnapshot {
+    private func makeAgreement(from draft: PayProfileDraft, newProfile: Bool = false) throws
+        -> AgreementSnapshot
+    {
         let profileName = normalizedProfileName(draft.name)
         guard !profileName.isEmpty else {
             throw AppModelError.invalidField("Profile name")
@@ -1531,7 +1659,7 @@ final class AppModel {
             throw AppModelError.invalidField("Time zone")
         }
 
-        let existingAgreement = state.profile?.agreement
+        let existingAgreement = newProfile ? nil : state.profile?.agreement
         // A profile's currency is fixed once it exists: every saved calculation and paystub
         // comparison is denominated in it.
         let currency = existingAgreement?.hourlyRate.currencyCode ?? draft.resolvedCurrencyCode
@@ -1540,7 +1668,7 @@ final class AppModel {
         let agreementID = existingAgreement?.id ?? UUID().uuidString
         let priorVersions =
             [existingAgreement?.version].compactMap { $0 }
-            + (state.profile?.agreementChanges ?? []).map { $0.agreement.version }
+            + (newProfile ? [] : state.profile?.agreementChanges ?? []).map { $0.agreement.version }
         let nextVersion = String((priorVersions.compactMap(Int.init).max() ?? 0) + 1)
 
         var regularSchedule: [RegularScheduleWindow] = []
@@ -1903,5 +2031,23 @@ enum AppModelError: LocalizedError, Equatable {
         case .persistenceFailed:
             "LinePaycheck could not safely save this change. Your previous saved data is unchanged."
         }
+    }
+}
+
+/// A cached native projection avoids re-decoding an entire imported archive during SwiftUI renders.
+private struct PortableWorkingProjection {
+    let profile: PayProfile?
+    let activePeriod: ActivePayPeriod?
+    let currentProfile: PortableCurrentProfile?
+    let history: [CompletedPayPeriod]
+    init(_ state: AppPersistentState) {
+        profile = state.profile
+        currentProfile = state.portableCurrentProfile
+        activePeriod = state.activePeriod
+        history = state.history
+    }
+    func matches(_ state: AppPersistentState) -> Bool {
+        state.profile == profile && state.portableCurrentProfile == currentProfile
+            && state.activePeriod == activePeriod && state.history == history
     }
 }

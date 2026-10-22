@@ -69,6 +69,23 @@
                             store: FileLocalActivityStore(
                                 directory: base.appendingPathComponent("activity"))))
                 }
+                if scenario == "portable-pending" {
+                    guard
+                        let json = ProcessInfo.processInfo.environment["LINEPAY_UI_PORTABLE_STATE"],
+                        json.utf8.count <= 65_536
+                    else { throw LocalStateStoreError.invalidState }
+                    let document = try PortableStateCodec.decode(Data(json.utf8))
+                    guard document.source.client == "android",
+                        document.paycheckReceipts.first?.reviewFacts.weeklyReviewPending == true
+                    else { throw LocalStateStoreError.invalidState }
+                    let archive = try PortableStateMapping.archive(document)
+                    guard archive.files.isEmpty else { throw LocalStateStoreError.invalidState }
+                    try store.save(archive.state)
+                    return AppSession(
+                        store: store,
+                        evidenceStore: LocalEvidenceStore(
+                            baseDirectory: base.appendingPathComponent("originals")))
+                }
                 let model = session.model
                 if scenario.hasPrefix("store-week") {
                     try seedStoreWeek(model, scenario: scenario)
@@ -90,6 +107,32 @@
                 calendar.timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
                 profile.periodStartDate = calendar.startOfDay(for: Date())
                 try model.saveProfile(profile)
+                if scenario == "fractional-rate" {
+                    // Exercise an admitted saved snapshot, rather than relaxing the USD editor.
+                    var state = try store.load()!
+                    let prior = state.profile!
+                    let agreement = try AgreementSnapshot(
+                        id: prior.agreement.id, version: prior.agreement.version,
+                        displayName: prior.agreement.displayName,
+                        hourlyRate: Money(amount: Decimal(string: "50.005")!, currencyCode: "USD"),
+                        regularSchedule: [], rounding: prior.agreement.rounding,
+                        confirmedEpochSeconds: prior.agreement.confirmedEpochSeconds)
+                    state.profile = PayProfile(
+                        id: prior.id, name: prior.name,
+                        timeZoneIdentifier: prior.timeZoneIdentifier, agreement: agreement,
+                        preferredCadence: prior.preferredCadence, baselineAgreement: agreement)
+                    state.activePeriod?.agreement = agreement
+                    try store.save(state)
+                    let restored = AppSession(
+                        store: store,
+                        evidenceStore: LocalEvidenceStore(
+                            baseDirectory: base.appendingPathComponent("originals")))
+                    let start = profile.periodStartDate.addingTimeInterval(7 * 3_600)
+                    try restored.model.addWork(
+                        start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular)
+                    try restored.model.completeFirstResult()
+                    return restored
+                }
                 if scenario == "profile" || scenario == "precision-profile" { return session }
                 if scenario == "unresolved" {
                     let boundary = profile.periodStartDate.addingTimeInterval(86_400)

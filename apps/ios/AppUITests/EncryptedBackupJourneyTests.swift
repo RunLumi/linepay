@@ -65,11 +65,11 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         XCTAssertTrue(save.isHittable)
         save.tap()
         XCTAssertTrue(picker.waitForNonExistence(timeout: 15))
-        let savedStatus = app.staticTexts["backup.status"].firstMatch
-        XCTAssertTrue(savedStatus.waitForExistence(timeout: 10))
+        let savedCopy =
+            "Saved to your selected location. For iCloud Drive, confirm upload in Files."
+        let savedStatus = try revealSavedStatus(savedCopy)
         capture("v2-backup-provider-save-status")
-        XCTAssertTrue(
-            savedStatus.label.contains("Saved to your selected location"), savedStatus.label)
+        XCTAssertEqual(savedStatus.label, savedCopy)
         tap("backup.done")
         tap("settings.privacy-data")
         tap("settings.delete-all")
@@ -107,8 +107,10 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         if picker.exists, picker.buttons["Open"].exists { picker.buttons["Open"].tap() }
         XCTAssertTrue(picker.waitForNonExistence(timeout: 15))
         let unlock = app.secureTextFields["backup.unlock-password"].firstMatch
-        XCTAssertTrue(unlock.waitForExistence(timeout: 12))
+        // The retained picker-return snapshot ends at "Unlock selected backup". Its
+        // password control is the following virtualized row, so reveal it before waiting.
         reveal(unlock)
+        XCTAssertTrue(unlock.waitForExistence(timeout: 12))
         XCTAssertTrue(unlock.exists)
         XCTAssertFalse(app.buttons["backup.confirm-restore"].exists)
         enter("backup.unlock-password", password + " wrong")
@@ -181,6 +183,41 @@ final class EncryptedBackupJourneyTests: XCTestCase {
         if id != "backup.done" { reveal(button) }
         XCTAssertTrue(button.isHittable, "Missing visible action: \(id)")
         button.tap()
+    }
+    private func revealSavedStatus(_ expectedText: String) throws -> XCUIElement {
+        // The Label's identifier propagates to its decorative Image as well as its text.
+        // Verify the observed semantic message, not the first identifier match or icon hit test.
+        let status = app.staticTexts.matching(
+            NSPredicate(format: "label == %@", expectedText)
+        ).firstMatch
+        let list = try XCTUnwrap(
+            app.collectionViews.allElementsBoundByIndex.max { $0.frame.width < $1.frame.width })
+        let navigation = app.navigationBars["Backup"].firstMatch
+        XCTAssertTrue(navigation.waitForExistence(timeout: 10))
+        for _ in 0..<15 {
+            let top = navigation.frame.maxY
+            let bottom = min(list.frame.maxY, app.frame.maxY - 40)
+            if status.exists, status.frame.height > 0,
+                status.frame.minY >= top, status.frame.maxY <= bottom
+            {
+                return status
+            }
+            let up = !status.exists || status.frame.minY >= top
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let x = list.frame.minX + 12
+            let upper = top + (bottom - top) * 0.25
+            let lower = top + (bottom - top) * 0.8
+            origin.withOffset(CGVector(dx: x, dy: up ? lower : upper)).press(
+                forDuration: 0.05,
+                thenDragTo: origin.withOffset(CGVector(dx: x, dy: up ? upper : lower)))
+        }
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = "backup-save-semantic-status-missing"
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
+        capture("backup-save-semantic-status-missing")
+        XCTFail("The exact backup-save message must be fully visible in the foreground Backup list")
+        return status
     }
     private func reveal(_ element: XCUIElement) {
         let window =

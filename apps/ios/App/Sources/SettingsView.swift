@@ -11,8 +11,32 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack(path: $path) {
             List {
+                if model.importedFinancialEvidence != nil, let current = model.currentProfile,
+                    model.activePeriod != nil
+                {
+                    Section("Current workspace rules") {
+                        Text(current.name).font(.headline)
+                        AgreementSummaryView(agreement: current.agreement)
+                        Text(
+                            "These rules belong to the selected current period. Future periods use their separate saved default."
+                        ).font(.footnote)
+                    }
+                }
+                if model.importedFinancialEvidence != nil && model.profile == nil {
+                    Section("Future pay periods") {
+                        Text(
+                            "The saved future default needs review on this iPhone. Current confirmed work remains usable; closing it will not silently start another period with different rules."
+                        )
+                        Text(
+                            "To choose a new default, review imported evidence, create a new confirmed context, and separately select the future-default option."
+                        ).font(.footnote)
+                    }
+                }
                 if let profile = model.profile {
-                    Section(header: settingsSectionHeader("Pay")) {
+                    Section(
+                        header: settingsSectionHeader(
+                            model.importedFinancialEvidence == nil ? "Pay" : "Future default")
+                    ) {
                         settingsNavigationRow(
                             "Pay profile: \(profile.name)", destination: .payProfile)
                         Button("Edit pay rules") { editor = true }
@@ -169,7 +193,7 @@ struct SettingsView: View {
                                 LabeledContent(
                                     LinePayFormat.localDate(change.effectiveDate),
                                     value:
-                                        "Version \(change.agreement.version) · \(LinePayFormat.money(change.agreement.hourlyRate))/hr"
+                                        "Version \(change.agreement.version) · \(LinePayFormat.rate(change.agreement.hourlyRate))/hr"
                                 )
                             }
                             Text(

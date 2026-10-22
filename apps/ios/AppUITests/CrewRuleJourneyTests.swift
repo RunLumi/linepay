@@ -111,10 +111,21 @@ final class CrewRuleJourneyTests: XCTestCase {
             localLocation.tap()
         }
         XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
-        let file = app.collectionViews.matching(identifier: "File View").cells.matching(
+        let browser = app.otherElements["Browse View (Picker)"].firstMatch
+        XCTAssertTrue(browser.waitForExistence(timeout: 10))
+        let file = browser.cells.matching(
             NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
         ).firstMatch
-        if !file.waitForExistence(timeout: 25) {
+        if !file.waitForExistence(timeout: 2) {
+            // The retained AX5 picker has 58 pages of local files. Waiting cannot
+            // materialize a new random filename below its first two visible icons.
+            let search = picker.searchFields["Search"].firstMatch
+            XCTAssertTrue(search.waitForExistence(timeout: 5))
+            XCTAssertTrue(search.isHittable)
+            search.tap()
+            search.typeText(marker + XCUIKeyboardKey.return.rawValue)
+        }
+        if !file.waitForExistence(timeout: 20) {
             capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
             tree.name = "crew-files-local-root-before-search"

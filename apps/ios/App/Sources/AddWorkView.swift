@@ -358,7 +358,6 @@ struct AddWorkView: View {
                 }
             }
         }
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .environment(\.timeZone, zone)
         .tint(LinePayColor.actionText)
         .onChange(of: draft) { _, value in

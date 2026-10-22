@@ -20,7 +20,7 @@ struct WeeklyOvertimeReviewView: View {
     /// Starts on the configured workweek day on or before `date`, so the first suggestion is a
     /// real workweek rather than a pay-period boundary that may fall mid-week.
     static func alignedWeekStart(_ date: Date, model: AppModel) -> Date {
-        guard let profile = model.profile, let rule = profile.agreement.weeklyOvertime,
+        guard let profile = model.currentProfile, let rule = profile.agreement.weeklyOvertime,
             let zone = TimeZone(identifier: profile.timeZoneIdentifier)
         else { return date }
         var calendar = Calendar(identifier: .gregorian)
@@ -172,7 +172,7 @@ struct WeeklyOvertimeReviewView: View {
             result = nil
             errorMessage = nil
         }
-        .onChange(of: model.profile) { _, _ in
+        .onChange(of: model.currentProfile) { _, _ in
             completeWorkweek = false
             workweekBoundaryConfirmed = false
             clearPaymentReview()
@@ -211,9 +211,11 @@ struct WeeklyOvertimeReviewView: View {
             errorMessage = Self.errorMessage(for: error)
         }
     }
-    private var currency: String { model.profile?.agreement.hourlyRate.currencyCode ?? "USD" }
+    private var currency: String {
+        model.currentProfile?.agreement.hourlyRate.currencyCode ?? "USD"
+    }
     private var zone: String {
-        model.profile?.timeZoneIdentifier ?? model.currentTimeZoneIdentifier
+        model.currentProfile?.timeZoneIdentifier ?? model.currentTimeZoneIdentifier
     }
     private var boundaryEnd: String {
         let formatter = DateFormatter()

@@ -57,6 +57,7 @@ struct BackupRestoreEntryPoint: View {
 struct BackupRestoreView: View {
     let session: AppSession
     @Environment(\.dismiss) private var dismiss
+    @State private var financialTransfer = false
     @State private var export: BackupTransfer?
     @State private var exportName = "LinePaycheck"
     @State private var showExporter = false
@@ -102,6 +103,7 @@ struct BackupRestoreView: View {
                 Section {
                     Button {
                         guard validateExportPassword() else { return }
+                        financialTransfer = false
                         showExportConsent = true
                     } label: {
                         Label("Back up to iCloud Drive", systemImage: "icloud.and.arrow.up")
@@ -127,6 +129,24 @@ struct BackupRestoreView: View {
                             + "Choose a private iCloud Drive folder or another Files location. "
                             + "This does not turn on automatic backup or live sync."
                     )
+                }
+
+                Section("Transfer financial records between clients") {
+                    Button("Export portable financial records") {
+                        guard validateExportPassword() else { return }
+                        financialTransfer = true
+                        showExportConsent = true
+                    }
+                    .disabled(session.isBusy || !passwordProtect)
+                    .accessibilityIdentifier("portable.export")
+                    Text(
+                        "Enable password protection first. A financial transfer preserves supported saved facts and frozen receipts. Unsupported saved records block the whole export. App Store access, trial usage, local activity, and diagnostics remain owned by each device."
+                    )
+                    .font(.footnote)
+                    Text(
+                        "Open a protected transfer with Restore above. Review all counts before explicitly replacing local records; transfers never merge records."
+                    )
+                    .font(.footnote)
                 }
 
                 if let url = encryptedSelection {
@@ -156,7 +176,18 @@ struct BackupRestoreView: View {
                         .accessibilityIdentifier("backup.protection-status")
                         LabeledContent("Created") { Text(archive.createdAt, format: .dateTime) }
                         LabeledContent("Pay periods", value: "\(archive.periodCount)")
-                        LabeledContent("Work entries", value: "\(archive.workCount)")
+                        LabeledContent(
+                            archive.state.portableFinancialState == nil
+                                ? "Work entries" : "Work snapshot entries",
+                            value: "\(archive.workCount)")
+                        if let imported = archive.state.portableFinancialState {
+                            LabeledContent(
+                                "Frozen imported receipts",
+                                value: "\(imported.paycheckReceipts.count)")
+                            Text(
+                                "Original receipt outcomes stay read-only. They are not recalculated on this iPhone."
+                            ).font(.footnote)
+                        }
                         LabeledContent("Original paystubs", value: "\(archive.files.count)")
                         Text(
                             "Restoring replaces this iPhone's saved LinePaycheck data. It does not merge records. Back up current data first if you need to keep it."
@@ -331,7 +362,14 @@ struct BackupRestoreView: View {
         Task {
             defer { clearExportPassword() }
             do {
-                export = BackupTransfer(data: try await session.prepareBackup(password: password))
+                let bytes: Data
+                if financialTransfer {
+                    guard let password else { throw BackupError.passwordRequired }
+                    bytes = try await session.prepareFinancialTransfer(password: password)
+                } else {
+                    bytes = try await session.prepareBackup(password: password)
+                }
+                export = BackupTransfer(data: bytes)
                 exportName = "LinePaycheck-\(UUID().uuidString.prefix(8))"
                 showExporter = true
             } catch {

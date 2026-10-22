@@ -218,7 +218,7 @@ final class LegalJourneyTests: XCTestCase {
             }
             XCTAssertTrue(reachedReview, "The editor did not leave the final rules step.")
             let scopeControl = app.buttons["pay-profile.change-scope"].firstMatch
-            revealReviewElement(scopeControl, maxSwipes: 8)
+            revealReviewElement(scopeControl, identifier: "pay-profile.change-scope", maxSwipes: 8)
             XCTAssertTrue(scopeControl.waitForExistence(timeout: 15))
             XCTAssertEqual(app.buttons.matching(identifier: "pay-profile.change-scope").count, 1)
             tapScopeControl(scopeControl)
@@ -229,7 +229,8 @@ final class LegalJourneyTests: XCTestCase {
                 "Scope control did not commit the selected option: \(scope).")
             let explanation = app.descendants(matching: .any)
                 .matching(identifier: "pay-profile.scope-explanation").firstMatch
-            revealReviewElement(explanation, maxSwipes: 8)
+            revealReviewElement(
+                explanation, identifier: "pay-profile.scope-explanation", maxSwipes: 8)
             XCTAssertTrue(explanation.waitForExistence(timeout: 15))
             XCTAssertFalse(explanation.label.isEmpty, "Scope explanation must remain accessible.")
             capture("legal-scope-\(scope)")
@@ -277,35 +278,19 @@ final class LegalJourneyTests: XCTestCase {
         button.tap()
     }
     private func tapScopeControl(_ element: XCUIElement) {
-        let window = app.windows.element(boundBy: max(0, app.windows.count - 1))
+        revealReviewElement(element, identifier: "pay-profile.change-scope", maxSwipes: 8)
+        XCTAssertTrue(element.exists)
+        XCTAssertTrue(element.isHittable)
+        let top =
+            app.navigationBars.allElementsBoundByIndex.max {
+                $0.frame.width < $1.frame.width
+            }?.frame.maxY ?? 0
         let save = app.buttons["pay-profile.save"].firstMatch
-        for _ in 0..<16 {
-            guard element.exists, save.exists else { break }
-            let top: CGFloat = 140
-            let bottom = save.frame.minY - 8
-            let frame = element.frame
-            if frame.minY >= top && frame.maxY <= bottom {
-                element.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)).press(
-                    forDuration: 0.1)
-                return
-            }
-            if frame.height > bottom - top {
-                let visible = frame.intersection(
-                    CGRect(
-                        x: window.frame.minX, y: top,
-                        width: window.frame.width, height: max(0, bottom - top)))
-                if !visible.isNull && visible.height >= 44 {
-                    window.coordinate(withNormalizedOffset: .zero)
-                        .withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
-                    return
-                }
-            }
-            let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
-            start.press(
-                forDuration: 0.05,
-                thenDragTo: start.withOffset(CGVector(dx: 0, dy: frame.maxY > bottom ? -160 : 160)))
-        }
-        XCTFail("Scope menu did not expose a visible target above the pinned save action")
+        XCTAssertTrue(save.exists)
+        XCTAssertGreaterThanOrEqual(element.frame.minY + 0.001, top)
+        XCTAssertLessThanOrEqual(element.frame.maxY, save.frame.minY + 0.001)
+        captureSystem("legal-scope-fully-visible")
+        element.tap()
     }
 
     private func chooseScope(label: String, identifier: String) throws {
@@ -380,31 +365,71 @@ final class LegalJourneyTests: XCTestCase {
             frontmostWindow.swipeUp()
         }
     }
-    private func revealReviewElement(_ element: XCUIElement, maxSwipes: Int) {
-        if element.exists && element.isHittable { return }
-        let frontmostWindow = app.windows.element(boundBy: max(0, app.windows.count - 1))
-        let windowFrame = frontmostWindow.frame
-        for _ in 0..<maxSwipes {
-            if element.exists && element.isHittable { return }
-            if element.exists, element.frame.minY >= windowFrame.maxY {
-                // The element is below the viewport; keep moving down the Form.
-                frontmostWindow.swipeUp()
-            } else if element.exists {
-                // The review controls can be above the retained Form scroll position.
-                frontmostWindow.swipeDown()
-            } else {
-                // Keep the same bounded fallback as the normal helper if SwiftUI has
-                // temporarily virtualized the control.
-                frontmostWindow.swipeUp()
+    private func revealReviewElement(_ element: XCUIElement, identifier: String, maxSwipes: Int) {
+        // The presenting Settings list and keyboard window remain in the AX tree. The
+        // full-width collection is this sheet; its pinned Save covers the lower Form.
+        let scroll =
+            app.collectionViews.allElementsBoundByIndex.max {
+                $0.frame.width < $1.frame.width
+            } ?? app.scrollViews.firstMatch
+        guard scroll.exists else {
+            XCTFail("The foreground review Form is missing")
+            return
+        }
+        let top =
+            app.navigationBars.allElementsBoundByIndex.max {
+                $0.frame.width < $1.frame.width
+            }?.frame.maxY ?? 0
+        let save = app.buttons["pay-profile.save"].firstMatch
+        let bottom = save.exists ? save.frame.minY : app.frame.maxY
+        let bounds = CGRect(x: 0, y: top, width: app.frame.width, height: max(1, bottom - top))
+            .intersection(scroll.frame)
+        guard bounds.height > 44, bounds.width > 44 else {
+            XCTFail("The foreground review Form has no tappable content viewport")
+            return
+        }
+        var stalled = 0
+        // Short, overlapping pans stay inside the actual content rather than dragging
+        // the footer or dismissing the sheet. The captured AX5 Form has nineteen pages.
+        for _ in 0..<(maxSwipes * 3) {
+            if element.exists, element.isHittable {
+                let visible = element.frame.intersection(bounds)
+                if (element.frame.minY + 0.001 >= bounds.minY
+                    && element.frame.maxY <= bounds.maxY + 0.001)
+                    || (element.frame.height > bounds.height && visible.height >= 44)
+                {
+                    return
+                }
             }
+            let before = reviewScrollProgress(scroll, within: bounds)
+            let up = !element.exists || element.frame.minY >= bounds.minY
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let x = bounds.minX + min(12, bounds.width * 0.1)
+            let startY = bounds.minY + bounds.height * (up ? 0.9 : 0.35)
+            let endY = bounds.minY + bounds.height * (up ? 0.1 : 0.55)
+            origin.withOffset(CGVector(dx: x, dy: startY)).press(
+                forDuration: 0.05,
+                thenDragTo: origin.withOffset(CGVector(dx: x, dy: endY)),
+                withVelocity: .slow, thenHoldForDuration: 0.1)
+            let after = reviewScrollProgress(scroll, within: bounds)
+            stalled = !after.isEmpty && before == after ? stalled + 1 : 0
+            if stalled >= 3 { break }
         }
-        // A long Dynamic Type Form virtualizes rows outside the viewport. If the first
-        // downward search reaches the bottom before SwiftUI materializes the target,
-        // search back toward the top instead of repeatedly swiping against the boundary.
-        for _ in 0..<(maxSwipes * 2) {
-            if element.exists && element.isHittable { return }
-            frontmostWindow.swipeDown()
-        }
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = "legal-review-unreachable-" + identifier
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
+        captureSystem("legal-review-unreachable")
+    }
+
+    private func reviewScrollProgress(_ scroll: XCUIElement, within bounds: CGRect) -> String {
+        let bar = scroll.otherElements.matching(
+            NSPredicate(format: "label BEGINSWITH %@", "Vertical scroll bar")
+        ).allElementsBoundByIndex.last
+        if let bar, bar.exists, let value = bar.value as? String { return value }
+        return scroll.staticTexts.allElementsBoundByIndex.filter {
+            $0.exists && $0.frame.intersects(bounds)
+        }.prefix(3).map { "\($0.label):\(Int($0.frame.minY.rounded()))" }.joined(separator: "|")
     }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())

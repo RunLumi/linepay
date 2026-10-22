@@ -8,13 +8,15 @@ keywords: [hourly rate, USD, CAD, VND, currency, decimal comma, timezone, agreem
 ---
 ## What a profile represents
 
-A pay profile is the set of rules you entered for your work. Its name is for your reference; naming it after an employer or union does not verify its contents. The current setup supports one active profile. Choose its **Pay currency** (US dollar, Canadian dollar, or Vietnamese đồng) when you first set it up; the currency then stays fixed for that profile so saved calculations never change denomination. LinePaycheck is not a multi-employer payroll system or a currency converter.
+A pay profile is the set of rules you entered for your work. Its name is for your reference; naming it after an employer or union does not verify its contents. Ordinary setup uses one current profile. The v2 portable-transfer candidate can retain additional source profiles and a separate future default; see below. Choose its **Pay currency** (US dollar, Canadian dollar, or Vietnamese đồng) when you first set it up; the currency then stays fixed for that profile so saved calculations never change denomination. LinePaycheck is not a multi-employer payroll system or a currency converter.
 
 Review the latest entered profile in **Settings → Pay profile**. To change it, choose **Settings → Edit pay rules** and follow the four setup steps.
 
 ## Enter the base rate and timezone
 
 Use the straight-time hourly rate, not an overtime rate, take-home amount, or estimated rate with allowances included. Type amounts the way your iPhone region writes numbers: `58.40` or `1,250.50` in the United States and English Canada, `58,40` or `1.250,50` where the comma is the decimal mark (for example Vietnam or French Canada). A lone `58.40` is also accepted in comma regions. Vietnamese đồng have no decimals, so enter whole amounts such as `45000`; `45.00` is rejected rather than read as 45 đồng.
+
+In the v2 candidate, displayed hourly rates retain fractional precision below a payable currency unit; a rate is not rounded to a cent merely for display. Payable totals still follow their configured rounding policy.
 
 Select the payroll timezone that defines your work dates and premium boundaries. Your phone’s current travel location is not a substitute. An overnight shift can cross a payroll-local date even when the phone shows a different date.
 
@@ -54,3 +56,11 @@ The reader handles a bounded set of explicit clause formats. It can miss tables,
 
 
 In the v2 candidate, a [crew rule draft]({{< relref "/crew-rule-drafts" >}}) can prepare your own setup from selected parameters. Inspecting or preparing alone does not activate rules. Confirm your own amounts and applicability, review all four steps, and use the fixed future-period scope for an existing profile.
+
+## Imported rules and current work in the v2 candidate
+
+A portable transfer can preserve different rules for the **current workspace** and the **future default**. Settings labels these separately. The current period's own rules, currency, dates and timezone govern its work; the future default governs new periods. A missing or unusable future default does not silently replace usable current rules or invent a next period when you close the current one.
+
+When source context needs review, **Imported records** offers **Confirm rules for new iPhone estimates**. From **Imported financial evidence**, **Create a new confirmed copy of imported work** is available when the source context can still be adopted. Preserve a portable copy first. Review all setup steps, including rate/currency, optional rules left off, rounding scale/mode/scope, period dates/cadence/timezone, and every copied work interval, break, kind and note. Explicitly confirm every material choice. Changes clear those confirmations; a prefilled value is only a proposal.
+
+**Also use these new rules as the default for future pay periods** is a separate choice, **off by default**. Leaving it off preserves the prior future default, including any remaining need to review it. Saving creates separately confirmed native rules and copied work; it does not fill missing facts in the original records or rewrite their results. Pending weekly coverage stays attached to the new context, so even equal gross can still require review. A general **Edit pay rules** save cannot replace an imported context: use the explicit review/adoption flow when offered.

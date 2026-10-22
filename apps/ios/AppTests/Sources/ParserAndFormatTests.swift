@@ -85,6 +85,31 @@ struct PresentationValueTests {
         #expect(LinePayFormat.signedMoney(negative) == LinePayFormat.money(negative))
     }
 
+    @Test func fractionalRatesRemainExactAndCurrencyIdentifiable() throws {
+        for (currency, value, expected) in [
+            ("USD", "50.005", "USD 50.005"),
+            ("USD", "0.00000001", "USD 0.00000001"),
+            ("CAD", "-1234.567", "CAD -1234.567"),
+            ("VND", "45000.5", "VND 45000.5"),
+            ("USD", "1234567890123456.12", "USD 1234567890123456.12"),
+        ] {
+            let amount = try UnitFixture.decimal(value)
+            let money = Money(amount: amount, currencyCode: currency)
+            #expect(LinePayFormat.rate(money, locale: Locale(identifier: "en_US")) == expected)
+            #expect(
+                LinePayFormat.rate(money, locale: Locale(identifier: "fr_FR"))
+                    == expected.replacingOccurrences(of: ".", with: ","))
+            #expect(
+                LinePayFormat.rate(money, locale: Locale(identifier: "vi_VN"))
+                    == expected.replacingOccurrences(of: ".", with: ","))
+            #expect(money.amount == amount)
+        }
+        let ordinary = Money(amount: try UnitFixture.decimal("58.50"), currencyCode: "USD")
+        #expect(LinePayFormat.rate(ordinary) == LinePayFormat.money(ordinary))
+        let fractional = Money(amount: try UnitFixture.decimal("50.005"), currencyCode: "USD")
+        #expect(LinePayFormat.money(fractional) != LinePayFormat.rate(fractional))
+    }
+
     @Test func breaksAndTimeFormattingKeepExplicitContext() throws {
         let pause = try WorkBreak(startEpochSeconds: 600, endEpochSeconds: 2_400)
         let work = try WorkInterval(

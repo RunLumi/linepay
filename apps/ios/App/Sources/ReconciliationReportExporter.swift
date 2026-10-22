@@ -126,7 +126,7 @@ struct ReconciliationReportExporter {
                 if let hours = component.hours, let multiplier = component.multiplier {
                     let rate = component.baseRate ?? agreement.hourlyRate
                     writer.caption(
-                        "\(LinePayFormat.workDuration(hours)) \(component.category == .calloutGuarantee ? "paid equivalent" : "worked") at \(LinePayFormat.money(rate))/h × \(LinePayFormat.decimal(multiplier))"
+                        "\(LinePayFormat.workDuration(hours)) \(component.category == .calloutGuarantee ? "paid equivalent" : "worked") at \(LinePayFormat.rate(rate))/h × \(LinePayFormat.decimal(multiplier))"
                     )
                 }
                 writer.caption(component.explanation)
@@ -165,7 +165,7 @@ struct ReconciliationReportExporter {
                     writer.row("Agreement ID", agreement.id)
                 }
                 writer.row("Rule version", agreement.version)
-                writer.row("Base rate", "\(LinePayFormat.money(agreement.hourlyRate))/hr")
+                writer.row("Base rate", "\(LinePayFormat.rate(agreement.hourlyRate))/hr")
                 if let confirmed = agreement.confirmedEpochSeconds {
                     writer.caption(
                         "Rules confirmed: \(ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: TimeInterval(confirmed))))"

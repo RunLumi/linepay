@@ -72,3 +72,9 @@ original values remain in the earlier revision. **Earlier recorded comparison** 
 scope note identify preserved historical results, including their **Recorded verdict** in reports.
 Missing exact evidence keeps a new line comparison in review until recalculated from original work
 and rules. This does not verify missing weekly or agreement coverage.
+
+## Imported evidence and rate precision in the v2 candidate
+
+A native report's hourly-rate explanations retain fractional rate precision rather than displaying a rounded payable amount as the rate. That does not change its comparison scope.
+
+**Imported financial evidence** preserves frozen source receipts and their original calculation/source references. It is a separate evidence view; the ordinary native audit/report actions above do not imply that imported results were recalculated or certified here. Keep a [portable transfer or complete backup]({{< relref "/backup-and-restore" >}}) for the appropriate records; neither a report nor a screenshot substitutes for that copy.

@@ -212,7 +212,7 @@ func componentFormula(_ component: PayComponent, fallbackRate: Money) -> String?
     case .perDiem: return nil
     case .workedHours, .calloutGuarantee:
         guard let hours = component.hours, let multiplier = component.multiplier else { return nil }
-        let rate = LinePayFormat.money(component.baseRate ?? fallbackRate)
+        let rate = LinePayFormat.rate(component.baseRate ?? fallbackRate)
         let prefix = component.category == .calloutGuarantee ? "Top-up " : ""
         return multiplier == 1
             ? "\(prefix)\(LinePayFormat.workDuration(hours)) at \(rate)/h"

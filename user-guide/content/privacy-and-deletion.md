@@ -59,3 +59,7 @@ Use a redacted screenshot or a description of the issue. Paystubs can contain na
 The help site’s search runs locally in the browser and does not submit your query to a search service. Ordinary hosting requests are separate from the iPhone app’s storage behavior. The website cannot inspect or recover the app data on your phone.
 
 Read the [privacy policy](https://linepaycheck.com/privacy) for the product’s policy, and [backup guidance]({{< relref "/backup-and-restore" >}}) before changing devices or deleting records.
+
+## Portable financial transfers in the v2 candidate
+
+**Export portable financial records** is a deliberate, password-protected Files export, separate from a complete iPhone backup. It can contain sensitive frozen paycheck amounts, work snapshots and supported original bytes. It does not send pay data to a LinePaycheck server or copy App Store access, local activity or diagnostics. A protected copy is still private material; do not publish it or its password. Deleting local data does not remove a transfer already saved elsewhere. Read the [transfer limits]({{< relref "/backup-and-restore" >}}) before relying on it.

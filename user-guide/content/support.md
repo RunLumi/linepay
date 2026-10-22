@@ -35,3 +35,5 @@ Keep your original paystub and, where possible, a complete verified backup. Do n
 For a question about a contractual entitlement or wages legally owed, use payroll or an appropriately qualified adviser. For Apple-account billing, cancellation, or refund questions, use Apple’s subscription/support controls.
 
 Useful starting points: [Troubleshooting]({{< relref "/troubleshooting" >}}), [understanding results]({{< relref "/audit-results" >}}), and [backup and restore]({{< relref "/backup-and-restore" >}}).
+
+For a v2 portable-transfer issue, also state the exporting client/version, whether the failure occurred before or after the replacement preview, and the exact refusal message. Preserve the unchanged source copy and a complete destination backup when possible. Do not send a transfer or its passphrase by default; password protection does not make it appropriate to publish.

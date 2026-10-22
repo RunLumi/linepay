@@ -14,6 +14,29 @@ enum LinePayFormat {
             ?? "\(money.currencyCode) \(decimal(money.amount))"
     }
 
+    /// Rates may carry precision below a currency's payable minor unit. Keep that precision
+    /// visible without converting the value through a binary floating-point formatter.
+    static func rate(_ money: Money, locale: Locale = .current) -> String {
+        var amount = money.amount
+        var rounded = Decimal()
+        let digits = fractionDigits(currencyCode: money.currencyCode)
+        NSDecimalRound(&rounded, &amount, digits, .plain)
+        let text = decimal(amount)
+        let significantDigits = text.filter(\.isNumber).drop(while: { $0 == "0" }).count
+        if rounded != amount || significantDigits > 15 {
+            let separator = locale.decimalSeparator ?? "."
+            return money.currencyCode + " " + text.replacingOccurrences(of: ".", with: separator)
+        }
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .currency
+        formatter.currencyCode = money.currencyCode
+        formatter.minimumFractionDigits = digits
+        formatter.maximumFractionDigits = digits
+        return formatter.string(from: NSDecimalNumber(decimal: amount))
+            ?? money.currencyCode + " " + text
+    }
+
     /// ISO 4217 minor units as Foundation reports them for the currency.
     static func fractionDigits(currencyCode: String) -> Int {
         let formatter = NumberFormatter()
