@@ -2,6 +2,7 @@ package com.streamentry.linepay.android
 
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -129,12 +130,13 @@ class LinePaycheckJourneyTest {
         }
         val firstInput = e2ePaycheckInput("2026-10-12", "2026-10-18", "400.00")
         val (withFirst, first) = LinePaycheckRepository.savePaycheck(prepared, firstInput, createdAtEpochSeconds = 20)
+        val (withAlternative, alternative) = LinePaycheckRepository.savePaycheck(withFirst, firstInput, createdAtEpochSeconds = 22)
         val nextProfile = profile.copy(
             id = java.util.UUID.randomUUID().toString(),
             cycleStartDate = "2026-10-19",
             version = "2",
         )
-        prepared = withFirst.copy(profile = nextProfile)
+        prepared = withAlternative.copy(profile = nextProfile)
         val secondInput = e2ePaycheckInput("2026-10-19", "2026-10-25", "800.00")
         val (withSecond, second) = LinePaycheckRepository.savePaycheck(prepared, secondInput, createdAtEpochSeconds = 21)
         prepared = withSecond
@@ -146,15 +148,16 @@ class LinePaycheckJourneyTest {
         compose.activityRule.scenario.recreate()
         compose.waitForIdle()
         val retained = store.load()
-        assertEquals(2, retained.checks.size)
+        assertEquals(3, retained.checks.size)
 
         compose.onNodeWithTag("nav.pay").performClick()
         compose.onNodeWithTag("pay.weekly-review").performScrollTo().performClick()
         enter("weekly.start", "2026-10-17 00:00")
         enter("weekly.wages", "1200.00")
-        for (check in listOf(first, second)) {
-            compose.onNodeWithTag("weekly.source.${check.id}").performScrollTo().performClick()
-        }
+        compose.onNodeWithTag("weekly.source.${alternative.id}").performScrollTo().assertIsNotSelected().performClick()
+        compose.onNodeWithTag("weekly.source.${first.id}").performScrollTo().assertIsNotSelected().performClick()
+        compose.onNodeWithTag("weekly.source.${alternative.id}").performScrollTo().assertIsNotSelected()
+        compose.onNodeWithTag("weekly.source.${second.id}").performScrollTo().assertIsNotSelected().performClick()
         for (tag in listOf(
             "weekly.confirm-boundary",
             "weekly.confirm-employer",
@@ -174,6 +177,8 @@ class LinePaycheckJourneyTest {
         assertEquals("NEEDS_REVIEW", saved.checks.single { it.id == first.id }.verdict)
         assertEquals("NEEDS_REVIEW", saved.checks.single { it.id == second.id }.verdict)
         assertEquals(2, saved.weeklyReviews.single().source.periods.size)
+        assertEquals(listOf(first.id, second.id), saved.weeklyReviews.single().source.periods.map { it.periodId })
+        assertEquals(alternative, saved.checks.single { it.id == alternative.id })
         assertEquals(
             saved.weeklyReviews.single().source.workContainingPeriodIds,
             saved.weeklyReviews.single().source.periods.map { it.periodId },
@@ -190,7 +195,7 @@ class LinePaycheckJourneyTest {
         compose.onNodeWithTag("nav.history").performClick()
         compose.onNodeWithText("Weekly review receipts").assertExists()
         compose.onNodeWithText("2026-10-17 · additional premium reference USD 100.00").assertExists()
-        compose.onAllNodesWithText("Needs review: weekly-rate review is pending").assertCountEquals(2)
+        compose.onAllNodesWithText("Needs review: weekly-rate review is pending").assertCountEquals(3)
         val receiptId = saved.weeklyReviews.single().id
         compose.onNodeWithTag("history.weekly-receipt.$receiptId").performScrollTo().performClick()
         compose.onNodeWithTag("weekly-receipt.detail-title").assertTextContains("Weekly review receipt")

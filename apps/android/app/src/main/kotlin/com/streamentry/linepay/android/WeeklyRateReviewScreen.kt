@@ -6,6 +6,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -81,26 +82,47 @@ fun WeeklyRateReviewScreen(
         Text("A calendar pay period does not establish the employer's recurring workweek boundary.")
 
         SectionHeading("Saved paycheck periods and work")
-        Text("Select each saved period that contains work in this week. The receipt freezes its period dates, rule profile, and relevant work entries.")
+        Text("Choose one saved check for each distinct period. If a period has several checks, inspect their work and rule versions before choosing. All alternatives remain in history.")
         if (visibleSources.isFailure) {
             Text("Enter a valid, unambiguous workweek start to see matching saved periods.")
         } else if (sources.isEmpty()) {
             Text("No saved paycheck period contains work in this 168-hour workweek.")
         } else {
-            sources.forEach { check ->
-                WeeklySelectionRow(
-                    checked = check.id in checkedIds,
-                    tag = "weekly.source.${check.id}",
-                    label = "${check.targetStartDate} – ${check.targetLastDate} · ${check.profile.currencyCode} ${check.profile.hourlyRate}/hr · rule ${check.profile.version}",
-                ) { selected ->
-                    val next = checkedIds.toMutableSet()
-                    if (selected) next += check.id else next -= check.id
-                    selectedIds = next.sorted().joinToString(",")
-                    changed()
+            sources.groupBy(AndroidWeeklyReviewRepository::sourcePeriodKey).forEach { (period, alternatives) ->
+                Text("${period.first} – ${period.second} · ${period.third}", style = MaterialTheme.typography.titleSmall)
+                if (alternatives.size > 1) Text("${alternatives.size} saved alternatives · choose one; none is selected for you.")
+                alternatives.forEach { check ->
+                    WeeklySelectionRow(
+                        checked = check.id in checkedIds,
+                        tag = "weekly.source.${check.id}",
+                        label = "${check.profile.currencyCode} ${check.profile.hourlyRate}/hr · rule ${check.profile.version} · ${check.work.size} work entries · saved ${Instant.ofEpochSecond(check.createdAtEpochSeconds)}",
+                    ) { selected ->
+                        val next = checkedIds.toMutableSet()
+                        next.removeAll(alternatives.map { it.id }.toSet())
+                        if (selected) next += check.id
+                        selectedIds = next.sorted().joinToString(",")
+                        changed()
+                    }
+                    var inspectSource by rememberSaveable(check.id) { mutableStateOf(false) }
+                    OutlinedButton(
+                        onClick = { inspectSource = !inspectSource },
+                        modifier = Modifier.fillMaxWidth().testTag("weekly.inspect.${check.id}"),
+                    ) { Text(if (inspectSource) "Hide source work" else "Inspect saved source work") }
+                    if (inspectSource) {
+                        Text("Saved source identity: ${check.id}")
+                        Text("Original source work is shown below. Weekly calculation clips it to the confirmed 168-hour interval and removes recorded unpaid breaks.")
+                        check.work.forEach { entry ->
+                            val sourceZone = ZoneId.of(entry.timeZone)
+                            Text("${Instant.ofEpochSecond(entry.startEpochSeconds).atZone(sourceZone)} – ${Instant.ofEpochSecond(entry.endEpochSeconds).atZone(sourceZone)} · work ${entry.id}")
+                            entry.breaks.forEach { pause ->
+                                Text("Unpaid break: ${Instant.ofEpochSecond(pause.startEpochSeconds).atZone(sourceZone)} – ${Instant.ofEpochSecond(pause.endEpochSeconds).atZone(sourceZone)}")
+                            }
+                        }
+                    }
                 }
             }
         }
-        Text("Only saved periods containing work in this 168-hour week are shown. Choose every period yourself; none are selected automatically. Confirm that they belong to one employer and contain all work for the week.")
+        Text("Only saved periods containing work in this 168-hour week are shown. Choose one source for every distinct period yourself; none are selected automatically. The selected sources must cover every recorded shift, including work retained in alternatives. Confirm that they belong to one employer and contain all work for the week.")
 
         SectionHeading("Reviewed payments")
         LocalTextField(
@@ -235,7 +257,7 @@ private fun WeeklySelectionRow(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = checked, onCheckedChange = onCheckedChange, modifier = Modifier.testTag(tag))
+        RadioButton(selected = checked, onClick = { onCheckedChange(true) }, modifier = Modifier.testTag(tag))
         Text(label, modifier = Modifier.weight(1f))
     }
 }
