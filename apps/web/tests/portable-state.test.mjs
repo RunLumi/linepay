@@ -214,7 +214,7 @@ test('new effective plans on an imported current period export without dropping 
   sameFinancial(exported(restored),combined);
 });
 
-function patched(document,operations){const result=structuredClone(document);for(const operation of operations){const path=operation.path.slice(1).split('/').map(key=>key.replaceAll('~1','/').replaceAll('~0','~'));let target=result;for(const key of path.slice(0,-1))target=target[key];const key=path.at(-1);if(operation.op==='remove'){if(Array.isArray(target))target.splice(Number(key),1);else delete target[key];}else target[key]=structuredClone(operation.value);}return result;}
+function patched(document,operations){const result=structuredClone(document);for(const operation of operations){const path=operation.path.slice(1).split('/').map(key=>key.replaceAll('~1','/').replaceAll('~0','~'));let target=result;for(const key of path.slice(0,-1))target=target[key];const key=path.at(-1);if(operation.op==='remove'){if(Array.isArray(target))target.splice(Number(key),1);else delete target[key];}else if(Array.isArray(target) && key==='-')target.push(structuredClone(operation.value));else target[key]=structuredClone(operation.value);}return result;}
 test('every applicable shared refusal vector reaches the real reader; activation review retains source',()=>{
  const cases=JSON.parse(readFileSync(contractRoot+'/fixtures/refusal-cases-v1.json')).cases;
  for(const item of cases.filter(item=>!item.target || item.target==='web')){const base=JSON.parse(readFileSync(contractRoot+'/fixtures/'+(item.baseFixture??'common-weekly-pending.json'))),doc=patched(base,item.operations);
@@ -277,4 +277,23 @@ test('period-owned future changes at exclusive end and later stay stored without
 test('only exact recognized frozen source reasons satisfy a pending-weekly verdict',()=>{
  const doc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));doc.paycheckReceipts[0].assessment.reviewReasons=['A separate complete-workweek review is pending.'];validateState(readPortable(bytes(doc),emptyState));
  doc.paycheckReceipts[0].assessment.reviewReasons=['A separate weekly schedule review is pending.'];assert.throws(()=>readPortable(bytes(doc),emptyState),/pending weekly review/);
+});
+
+test('nested assessment array markers reject known-empty contradictions before constructing replacement state',()=>{
+  const sourceDoc=JSON.parse(readFileSync(contractRoot+'/fixtures/common-weekly-pending.json'));
+  for(const unknown of [false,true]){
+    const doc=structuredClone(sourceDoc),assessment=doc.paycheckReceipts[0].assessment;
+    assessment.weeklyReviewRefs=unknown?null:[];
+    assessment.fieldsNotRecorded=assessment.fieldsNotRecorded.filter(field=>field!=='weeklyReviewRefs');
+    if(unknown)assessment.fieldsNotRecorded.push('weeklyReviewRefs');
+    const restored=validateState(readPortable(bytes(doc),emptyState)),result=exported(restored);
+    assert.deepEqual(result.paycheckReceipts[0].assessment.weeklyReviewRefs,unknown?null:[]);
+    assert.equal(result.paycheckReceipts[0].assessment.fieldsNotRecorded.includes('weeklyReviewRefs'),unknown);
+    sameFinancial(result,doc);
+  }
+  const invalid=structuredClone(sourceDoc),assessment=invalid.paycheckReceipts[0].assessment;
+  assessment.weeklyReviewRefs=[];assessment.fieldsNotRecorded=[...new Set([...assessment.fieldsNotRecorded,'weeklyReviewRefs'])];
+  const destination=source(),before=structuredClone(destination);let replacementConstructed=false;
+  assert.throws(()=>readPortable(bytes(invalid),()=>{replacementConstructed=true;return destination;}),/Source unknown marker weeklyReviewRefs.*explicit null/);
+  assert.equal(replacementConstructed,false);assert.deepEqual(destination,before);
 });

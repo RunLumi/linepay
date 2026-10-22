@@ -51,6 +51,8 @@ def patched(document,operations):
         parts=[key.replace('~1','/').replace('~0','~') for key in operation['path'][1:].split('/')]
         target=result
         for key in parts[:-1]:target=target[int(key)] if isinstance(target,list) else target[key]
+        if operation['op']=='add' and isinstance(target,list) and parts[-1]=='-':
+            target.append(operation['value']);continue
         key=int(parts[-1]) if isinstance(target,list) else parts[-1]
         if operation['op']=='remove':del target[key]
         else:target[key]=operation['value']
