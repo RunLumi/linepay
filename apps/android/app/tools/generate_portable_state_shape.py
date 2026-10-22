@@ -18,7 +18,9 @@ def generate(s,var,path,indent='        '):
   choices=s['anyOf'];assert len(choices)==2 and choices[1]=={'type':'null'}
   emit('if (!'+var+'.isJsonNull) {');z+=generate(choices[0],var,path,indent+'    ');emit('}');return z
  if 'const'in s: emit('require('+var+' == com.google.gson.JsonParser.parseString('+q(json.dumps(s['const']))+')) { '+path+' + " has an unsupported value." }')
- if 'enum'in s:emit('require('+var+'.isJsonPrimitive && '+var+'.asJsonPrimitive.isString && '+var+'.asString in setOf('+', '.join(map(q,s['enum']))+')) { '+path+' + " has an unsupported value." }')
+ if 'enum'in s:
+  allowed = 'canonicalTimeZones' if s is schema['$defs']['timeZone'] else 'setOf('+', '.join(map(q,s['enum']))+')'
+  emit('require('+var+'.isJsonPrimitive && '+var+'.asJsonPrimitive.isString && '+var+'.asString in '+allowed+') { '+path+' + " has an unsupported value." }')
  t=s.get('type')
  if t==['string','integer']:
   emit('if ('+var+'.isJsonPrimitive && '+var+'.asJsonPrimitive.isString) text('+var+', '+path+', 0, '+str(s.get('maxLength',100000000))+') else integer('+var+', '+path+', null, null)')
@@ -44,6 +46,7 @@ for name,s in [('document',schema)]+list(schema['$defs'].items()):
  if name=='date': body += ['        require(runCatching { java.time.LocalDate.parse(value.asString) }.isSuccess) { path + ": invalid calendar date." }']
  if name=='timeZone': body += ['        require(value.asString in java.time.ZoneId.getAvailableZoneIds()) { path + ": portable v1 needs a supported IANA time zone." }']
  out+=['    fun validate'+name[0].upper()+name[1:]+'(value: JsonElement, path: String = '+q(name)+') {']+body+['    }','']
+out += ['    private val canonicalTimeZones = setOf('+', '.join(map(q,schema['$defs']['timeZone']['enum']))+')', '']
 out+=['''    private fun fields(value: JsonElement, path: String, expected: Set<String>) {
         require(value.isJsonObject && value.asJsonObject.keySet() == expected) { "$path has missing or unknown fields." }
     }

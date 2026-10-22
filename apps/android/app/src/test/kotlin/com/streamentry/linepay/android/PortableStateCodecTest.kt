@@ -45,6 +45,35 @@ class PortableStateCodecTest {
         assertEquals(imported, AndroidLocalStateValidator.validate(backupState))
     }
 
+    @Test fun canonicalTimeZoneNamesAreExactAndUnsupportedShortFormsCannotReplaceState() {
+        val destination = sourceState()
+        val before = androidLocalStateGson().toJson(destination)
+        fun fixture(zone: String): com.google.gson.JsonObject {
+            val root = JsonParser.parseString(File(System.getProperty("linepay.sharedContracts"), "portable-state/fixtures/common-weekly-pending.json").readText()).asJsonObject
+            fun replaceZones(value: com.google.gson.JsonElement) {
+                when {
+                    value.isJsonObject -> value.asJsonObject.entrySet().toList().forEach { (key, child) ->
+                        if (key == "timeZone" && child.isJsonPrimitive) value.asJsonObject.addProperty(key, zone) else replaceZones(child)
+                    }
+                    value.isJsonArray -> value.asJsonArray.forEach { replaceZones(it) }
+                }
+            }
+            replaceZones(root)
+            return root
+        }
+        for (zone in listOf("PST", "CST", "IST", "utc", "us/eastern", "america/New_York")) {
+            assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.decode(fixture(zone).toString().toByteArray()) }
+            assertEquals(before, androidLocalStateGson().toJson(destination))
+        }
+        for (zone in listOf("US/Eastern", "UTC", "EST", "CET")) {
+            val source = fixture(zone)
+            val restored = AndroidPortableStateCodec.decode(source.toString().toByteArray())
+            val again = PortableStateJson.parse(AndroidPortableStateCodec.encode(restored, 1792281600))
+            for (field in listOf("profiles", "ruleSnapshots", "periods", "workSnapshots", "paycheckReceipts")) assertEquals(source.get(field), again.get(field))
+            assertEquals(zone, again.getAsJsonArray("profiles").first().asJsonObject.get("timeZone").asString)
+        }
+    }
+
     @Test fun commonFixtureImportsWithoutInventingNativeVerdictAndUnknownFieldsRefuseWholeFile() {
         val fixture = File(System.getProperty("linepay.sharedContracts"), "portable-state/fixtures/common-weekly-pending.json").readBytes()
         val imported = AndroidPortableStateCodec.decode(fixture)
