@@ -82,6 +82,7 @@ private enum class AppPage(val title: String) {
     WEEKLY_RECEIPT("Weekly review receipt"),
     BENEFITS("Employer contributions"),
     BENEFIT_RECEIPT("Benefit receipt"),
+    PORTABLE_RECEIPT("Original source receipt"),
 }
 
 @Composable
@@ -93,17 +94,21 @@ fun LinePaycheckApp(
     saveError: String?,
     activityError: String?,
     onSaveState: (AndroidLocalState) -> Boolean,
+    onReplaceState: (AndroidLocalState) -> Boolean,
     onSaveActivity: (AndroidLocalActivitySnapshot) -> Boolean,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.TODAY) }
     var page by rememberSaveable { mutableStateOf(AppPage.ROOT) }
     var editingProfile by rememberSaveable { mutableStateOf(false) }
     var selectedWeeklyReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedPortableReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedBenefitReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
     var revisingBenefitReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
     var benefitDraftDirty by rememberSaveable { mutableStateOf(false) }
     var discardBenefitDraft by remember { mutableStateOf(false) }
     val activeProfile = state.profile
+    val unprojectedSource = activeProfile == null && AndroidPortableStateCodec.sourceProfileForReview(state) != null
+    val hasWorkspace = activeProfile != null || unprojectedSource
 
     if (discardBenefitDraft) androidx.compose.material3.AlertDialog(
         onDismissRequest = { discardBenefitDraft = false },
@@ -138,7 +143,7 @@ fun LinePaycheckApp(
     Scaffold(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         topBar = {
-            if (activeProfile != null && page != AppPage.ROOT) {
+            if (hasWorkspace && page != AppPage.ROOT) {
                 TopAppBar(
                     title = { Text(if (page == AppPage.SETUP && !editingProfile) "Pay rules" else page.title) },
                     navigationIcon = {
@@ -152,12 +157,12 @@ fun LinePaycheckApp(
                         ) { Text("Back") }
                     },
                 )
-            } else if (activeProfile != null) {
+            } else if (hasWorkspace) {
                 TopAppBar(title = { Text(selectedTab.title) })
             }
         },
         bottomBar = {
-            if (activeProfile != null && page == AppPage.ROOT) {
+            if (hasWorkspace && page == AppPage.ROOT) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     MainTab.entries.forEach { tab ->
                         NavigationBarItem(
@@ -178,10 +183,30 @@ fun LinePaycheckApp(
             color = MaterialTheme.colorScheme.background,
         ) {
             when {
-                activeProfile == null -> PayRuleSetupScreen(
+                unprojectedSource && page in setOf(AppPage.ROOT, AppPage.SETUP, AppPage.ADD_WORK, AppPage.RECORD_PAYCHECK, AppPage.WEEKLY_REVIEW, AppPage.BENEFITS) -> when {
+                    page == AppPage.SETUP -> PayRuleSetupScreen(
+                        initial = null, saveError = saveError, importedPeriodLabel = portableCurrentPeriodLabel(state),
+                        importedSourceNeedsAdoption = true, separateLedgerRequired = AndroidPortableStateCodec.requiresSeparateNativeLedger(state),
+                        showFutureDefaultChoice = true,
+                        onSave = { profile, newLedger ->
+                            if (onSaveState(AndroidPortableStateCodec.adopt(state, profile, startNewWorkLedger = newLedger))) { page = AppPage.ROOT; selectedTab = MainTab.TODAY }
+                        },
+                    )
+                    page != AppPage.ROOT -> PortableUnprojectedSourceScreen(state) { page = AppPage.SETUP }
+                    selectedTab == MainTab.HISTORY -> HistoryScreen(state, saveError, onDeleteCheck = { false },
+                        onOpenBenefitReceipt = { selectedBenefitReceiptId = it; page = AppPage.BENEFIT_RECEIPT },
+                        onOpenPortableReceipt = { selectedPortableReceiptId = it; page = AppPage.PORTABLE_RECEIPT },
+                        onOpenWeeklyReceipt = { selectedWeeklyReceiptId = it; page = AppPage.WEEKLY_RECEIPT })
+                    selectedTab == MainTab.SETTINGS -> SettingsScreen(state, activity, activityError, saveError,
+                        onEditRules = { page = AppPage.SETUP }, onBenefits = { page = AppPage.SETUP },
+                        onOpenBenefitReceipt = { selectedBenefitReceiptId = it; page = AppPage.BENEFIT_RECEIPT },
+                        onReplaceState = onReplaceState, onSaveActivity = onSaveActivity)
+                    else -> PortableUnprojectedSourceScreen(state) { page = AppPage.SETUP }
+                }
+                activeProfile == null && !unprojectedSource -> PayRuleSetupScreen(
                     initial = null,
                     saveError = saveError,
-                    onSave = { profile ->
+                    onSave = { profile, _ ->
                         if (onSaveState(state.copy(profile = profile))) {
                             selectedTab = MainTab.TODAY
                             page = AppPage.ROOT
@@ -228,6 +253,13 @@ fun LinePaycheckApp(
                         WeeklyReviewReceiptDetailScreen(receipt)
                     }
                 }
+                page == AppPage.PORTABLE_RECEIPT -> {
+                    val archive = state.portableArchive
+                    val receipt = archive?.document?.getAsJsonArray("paycheckReceipts")
+                        ?.singleOrNull { it.asJsonObject.get("id").asString == selectedPortableReceiptId }?.asJsonObject
+                    if (archive == null || receipt == null) PageContent { Text("This source receipt is no longer available.") }
+                    else PortableReceiptDetail(archive, receipt)
+                }
                 page == AppPage.BENEFITS -> BenefitReviewScreen(
                     state = state,
                     revises = state.benefitReviews.singleOrNull { it.id == revisingBenefitReceiptId },
@@ -248,22 +280,29 @@ fun LinePaycheckApp(
                 }
                 page == AppPage.SETUP -> PayRuleSetupScreen(
                     initial = if (editingProfile) activeProfile else null,
+                    importedPeriodLabel = portableCurrentPeriodLabel(state),
+                    showFutureDefaultChoice = state.portableArchive != null,
+                    separateLedgerRequired = AndroidPortableStateCodec.requiresSeparateNativeLedger(state),
                     saveError = saveError,
-                    onSave = { profile ->
-                        if (onSaveState(state.copy(profile = profile))) {
+                    onSave = { profile, startNewWorkLedger ->
+                        if (onSaveState(if (activeProfile?.requiresPortableRuleConfirmation == true || activeProfile?.importedSourceProfileRef != null) AndroidPortableStateCodec.adopt(state, profile, startNewWorkLedger = startNewWorkLedger) else state.copy(profile = profile))) {
                             editingProfile = false
                             page = AppPage.ROOT
                         }
                     },
                 )
                 else -> when (selectedTab) {
-                    MainTab.TODAY -> TodayScreen(
+                    MainTab.TODAY -> if (activeProfile?.requiresPortableRuleConfirmation == true) {
+                        PortableAdoptionRequiredScreen(importedPeriodLabel = portableCurrentPeriodLabel(state)) { editingProfile = true; page = AppPage.SETUP }
+                    } else TodayScreen(
                         state = state,
                         saveError = saveError,
                         onAddWork = { page = AppPage.ADD_WORK },
                         onOpenPay = { selectedTab = MainTab.PAY },
                     )
-                    MainTab.PAY -> PayScreen(
+                    MainTab.PAY -> if (activeProfile?.requiresPortableRuleConfirmation == true) {
+                        PortableAdoptionRequiredScreen(importedPeriodLabel = portableCurrentPeriodLabel(state)) { editingProfile = true; page = AppPage.SETUP }
+                    } else PayScreen(
                         state = state,
                         onRecordPaycheck = { page = AppPage.RECORD_PAYCHECK },
                         onOpenHistory = { selectedTab = MainTab.HISTORY },
@@ -275,6 +314,7 @@ fun LinePaycheckApp(
                     )
                     MainTab.HISTORY -> HistoryScreen(
                         state = state,
+                        onOpenPortableReceipt = { id -> selectedPortableReceiptId = id; page = AppPage.PORTABLE_RECEIPT },
                         onOpenBenefitReceipt = { id -> selectedBenefitReceiptId = id; page = AppPage.BENEFIT_RECEIPT },
                         saveError = saveError,
                         onDeleteCheck = { id ->
@@ -295,8 +335,8 @@ fun LinePaycheckApp(
                             editingProfile = true
                             page = AppPage.SETUP
                         },
-                        onSaveState = onSaveState,
                         onSaveActivity = onSaveActivity,
+                        onReplaceState = onReplaceState,
                         onBenefits = { revisingBenefitReceiptId = null; benefitDraftDirty = false; page = AppPage.BENEFITS },
                         onOpenBenefitReceipt = { id -> selectedBenefitReceiptId = id; page = AppPage.BENEFIT_RECEIPT },
                     )

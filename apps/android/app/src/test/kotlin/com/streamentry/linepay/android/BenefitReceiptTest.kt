@@ -213,7 +213,7 @@ class BenefitReceiptTest {
         assertEquals(oldWork, root.get("work"))
         assertEquals(oldChecks, root.get("checks"))
         assertEquals(oldWeekly, root.get("weeklyReviews"))
-        assertEquals(4, root.get("schemaVersion").asInt)
+        assertEquals(AndroidLocalState.CURRENT_SCHEMA_VERSION, root.get("schemaVersion").asInt)
         assertEquals(workState, Gson().fromJson(root, AndroidLocalState::class.java))
         for (version in 1..3) {
             val smuggled = JsonParser.parseString(Gson().toJson(AndroidBenefitRepository.append(AndroidLocalState.empty(), preview()))).asJsonObject

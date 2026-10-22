@@ -38,15 +38,15 @@ fun SettingsScreen(
     onEditRules: () -> Unit,
     onBenefits: () -> Unit,
     onOpenBenefitReceipt: (String) -> Unit,
-    onSaveState: (AndroidLocalState) -> Boolean,
+    onReplaceState: (AndroidLocalState) -> Boolean,
     onSaveActivity: (AndroidLocalActivitySnapshot) -> Boolean,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val stateStore = remember { LocalStateStore(context.filesDir) }
     val activityStore = remember { LocalActivityStore(context.filesDir) }
-    var backupPassword by rememberSaveable { mutableStateOf("") }
-    var restorePassword by rememberSaveable { mutableStateOf("") }
+    var backupPassword by remember { mutableStateOf("") }
+    var restorePassword by remember { mutableStateOf("") }
     var pendingExport by remember { mutableStateOf<ByteArray?>(null) }
     var pendingImportBytes by remember { mutableStateOf<ByteArray?>(null) }
     var restorePreview by remember { mutableStateOf<AndroidLocalState?>(null) }
@@ -97,18 +97,29 @@ fun SettingsScreen(
     PageContent {
         Text("Privacy and local data", style = androidx.compose.material3.MaterialTheme.typography.headlineSmall)
         SectionHeading("Pay rules")
-        val profile = requireNotNull(state.profile)
-        Text("${profile.currencyCode} ${profile.hourlyRate} per hour")
-        Text("${profile.cadence.name.lowercase()} · ${profile.payrollTimeZone}")
-        Text("Rule version ${profile.version}")
+        val profile = state.profile?.takeUnless { it.requiresPortableRuleConfirmation }
+        if (profile == null) {
+            Text("Original imported rules remain read-only. No native pay rules are active.")
+            Text("Review and confirm separate native rules for new estimates. Original source profiles, work and receipts stay unchanged.")
+        } else {
+            Text("${profile.currencyCode} ${profile.hourlyRate} per hour")
+            Text("${profile.cadence.name.lowercase()} · ${profile.payrollTimeZone}")
+            Text("Rule version ${profile.version}")
+        }
         OutlinedButton(
             onClick = onEditRules,
             modifier = Modifier.fillMaxWidth().testTag("settings.edit-rules"),
-        ) { Text("Edit pay rules") }
+        ) { Text(if (profile == null) "Review imported pay rules" else "Edit pay rules") }
 
+        portableFutureDefaultLabel(state)?.let { future ->
+            SectionHeading("Saved future default")
+            Text(future)
+            Text("This imported selection is retained in backups separately from current work. Review the rules before starting a new native period.")
+        }
         SectionHeading("Employer contributions")
         Text("Compare one explicitly confirmed fund and period using your source rules and eligible quantities.")
-        OutlinedButton(onClick = onBenefits, modifier = Modifier.fillMaxWidth().testTag("settings.benefits")) { Text("Review employer contributions") }
+        OutlinedButton(onClick = onBenefits, enabled = state.profile != null, modifier = Modifier.fillMaxWidth().testTag("settings.benefits")) { Text("Review employer contributions") }
+        if (state.profile == null) Text("Confirm separate native pay rules before starting a new employer-contribution review. Saved receipts remain readable in History.")
         BenefitHistoryRows(state.benefitReviews, onOpenBenefitReceipt)
 
         SectionHeading("Privacy")
@@ -158,6 +169,7 @@ fun SettingsScreen(
 
         SectionHeading("Manual encrypted backup")
         Text("Backups contain pay data. Choose a private destination and keep the password separate; LinePaycheck does not save it.")
+        Text("Android-only backups preserve all supported local Android records. Portable v1 transfers a bounded shared financial format; unsupported financial records or originals refuse the whole export. Destination subscription/trial status and local activity are excluded and stay on this device.")
         OutlinedTextField(
             value = backupPassword,
             onValueChange = { backupPassword = it },
@@ -185,7 +197,28 @@ fun SettingsScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth().testTag("settings.export-backup"),
-        ) { Text(if (busy) "Preparing…" else "Choose backup destination") }
+        ) { Text(if (busy) "Preparing…" else "Save complete Android-only backup") }
+
+        OutlinedButton(
+            enabled = !busy,
+            onClick = {
+                busy = true
+                error = null
+                message = null
+                val password = backupPassword
+                scope.launch {
+                    runCatching {
+                        withContext(Dispatchers.IO) { stateStore.createPortableEncryptedBackup(state, password) }
+                    }.onSuccess { bytes ->
+                        pendingExport = bytes
+                        backupPassword = ""
+                        exportBackup.launch("LinePaycheck-portable-v1.lpb")
+                    }.onFailure { error = it.message ?: "Portable backup refused. No file was created." }
+                    busy = false
+                }
+            },
+            modifier = Modifier.fillMaxWidth().testTag("settings.export-portable"),
+        ) { Text("Save portable financial backup") }
 
         OutlinedTextField(
             value = restorePassword,
@@ -229,13 +262,20 @@ fun SettingsScreen(
         restorePreview?.let { candidate ->
             val workLabel = if (candidate.work.size == 1) "work entry" else "work entries"
             val checkLabel = if (candidate.checks.size == 1) "saved check" else "saved checks"
-            Text(
-                "Selected backup: ${candidate.work.size} $workLabel and ${candidate.checks.size} $checkLabel. Local activity is not included."
-            )
+            val source = candidate.portableArchive?.document
+            if (source == null) Text("Selected backup: ${candidate.work.size} $workLabel and ${candidate.checks.size} $checkLabel. Local activity is not included.")
+            else {
+                val snapshots = source.getAsJsonArray("workSnapshots")
+                val entries = snapshots.sumOf { it.asJsonObject.getAsJsonArray("work").size() }
+                Text("Portable backup: ${source.getAsJsonArray("profiles").size()} original pay profiles, ${source.getAsJsonArray("periods").size()} saved periods and ${snapshots.size()} source work snapshots containing $entries recorded entries. Frozen snapshots can contain different versions of the same work entry.")
+                Text(if (candidate.profile == null || candidate.profile.requiresPortableRuleConfirmation) "Original source data stays read-only until separate native rules and a new work context are explicitly confirmed. No missing source fact is filled in." else "The confirmed restore can activate ${candidate.work.size} entries in the compatible native work ledger.")
+            }
             Text("Additional review receipts: ${candidate.weeklyReviews.size} weekly and ${candidate.benefitReviews.size} employer-contribution receipts.")
+            Text("Imported original source receipts: ${candidate.portableArchive?.document?.getAsJsonArray("paycheckReceipts")?.size() ?: 0}. These remain read-only with their original engine, scope, verdict and review reasons; Android does not recalculate them.")
+            Text("Replacing pay data preserves this device's subscription/trial status and local activity. The reviewed financial records replace current pay data only after you confirm below.")
             Button(
                 onClick = {
-                    if (onSaveState(candidate)) {
+                    if (onReplaceState(candidate)) {
                         pendingImportBytes?.fill(0)
                         pendingImportBytes = null
                         restorePreview = null

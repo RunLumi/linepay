@@ -27,8 +27,15 @@ import androidx.compose.ui.unit.dp
 fun PayRuleSetupScreen(
     initial: AndroidRuleProfile?,
     saveError: String?,
-    onSave: (AndroidRuleProfile) -> Unit,
+    importedPeriodLabel: String? = null,
+    showFutureDefaultChoice: Boolean = false,
+    importedSourceNeedsAdoption: Boolean = false,
+    separateLedgerRequired: Boolean = false,
+    onSave: (AndroidRuleProfile, Boolean) -> Unit,
 ) {
+    val importing = importedSourceNeedsAdoption || initial?.requiresPortableRuleConfirmation == true || initial?.importedSourceProfileRef != null
+    var startNewWorkLedger by rememberSaveable(initial?.id) { mutableStateOf(false) }
+    val requiresNewWorkLedger = separateLedgerRequired || "unsupportedCurrentWork" in initial?.portableRuleFieldsNeedingConfirmation.orEmpty()
     var hourlyRate by rememberSaveable(initial?.id) { mutableStateOf(initial?.hourlyRate ?: "") }
     var currencyCode by rememberSaveable(initial?.id) { mutableStateOf(initial?.currencyCode ?: "USD") }
     var cadence by rememberSaveable(initial?.id) {
@@ -59,8 +66,13 @@ fun PayRuleSetupScreen(
         mutableStateOf(initial?.dailyOvertimeAfterHours != null)
     }
     var rulesReviewed by rememberSaveable(initial?.id) {
-        mutableStateOf(initial?.rulesReviewedByWorker ?: false)
+        mutableStateOf(if (importing) false else initial?.rulesReviewedByWorker ?: false)
     }
+    var useAsFutureDefault by rememberSaveable(initial?.id) { mutableStateOf(initial?.useAsFutureDefault ?: false) }
+    var effectiveStart by rememberSaveable(initial?.id) { mutableStateOf(initial?.effectiveStartDate.orEmpty()) }
+    var effectiveEnd by rememberSaveable(initial?.id) { mutableStateOf(initial?.effectiveEndDateInclusive.orEmpty()) }
+    var effectiveBoundsConfirmed by rememberSaveable(initial?.id) { mutableStateOf(false) }
+    var roundingChoiceConfirmed by rememberSaveable(initial?.id) { mutableStateOf(false) }
     var inputError by rememberSaveable(initial?.id) { mutableStateOf<String?>(null) }
 
     PageContent {
@@ -189,14 +201,50 @@ fun PayRuleSetupScreen(
             )
         }
 
+        if (initial?.hasIndependentEffectiveDates == true || importedSourceNeedsAdoption) {
+            importedPeriodLabel?.let { Text("Recorded current work period: $it. Choose the pay-cycle dates and rules for a separate new estimate; the original window stays unchanged.") }
+            SectionHeading("Effective dates for new estimates")
+            LocalTextField(effectiveStart, { effectiveStart = it; effectiveBoundsConfirmed = false }, "Effective start (blank means no lower limit)", "setup.effective-start")
+            LocalTextField(effectiveEnd, { effectiveEnd = it; effectiveBoundsConfirmed = false }, "Effective end inclusive (blank means no upper limit)", "setup.effective-end")
+        }
+        if (importing) {
+            if (importedSourceNeedsAdoption) Text("The source could not become a native calculation profile. The fields below define separate new rules; exact original values and unknown source facts stay unchanged in imported history.")
+            Text("Only the displayed hourly rate, optional daily tier, outside-schedule multiplier and per diem will be configured. Schedule, weekday/date premiums, callout minimums and weekly statutory treatment remain outside this limited estimate.")
+            Text("Source details needing review: ${initial?.portableRuleFieldsNeedingConfirmation.orEmpty().joinToString { portableRuleReviewLabel(it) }.ifEmpty { "confirm the imported values below for a separate native profile" }}. Confirm the rules below for new estimates. These choices do not reconstruct missing source facts. Saving creates a separate pay profile and rule; original receipts and unknown source fields stay unchanged.")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(effectiveBoundsConfirmed, { effectiveBoundsConfirmed = it }, modifier = Modifier.testTag("setup.confirm-effective-bounds"))
+                Text("I confirm the effective dates above, including any intentionally unbounded dates.")
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(roundingChoiceConfirmed, { roundingChoiceConfirmed = it }, modifier = Modifier.testTag("setup.confirm-rounding"))
+                Text("For new native calculations, I choose category rounding to 2 decimal places, half up. This does not verify the source's rounding or clear its weekly or legal review reasons.")
+            }
+        }
+        if (requiresNewWorkLedger) {
+            InlineMessage("Imported work stays in its original source context. This source cannot be activated as the current native work ledger.")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(startNewWorkLedger, { startNewWorkLedger = it }, modifier = Modifier.testTag("setup.new-work-ledger"))
+                Text("Start a separate empty work ledger for the new estimates. Keep all original work and receipts unchanged in imported history.")
+            }
+        }
+        if (showFutureDefaultChoice) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(useAsFutureDefault, { useAsFutureDefault = it }, modifier = Modifier.testTag("setup.future-default"))
+                Text("Use these rules as the saved default for future periods too. Leave off to retain the imported future default.")
+            }
+        }
         inputError?.let { InlineMessage(it, isError = true) }
         saveError?.let { InlineMessage(it, isError = true) }
         Button(
             onClick = {
                 runCatching {
+                    if (importing) {
+                        require(rulesReviewed && effectiveBoundsConfirmed && roundingChoiceConfirmed) { "Confirm the new estimate scope, effective dates and rounding before saving these rules." }
+                    }
+                    require(!requiresNewWorkLedger || startNewWorkLedger) { "Choose a separate empty work ledger before continuing; imported work stays read-only." }
                     val profile = AndroidRuleProfile(
-                        id = initial?.id ?: java.util.UUID.randomUUID().toString(),
-                        version = ((initial?.version?.toIntOrNull() ?: 0) + 1).toString(),
+                        id = if (importing) java.util.UUID.randomUUID().toString() else initial?.id ?: java.util.UUID.randomUUID().toString(),
+                        version = if (importing) "1" else ((initial?.version?.toIntOrNull() ?: 0) + 1).toString(),
                         hourlyRate = hourlyRate.trim(),
                         currencyCode = currencyCode.trim(),
                         cadence = cadence,
@@ -208,9 +256,13 @@ fun PayRuleSetupScreen(
                         outsideScheduleMultiplier = outsideScheduleMultiplier.trim(),
                         perDiemPerWorkDate = perDiem.trim().takeIf { it.isNotEmpty() },
                         rulesReviewedByWorker = rulesReviewed,
+                        useAsFutureDefault = useAsFutureDefault,
+                        hasIndependentEffectiveDates = initial?.hasIndependentEffectiveDates ?: importedSourceNeedsAdoption,
+                        effectiveStartDate = effectiveStart.trim().takeIf { it.isNotEmpty() },
+                        effectiveEndDateInclusive = effectiveEnd.trim().takeIf { it.isNotEmpty() },
                     )
                     AndroidLocalStateValidator.validateProfile(profile)
-                    onSave(profile)
+                    onSave(profile, startNewWorkLedger)
                     inputError = null
                 }.onFailure {
                     inputError = it.message ?: "Check the rule values and try again."
@@ -218,7 +270,7 @@ fun PayRuleSetupScreen(
             },
             modifier = Modifier.fillMaxWidth().padding(top = 20.dp).testTag("setup.save"),
         ) {
-            Text(if (initial == null) "Save pay rules" else "Save reviewed rules")
+            Text(if (importing) "Confirm rules for new estimates" else if (initial == null) "Save pay rules" else "Save reviewed rules")
         }
     }
 }

@@ -40,13 +40,19 @@ class MainActivity : ComponentActivity() {
                     saveError = saveError,
                     activityError = activityError,
                     onSaveState = ::saveState,
+                    onReplaceState = ::replacePayData,
                     onSaveActivity = ::saveActivity,
                 )
             }
         }
     }
 
-    private fun saveState(next: AndroidLocalState): Boolean {
+    private fun saveState(next: AndroidLocalState): Boolean = persistState(next, recordFinancialActivity = true)
+
+    /** Backup replacement preserves destination-owned activity rather than importing usage events. */
+    internal fun replacePayData(next: AndroidLocalState): Boolean = persistState(next, recordFinancialActivity = false)
+
+    private fun persistState(next: AndroidLocalState, recordFinancialActivity: Boolean): Boolean {
         val previous = state
         return try {
             store.save(next)
@@ -59,7 +65,7 @@ class MainActivity : ComponentActivity() {
                 next.weeklyReviews.size > previous.weeklyReviews.size -> "weekly-review-saved"
                 else -> null
             }
-            if (event != null) runCatching { activityStore.record(event) }
+            if (recordFinancialActivity && event != null) runCatching { activityStore.record(event) }
                 .onSuccess { activity = it }
                 .onFailure { activityError = it.message ?: "Local activity could not be saved." }
             true
