@@ -323,7 +323,7 @@ test("Actual v7 weekly history migrates without repricing or inventing line conf
   );
   const bytes = JSON.stringify(prior),
     current = decodeState(prior);
-  assert.equal(current.version, 8);
+  assert.equal(current.version, 9);
   assert.deepEqual(current.paycheckLineScopes, []);
   assert.equal(prior.weeklyReviews.length, 1);
   assert.deepEqual(current.periods, prior.periods);

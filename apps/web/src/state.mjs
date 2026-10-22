@@ -22,10 +22,11 @@ import {
   currentCalculation,
   reproduceSavedCalculation,
 } from "./calculation-context.mjs";
+import { validatePortableArchive, importedCoverage, importedConfirmationRequired } from "./portable-state.mjs";
 const encoder = new TextEncoder();
 export const emptyState = () => ({
   format: "com.streamentry.linepay.web.state",
-  version: 8,
+  version: 9,
   revision: 0,
   profiles: [],
   periods: [],
@@ -37,6 +38,7 @@ export const emptyState = () => ({
   paycheckScopes: [],
   weeklyReviews: [],
   paycheckLineScopes: [],
+  portableArchive: null,
 });
 const need = (x, message) => {
   if (!x) throw Error(message);
@@ -140,10 +142,12 @@ export function validateState(state) {
     "paycheckScopes",
     "weeklyReviews",
     "paycheckLineScopes",
+    "portableArchive",
   ]);
+  validatePortableArchive(state.portableArchive);
   need(
-    state.format === "com.streamentry.linepay.web.state" && state.version === 8,
-    "This web app cannot open this state format. Native app backups are not yet supported.",
+    state.format === "com.streamentry.linepay.web.state" && state.version === 9,
+    "Unsupported local state format. Use a web recovery snapshot or a typed portable financial transfer.",
   );
   need(
     Number.isSafeInteger(state.revision) &&
@@ -209,8 +213,8 @@ export function validateState(state) {
       keys(change, ["effectiveDate", "sourceProfileID", "agreement"]);
       date(change.effectiveDate);
       need(
-        change.effectiveDate >= period.start &&
-          change.effectiveDate <= period.end,
+        (change.effectiveDate >= period.start && change.effectiveDate <= period.end) ||
+          (change.effectiveDate > period.end && state.portableArchive?.nativeBaseline.ruleTimelines.some(source=>JSON.stringify(source)===JSON.stringify(timeline))),
         "Effective change lies outside its period.",
       );
       admitRule(change.agreement);
@@ -353,6 +357,7 @@ export function validateState(state) {
     );
     totalAudits += period.audits.length;
     for (const audit of period.audits) {
+      need(!importedConfirmationRequired(state,period.id), "Confirm a new browser rule snapshot before saving a check with unrecorded source calculation settings.");
       keys(audit, [
         "id",
         "createdAt",
@@ -372,6 +377,9 @@ export function validateState(state) {
         "paidGross",
         "paidPerDiem",
       ]);
+      const imported = importedCoverage(state, period.id);
+      need(!imported.unknownRules || audit.facts.unsupportedRules, "Imported unknown rule coverage must remain Needs review.");
+      need(!imported.weeklyPending || audit.facts.weeklyReviewPending, "Imported pending weekly review must remain pending.");
       workFacts(audit.work, period);
       const calculation = reproduceSavedCalculation(
         state,
@@ -723,6 +731,10 @@ export function decodeState(state) {
       paycheckLineScopes: [],
     };
   }
+  if (candidate?.format === "com.streamentry.linepay.web.state" && candidate.version === 8) {
+    keys(candidate, ["format", "version", "revision", "profiles", "periods", "benefitChecks", "templateOrigins", "resolutionEvents", "ruleTimelines", "paycycleSchedules", "paycheckScopes", "weeklyReviews", "paycheckLineScopes"]);
+    candidate = { ...structuredClone(candidate), version: 9, portableArchive: null };
+  }
   return validateState(candidate);
 }
 export function snapshot(state) {
@@ -746,7 +758,7 @@ export function inspectSnapshot(bytes) {
   need(
     payload.format === "com.streamentry.linepay.web.snapshot" &&
       payload.version === 1,
-    "This is not a supported web snapshot. Native snapshots need a future explicit migration.",
+    "Unsupported web recovery snapshot. Raw native snapshots are not portable financial transfers.",
   );
   return decodeState(payload.state);
 }

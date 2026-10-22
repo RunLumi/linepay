@@ -1,0 +1,293 @@
+{
+  "format": "com.streamentry.linepay.web.state",
+  "version": 8,
+  "revision": 8,
+  "profiles": [
+    {
+      "currency": "USD",
+      "hourlyRate": "50.00",
+      "outsideScheduleMultiplier": "1",
+      "regularSchedule": [],
+      "dailyOvertimeTiers": [],
+      "weekdayPremiums": [],
+      "datePremiums": [],
+      "calloutMinimumHours": null,
+      "perDiemPerWorkDate": null,
+      "rounding": {
+        "scale": 2,
+        "mode": "halfUp",
+        "scope": "payCategory"
+      },
+      "id": "synthetic-v1-rule",
+      "version": "1"
+    }
+  ],
+  "periods": [
+    {
+      "id": "synthetic-v1-period",
+      "start": "2026-10-16",
+      "end": "2026-10-16",
+      "zone": "UTC",
+      "rule": {
+        "currency": "USD",
+        "hourlyRate": "50.00",
+        "outsideScheduleMultiplier": "1",
+        "regularSchedule": [],
+        "dailyOvertimeTiers": [],
+        "weekdayPremiums": [],
+        "datePremiums": [],
+        "calloutMinimumHours": null,
+        "perDiemPerWorkDate": null,
+        "rounding": {
+          "scale": 2,
+          "mode": "halfUp",
+          "scope": "payCategory"
+        },
+        "id": "synthetic-v1-rule",
+        "version": "1"
+      },
+      "work": [
+        {
+          "startUTC": "2026-10-16T07:00:00Z",
+          "endUTC": "2026-10-16T15:00:00Z",
+          "kind": "regular",
+          "calloutEventID": null,
+          "unpaidBreaks": [],
+          "id": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+          "timeZone": "UTC"
+        }
+      ],
+      "audits": [
+        {
+          "id": "synthetic-v1-check",
+          "createdAt": "2026-10-17T00:00:00Z",
+          "work": [
+            {
+              "startUTC": "2026-10-16T07:00:00Z",
+              "endUTC": "2026-10-16T15:00:00Z",
+              "kind": "regular",
+              "calloutEventID": null,
+              "unpaidBreaks": [],
+              "id": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+              "timeZone": "UTC"
+            }
+          ],
+          "facts": {
+            "completeWork": true,
+            "grossBasis": "wagesOnly",
+            "unreviewedFields": false,
+            "unsupportedRules": false,
+            "weeklyReviewPending": false,
+            "paidGross": "375",
+            "paidPerDiem": null
+          },
+          "calculation": {
+            "engine": "linepay.web.configured-pay/1",
+            "coverage": "configuredRulesOnly",
+            "currency": "USD",
+            "components": [
+              {
+                "id": "synthetic-v1-rule:1:0",
+                "category": "workedHours",
+                "workID": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+                "date": "2026-10-16",
+                "workedSeconds": "28800.00000000",
+                "multiplier": "1",
+                "amount": "400.00",
+                "currency": "USD",
+                "reference": {
+                  "id": "synthetic-v1-rule",
+                  "version": "1"
+                },
+                "explanation": "Actual work at highest configured daily/weekday multiplier"
+              }
+            ],
+            "wages": "400.00",
+            "allowances": "0.00",
+            "total": "400.00"
+          },
+          "assessment": {
+            "engine": "linepay.web.configured-gross/1",
+            "verdict": "possibleShortfall",
+            "gross": "400.00",
+            "difference": "25.00",
+            "paidGross": "375",
+            "comparisons": [
+              {
+                "field": "grossPay",
+                "expected": "400.00",
+                "paid": "375",
+                "difference": "25.00",
+                "componentIDs": [
+                  "synthetic-v1-rule:1:0"
+                ]
+              }
+            ],
+            "reasons": []
+          }
+        },
+        {
+          "id": "synthetic-v8-confirmed-lines",
+          "createdAt": "2026-10-17T00:00:00Z",
+          "work": [
+            {
+              "startUTC": "2026-10-16T07:00:00Z",
+              "endUTC": "2026-10-16T15:00:00Z",
+              "kind": "regular",
+              "calloutEventID": null,
+              "unpaidBreaks": [],
+              "id": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+              "timeZone": "UTC"
+            }
+          ],
+          "facts": {
+            "completeWork": true,
+            "grossBasis": "wagesOnly",
+            "unreviewedFields": false,
+            "unsupportedRules": false,
+            "weeklyReviewPending": false,
+            "paidGross": "400.00",
+            "paidPerDiem": null
+          },
+          "calculation": {
+            "engine": "linepay.web.configured-pay/1",
+            "coverage": "configuredRulesOnly",
+            "currency": "USD",
+            "components": [
+              {
+                "id": "synthetic-v1-rule:1:0",
+                "category": "workedHours",
+                "workID": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+                "date": "2026-10-16",
+                "workedSeconds": "28800.00000000",
+                "multiplier": "1",
+                "amount": "400.00",
+                "currency": "USD",
+                "reference": {
+                  "id": "synthetic-v1-rule",
+                  "version": "1"
+                },
+                "explanation": "Actual work at highest configured daily/weekday multiplier"
+              }
+            ],
+            "wages": "400.00",
+            "allowances": "0.00",
+            "total": "400.00"
+          },
+          "assessment": {
+            "engine": "linepay.web.configured-lines/4",
+            "verdict": "matches",
+            "gross": "400.00",
+            "difference": "0.00",
+            "paidGross": "400.00",
+            "comparisons": [
+              {
+                "field": "grossPay",
+                "expected": "400.00",
+                "paid": "400.00",
+                "difference": "0.00",
+                "componentIDs": [
+                  "synthetic-v1-rule:1:0"
+                ]
+              },
+              {
+                "field": "regularPay",
+                "expected": "400.00",
+                "paid": "400.00",
+                "difference": "0.00",
+                "componentIDs": [
+                  "synthetic-v1-rule:1:0"
+                ],
+                "unit": "money"
+              },
+              {
+                "field": "regularHours",
+                "expected": "8.0000",
+                "paid": "8",
+                "difference": "0.0000",
+                "componentIDs": [
+                  "synthetic-v1-rule:1:0"
+                ],
+                "unit": "hours"
+              }
+            ],
+            "reasons": [],
+            "periodMatch": "confirmedSamePeriod",
+            "reportedPeriod": {
+              "startDate": "2026-10-16",
+              "endDate": "2026-10-16",
+              "timeZone": "UTC",
+              "confirmed": true
+            },
+            "weeklyContextCount": 0,
+            "weeklyReviewReferences": [],
+            "lineMapping": {
+              "layout": "fullRateBuckets",
+              "hoursBasis": "actualWork",
+              "guaranteeLayout": "unconfirmed",
+              "completeEarnings": true
+            }
+          }
+        }
+      ],
+      "closed": true,
+      "closedCalculation": {
+        "engine": "linepay.web.configured-pay/1",
+        "coverage": "configuredRulesOnly",
+        "currency": "USD",
+        "components": [
+          {
+            "id": "synthetic-v1-rule:1:0",
+            "category": "workedHours",
+            "workID": "d0f82c90-c6b0-512c-8f8c-cd17b70e7bdd",
+            "date": "2026-10-16",
+            "workedSeconds": "28800.00000000",
+            "multiplier": "1",
+            "amount": "400.00",
+            "currency": "USD",
+            "reference": {
+              "id": "synthetic-v1-rule",
+              "version": "1"
+            },
+            "explanation": "Actual work at highest configured daily/weekday multiplier"
+          }
+        ],
+        "wages": "400.00",
+        "allowances": "0.00",
+        "total": "400.00"
+      }
+    }
+  ],
+  "benefitChecks": [],
+  "templateOrigins": [],
+  "resolutionEvents": [],
+  "ruleTimelines": [],
+  "paycycleSchedules": [],
+  "paycheckScopes": [
+    {
+      "auditID": "synthetic-v8-confirmed-lines",
+      "periodID": "synthetic-v1-period",
+      "startDate": "2026-10-16",
+      "endDate": "2026-10-16",
+      "timeZone": "UTC",
+      "confirmed": true
+    }
+  ],
+  "weeklyReviews": [],
+  "paycheckLineScopes": [
+    {
+      "auditID": "synthetic-v8-confirmed-lines",
+      "periodID": "synthetic-v1-period",
+      "layout": "fullRateBuckets",
+      "hoursBasis": "actualWork",
+      "guaranteeLayout": "unconfirmed",
+      "completeEarnings": true,
+      "amounts": {
+        "regularPay": "400.00"
+      },
+      "hours": {
+        "regularHours": "8"
+      }
+    }
+  ]
+}
