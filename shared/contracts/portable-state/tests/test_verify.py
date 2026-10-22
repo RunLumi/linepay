@@ -280,6 +280,21 @@ class PortableStateContractTests(unittest.TestCase):
         receipt["assessment"]["reviewReasons"] = ["The paycheck work period has not been confirmed from source dates."]
         verify.validate_document(doc)
 
+    def test_nested_unknown_array_is_null_but_recorded_empty_array_stays_empty(self):
+        known_empty = self.load("common-weekly-pending.json")
+        known_assessment = known_empty["paycheckReceipts"][0]["assessment"]
+        self.assertEqual([], known_assessment["weeklyReviewRefs"])
+        self.assertNotIn("weeklyReviewRefs", known_assessment["fieldsNotRecorded"])
+        verify.validate_document(known_empty)
+
+        unknown = copy.deepcopy(known_empty)
+        unknown_assessment = unknown["paycheckReceipts"][0]["assessment"]
+        unknown_assessment["weeklyReviewRefs"] = None
+        unknown_assessment["fieldsNotRecorded"].append("weeklyReviewRefs")
+        verify.validate_document(unknown)
+        self.assertIsNone(unknown_assessment["weeklyReviewRefs"])
+        self.assertIn("weeklyReviewRefs", unknown_assessment["fieldsNotRecorded"])
+
     def test_ios_frozen_weekly_mapping_reason_is_recognized_without_rewriting(self):
         doc = self.load("common-weekly-pending.json")
         receipt = doc["paycheckReceipts"][0]
