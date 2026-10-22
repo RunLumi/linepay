@@ -33,7 +33,7 @@ data class AndroidWeeklyReviewSourceSnapshot(
     val startEpochSeconds: Long,
     val timeZone: String,
     val currencyCode: String,
-    /** Complete ordered inventory of saved paycheck periods with work in this fixed week. */
+    /** Complete ordered selection of non-overlapping saved period snapshots for this fixed week. */
     val workContainingPeriodIds: List<String>,
     val periods: List<AndroidWeeklySourcePeriodSnapshot>,
 )
@@ -222,6 +222,9 @@ object AndroidWeeklyReviewRepository {
     fun relatedReviews(state: AndroidLocalState, periodId: String): List<AndroidWeeklyReviewReceipt> =
         state.weeklyReviews.filter { review -> review.source.periods.any { it.periodId == periodId } }
 
+    internal fun sourcePeriodKey(check: AndroidPaycheckSnapshot): Triple<String, String, String> =
+        Triple(check.targetStartDate, check.targetLastDate, check.payrollTimeZone)
+
     fun periodsContainingWorkInWeek(
         state: AndroidLocalState,
         startLocal: String,
@@ -342,17 +345,26 @@ object AndroidWeeklyReviewRepository {
             periodSnapshot(check, start, end)
         }.filter { it.work.isNotEmpty() }
             .sortedWith(compareBy<AndroidWeeklySourcePeriodSnapshot> { periodWindow(it).start }.thenBy { it.periodId })
-        requireCanonicalWorkIsRepresented(state, start, end, eligiblePeriods)
-        val eligibleIds = eligiblePeriods.map { it.periodId }
-        require(selectedIds.toSet() == eligibleIds.toSet()) {
-            "Select every saved paycheck period that contains work for this week."
+        val eligibleById = eligiblePeriods.associateBy { it.periodId }
+        val selected = selectedIds.map { id ->
+            eligibleById[id] ?: throw IllegalArgumentException("A selected saved paycheck source is unavailable for this week.")
         }
-        require(eligiblePeriods.size <= MAXIMUM_SOURCE_PERIODS) {
+        val groups = eligiblePeriods.groupBy { Triple(it.targetStartDate, it.targetLastDate, it.payrollTimeZone) }
+        val selectedGroups = selected.groupBy { Triple(it.targetStartDate, it.targetLastDate, it.payrollTimeZone) }
+        require(selectedGroups.keys == groups.keys && selectedGroups.values.all { it.size == 1 }) {
+            "Choose exactly one saved check for every distinct period shown. Alternative checks are not additional work periods."
+        }
+        // Choosing an alternative must never silently discard a distinct retained shift.
+        val selectedWorkIds = selected.flatMap { it.work }.map { it.id }.toSet()
+        require(eligiblePeriods.flatMap { it.work }.all { it.id in selectedWorkIds }) {
+            "The selected checks omit recorded work retained in another source. Choose a complete source snapshot."
+        }
+        requireCanonicalWorkIsRepresented(state, start, end, selected)
+        require(selected.size <= MAXIMUM_SOURCE_PERIODS) {
             "Too many saved paycheck periods contain work in this week."
         }
-        val periods = eligiblePeriods.map { snapshot ->
-            val id = snapshot.periodId
-            val check = checks[id] ?: throw IllegalArgumentException("A selected saved paycheck period is unavailable.")
+        val periods = selected.map { snapshot ->
+            val check = checks.getValue(snapshot.periodId)
             require(check.profile.currencyCode.equals(currency, ignoreCase = true)) {
                 "A source period uses a different currency."
             }
@@ -378,13 +390,10 @@ object AndroidWeeklyReviewRepository {
     private fun validateCurrentSourceSet(state: AndroidLocalState, receipt: AndroidWeeklyReviewReceipt) {
         val start = receipt.source.startEpochSeconds
         val end = Math.addExact(start, WORKWEEK_SECONDS)
-        val current = state.checks.map { check -> periodSnapshot(check, start, end) }
-            .filter { it.work.isNotEmpty() }
-            .sortedWith(compareBy<AndroidWeeklySourcePeriodSnapshot> { periodWindow(it).start }.thenBy { it.periodId })
-        requireCanonicalWorkIsRepresented(state, start, end, current)
-        require(current.map { it.periodId } == receipt.source.workContainingPeriodIds) {
-            "Saved paycheck periods changed after preview. Review the complete week again before saving."
-        }
+        val current = sourceSnapshot(
+            state, receipt.source.workContainingPeriodIds, start, end,
+            ZoneId.of(receipt.source.timeZone), receipt.source.currencyCode,
+        ).periods
         require(current == receipt.source.periods) {
             "Saved paycheck work or rules changed after preview. Review the complete week again before saving."
         }
