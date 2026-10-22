@@ -31,6 +31,16 @@ filename alone is not a verified pairing. Retain the chosen reference and live r
 private release directory; the owner need not choose among known working keys. This does not grant
 authority to create keys, expand roles, or bypass the source-bound release checks.
 
+After a successful authenticated read, retain `credential-reference.json` in the private release
+bundle with `key_id`, `issuer_id`, `private_key_path`, `app_id`, `bundle_id`, `verified_at` and
+`scope`. This is a reference to an existing key; do not copy the `.p8` into the release bundle.
+On the current host, retained bundles are under `/Volumes/SSD/LinePaycheck-releases/`; the bundle
+is private (mode 0700) and its credential-reference file is mode 0600. Verify the intended app
+again before reuse. Do not depend on an old temporary readback directory remaining available,
+and never commit the issuer reference, key contents or tokens. October 22 read-only discovery
+verified the documented App Manager key against app `6808889292`; that verification did not
+create a key, alter its role or authorize any write.
+
 Prerequisites: repository-pinned Xcode/XcodeGen, a Python environment with `cryptography`, and `jq` for inspecting JSON. The Python package is developer tooling only, not an app dependency. Verify the existing environment before installing anything:
 
 ```bash
