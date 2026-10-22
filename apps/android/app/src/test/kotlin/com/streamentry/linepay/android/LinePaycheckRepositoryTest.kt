@@ -253,6 +253,7 @@ class LinePaycheckRepositoryTest {
         legacyRoot.getAsJsonArray("weeklyReviews").first().asJsonObject
             .getAsJsonObject("source").remove("workContainingPeriodIds")
         legacyRoot.getAsJsonArray("checks").forEach { encoded ->
+            encoded.asJsonObject.remove("confirmedLineFacts")
             encoded.asJsonObject.addProperty("weeklyReviewConfirmed", true)
             encoded.asJsonObject.addProperty("verdict", "MATCHES")
             val reasons = encoded.asJsonObject.getAsJsonArray("reviewReasons")
@@ -274,6 +275,7 @@ class LinePaycheckRepositoryTest {
 
         val omittedRoot = JsonParser.parseString(Gson().toJson(saved)).asJsonObject
         omittedRoot.addProperty("schemaVersion", 2)
+        omittedRoot.getAsJsonArray("checks").forEach { it.asJsonObject.remove("confirmedLineFacts") }
         omittedRoot.getAsJsonArray("weeklyReviews").first().asJsonObject
             .getAsJsonObject("source").remove("workContainingPeriodIds")
         omittedRoot.getAsJsonArray("weeklyReviews").first().asJsonObject

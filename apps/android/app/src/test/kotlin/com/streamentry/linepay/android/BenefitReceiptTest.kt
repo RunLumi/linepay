@@ -237,7 +237,8 @@ class BenefitReceiptTest {
             completeWorkweek = true, applicabilityConfirmed = true,
         ), 2)
         state = AndroidWeeklyReviewRepository.append(withCheck, weekly)
-        val originalJson = JsonParser.parseString(Gson().toJson(state)).asJsonObject
+        val historicalState = state.copy(checks = state.checks.map { it.copy(confirmedLineFacts = null) })
+        val originalJson = JsonParser.parseString(Gson().toJson(historicalState)).asJsonObject
         val next = AndroidBenefitRepository.append(state, preview())
         assertEquals(state.work, next.work)
         assertEquals(state.checks, next.checks)
@@ -252,7 +253,7 @@ class BenefitReceiptTest {
         legacy.remove("benefitReviews")
         migrateAndroidLocalState(legacy)
         for (key in listOf("profile", "work", "checks", "weeklyReviews")) assertEquals(originalJson[key], legacy[key])
-        assertEquals(state, AndroidLocalStateValidator.validate(Gson().fromJson(legacy, AndroidLocalState::class.java)))
+        assertEquals(historicalState, AndroidLocalStateValidator.validate(Gson().fromJson(legacy, AndroidLocalState::class.java)))
         // Older schemas retain their existing safety upgrades; this extension never changes work facts.
         for (version in 1..2) {
             val earlier = originalJson.deepCopy()

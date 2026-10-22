@@ -256,11 +256,32 @@ object AndroidPortableStateCodec {
                     "appliedAgreement" to obj("ruleRef" to ruleRef, "ruleID" to component.agreementId, "version" to component.agreementVersion, "hourlyRate" to null),
                     "unroundedAmount" to null, "baseTimeNumerator" to null, "fieldsNotRecorded" to (listOf("hours", "baseRate", "unroundedAmount", "baseTimeNumerator") + if (component.id == null && component.workId == null) listOf("workRef") else emptyList()))
             }
-            val missingPaystub = listOf("regularHours", "regularPay", "overtimeHours", "overtimePay", "doubleTimeHours", "doubleTimePay", "calloutPay", "perDiemPay", "notes", "confirmedAtEpochSeconds", "evidenceRef")
+            val captured = check.confirmedLineFacts
+            val observed = linkedMapOf(
+                "regularHours" to captured?.regularHours, "regularPay" to captured?.regularPay,
+                "overtimeHours" to captured?.overtimeHours, "overtimePay" to captured?.overtimePay,
+                "doubleTimeHours" to captured?.doubleTimeHours, "doubleTimePay" to captured?.doubleTimePay,
+                "calloutPay" to captured?.calloutPay, "perDiemPay" to captured?.paidPerDiem,
+            )
+            val missingPaystub = observed.filterValues { it == null }.keys + listOf("notes", "confirmedAtEpochSeconds", "evidenceRef", "confirmed")
             val paystub = obj("id" to id("paystub", "check-paystub:" + check.id, true), "periodStartDate" to check.sourceStartDate, "periodEndDateInclusive" to check.sourceLastDate,
-                "currency" to check.profile.currencyCode.uppercase(), "grossPay" to decimal(check.paidGross), "regularHours" to null, "regularPay" to null,
-                "overtimeHours" to null, "overtimePay" to null, "doubleTimeHours" to null, "doubleTimePay" to null, "calloutPay" to null,
-                "perDiemPay" to null, "notes" to null, "confirmedAtEpochSeconds" to null, "evidenceRef" to null, "confirmed" to null, "fieldsNotRecorded" to (missingPaystub + "confirmed"))
+                "currency" to check.profile.currencyCode.uppercase(), "grossPay" to if (captured == null) decimal(check.paidGross) else check.paidGross,
+                "regularHours" to observed["regularHours"], "regularPay" to observed["regularPay"],
+                "overtimeHours" to observed["overtimeHours"], "overtimePay" to observed["overtimePay"],
+                "doubleTimeHours" to observed["doubleTimeHours"], "doubleTimePay" to observed["doubleTimePay"], "calloutPay" to observed["calloutPay"],
+                "perDiemPay" to observed["perDiemPay"], "notes" to null, "confirmedAtEpochSeconds" to null, "evidenceRef" to null, "confirmed" to null, "fieldsNotRecorded" to missingPaystub)
+            val portableLines = if (captured == null) obj("grossBasis" to canonicalEnum(check.grossBasis.name), "lineLayout" to null, "hoursBasis" to null, "guaranteeLayout" to null,
+                "amounts" to null, "hours" to null, "reviewedFields" to null, "suggestions" to null,
+                "hasAdditionalUnmappedPay" to null, "workComplete" to null, "earningsLinesComplete" to null,
+                "fieldsNotRecorded" to listOf("lineLayout", "hoursBasis", "guaranteeLayout", "amounts", "hours", "reviewedFields", "suggestions", "hasAdditionalUnmappedPay", "workComplete", "earningsLinesComplete"))
+            else obj("grossBasis" to canonicalEnum(check.grossBasis.name), "lineLayout" to canonicalEnum(captured.layout),
+                "hoursBasis" to canonicalEnum(captured.hoursBasis), "guaranteeLayout" to canonicalEnum(captured.guaranteeLayout),
+                "amounts" to captured.amounts().map { (field, value) -> obj("field" to canonicalEnum(field.name), "amount" to obj("amount" to value, "currency" to check.profile.currencyCode.uppercase())) },
+                "hours" to captured.hours().map { (field, value) -> obj("field" to canonicalEnum(field.name), "hours" to value) },
+                "reviewedFields" to (listOf("grossPay") + observed.filterValues { it != null }.keys), "suggestions" to null,
+                "hasAdditionalUnmappedPay" to null, "workComplete" to check.completeWorkConfirmed, "earningsLinesComplete" to captured.completeEarningsLines,
+                "fieldsNotRecorded" to listOf("suggestions", "hasAdditionalUnmappedPay"))
+            val lineScope = captured != null && check.comparisons.any { it.field !in setOf("GROSS_PAY", "PER_DIEM_PAY") }
             val comparisons = check.comparisons.map { comparison -> obj("id" to comparison.field, "field" to canonicalEnum(comparison.field),
                 "expected" to decimal(comparison.expected), "paid" to decimal(comparison.paid), "difference" to decimal(comparison.difference),
                 "unit" to canonicalEnum(comparison.unit), "currency" to comparison.currencyCode,
@@ -271,19 +292,21 @@ object AndroidPortableStateCodec {
                     "assessmentEngineID" to check.engine, "assessmentEngineVersion" to null, "fieldsNotRecorded" to listOf("localStateSchema", "calculationEngineID", "calculationEngineVersion", "assessmentEngineVersion")),
                 "ruleRefs" to listOf(ruleRef), "sourcePeriod" to obj("startDate" to check.sourceStartDate, "endDateInclusive" to check.sourceLastDate, "timeZone" to check.sourceTimeZone, "confirmed" to check.sourcePeriodConfirmed, "fieldsNotRecorded" to emptyList<Any>()),
                 "paystubFacts" to paystub,
-                "lineFacts" to obj("grossBasis" to canonicalEnum(check.grossBasis.name), "lineLayout" to null, "hoursBasis" to null, "guaranteeLayout" to null,
-                    "amounts" to null, "hours" to null, "reviewedFields" to null, "suggestions" to null,
-                    "hasAdditionalUnmappedPay" to null, "workComplete" to null, "earningsLinesComplete" to null,
-                    "fieldsNotRecorded" to listOf("lineLayout", "hoursBasis", "guaranteeLayout", "amounts", "hours", "reviewedFields", "suggestions", "hasAdditionalUnmappedPay", "workComplete", "earningsLinesComplete")),
+                "lineFacts" to portableLines,
                 "reviewFacts" to obj("completeWorkConfirmed" to check.completeWorkConfirmed, "ruleCoverageConfirmed" to check.ruleCoverageConfirmed,
-                    "unreviewedFields" to null, "weeklyReviewPending" to if ("WEEKLY_REVIEW_PENDING" in check.reviewReasons) true else null,
-                    "fieldsNotRecorded" to (listOf("unreviewedFields") + if ("WEEKLY_REVIEW_PENDING" !in check.reviewReasons) listOf("weeklyReviewPending") else emptyList())),
+                    "unreviewedFields" to if (captured != null) !check.sourcePeriodConfirmed else null,
+                    "weeklyReviewPending" to if (captured != null || "WEEKLY_REVIEW_PENDING" in check.reviewReasons) true else null,
+                    "fieldsNotRecorded" to (
+                        (if (captured == null) listOf("unreviewedFields") else emptyList<String>()) +
+                            (if (captured == null && "WEEKLY_REVIEW_PENDING" !in check.reviewReasons) listOf("weeklyReviewPending") else emptyList())
+                    ),
+                ),
                 "calculation" to if (components.isEmpty()) null else obj("agreementID" to (check.profile.calculationRuleID ?: check.profile.id), "agreementVersion" to check.profile.version,
                     "primaryRuleRef" to ruleRef, "agreementSnapshotRefs" to listOf(ruleRef), "currency" to check.profile.currencyCode.uppercase(), "total" to null,
                     "provenance" to null, "weeklyRegularRate" to null, "components" to components,
                     "engine" to null, "coverage" to null, "wages" to null, "allowances" to null, "ruleTimelineRef" to null, "ruleChangeRefs" to emptyList<Any>(),
                     "fieldsNotRecorded" to listOf("total", "provenance", "weeklyRegularRate", "engine", "coverage", "wages", "allowances", "ruleTimelineRef")),
-                "assessment" to obj("engineID" to check.engine, "engineVersion" to null, "verdict" to canonicalEnum(check.verdict), "scope" to "grossOnly",
+                "assessment" to obj("engineID" to check.engine, "engineVersion" to null, "verdict" to canonicalEnum(check.verdict), "scope" to if (lineScope) "confirmedLines" else "grossOnly",
                     "expectedGross" to check.expectedGross?.let { money(it, check.profile.currencyCode) }, "paidGross" to money(check.paidGross, check.profile.currencyCode),
                     "difference" to check.difference?.let { money(it, check.profile.currencyCode) }, "comparisons" to comparisons,
                     "reviewReasons" to check.reviewReasons, "scopeNotes" to listOf(check.coverage), "weeklyContextCount" to null,

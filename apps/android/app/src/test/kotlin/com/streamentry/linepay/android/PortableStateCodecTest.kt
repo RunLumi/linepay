@@ -45,6 +45,50 @@ class PortableStateCodecTest {
         assertEquals(imported, AndroidLocalStateValidator.validate(backupState))
     }
 
+    @Test fun canonicalTimeZoneNamesAreExactAndUnsupportedShortFormsCannotReplaceState() {
+        val destination = sourceState()
+        val before = androidLocalStateGson().toJson(destination)
+        fun fixture(zone: String): com.google.gson.JsonObject {
+            val root = JsonParser.parseString(File(System.getProperty("linepay.sharedContracts"), "portable-state/fixtures/common-weekly-pending.json").readText()).asJsonObject
+            fun replaceZones(value: com.google.gson.JsonElement) {
+                when {
+                    value.isJsonObject -> value.asJsonObject.entrySet().toList().forEach { (key, child) ->
+                        if (key == "timeZone" && child.isJsonPrimitive) value.asJsonObject.addProperty(key, zone) else replaceZones(child)
+                    }
+                    value.isJsonArray -> value.asJsonArray.forEach { replaceZones(it) }
+                }
+            }
+            replaceZones(root)
+            return root
+        }
+        for (zone in listOf("PST", "CST", "IST", "utc", "us/eastern", "america/New_York")) {
+            assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.decode(fixture(zone).toString().toByteArray()) }
+            assertEquals(before, androidLocalStateGson().toJson(destination))
+        }
+        for (zone in listOf("US/Eastern", "US/Pacific", "UTC", "Etc/UTC")) {
+            val source = fixture(zone)
+            val restored = AndroidPortableStateCodec.decode(source.toString().toByteArray())
+            val again = PortableStateJson.parse(AndroidPortableStateCodec.encode(restored, 1792281600))
+            for (field in listOf("profiles", "ruleSnapshots", "periods", "workSnapshots", "paycheckReceipts")) assertEquals(source.get(field), again.get(field))
+            assertEquals(zone, again.getAsJsonArray("profiles").first().asJsonObject.get("timeZone").asString)
+        }
+        // Canonical wire membership and runtime tzdb availability are independent admission gates.
+        // EST is canonical but unavailable in JDK 21's ZoneId provider; other runtimes may support it.
+        val available = java.time.ZoneId.getAvailableZoneIds()
+        for (zone in listOf("EST", "CET")) {
+            val source = fixture(zone)
+            if (zone in available) {
+                val restored = AndroidPortableStateCodec.decode(source.toString().toByteArray())
+                val again = PortableStateJson.parse(AndroidPortableStateCodec.encode(restored, 1792281600))
+                for (field in listOf("profiles", "ruleSnapshots", "periods", "workSnapshots", "paycheckReceipts")) assertEquals(source.get(field), again.get(field))
+            } else {
+                val error = assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.decode(source.toString().toByteArray()) }
+                assertTrue(error.message!!.contains("needs a supported IANA time zone"))
+                assertEquals(before, androidLocalStateGson().toJson(destination))
+            }
+        }
+    }
+
     @Test fun commonFixtureImportsWithoutInventingNativeVerdictAndUnknownFieldsRefuseWholeFile() {
         val fixture = File(System.getProperty("linepay.sharedContracts"), "portable-state/fixtures/common-weekly-pending.json").readBytes()
         val imported = AndroidPortableStateCodec.decode(fixture)
@@ -62,10 +106,11 @@ class PortableStateCodecTest {
         val legacy = JsonParser.parseString(Gson().toJson(state)).asJsonObject
         legacy.addProperty("schemaVersion", 4)
         legacy.remove("portableArchive")
+        legacy.getAsJsonArray("checks").forEach { it.asJsonObject.remove("confirmedLineFacts") }
         val old = legacy.deepCopy()
         migrateAndroidLocalState(legacy)
         for (key in listOf("profile", "work", "checks", "weeklyReviews", "benefitReviews")) assertEquals(old[key], legacy[key])
-        assertEquals(5, legacy.get("schemaVersion").asInt)
+        assertEquals(AndroidLocalState.CURRENT_SCHEMA_VERSION, legacy.get("schemaVersion").asInt)
         assertTrue(legacy.get("portableArchive").isJsonNull)
         AndroidLocalStateValidator.validate(Gson().fromJson(legacy, AndroidLocalState::class.java))
     }
@@ -75,7 +120,7 @@ class PortableStateCodecTest {
         assertEquals(5, check.components.size)
         assertEquals(1, check.components.map { it.amount }.toSet().size)
         assertTrue(check.components.all { it.id != null && it.workId != null })
-        val legacy = check.copy(components = check.components.map { it.copy(id = null, workId = null) })
+        val legacy = check.copy(confirmedLineFacts = null, components = check.components.map { it.copy(id = null, workId = null) })
         val exported = PortableStateJson.parse(AndroidPortableStateCodec.encode(state.copy(checks = listOf(legacy)), 1792195200))
         val components = exported.getAsJsonArray("paycheckReceipts").single().asJsonObject
             .getAsJsonObject("calculation").getAsJsonArray("components")
@@ -430,6 +475,7 @@ class PortableStateCodecTest {
         val newFields = listOf("hasIndependentEffectiveDates", "effectiveStartDate", "effectiveEndDateInclusive", "requiresPortableRuleConfirmation", "importedSourceProfileRef", "calculationRuleID", "portableRuleFieldsNeedingConfirmation")
         newFields.forEach { tree.getAsJsonObject("profile").remove(it) }
         tree.getAsJsonArray("checks").forEach { check ->
+            check.asJsonObject.remove("confirmedLineFacts")
             newFields.forEach { check.asJsonObject.getAsJsonObject("profile").remove(it) }
             check.asJsonObject.getAsJsonArray("components").forEach { it.asJsonObject.remove("id"); it.asJsonObject.remove("workId") }
         }

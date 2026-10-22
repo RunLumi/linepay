@@ -12,7 +12,6 @@ import com.streamentry.linepay.domain.Money
 import com.streamentry.linepay.domain.MoneyRounding
 import com.streamentry.linepay.domain.PaycheckHoursBasis
 import com.streamentry.linepay.domain.PaycheckLineFacts
-import com.streamentry.linepay.domain.PaycheckLineField
 import com.streamentry.linepay.domain.PaycheckSourcePeriod
 import com.streamentry.linepay.domain.EarningsLayout
 import com.streamentry.linepay.domain.GuaranteeLayout
@@ -46,6 +45,7 @@ data class AndroidPaycheckInput(
     val basis: GrossBasisChoice,
     val completeWorkConfirmed: Boolean,
     val ruleCoverageConfirmed: Boolean,
+    val confirmedLineFacts: AndroidConfirmedPaycheckLines? = null,
 )
 
 object LinePaycheckRepository {
@@ -135,12 +135,31 @@ object LinePaycheckRepository {
         input: AndroidPaycheckInput,
         createdAtEpochSeconds: Long = 0,
     ): Pair<AndroidLocalState, AndroidPaycheckSnapshot> {
-        val profile = requireNotNull(state.profile) { "Set up a pay profile first." }
+        val snapshot = capturePaycheck(requireNotNull(state.profile) { "Set up a pay profile first." }, state.work, input, createdAtEpochSeconds, UUID.randomUUID().toString())
+        val next = state.copy(checks = listOf(snapshot) + state.checks)
+        AndroidLocalStateValidator.validate(next)
+        return next to snapshot
+    }
+
+    /** Replay only a receipt that actually recorded this capture version, never earlier unknown inputs. */
+    internal fun replayCapturedPaycheck(check: AndroidPaycheckSnapshot): AndroidPaycheckSnapshot = capturePaycheck(
+        check.profile, check.work,
+        AndroidPaycheckInput(requireNotNull(check.sourceStartDate), requireNotNull(check.sourceLastDate), requireNotNull(check.sourceTimeZone),
+            check.sourcePeriodConfirmed, check.paidGross, check.grossBasis, check.completeWorkConfirmed, check.ruleCoverageConfirmed,
+            requireNotNull(check.confirmedLineFacts)),
+        check.createdAtEpochSeconds, check.id,
+    )
+
+    private fun capturePaycheck(profile: AndroidRuleProfile, workEntries: List<AndroidWorkEntry>, input: AndroidPaycheckInput,
+        createdAtEpochSeconds: Long, id: String): AndroidPaycheckSnapshot {
         require(!profile.requiresPortableRuleConfirmation) { "Confirm a destination configuration before adding work or comparing a paycheck." }
+        val captured = input.confirmedLineFacts ?: AndroidConfirmedPaycheckLines(currencyCode = profile.currencyCode.uppercase())
+        captured.validate()
+        require(captured.currencyCode == profile.currencyCode.uppercase()) { "Statement currency differs from the configured profile. No currency conversion or comparison was performed." }
         val window = payWindow(profile)
-        val overlapping = workOverlappingWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
-        val selected = workInWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
-        val partial = state.work.any { entry ->
+        val overlapping = workOverlappingWindow(workEntries, window.startEpochSeconds, window.endEpochSeconds)
+        val selected = workInWindow(workEntries, window.startEpochSeconds, window.endEpochSeconds)
+        val partial = workEntries.any { entry ->
             overlaps(entry, window.startEpochSeconds, window.endEpochSeconds) &&
                 (entry.startEpochSeconds < window.startEpochSeconds ||
                     entry.endEpochSeconds > window.endEpochSeconds)
@@ -151,16 +170,17 @@ object LinePaycheckRepository {
             GrossBasisChoice.WAGES_ONLY -> GrossBasis.WAGES_ONLY
             GrossBasisChoice.WAGES_AND_PER_DIEM -> GrossBasis.WAGES_AND_PER_DIEM
         }
-        val paidGross = Money(BigDecimal(input.paidGross), profile.currencyCode)
+        val paidGross = Money(observedDecimal(input.paidGross, hours = false), profile.currencyCode)
         val facts = GrossPaycheckFacts(
             paidGross = paidGross,
+            paidPerDiem = captured.paidPerDiem?.let { Money(observedDecimal(it, hours = false), profile.currencyCode) },
             completeWork = input.completeWorkConfirmed && !partial,
             basis = basis,
             unreviewedFields = !input.sourcePeriodConfirmed,
             unsupportedRules = !input.ruleCoverageConfirmed ||
                 !profile.rulesReviewedByWorker || partial,
-            // There is no source-approved paycheck-line mapping gate yet. A worker checkbox or
-            // separate weekly receipt cannot establish that the weekly comparison is complete.
+            // Manually identified lines do not resolve complete-workweek mapping or legal scope.
+            // A separate weekly reference cannot clear this outstanding review.
             weeklyReviewPending = true,
         )
         val sourceStart = LocalDate.parse(input.sourceStartDate)
@@ -174,12 +194,12 @@ object LinePaycheckRepository {
         )
         val lineFacts = PaycheckLineFacts(
             gross = facts,
-            layout = EarningsLayout.UNCONFIRMED,
-            hoursBasis = PaycheckHoursBasis.UNCONFIRMED,
-            guaranteeLayout = GuaranteeLayout.UNCONFIRMED,
-            amounts = emptyMap<PaycheckLineField, Money>(),
-            hours = emptyMap(),
-            completeEarningsLines = false,
+            layout = EarningsLayout.valueOf(captured.layout),
+            hoursBasis = PaycheckHoursBasis.valueOf(captured.hoursBasis),
+            guaranteeLayout = GuaranteeLayout.valueOf(captured.guaranteeLayout),
+            amounts = captured.domainAmounts(profile.currencyCode),
+            hours = captured.domainHours(),
+            completeEarningsLines = captured.completeEarningsLines,
         )
         val assessment = LinePaycheckAssessor().assess(
             calculation = calculation,
@@ -189,7 +209,8 @@ object LinePaycheckRepository {
             source = source,
             snapshots = listOf(agreement),
         )
-        val snapshot = AndroidPaycheckSnapshot(
+        return AndroidPaycheckSnapshot(
+            id = id,
             createdAtEpochSeconds = createdAtEpochSeconds,
             profile = profile.copy(),
             work = overlapping.map { it.copy(breaks = it.breaks.toList()) },
@@ -203,7 +224,7 @@ object LinePaycheckRepository {
             paidGross = paidGross.amount.toPlainString(),
             grossBasis = input.basis,
             completeWorkConfirmed = input.completeWorkConfirmed,
-            ruleCoverageConfirmed = input.ruleCoverageConfirmed && profile.rulesReviewedByWorker,
+            ruleCoverageConfirmed = input.ruleCoverageConfirmed,
             expectedGross = assessment.expectedGross?.amount?.toPlainString(),
             difference = assessment.difference?.amount?.toPlainString(),
             verdict = assessment.verdict.name,
@@ -238,12 +259,8 @@ object LinePaycheckRepository {
             },
             engine = assessment.engine,
             coverage = assessment.coverage.name,
+            confirmedLineFacts = captured.copy(),
         )
-        val next = state.copy(
-            checks = listOf(snapshot) + state.checks,
-        )
-        AndroidLocalStateValidator.validate(next)
-        return next to snapshot
     }
 
     fun payWindow(profile: AndroidRuleProfile) = CalendarPaycycle.window(
