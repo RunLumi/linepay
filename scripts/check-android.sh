@@ -36,6 +36,7 @@ export PATH="$SDK_ROOT/platform-tools:$SDK_ROOT/emulator:$PATH"
 
 case "$MODE" in
     unit)
+        python3 "$ANDROID_DIR/app/tools/generate_portable_state_shape.py" --check
         "$ANDROID_DIR/gradlew" -p "$ANDROID_DIR" --no-daemon --dependency-verification strict \
             :domain:test :backup:test :app:testDebugUnitTest :app:assembleDebug \
             :app:assembleRelease :app:lintDebug

@@ -171,6 +171,7 @@ fun HistoryScreen(
     saveError: String?,
     onDeleteCheck: (String) -> Boolean,
     onOpenBenefitReceipt: (String) -> Unit,
+    onOpenPortableReceipt: (String) -> Unit,
     onOpenWeeklyReceipt: (String) -> Unit,
 ) {
     var deleteCandidate by remember { mutableStateOf<AndroidPaycheckSnapshot?>(null) }
@@ -204,6 +205,7 @@ fun HistoryScreen(
         )
     }
     PageContent {
+        PortableReceiptHistory(state.portableArchive, onOpenPortableReceipt)
         if (state.benefitReviews.isNotEmpty()) {
             BenefitHistoryRows(state.benefitReviews, onOpenBenefitReceipt)
         }

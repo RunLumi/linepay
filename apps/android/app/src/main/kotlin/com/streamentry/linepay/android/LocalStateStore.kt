@@ -1,7 +1,6 @@
 package com.streamentry.linepay.android
 
 import android.util.AtomicFile
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -19,7 +18,7 @@ import java.nio.charset.StandardCharsets
 class LocalStateStore(filesDirectory: File) {
     private val stateDirectory = File(filesDirectory, "linepaycheck").apply { mkdirs() }
     private val atomicFile = AtomicFile(File(stateDirectory, "state-v1.json"))
-    private val gson = GsonBuilder().disableHtmlEscaping().create()
+    private val gson = androidLocalStateGson()
 
     @Synchronized
     fun load(): AndroidLocalState {
@@ -109,8 +108,23 @@ class LocalStateStore(filesDirectory: File) {
     fun createEncryptedBackup(state: AndroidLocalState, password: String): ByteArray =
         BackupEnvelope.seal(encode(state), password)
 
-    fun restoreEncryptedBackup(encoded: ByteArray, password: String?): AndroidLocalState =
-        decode(BackupEnvelope.open(encoded, password))
+    fun createPortableEncryptedBackup(state: AndroidLocalState, password: String): ByteArray =
+        BackupEnvelope.seal(AndroidPortableStateCodec.encode(state), password)
+
+    fun restoreEncryptedBackup(encoded: ByteArray, password: String?): AndroidLocalState {
+        val plaintext = BackupEnvelope.open(encoded, password)
+        return try {
+            val probe = JsonParser.parseString(plaintext.toString(StandardCharsets.UTF_8))
+            if (probe.isJsonObject && probe.asJsonObject.has("format")) {
+                require(probe.asJsonObject.get("format").isJsonPrimitive && probe.asJsonObject.get("format").asString == AndroidPortableStateCodec.FORMAT) {
+                    "This encrypted file uses an unsupported financial backup format. No data changed."
+                }
+                AndroidPortableStateCodec.decode(plaintext)
+            } else decode(plaintext)
+        } finally {
+            plaintext.fill(0)
+        }
+    }
 
 }
 
@@ -139,6 +153,11 @@ internal fun migrateAndroidLocalState(root: JsonObject) {
                 throw InvalidLocalState("This saved state is missing its weekly review collection.")
             }
         }
+        4 -> {
+            if (root.get("weeklyReviews")?.isJsonArray != true || root.get("benefitReviews")?.isJsonArray != true) {
+                throw InvalidLocalState("This saved state is missing its review collections.")
+            }
+        }
         AndroidLocalState.CURRENT_SCHEMA_VERSION -> {
             if (root.get("weeklyReviews")?.isJsonArray != true || root.get("benefitReviews")?.isJsonArray != true) {
                 throw InvalidLocalState("This saved state is missing its review collections.")
@@ -152,6 +171,13 @@ internal fun migrateAndroidLocalState(root: JsonObject) {
             throw InvalidLocalState("This legacy state contains unsupported benefit receipts.")
         }
         root.add("benefitReviews", JsonArray())
+        root.addProperty("schemaVersion", 4)
+    }
+    if (version < 5) {
+        if (root.has("portableArchive") && !root.get("portableArchive").isJsonNull) {
+            throw InvalidLocalState("Legacy data contains unsupported portable evidence.")
+        }
+        root.add("portableArchive", com.google.gson.JsonNull.INSTANCE)
         root.addProperty("schemaVersion", AndroidLocalState.CURRENT_SCHEMA_VERSION)
     }
 }

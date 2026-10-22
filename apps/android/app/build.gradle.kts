@@ -49,6 +49,10 @@ android {
         rootProject.file("../../shared/contracts/backup"),
     )
 
+    sourceSets.getByName("androidTest").assets.srcDir(
+        file(providers.environmentVariable("LINEPAY_SHARED_CONTRACTS").orElse(rootProject.file("../../shared/contracts").absolutePath).get() + "/portable-state/fixtures"),
+    )
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -83,4 +87,14 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+// Runtime adapters consume the canonical portable-state fixtures in JVM and synthetic-device tests.
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "linepay.sharedContracts",
+        providers.environmentVariable("LINEPAY_SHARED_CONTRACTS").orElse(
+            rootProject.file("../../shared/contracts").absolutePath,
+        ).get(),
+    )
 }

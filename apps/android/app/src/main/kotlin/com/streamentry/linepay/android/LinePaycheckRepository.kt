@@ -53,6 +53,7 @@ object LinePaycheckRepository {
 
     fun currentPeriod(state: AndroidLocalState): CurrentPeriodResult? {
         val profile = state.profile ?: return null
+        require(!profile.requiresPortableRuleConfirmation) { "Confirm a destination configuration before calculating imported work." }
         val window = payWindow(profile)
         val overlapping = workOverlappingWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
         val selected = workInWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
@@ -96,6 +97,7 @@ object LinePaycheckRepository {
         note: String,
     ): AndroidLocalState {
         val profile = requireNotNull(state.profile) { "Set up a pay profile first." }
+        require(!profile.requiresPortableRuleConfirmation) { "Confirm a destination configuration before adding work or comparing a paycheck." }
         val zone = ZoneId.of(profile.payrollTimeZone)
         val start = parseUnambiguousInstant(startLocal, zone)
         val end = parseUnambiguousInstant(endLocal, zone)
@@ -134,6 +136,7 @@ object LinePaycheckRepository {
         createdAtEpochSeconds: Long = 0,
     ): Pair<AndroidLocalState, AndroidPaycheckSnapshot> {
         val profile = requireNotNull(state.profile) { "Set up a pay profile first." }
+        require(!profile.requiresPortableRuleConfirmation) { "Confirm a destination configuration before adding work or comparing a paycheck." }
         val window = payWindow(profile)
         val overlapping = workOverlappingWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
         val selected = workInWindow(state.work, window.startEpochSeconds, window.endEpochSeconds)
@@ -229,6 +232,8 @@ object LinePaycheckRepository {
                     agreementVersion = it.reference.version,
                     explanation = it.explanation,
                     ruleKeys = it.ruleKeys,
+                    id = it.id.toString(),
+                    workId = it.workId?.toString(),
                 )
             },
             engine = assessment.engine,
@@ -269,7 +274,7 @@ object LinePaycheckRepository {
             listOf(DailyTier(afterHours = it, multiplier = BigDecimal(profile.dailyOvertimeMultiplier)))
         }.orEmpty()
         return Agreement(
-            id = profile.id,
+            id = profile.calculationRuleID ?: profile.id,
             version = profile.version,
             hourlyRate = Money(BigDecimal(profile.hourlyRate), profile.currencyCode),
             outsideScheduleMultiplier = BigDecimal(profile.outsideScheduleMultiplier),
@@ -278,7 +283,8 @@ object LinePaycheckRepository {
                 Money(BigDecimal(it), profile.currencyCode)
             },
             rounding = MoneyRounding(scale = 2, mode = RoundingMode.HALF_UP),
-            effectiveStart = LocalDate.parse(profile.cycleStartDate),
+            effectiveStart = if (profile.hasIndependentEffectiveDates) profile.effectiveStartDate?.let(LocalDate::parse) else LocalDate.parse(profile.cycleStartDate),
+            effectiveEnd = if (profile.hasIndependentEffectiveDates) profile.effectiveEndDateInclusive?.let(LocalDate::parse) else null,
         )
     }
 

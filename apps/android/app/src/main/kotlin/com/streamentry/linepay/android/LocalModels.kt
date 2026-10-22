@@ -31,6 +31,14 @@ data class AndroidRuleProfile(
     val outsideScheduleMultiplier: String = "1",
     val perDiemPerWorkDate: String? = null,
     val rulesReviewedByWorker: Boolean = false,
+    val hasIndependentEffectiveDates: Boolean = false,
+    val effectiveStartDate: String? = null,
+    val effectiveEndDateInclusive: String? = null,
+    val requiresPortableRuleConfirmation: Boolean = false,
+    val importedSourceProfileRef: String? = null,
+    val calculationRuleID: String? = null,
+    val useAsFutureDefault: Boolean = false,
+    val portableRuleFieldsNeedingConfirmation: List<String>? = null,
 )
 
 data class AndroidWorkBreak(
@@ -59,6 +67,8 @@ data class AndroidPayComponentSnapshot(
     val agreementVersion: String,
     val explanation: String,
     val ruleKeys: List<String> = emptyList(),
+    val id: String? = null,
+    val workId: String? = null,
 )
 
 data class AndroidLineComparisonSnapshot(
@@ -106,9 +116,10 @@ data class AndroidLocalState(
     val checks: List<AndroidPaycheckSnapshot> = emptyList(),
     val weeklyReviews: List<AndroidWeeklyReviewReceipt> = emptyList(),
     val benefitReviews: List<AndroidBenefitReceipt> = emptyList(),
+    val portableArchive: AndroidPortableArchive? = null,
 ) {
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 4
+        const val CURRENT_SCHEMA_VERSION = 5
         const val MAXIMUM_WORK_ENTRIES = 10_000
         const val MAXIMUM_SAVED_CHECKS = 2_000
         const val MAXIMUM_WEEKLY_REVIEWS = 128
@@ -145,6 +156,8 @@ object AndroidLocalStateValidator {
         state.checks.forEach(::validateCheck)
         AndroidWeeklyReviewRepository.validateState(state)
         AndroidBenefitRepository.validateState(state)
+        state.portableArchive?.let(AndroidPortableStateCodec::validateArchive)
+        AndroidPortableStateCodec.validateCurrentSourceProfile(state)
         return state
     }
 
@@ -153,6 +166,12 @@ object AndroidLocalStateValidator {
         require(profile.version.isNotBlank() && profile.version.length <= 128) {
             "Invalid rule version."
         }
+        profile.calculationRuleID?.let { require(it.isNotBlank() && it.length <= 128) { "Invalid calculation rule identity." } }
+        require(profile.portableRuleFieldsNeedingConfirmation.orEmpty().size <= 64 && profile.portableRuleFieldsNeedingConfirmation.orEmpty().all { it.length in 1..100 }) { "Invalid imported-rule confirmation context." }
+        profile.effectiveStartDate?.let { require(LocalDate.parse(it).year in 1..9999) { "Invalid rule effective start." } }
+        profile.effectiveEndDateInclusive?.let { require(LocalDate.parse(it).year in 1..9999) { "Invalid rule effective end." } }
+        require(profile.effectiveStartDate == null || profile.effectiveEndDateInclusive == null || LocalDate.parse(profile.effectiveEndDateInclusive) >= LocalDate.parse(profile.effectiveStartDate)) { "Rule effective dates are reversed." }
+        require(profile.hasIndependentEffectiveDates || (profile.effectiveStartDate == null && profile.effectiveEndDateInclusive == null)) { "Independent rule dates require an explicit date model." }
         requireDecimal(profile.hourlyRate, minimum = BigDecimal.ZERO, maximum = BigDecimal("1000000"))
         require(profile.currencyCode.matches(Regex("[A-Za-z]{3}"))) { "Currency must be explicit." }
         require(runCatching { LocalDate.parse(profile.cycleStartDate) }.isSuccess) {
@@ -204,6 +223,12 @@ object AndroidLocalStateValidator {
     }
 
     private fun validateCheck(check: AndroidPaycheckSnapshot) {
+        check.components.forEach { component ->
+            component.id?.let { require(UUID.fromString(it).toString() == it) { "Invalid saved component identity." } }
+            component.workId?.let { require(check.work.any { work -> work.id == it }) { "Saved component references unknown work." } }
+        }
+        val componentIDs = check.components.mapNotNull { it.id }
+        require(componentIDs.toSet().size == componentIDs.size) { "Saved component identities must be unique." }
         require(runCatching { UUID.fromString(check.id) }.isSuccess) { "Invalid saved-check identity." }
         validateProfile(check.profile)
         check.work.forEach(::validateWork)
