@@ -213,4 +213,4 @@ Follow the [complexity budget and anti-goals](docs/engineering/agentic-developme
 
 Legal-risk closure requires the issue's actual acceptance evidence. Never turn source tests, mechanical hashes or a generated template into owner/counsel approval. App Store writes require the exact authorized request and release-evidence checks described in `docs/legal/README.md`.
 
-ASC key `2HR347AH8Q` (App Manager): UI + GET verified team `7MBXZKYSY4`, app `6808889292`. Keep its `.p8` private; see [release procedure](docs/release/api-and-testflight.md).
+ASC `2HR347AH8Q` (App Manager): team `7MBXZKYSY4`, app `6808889292`. Issuer: private `credential-reference.json`; verify GET before reuse. Keep credentials outside Git. See [release procedure](docs/release/api-and-testflight.md).
