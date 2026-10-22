@@ -65,12 +65,27 @@ class PortableStateCodecTest {
             assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.decode(fixture(zone).toString().toByteArray()) }
             assertEquals(before, androidLocalStateGson().toJson(destination))
         }
-        for (zone in listOf("US/Eastern", "UTC", "EST", "CET")) {
+        for (zone in listOf("US/Eastern", "US/Pacific", "UTC", "Etc/UTC")) {
             val source = fixture(zone)
             val restored = AndroidPortableStateCodec.decode(source.toString().toByteArray())
             val again = PortableStateJson.parse(AndroidPortableStateCodec.encode(restored, 1792281600))
             for (field in listOf("profiles", "ruleSnapshots", "periods", "workSnapshots", "paycheckReceipts")) assertEquals(source.get(field), again.get(field))
             assertEquals(zone, again.getAsJsonArray("profiles").first().asJsonObject.get("timeZone").asString)
+        }
+        // Canonical wire membership and runtime tzdb availability are independent admission gates.
+        // EST is canonical but unavailable in JDK 21's ZoneId provider; other runtimes may support it.
+        val available = java.time.ZoneId.getAvailableZoneIds()
+        for (zone in listOf("EST", "CET")) {
+            val source = fixture(zone)
+            if (zone in available) {
+                val restored = AndroidPortableStateCodec.decode(source.toString().toByteArray())
+                val again = PortableStateJson.parse(AndroidPortableStateCodec.encode(restored, 1792281600))
+                for (field in listOf("profiles", "ruleSnapshots", "periods", "workSnapshots", "paycheckReceipts")) assertEquals(source.get(field), again.get(field))
+            } else {
+                val error = assertThrows(IllegalArgumentException::class.java) { AndroidPortableStateCodec.decode(source.toString().toByteArray()) }
+                assertTrue(error.message!!.contains("needs a supported IANA time zone"))
+                assertEquals(before, androidLocalStateGson().toJson(destination))
+            }
         }
     }
 
