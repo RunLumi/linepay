@@ -12,6 +12,7 @@
 - [Android 1.0.1 (2) review and internal update, October 19](evidence/android-1.0.1-2026-10-19.md)
 - [iOS 1.1.0 (12) internal TestFlight, October 20](evidence/ios-1.1.0-12-testflight-2026-10-20.md)
 - [Lineman Pay 1.1.0 (13) signed candidate, October 22](evidence/ios-1.1.0-13-candidate-2026-10-22.md)
+- [Lineman Pay 1.0.6 (14) name-only submission, October 23](evidence/release-1.0.6-2026-10-23.md)
 - [Before first TestFlight](checklists/ios-before-first-testflight.md)
 - [Build 2 historical evidence](evidence/release-build-2-2026-09-05.md)
 - [1.0.2 (5) submission record](evidence/release-1.0.2-2026-10-03.md)

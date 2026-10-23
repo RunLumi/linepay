@@ -4,6 +4,8 @@ Operational workflow for `com.streamentry.linepay`. Prefer supported App Store C
 
 Checked September 5, 2026 against Apple's OpenAPI specification **4.4.1** and the actual 1.0 (2) upload. This is a procedure, not evidence that the app is published. The dated [build 2 handoff](evidence/release-build-2-2026-09-05.md) records that run and its blockers.
 
+October 23, 2026: Apple OpenAPI **4.5.1** was checked for the [1.0.6 name-only submission](evidence/release-1.0.6-2026-10-23.md). Version creation, draft-name update, build selection and REST review submission were executed and read back under the standing owner-approved per-release waiver. The result was `WAITING_FOR_REVIEW`; public manual release remains unexercised in that run.
+
 ## 1. Boundaries and evidence
 
 | Milestone | Required evidence | Does not prove |
@@ -315,7 +317,7 @@ Apple says this release request cannot be canceled. Do not execute it as a readi
 
 Document the source revision/diff, version/build, IPA SHA-256, Apple build/upload/submission IDs, validation results, exact TestFlight groups and notification choices, StoreKit evidence, approved compliance answers, final state and observation time, public URL if verified, and remaining blockers/owner. Exclude secrets and raw contact/tester data.
 
-Mark each step **executed and verified**, **documented but not exercised**, or **blocked**. Build 2 verified local archive/export, API-key upload, processing, metadata updates and build selection. On September 5 the user explicitly requested Chrome for the final submission: Apple accepted review submission `b44b871f-7e40-4570-829b-50ce9a640fd0`, and subsequent REST reads confirmed `WAITING_FOR_REVIEW`. That is UI submission plus API readback, not proof that the REST submission-write examples ran. Beta distribution, REST submission writes, and public-release examples remain unexercised for LinePaycheck.
+Mark each step **executed and verified**, **documented but not exercised**, or **blocked**. Build 2 verified local archive/export, API-key upload, processing, metadata updates and build selection. On September 5 the user explicitly requested Chrome for the final submission: Apple accepted review submission `b44b871f-7e40-4570-829b-50ce9a640fd0`, and subsequent REST reads confirmed `WAITING_FOR_REVIEW`. That is UI submission plus API readback, not proof that the REST submission-write examples ran. At that September 5 handoff, beta distribution, REST submission writes and public-release examples remained unexercised. REST submission was subsequently verified in the October 23 receipt above.
 
 After a future successful release, update the dated run record with the actual TestFlight/review/public readbacks and amend this guide only for newly proven operational details. This documentation request does not itself authorize another upload, tester notification, compliance declaration, or publication.
 
