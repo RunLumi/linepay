@@ -15,8 +15,9 @@ struct SettingsView: View {
                     Section(header: settingsSectionHeader("Pay")) {
                         settingsNavigationRow(
                             "Pay profile: \(profile.name)", destination: .payProfile)
-                        Button("Edit pay rules") { editor = true }.accessibilityIdentifier(
-                            "settings.edit-rules")
+                        Button("Edit pay rules") { editor = true }
+                            .linePayRowAction()
+                            .accessibilityIdentifier("settings.edit-rules")
                         settingsNavigationRow(
                             "Pay period: \(profile.preferredCadence.title)",
                             destination: .payPeriod)
@@ -73,9 +74,10 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings.view-pro")
                     Button("Restore Purchases") {
                         Task { await subscriptionStore.restorePurchases() }
-                    }
-                    Link("Manage subscription", destination: AppLinks.subscriptions).frame(
-                        minHeight: 44)
+                    }.linePayRowAction()
+                        .accessibilityIdentifier("settings.restore-purchases")
+                    Link("Manage subscription", destination: AppLinks.subscriptions)
+                        .linePayRowAction()
                     if let error = subscriptionStore.errorMessage {
                         Text(error).foregroundStyle(LinePayColor.review).font(.footnote)
                     }

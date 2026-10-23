@@ -32,7 +32,7 @@ final class CrewRuleJourneyTests: XCTestCase {
         tap("settings.crew-rules")
         let title = app.textFields["crew-rules.title"].firstMatch
         reveal(title)
-        let marker = "SYNTHETIC-CREW-" + String(UUID().uuidString.prefix(8))
+        let marker = "A-SYNTHETIC-CREW-" + String(UUID().uuidString.prefix(8))
         title.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         title.typeText(" " + marker)
@@ -61,16 +61,16 @@ final class CrewRuleJourneyTests: XCTestCase {
         tap("crew-rules.export")
         let picker = app.navigationBars["FullDocumentManagerViewControllerNavigationBar"].firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 20))
-        let filename = app.textFields.matching(
-            NSPredicate(format: "value BEGINSWITH %@", "Crew rules")
-        ).firstMatch
+        let filename = app.textFields.firstMatch
         XCTAssertTrue(filename.waitForExistence(timeout: 10))
         let oldName = try XCTUnwrap(filename.value as? String)
+        XCTAssertTrue(oldName.hasPrefix("Crew rules"), oldName)
         filename.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        filename.typeText(
-            String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count) + marker
-                + ".linepayrules")
+        filename.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count))
+        filename.typeText(marker)
+        let editedName = try XCTUnwrap(filename.value as? String)
+        XCTAssertTrue(editedName.contains(marker), editedName)
         if !picker.staticTexts["On My iPhone"].exists {
             if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
             let local = app.staticTexts["On My iPhone"].firstMatch
@@ -90,18 +90,44 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(message.label.contains("Saved to the selected location"), message.label)
         tap("crew-rules.choose-file")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
-        let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", marker)).firstMatch
-        if !file.waitForExistence(timeout: 5), app.searchFields.firstMatch.exists {
-            app.searchFields.firstMatch.tap()
-            app.searchFields.firstMatch.typeText(marker)
+        let localRoot = picker.staticTexts["On My iPhone"].firstMatch
+        if !localRoot.exists {
+            let browseBack = picker.buttons["Browse"].firstMatch
+            if browseBack.isHittable { browseBack.tap() }
         }
-        if !file.waitForExistence(timeout: 15) {
-            capture("v2-crew-import-file-missing", large: large)
+        if !localRoot.exists {
+            let browseTab = app.tabBars.buttons["Browse"].firstMatch
+            XCTAssertTrue(browseTab.waitForExistence(timeout: 10))
+            if !browseTab.isSelected { browseTab.tap() }
+            let localLocation = app.cells.matching(
+                identifier: "DOC.sidebar.item.On My iPhone"
+            ).firstMatch
+            let browseView = app.collectionViews["Browse View"].firstMatch
+            for _ in 0..<5 where !localLocation.isHittable {
+                XCTAssertTrue(browseView.waitForExistence(timeout: 5))
+                browseView.swipeDown()
+            }
+            XCTAssertTrue(localLocation.isHittable, "Scroll Browse to the On My iPhone location")
+            localLocation.tap()
+        }
+        XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
+        let file = app.collectionViews.matching(identifier: "File View").cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
+        ).firstMatch
+        if !file.waitForExistence(timeout: 25) {
+            capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
-            tree.name = "synthetic-crew-files-hierarchy"
+            tree.name = "crew-files-local-root-before-search"
             tree.lifetime = .keepAlways
             add(tree)
+            capture("v2-crew-import-file-missing", large: large)
+            let finalTree = XCTAttachment(string: app.debugDescription)
+            finalTree.name = "synthetic-crew-files-hierarchy"
+            finalTree.lifetime = .keepAlways
+            add(finalTree)
         }
+        XCTAssertTrue(file.exists, "Wait for the saved local draft to appear")
+        XCTAssertTrue(file.label.contains("\(marker).linepayrules"), file.label)
         XCTAssertTrue(file.isHittable, "Select the actual locally exported synthetic draft")
         XCTAssertTrue(file.isEnabled)
         file.tap()
