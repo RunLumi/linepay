@@ -4,6 +4,8 @@
 
 > **Canonical App Store copy and presentation. Updated October 22, 2026.** The owner selected Lineman Pay as the next-version listing and home-screen display name. A signed 1.1.0 (13) archive and IPA from clean main `32f4641` are recorded in the [candidate receipt](evidence/ios-1.1.0-13-candidate-2026-10-22.md). That binary excludes later native and portable-state changes. Upload, metadata save, submission and manual public release after Apple approval remain pending. The copy below is a **candidate for vNext**; the archive does not prove name availability, trademark clearance or the full release gate. Xcode 27.1 produced the archive; the repository's Xcode 26.6 / Swift 6.3 baseline remains unverified.
 
+> **October 23 name-only submission:** The owner selected [1.0.6 (14)](evidence/release-1.0.6-2026-10-23.md) from released 1.0.5 source. Apple saved **Lineman Pay** and accepted the version as **WAITING_FOR_REVIEW**, release type **MANUAL**. Existing specialist copy, subtitle and eight screenshots were retained. The broader metadata and 1.1.0 experience below remain candidates; no public release is claimed.
+
 ## Decision and release boundary
 
 The target public listing is **Lineman Pay**, with the subtitle **Compare Pay & Track Hours**. Its promise is:
