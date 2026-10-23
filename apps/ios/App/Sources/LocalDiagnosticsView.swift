@@ -56,6 +56,7 @@ struct LocalDiagnosticsView: View {
                 Text(
                     "This is not an install counter or a global conversion report. Existing subscriptions, renewals and restored pay data are different from new paid customers. Turning recording off keeps prior observations until you clear them."
                 ).font(.body).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("activity.recording-explanation")
                 if let issue = ledger.issue {
                     Label(issue, systemImage: "exclamationmark.triangle")
                 }
@@ -121,6 +122,7 @@ struct LocalDiagnosticsView: View {
     private func localSectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)
+            .fixedSize(horizontal: false, vertical: true)
             .textCase(nil)
             .foregroundStyle(LinePayColor.textPrimary)
             .accessibilityAddTraits(.isHeader)

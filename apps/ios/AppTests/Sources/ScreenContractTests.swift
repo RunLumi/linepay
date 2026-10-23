@@ -365,6 +365,17 @@ struct ScreenContractTests {
         }
     }
 
+    @Test func lightReadingAndActionTextMeetEnhancedContrast() throws {
+        let traits = UITraitCollection(userInterfaceStyle: .light)
+        let background = try luminance(
+            UIColor(LinePayColor.surfaceSecondary).resolvedColor(with: traits))
+        for color in [LinePayColor.textSecondary, LinePayColor.actionText] {
+            let foreground = try luminance(UIColor(color).resolvedColor(with: traits))
+            #expect(
+                (max(foreground, background) + 0.05) / (min(foreground, background) + 0.05) >= 7)
+        }
+    }
+
     private func luminance(_ color: UIColor) throws -> Double {
         var r: CGFloat = 0
         var g: CGFloat = 0

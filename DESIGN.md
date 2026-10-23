@@ -151,10 +151,10 @@ The following full-opacity sRGB references are the baseline. Platform-native con
 | `surface.primary` | `#FBFAF6` | `#1A1F23` | Focused object or raised reading area |
 | `surface.secondary` | `#E9E5DB` | `#22282C` | Quiet grouping/background |
 | `text.primary` | `#13171A` | `#F4F1E8` | Amounts and primary labels |
-| `text.secondary` | `#5C6468` | `#AAB2B6` | Supporting facts, not disabled text |
+| `text.secondary` | `#3D4549` | `#AAB2B6` | Supporting facts, not disabled text |
 | `line.subtle` | `#D6D5CC` | `#394147` | Decorative separators only |
 | `line.strong` | `#7A8388` | `#75848D` | Meaningful control boundary when needed |
-| `action.text` | `#0B6D66` | `#55C9BE` | Links and textual actions on neutral surfaces |
+| `action.text` | `#064C47` | `#55C9BE` | Links and textual actions on neutral surfaces |
 | `action.fill` | `#0E746C` | `#55C9BE` | Primary custom filled action |
 | `action.onFill` | `#FFFFFF` | `#111417` | Label/icon on that fill |
 | `brand.copper` | `#A94E25` | `#E48A59` | Rare identity detail, not a status |
@@ -168,6 +168,8 @@ Existing `brand.primary` can remain an alias for the Oxide identity/fill referen
 ### 6.2 Two contrast bugs to prevent
 
 **White on the dark-mode Oxide fill is approximately 2.00:1.** Use the graphite `action.onFill` in dark mode, not white.
+
+Light-mode supporting text and text actions use at least 7:1 contrast on the darkest neutral reading surface. The October 23 release review darkened those roles while retaining the Oxide button fill and existing dark/high-contrast colors.
 
 **The original light Oxide `#0E746C` on `surface.secondary` is approximately 4.47:1.** That is below 4.5:1; rounding does not make it pass. Use the darker `action.text` for links on neutral surfaces.
 

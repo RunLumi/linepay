@@ -16,7 +16,7 @@ If the external support page is temporarily unavailable, preserve your records a
 
 ## Include the useful context
 
-Describe what you were trying to do, the exact action you took, the message or result you saw, and what you expected instead. Include your app version/build when available in **About LinePaycheck**, your iOS version, and whether the affected period is open or closed.
+Describe what you were trying to do, the exact action you took, the message or result you saw, and what you expected instead. Include your app version/build when available in **About Lineman Pay**, your iOS version, and whether the affected period is open or closed.
 
 For a calculation question, explain the rule and comparison basis involved using a redacted or synthetic example. State whether the work log is complete, which gross basis and earnings layout you selected, and which fields remain unconfirmed. A screenshot of a total alone usually does not explain a discrepancy.
 

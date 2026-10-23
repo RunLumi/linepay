@@ -461,7 +461,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(about.waitForExistence(timeout: 10))
         XCTAssertTrue(about.isHittable, "About navigation must remain reachable at large text")
         about.tap()
-        XCTAssertTrue(app.navigationBars["About LinePaycheck"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["About Lineman Pay"].waitForExistence(timeout: 10))
         capture("45-about")
         let guide = app.descendants(matching: .any)
             .matching(identifier: "settings.user-guide").firstMatch

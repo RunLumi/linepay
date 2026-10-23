@@ -166,6 +166,7 @@ struct TodayView: View {
                     } header: {
                         Text("Work log")
                             .font(.headline)
+                            .accessibilityIdentifier("today.work-heading")
                             .textCase(nil)
                             .foregroundStyle(LinePayColor.textPrimary)
                             .accessibilityAddTraits(.isHeader)

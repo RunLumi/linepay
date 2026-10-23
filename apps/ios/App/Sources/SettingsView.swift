@@ -78,6 +78,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings.restore-purchases")
                     Link("Manage subscription", destination: AppLinks.subscriptions)
                         .linePayRowAction()
+                        .accessibilityIdentifier("settings.manage-subscription")
                     if let error = subscriptionStore.errorMessage {
                         Text(error).foregroundStyle(LinePayColor.review).font(.footnote)
                     }
@@ -98,12 +99,13 @@ struct SettingsView: View {
                 }
                 Section(header: settingsSectionHeader("About")) {
                     settingsNavigationRow(
-                        "About LinePaycheck", identifier: "settings.about", destination: .about)
+                        "About Lineman Pay", identifier: "settings.about", destination: .about)
                     Link("Support", destination: AppLinks.support).accessibilityIdentifier(
                         "settings.support")
                     Link("Privacy policy", destination: AppLinks.privacy).accessibilityIdentifier(
                         "settings.privacy-policy")
                     Link("Terms of use", destination: AppLinks.terms)
+                        .accessibilityIdentifier("settings.terms")
                 }
             }
             .navigationTitle("Settings")
@@ -125,6 +127,7 @@ struct SettingsView: View {
     private func settingsSectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)
+            .fixedSize(horizontal: false, vertical: true)
             .textCase(nil)
             .foregroundStyle(LinePayColor.textPrimary)
             .accessibilityAddTraits(.isHeader)

@@ -190,7 +190,7 @@ struct AddWorkView: View {
                 }
 
                 Section {
-                    Button("Use a voice work draft") { voiceDraft = true }
+                    Button("Draft work from notes") { voiceDraft = true }
                         .linePayRowAction().accessibilityIdentifier("work.voice")
                 }
 

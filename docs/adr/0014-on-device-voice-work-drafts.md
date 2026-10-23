@@ -43,3 +43,12 @@ Apple distinguishes on-device processing from off-device collection. This archit
 to retain that boundary; source flags and simulator tests are not proof of real-device network
 behavior or a fresh App Privacy owner review. Resource inventory updates record purpose strings
 mechanically and do not provide release authorization or close a privacy/legal issue.
+
+## October 23 release admission
+
+The full 1.1.0 release keeps typed work-description parsing and explicit review/apply/save.
+Microphone capture is unavailable until the real-device procedure in `docs/testing/voice-work.md`
+and its privacy review pass. `WorkReadingAvailability` gates both the recording UI and the adapter
+before any permission request. The candidate no longer declares microphone/speech purpose strings.
+Re-enabling capture requires restoring the accurate purpose strings and recording actual device,
+offline, cancellation and cleanup evidence; simulator typed input cannot satisfy that gate.

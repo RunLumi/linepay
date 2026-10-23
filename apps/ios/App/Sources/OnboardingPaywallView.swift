@@ -67,7 +67,7 @@ struct ProPaywallView: View {
             // Identify only the scrolling content: an identifier applied outside the inset would
             // replace the purchase controls' own identifiers.
             .accessibilityIdentifier("paywall.screen")
-            .linePayHardTopEdge()
+            .linePayHardScrollEdges()
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 // Keep the purchase terms and the free escape route reachable without scrolling.
                 // At accessibility sizes they flow inline instead of covering the content.

@@ -2458,3 +2458,35 @@ created; describe and verify each property separately.
 - `bash scripts/agent-verify.sh quick` passed after allowing the existing local compiler caches: 83 repository script tests, Swift lint and 166 domain tests in 30 suites. The unsigned generic iOS Simulator Release build also passed from this source using Xcode 27.1 / Swift 6.4. The repository baseline Xcode 26.6 / Swift 6.3 remains unverified; this is not a signed archive or upload.
 - The earlier full `agent-verify ios` run remains failed: 40 UI tests executed, 2 skipped, and 20 failure events, including the Apple audit and the backup picker selector that the focused follow-up subsequently corrected. The Apple audit still has unresolved findings, so the full native/release gate is not green. `git diff --check`, legal guardrails, link validation, guide freshness, screenshot provenance and docs-tool tests pass for the current changes. The full Hugo guide/search check is pending because pinned Hugo 0.165.0 is not installed; `user-guide/scripts/check.sh` exits before building, and the standalone search test lacks its generated `.qa` index.
 - No App Store Connect listing, screenshot, build, review or release write occurred. The Account Holder's updated Paid Applications Schedule acceptance is still pending from the owner; the built-in Browser control was unavailable in this session and TinyFish was not used.
+
+## Full iOS update retry, October 23 (in progress)
+
+After the 1.0.6 name-only submission, the owner requested the full app update. The isolated
+`codex/ios-full-1.1.0-release` branch combines current main with PR #132; unrelated Android,
+web and portable-state PRs are excluded. Build 15 is intended. The 1.0.6 review is untouched;
+its latest GET still returned `WAITING_FOR_REVIEW / MANUAL`. Do not withdraw it until the full
+candidate is validated and ready to replace it.
+
+- The original unfiltered iOS 18.5 audit reproduced 15 reports. Stronger light text/action colors
+  remove one contrast report; hard vertical scroll edges reduce fading near iOS 26 system bars.
+- All 12 independent text-size cases passed on iOS 18.5, measuring actual control/text frames
+  against UIKit font metrics. The smallest-to-largest work row grew from roughly 87 to 395 pt,
+  and the long activity paragraph reached 1,201 pt without an intrinsic-height shortfall.
+  This is intermediate diagnostic evidence, not final-candidate acceptance.
+- Fresh contrast reports on iOS 26.5 were traced to content overlapping navigation/tab bars.
+  A viewport-bounded contrast test, including the backup action fully scrolled into view, passed;
+  semantic Apple audits passed separately. Unmapped or fully visible contrast reports still fail.
+  The raw combined font/clipping heuristic is retained as an explicit opt-in diagnostic; actual
+  text-size and full-visibility tests replace that unreliable heuristic in the required suite.
+- Microphone capture is unavailable pending physical-device/offline/privacy acceptance; typed
+  work descriptions still require review, confirmation, application to the draft and separate save.
+  The recording adapter returns before permission requests; its new regression passed. Purpose
+  strings were removed. No connected physical iPhone was found; no device acceptance is claimed.
+- About now correctly describes optional backup password protection and uses Lineman Pay.
+  Guide instructions are being reconciled; source-review freshness is not yet re-recorded.
+- Full native, current-OS critical journeys, real upgrade/retained-history verification, final
+  screenshots, signed archive, Apple replacement/submission and exact-head CI remain pending.
+
+Builds/results live under `.build/full-1.1.0-15/` on the SSD to avoid the nearly-full system volume.
+No device/runtime was created or erased. Do not present intermediate focused passes or the
+previous 1.0.6 gate as a passing full 1.1.0 release gate.
