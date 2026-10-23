@@ -222,8 +222,8 @@
         "pro-and-billing"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "89abecfca7eed5e296c565ab63e6112243eebd30",
-      "reason": "Targeted October 16 v2 review: adds only device-local milestone observation at existing setup, value-display or verified-commerce boundaries; existing user steps, pay calculations and purchase behavior are unchanged."
+      "blob": "2727c85cd78007e7ac9112a4ee5ac1569007a5d3",
+      "reason": "October 23 full-release regression: publish complete verified subscription status after asynchronous StoreKit reads; existing Pro, restore and renewal instructions remain accurate. Reviewed pro-and-billing."
     },
     {
       "path": "apps/ios/App/Sources/TrialReminder.swift",
