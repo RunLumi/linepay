@@ -16,6 +16,6 @@
     "deploy:production": "npm run build && wrangler deploy --config ../../apps/web/wrangler.jsonc --env production"
   },
   "devDependencies": {
-    "wrangler": "4.148.0"
+    "wrangler": "4.149.0"
   }
 }
