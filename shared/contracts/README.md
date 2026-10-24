@@ -22,7 +22,7 @@ Do not put secrets, real paystubs, employer-private documents, or personally ide
 
 The schema should not be invented before the first real rule engine needs it. First learn the domain in native Swift types and real customer examples; then extract the smallest stable interchange contract.
 
-The first implemented transport contract is [password-protected manual backup v1](backup/README.md). Its synthetic vector is checked independently by native and Node/WebCrypto implementations; complete Android/PWA restore remains a separate deliverable.
+The byte envelope is [password-protected manual backup transport v1](backup/README.md). Its synthetic vector is checked independently by native and Node/WebCrypto implementations. The typed cross-client financial payload is separately specified by [portable financial state v1](portable-state/README.md); its independent schema gate does not prove client runtime restore.
 
 [Configured-pay fixtures v1](payroll/README.md) is the first native-consumed payroll conformance subset. It includes independent synthetic arithmetic, explicit timestamps/timezone and source snapshot references; broader cross-platform coverage remains pending.
 
