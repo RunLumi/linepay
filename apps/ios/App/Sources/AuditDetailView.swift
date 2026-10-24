@@ -294,9 +294,18 @@ struct PaycheckComparisonDetail: View {
         List {
             Section("This comparison") {
                 Text(comparison.field.title).font(.title2.bold())
-                LabeledContent("Expected", value: formatted(comparison.expected))
-                LabeledContent("Confirmed paid", value: formatted(comparison.paid))
-                LabeledContent("Difference", value: formatted(comparison.difference))
+                LabeledContent("Expected") {
+                    Text(formatted(comparison.expected))
+                        .foregroundStyle(LinePayColor.textPrimary).monospacedDigit()
+                }
+                LabeledContent("Confirmed paid") {
+                    Text(formatted(comparison.paid))
+                        .foregroundStyle(LinePayColor.textPrimary).monospacedDigit()
+                }
+                LabeledContent("Difference") {
+                    Text(formatted(comparison.difference))
+                        .foregroundStyle(LinePayColor.textPrimary).monospacedDigit()
+                }
             }
             if let calculation = context.calculation {
                 Section("Only the work behind this line") {

@@ -146,8 +146,8 @@
         "evidence-and-reports"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "329a2202ee162483094214e16242526eecbf2865",
-      "reason": "Targeted October 19 audit-offer layout review: re-read audit-results and evidence-and-reports. The optional Pro offer moves after the scrolling result content at accessibility text sizes; standard-size placement, financial scope, report and correction actions, subscription access and visible wording remain unchanged. Existing public instructions stay accurate. New focused runtime acceptance is recorded separately; this is not a release-wide accessibility approval."
+      "blob": "87ef6880623b6dc4e375fae8ed0e67f4c23cee49",
+      "reason": "October24: comparison amounts use primary contrast and monospaced digits; expected, confirmed and difference values, evidence and scope are unchanged. Mapped guides remain accurate."
     },
     {
       "path": "apps/ios/App/Sources/AuditStatusView.swift",

@@ -331,6 +331,9 @@ final class PaydayJourneyTests: XCTestCase {
         tapContaining("Double-time pay")
         XCTAssertTrue(app.navigationBars["Double-time pay"].waitForExistence(timeout: 10))
         capture("store-v3-05-line-evidence")
+        if #available(iOS 26.0, *) {
+            try app.performAccessibilityAudit(for: .contrast)
+        }
         tapContaining("Overtime")
         XCTAssertTrue(app.navigationBars["Why this amount?"].waitForExistence(timeout: 10))
         capture("store-v3-05-alt-why-this-amount")

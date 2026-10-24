@@ -191,7 +191,8 @@ jobs:
         run: |
           (cd apps/ios && xcodegen generate)
           mkdir -p .build/current-accessibility-results
-          xcodebuild -jobs 2 -project apps/ios/LinePay.xcodeproj -scheme LinePay \
+          TEST_RUNNER_LINEPAY_STORE_CAPTURE=v3 TEST_RUNNER_TZ=America/Chicago \
+            xcodebuild -jobs 2 -project apps/ios/LinePay.xcodeproj -scheme LinePay \
             -configuration Debug -destination "platform=iOS Simulator,id=$UI_DEVICE_UDID" \
             -derivedDataPath "$RUNNER_TEMP/current-accessibility-derived" \
             -resultBundlePath .build/current-accessibility-results/CurrentAccessibility.xcresult \
@@ -200,6 +201,7 @@ jobs:
             -only-testing:LinePayUITests/AccessibilityAuditJourneyTests/testContrastOnFreshWorkerScreens \
             -only-testing:LinePayUITests/AccessibilityAuditJourneyTests/testWorkerScreensPassSemanticAccessibilityAudit \
             -only-testing:LinePayUITests/DynamicTypeCoverageJourneyTests/test13SettingsActionsRemainFullyReadableAtLargestText \
+            -only-testing:LinePayUITests/PaydayJourneyTests/testV3StoreScreenshotsFromSamplePaycheck \
             CODE_SIGNING_ALLOWED=NO test
       - name: Run real application journeys
         run: bash scripts/test-ios-maestro.sh '${{ matrix.target }}'

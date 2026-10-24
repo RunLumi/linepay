@@ -19,6 +19,9 @@ claim that every screen meets an App Store accessibility label.
   It checks Today, Settings, the backup action after scrolling it fully into view, and local activity.
   Reports for mapped text overlapping a system bar are retained and classified as outside the
   readable viewport. Unmapped reports and reports wholly within the viewport still fail.
+- The current-runtime job also runs the opt-in v3 store-capture journey with its documented
+  America/Chicago fixture clock. The confirmed line-evidence screen receives an unfiltered
+  contrast audit; expected, confirmed and difference amounts use primary text and tabular digits.
 - `testWorkerScreensPassSemanticAccessibilityAudit` retains Apple's other checks for descriptions,
   traits, hit regions and element detection. Source color tests verify all existing light/dark/
   high-contrast pairs; supporting/action text additionally requires 7:1 on the darkest light neutral.

@@ -2519,3 +2519,14 @@ previous 1.0.6 gate as a passing full 1.1.0 release gate.
   exported crew file was selected from the Files collection. Existing assertions on opt-out,
   consent, future-period scope and retained USD 550 current pay remain intact. The previous
   failures are retained; the complete final-head gate is still pending.
+
+- Final visual review found that the comparison-detail values inherited a system gray
+  measuring 3.44:1 on white in the actual capture. Expected, confirmed and difference amounts
+  now use primary text with tabular digits; calculations and evidence are unchanged. The
+  established v3 capture journey passed on iOS 26.5, including an unfiltered contrast audit
+  of that detail screen (102.117 seconds). It is now part of current-runtime CI. The earlier
+  `9ef2255` native run was canceled for this observed presentation fix, not marked green.
+- Website privacy/support PR #13 was merged and deployed with the owner's explicit exception
+  for an Actions-budget failure before hosted steps started. Local checks and both browser
+  suites passed. Live verification passed 33 read-only requests and matched 20 asset hashes.
+  This exception is limited to that website patch and does not waive native release checks.
