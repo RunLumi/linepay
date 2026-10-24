@@ -397,11 +397,10 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         app.launchArguments = [
             "--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
         ]
-        if largeText {
-            app.launchArguments += [
-                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
-            ]
-        }
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL",
+        ]
         app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "matches"
         app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
         app.launch()

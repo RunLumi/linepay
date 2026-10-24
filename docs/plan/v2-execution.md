@@ -2540,3 +2540,9 @@ previous 1.0.6 gate as a passing full 1.1.0 release gate.
   the real correction/delete/Undo flow passed. The equal-gross flow was scrolling downward
   for a status above the viewport; its corrected direction passed through offsetting components,
   report preview and archived history. Existing money, scope and Save-validation assertions remain.
+
+- The compact dark largest-text flow passed future-only preservation across relaunch and the
+  explicit current-period correction. It now reveals wage figures before reading them and
+  centers the complete scope picker above the pinned Save bar. Normal accessibility launches
+  explicitly request the standard text category, and native CI resets display state before
+  running, so the compact flow cannot leak a maximum-text precondition into another gate.

@@ -4,6 +4,13 @@ tags: [ios, regression, payroll-scope]
 ---
 - runFlow: ../helpers/onboard.yaml
 - runFlow: ../helpers/add-work.yaml
+- scrollUntilVisible:
+    element:
+      id: today.expected-wages
+    direction: UP
+    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
 - copyTextFrom:
     id: today.expected-wages
 - evalScript: ${output.beforeRateChange = maestro.copiedText}
@@ -33,12 +40,26 @@ tags: [ios, regression, payroll-scope]
 - waitForAnimationToEnd
 - tapOn: Today
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.expected-wages
+    direction: UP
+    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
 - copyTextFrom:
     id: today.expected-wages
 - assertTrue: ${maestro.copiedText == output.beforeRateChange}
 - takeScreenshot: earlier-work-preserved
 - stopApp
 - launchApp
+- scrollUntilVisible:
+    element:
+      id: today.expected-wages
+    direction: UP
+    centerElement: true
+    timeout: 60000
+- waitForAnimationToEnd
 - copyTextFrom:
     id: today.expected-wages
 - assertTrue: ${maestro.copiedText == output.beforeRateChange}
@@ -67,6 +88,8 @@ tags: [ios, regression, payroll-scope]
     element:
       id: pay-profile.change-scope
     direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - tapOn:
@@ -94,6 +117,13 @@ tags: [ios, regression, payroll-scope]
     id: pay-profile.confirm-change
 - waitForAnimationToEnd
 - tapOn: Today
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: today.expected-wages
+    direction: UP
+    centerElement: true
+    timeout: 60000
 - waitForAnimationToEnd
 - assertVisible:
     id: today.expected-wages
