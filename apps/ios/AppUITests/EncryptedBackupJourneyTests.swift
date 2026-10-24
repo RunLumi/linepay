@@ -86,22 +86,34 @@ final class EncryptedBackupJourneyTests: XCTestCase {
             local.tap()
         }
         XCTAssertTrue(picker.staticTexts["On My iPhone"].waitForExistence(timeout: 10))
-        let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", filename)).firstMatch
-        if !file.waitForExistence(timeout: 5) {
-            let search = app.searchFields.firstMatch
-            if search.exists {
-                search.tap()
-                search.typeText(filename)
-            }
+        let more = picker.buttons["More"].firstMatch
+        XCTAssertTrue(more.isHittable)
+        more.tap()
+        let dateOrder = app.buttons["Date"].firstMatch
+        if !dateOrder.waitForExistence(timeout: 10) {
+            capture("v2-backup-local-files-sort-menu")
         }
-        if !file.waitForExistence(timeout: 15) {
+        XCTAssertTrue(dateOrder.isHittable)
+        dateOrder.tap()
+        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
+        XCTAssertTrue(fileList.waitForExistence(timeout: 10))
+        let files = fileList.cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", filename, filename))
+        // A newly exported backup may not be in Files' search index yet. Select the exact
+        // filename from its actual local destination, including virtualized rows.
+        func selectableBackup() -> XCUIElement? {
+            files.allElementsBoundByIndex.first { $0.isHittable }
+        }
+        for _ in 0..<40 where selectableBackup() == nil { fileList.swipeUp() }
+        if selectableBackup() == nil {
             capture("v2-backup-restore-file-missing")
             let tree = XCTAttachment(string: app.debugDescription)
             tree.name = "synthetic-backup-restore-picker-accessibility"
             tree.lifetime = .keepAlways
             add(tree)
         }
-        XCTAssertTrue(file.exists, "The locally saved synthetic backup must be selectable")
+        let file = try XCTUnwrap(
+            selectableBackup(), "The locally saved synthetic backup must be selectable")
         capture("v2-backup-selected-local-file")
         file.tap()
         if picker.exists, picker.buttons["Open"].exists { picker.buttons["Open"].tap() }
