@@ -100,7 +100,6 @@ struct StoreKitLifecycleTests {
         var sawGraceEnd = false
         var observedStates: Set<String> = []
         while clock.now < deadline {
-            await store.refreshEntitlements()
             let statuses = try await subscription.status.filter { status in
                 guard case .verified(let transaction) = status.transaction,
                     case .verified = status.renewalInfo,
@@ -122,6 +121,11 @@ struct StoreKitLifecycleTests {
             if statuses.contains(where: { $0.state == .inGracePeriod }),
                 graceEnds.contains(where: { $0 > observedAt })
             {
+                // Observe the SDK transition before asking the app for its snapshot. A refresh
+                // taken before this status read can still describe the preceding paid state.
+                await store.refreshEntitlements()
+                // Do not compare that snapshot with a grace window that ended while awaiting.
+                if graceEnds.allSatisfy({ $0 <= Date() }) { continue }
                 try #require(
                     store.isPro,
                     "Native grace; receipt IDs: \(receiptIDs.sorted()); grace ends: \(graceEnds.map(\.timeIntervalSince1970)); observed: \(observedAt.timeIntervalSince1970)"
