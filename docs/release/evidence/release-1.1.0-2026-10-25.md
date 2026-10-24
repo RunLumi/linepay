@@ -73,3 +73,10 @@ New set: `e01e09bd-e51f-4be2-a76f-5d49f36b310a`. The old draft-only eight-image 
 The signed archive, IPA, source archive, actual native results, six screenshots, request/readback receipts and credential reference are retained in the private operator release bundle outside Git. No private key was copied. The four public help screenshots were refreshed from the passed final-source native journeys with provenance and scoped-result wording.
 
 **Remaining provider step:** Apple review, followed by the authorized manual public-release request and a fresh public storefront readback. Submission, approval and publication remain separate states.
+
+
+## Live help deployment follow-up
+
+The guide's configured Git integration had not produced a new production deployment since `c03f474` in the previous month. The merged guide was therefore built from `b8e8b311665921925f730c0f1d866bc85ece363e` with pinned Hugo 0.165.0 and deployed through existing Wrangler 4.123.0 to the unchanged `linepaycheck-guide` Pages project. Correct production deployment: `a881082d-eaed-4202-b8ef-a139c37f2f79`.
+
+A real Chrome read returned 200 for `/audit-results/`, `/crew-rule-drafts/` and `/recording-work/`. The result image's served SHA-256 matched the local build (`72d735d9990672cc388b8fdfc315358529071919430767bdd0573e53d66fa26b`); crew sharing and recording were clearly marked unavailable. A first deployment had an incorrect commit label and was superseded with the actual Git SHA; the content bytes were identical. No domain, integration or account grant was changed. [The runbook](../../../user-guide/README.md#cloudflare-pages) records the verified manual path and the unresolved automatic-trigger issue.

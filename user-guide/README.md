@@ -66,11 +66,35 @@ their own `CF_PAGES_URL` with noindex output.
 | Production `HUGO_VERSION` | `0.165.0` |
 | Production `GUIDE_BASE_URL` | `https://linepaycheck-guide.pages.dev/` |
 
-Pushes and merges to `main` now trigger the Pages build automatically. Keep the
-root directory, command, output directory, and pinned Hugo version aligned with
-the table above. `GUIDE_BASE_URL` is required for production so canonical URLs
-stay on the stable help URL; preview builds use the per-deployment
-`CF_PAGES_URL` instead.
+Keep the root directory, command, output directory, and pinned Hugo version aligned
+with the table above. `GUIDE_BASE_URL` is required for production so canonical URLs
+stay on the stable help URL; preview builds use the per-deployment `CF_PAGES_URL` instead.
+
+**Deployment verification, October 25, 2026:** Git integration was still configured,
+but the production deployment remained at `c03f474` from the previous month after
+new `main` merges. Do not infer publication from a successful merge. The release guide
+was built from merged main `b8e8b311665921925f730c0f1d866bc85ece363e` with Hugo 0.165.0
+and published to the same existing project through pinned Wrangler 4.123.0. Its current
+result image and both unavailable-feature notices were verified in a real browser.
+No domain, repository integration or access grant was changed. Repairing the Git trigger
+remains separate from deploying the current guide.
+
+For an authorized manual update, use a clean checkout of the intended merged source,
+build the production root URL, verify existing Cloudflare authentication, and deploy with
+the actual commit read from Git. Use the existing website checkout's pinned Wrangler:
+
+```sh
+LINEPAY_GUIDE_SOURCE=$(git rev-parse HEAD)
+GUIDE_BASE_URL=https://linepaycheck-guide.pages.dev/ bash user-guide/scripts/build.sh
+# From the existing linepaycheck.com checkout, after replacing the absolute output path:
+pnpm exec wrangler whoami
+pnpm exec wrangler pages deploy /absolute/path/to/linepay/user-guide/public \
+  --project-name linepaycheck-guide --branch main \
+  --commit-hash "$LINEPAY_GUIDE_SOURCE" --commit-dirty=false
+```
+
+Read back the production deployment source and verify the live pages and an image checksum.
+The CLI commit label is not proof of the uploaded bytes; retain the local build/source mapping.
 
 The Pages project currently lists `docs.linepaycheck.com` as an additional
 production domain alongside `linepaycheck-guide.pages.dev`. This repository
