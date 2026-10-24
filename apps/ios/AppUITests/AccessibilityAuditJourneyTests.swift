@@ -204,18 +204,22 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         agreementScreenshot.lifetime = .keepAlways
         add(agreementScreenshot)
 
-        alignContentToSafeArea(
-            crewRuleDrafts, navigationBar: app.navigationBars["Settings"].firstMatch,
-            tabBar: app.tabBars.firstMatch)
-        XCTAssertTrue(crewRuleDrafts.isHittable)
-        XCTAssertGreaterThanOrEqual(
-            crewRuleDrafts.frame.minY, app.navigationBars["Settings"].frame.maxY)
-        XCTAssertLessThanOrEqual(
-            crewRuleDrafts.frame.maxY, app.tabBars.firstMatch.frame.minY)
-        let settingsRulesScreenshot = XCTAttachment(screenshot: app.screenshot())
-        settingsRulesScreenshot.name = "large-text-settings-crew-rules-dark"
-        settingsRulesScreenshot.lifetime = .keepAlways
-        add(settingsRulesScreenshot)
+        if CrewRuleSharingAvailability.enabled {
+            alignContentToSafeArea(
+                crewRuleDrafts, navigationBar: app.navigationBars["Settings"].firstMatch,
+                tabBar: app.tabBars.firstMatch)
+            XCTAssertTrue(crewRuleDrafts.isHittable)
+            XCTAssertGreaterThanOrEqual(
+                crewRuleDrafts.frame.minY, app.navigationBars["Settings"].frame.maxY)
+            XCTAssertLessThanOrEqual(
+                crewRuleDrafts.frame.maxY, app.tabBars.firstMatch.frame.minY)
+            let settingsRulesScreenshot = XCTAttachment(screenshot: app.screenshot())
+            settingsRulesScreenshot.name = "large-text-settings-crew-rules-dark"
+            settingsRulesScreenshot.lifetime = .keepAlways
+            add(settingsRulesScreenshot)
+        } else {
+            XCTAssertFalse(crewRuleDrafts.exists)
+        }
 
         let restorePurchases = app.buttons["settings.restore-purchases"].firstMatch
         alignContentToSafeArea(
@@ -283,10 +287,12 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         app.tabBars.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
         let agreementDocuments = app.buttons["settings.agreements"].firstMatch
-        let crewRuleDrafts = app.buttons["settings.crew-rules"].firstMatch
+        let lastAgreementRow =
+            CrewRuleSharingAvailability.enabled
+            ? app.buttons["settings.crew-rules"].firstMatch : agreementDocuments
         var settingsScrolls = 0
-        while (!crewRuleDrafts.isHittable
-            || crewRuleDrafts.frame.maxY > app.tabBars.firstMatch.frame.minY)
+        while (!lastAgreementRow.isHittable
+            || lastAgreementRow.frame.maxY > app.tabBars.firstMatch.frame.minY)
             && settingsScrolls < 16
         {
             app.swipeUp()
@@ -297,17 +303,17 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         for _ in 0..<20 {
             if agreementDocuments.frame.minY < settingsNavigationBar.frame.maxY {
                 app.swipeDown()
-            } else if crewRuleDrafts.frame.maxY > settingsTabBar.frame.minY {
+            } else if lastAgreementRow.frame.maxY > settingsTabBar.frame.minY {
                 app.swipeUp()
             } else {
                 break
             }
         }
         XCTAssertTrue(agreementDocuments.isHittable)
-        XCTAssertTrue(crewRuleDrafts.isHittable)
+        XCTAssertTrue(lastAgreementRow.isHittable)
         XCTAssertGreaterThanOrEqual(
             agreementDocuments.frame.minY, settingsNavigationBar.frame.maxY)
-        XCTAssertLessThanOrEqual(crewRuleDrafts.frame.maxY, settingsTabBar.frame.minY)
+        XCTAssertLessThanOrEqual(lastAgreementRow.frame.maxY, settingsTabBar.frame.minY)
         let alignedSettings = XCTAttachment(screenshot: app.screenshot())
         alignedSettings.name = "accessibility-settings-aligned-before-audit"
         alignedSettings.lifetime = .keepAlways
