@@ -2513,3 +2513,9 @@ previous 1.0.6 gate as a passing full 1.1.0 release gate.
   Release build and artifact export; assertions and the full suite are retained.
 - The owner explicitly selected recording unavailable until physical-device QA. No full
   candidate upload or Apple mutation has occurred; 1.0.6 remains separate from this retry.
+
+- A second minimum-runtime focused run passed both remaining largest-text journeys:
+  Settings controls were fully reached without overshooting virtualized rows, and the actual
+  exported crew file was selected from the Files collection. Existing assertions on opt-out,
+  consent, future-period scope and retained USD 550 current pay remain intact. The previous
+  failures are retained; the complete final-head gate is still pending.

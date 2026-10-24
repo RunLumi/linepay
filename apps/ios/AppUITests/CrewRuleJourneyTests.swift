@@ -115,12 +115,12 @@ final class CrewRuleJourneyTests: XCTestCase {
             localLocation.tap()
         }
         XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
-        let file = app.collectionViews.cells.matching(
+        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
+        let file = fileList.cells.matching(
             NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
         ).firstMatch
         // Files virtualizes rows at large text sizes; reach the actual saved file rather than
         // assuming every cell is already represented in the accessibility tree.
-        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
         for _ in 0..<20 where !file.exists || !file.isHittable {
             fileList.swipeUp()
         }

@@ -191,14 +191,6 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
 
         let agreementDocuments = app.buttons["settings.agreements"].firstMatch
         let crewRuleDrafts = app.buttons["settings.crew-rules"].firstMatch
-        var agreementScrolls = 0
-        while (!agreementDocuments.isHittable
-            || agreementDocuments.frame.maxY > app.tabBars.firstMatch.frame.minY)
-            && agreementScrolls < 24
-        {
-            app.swipeUp()
-            agreementScrolls += 1
-        }
         alignContentToSafeArea(
             agreementDocuments, navigationBar: app.navigationBars["Settings"].firstMatch,
             tabBar: app.tabBars.firstMatch)
@@ -212,14 +204,6 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         agreementScreenshot.lifetime = .keepAlways
         add(agreementScreenshot)
 
-        var crewRuleScrolls = 0
-        while (!crewRuleDrafts.isHittable
-            || crewRuleDrafts.frame.maxY > app.tabBars.firstMatch.frame.minY)
-            && crewRuleScrolls < 24
-        {
-            app.swipeUp()
-            crewRuleScrolls += 1
-        }
         alignContentToSafeArea(
             crewRuleDrafts, navigationBar: app.navigationBars["Settings"].firstMatch,
             tabBar: app.tabBars.firstMatch)
@@ -234,14 +218,6 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         add(settingsRulesScreenshot)
 
         let restorePurchases = app.buttons["settings.restore-purchases"].firstMatch
-        var commerceScrolls = 0
-        while (!restorePurchases.isHittable
-            || restorePurchases.frame.maxY > app.tabBars.firstMatch.frame.minY)
-            && commerceScrolls < 20
-        {
-            app.swipeUp()
-            commerceScrolls += 1
-        }
         alignContentToSafeArea(
             restorePurchases, navigationBar: app.navigationBars["Settings"].firstMatch,
             tabBar: app.tabBars.firstMatch)
@@ -256,14 +232,6 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         add(restorePurchasesScreenshot)
 
         let backupRestore = app.buttons["backup.open"].firstMatch
-        var backupScrolls = 0
-        while (!backupRestore.isHittable
-            || backupRestore.frame.maxY > app.tabBars.firstMatch.frame.minY)
-            && backupScrolls < 20
-        {
-            app.swipeUp()
-            backupScrolls += 1
-        }
         alignContentToSafeArea(
             backupRestore, navigationBar: app.navigationBars["Settings"].firstMatch,
             tabBar: app.tabBars.firstMatch)
@@ -284,22 +252,26 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         navigationBar: XCUIElement,
         tabBar: XCUIElement
     ) {
-        for _ in 0..<20 {
-            let frame = element.frame
+        for _ in 0..<40 {
+            let top = navigationBar.frame.maxY + 4
+            let bottom = tabBar.frame.minY - 4
             let delta: CGFloat
-            if frame.minY < navigationBar.frame.maxY {
-                delta = 40
-            } else if frame.maxY > tabBar.frame.minY {
-                delta = -40
+            if !element.exists {
+                delta = -180
             } else {
-                break
+                let frame = element.frame
+                if frame.minY >= top, frame.maxY <= bottom, element.isHittable { return }
+                delta =
+                    frame.minY < top
+                    ? min(180, top - frame.minY + 8)
+                    : -min(180, max(40, frame.maxY - bottom + 8))
             }
-            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
             start.press(
                 forDuration: 0.05,
-                thenDragTo: start.withOffset(CGVector(dx: 0, dy: delta))
-            )
+                thenDragTo: start.withOffset(CGVector(dx: 0, dy: delta)))
         }
+        XCTFail("The complete control must be reachable between system bars: \(element.identifier)")
     }
 
     private func auditWorkerScreens(types: XCUIAccessibilityAuditType = .all) throws {
