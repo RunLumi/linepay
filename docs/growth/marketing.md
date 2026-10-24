@@ -42,13 +42,15 @@ Keep the offer unchanged: one Pro entitlement, existing Monthly/Annual IDs, $9.9
 
 ## Proposed acquisition experiment
 
+The owner selected **Paycheck Audit** on October 24, with a generic paycheck/hourly-pay listing and retained lineman/lineworker description and keywords. Treat reported low downloads as a reason to test reach, not a causal finding about keyword narrowness. Audit-intent and generic-hourly tests are both primary; specialist acquisition remains a separate retained use case. The exact 99-byte listing field lives in [store copy](../release/app-store.md#2-us-english-metadata-candidate).
+
 Run no new campaign until the corresponding product journey, store assets, scope copy and owner-approved budget are ready. A release request does not authorize ad spend or outreach messages.
 
 | Group | Initial intent examples | Proposed test | Decision it answers |
 |---|---|---|---|
-| Audit | paycheck audit, paycheck checker, paystub checker, paycheck discrepancy | Separate exact-match group | Do problem-aware workers complete a comparable audit? |
-| Hourly | hourly pay, overtime pay, paycheck | Separate exact-match group with a tighter owner-set cap | Does broader traffic reach value without portal/tax confusion? |
-| Specialist | lineworker, lineman pay, callout tracker | Preserve as a separate group | Does specialist value/retention outperform the generic segment? |
+| Audit | paycheck audit, paycheck checker, paystub checker, paycheck discrepancy, paycheck verification | Separate exact-match group | Do problem-aware workers complete a comparable audit? |
+| Hourly | hourly pay, overtime pay, paycheck, paystub | Separate exact-match group with a tighter owner-set cap | Does broader traffic reach value without portal/tax confusion? |
+| Specialist | lineworker, lineman pay, callout tracker, storm pay | Preserve as a separate group | Does specialist value/retention outperform the generic segment? |
 | Discovery | Broad match/Search Match only if separately funded | Small capped group; review disclosed actual queries | Which relevant queries deserve an exact test? |
 
 Review navigational provider queries separately. Proposed exact negatives for clearly observed employer-login intent include `adp`, `proliant`, `paycor` and `paychex`; these are exclusion candidates, never app keywords or brand claims. Do not block all `payroll` phrases without checking context. Exact matches include close variants, and exact negatives do not block every variant; follow Apple's [match-type](https://ads.apple.com/app-store/help/keywords/0059-understand-keyword-match-types) and [negative-keyword](https://ads.apple.com/app-store/help/keywords/0060-use-negative-keywords) rules when configuring an authorized campaign.

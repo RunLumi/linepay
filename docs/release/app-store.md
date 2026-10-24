@@ -43,7 +43,7 @@ The app does not retrieve paystubs from an employer portal, provide direct depos
 | App Store name | **Paycheck Audit** | 14 / 30 characters |
 | Subtitle | **Compare Pay & Track Hours** | 25 / 30 characters |
 | Promotional text | **Track hours, review paystub figures, and understand possible pay differences—privately.** | 87 / 170 characters |
-| Keywords | `paystub,discrepancy,overtime,checker,timesheet,underpaid,shift,earnings,callout` | 79 / 100 UTF-8 bytes |
+| Keywords | `paystub,checker,discrepancy,verification,overtime,hourly,timesheet,shift,lineman,callout,lineworker` | 99 / 100 UTF-8 bytes |
 | Primary category | **Finance** | Retain only if it accurately describes the final product |
 | Secondary category | **Utilities** | Confirm final App Store Connect value |
 | Price | **Free with In-App Purchases** | Local prices come from StoreKit |
@@ -74,7 +74,7 @@ Compare like-for-like gross wages under the rules you confirmed. Review possible
 
 BUILT FOR COMPLEX PAY, TOO
 
-Lineworkers can keep using advanced settings for supported callout minimums, per diem, overtime and dated pay rules. Your existing work records and historical checks remain part of your record.
+Lineman and lineworker pay settings remain available for supported callout minimums, per diem, overtime and dated pay rules. Your existing work records and historical checks remain part of your record.
 
 PRIVATE BY DEFAULT
 
