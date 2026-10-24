@@ -77,8 +77,8 @@
         "recording-work"
       ],
       "disposition": "reviewed",
-      "blob": "ef4a54b16ef41194c70d79b99b2af8b448698da1",
-      "reason": "October 23 full candidate: typed work-description route, recording unavailable/no permissions, corrected optional-backup privacy copy and visible Lineman Pay About name; affected guide instructions reviewed and updated."
+      "blob": "fbe9ea8db39689b90b94ea76e297d3ea9ae30c32",
+      "reason": "October24: new-work proposals search later then earlier free days inside the open period. Recording-work now explains reviewing a suggested day; existing saved work, overlap validation and pay calculations are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/CalloutEntryWorkflow.swift",

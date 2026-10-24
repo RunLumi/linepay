@@ -2530,3 +2530,13 @@ previous 1.0.6 gate as a passing full 1.1.0 release gate.
   for an Actions-budget failure before hosted steps started. Local checks and both browser
   suites passed. Live verification passed 33 read-only requests and matched 20 asset hashes.
   This exception is limited to that website patch and does not waive native release checks.
+
+- The all-nine-flow current-iOS Maestro preflight passed seven flows and exposed two more
+  blockers. Work correction found a real last-day proposal defect: Add Work searched only
+  forward and reopened an overlapping shift when earlier days were free. A deterministic
+  regression reproduced all three blocked-day cases. Proposals now search later then earlier
+  in the payroll timezone and remain inside the current period; a fully occupied period still
+  requires review and never saves work. All nine focused presentation tests then passed, and
+  the real correction/delete/Undo flow passed. The equal-gross flow was scrolling downward
+  for a status above the viewport; its corrected direction passed through offsetting components,
+  report preview and archived history. Existing money, scope and Save-validation assertions remain.

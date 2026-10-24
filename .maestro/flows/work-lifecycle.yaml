@@ -58,6 +58,7 @@ tags: [smoke, ios, regression]
 - scrollUntilVisible:
     element:
       id: work.note
+    centerElement: true
 - waitForAnimationToEnd
 - tapOn:
     id: work.note

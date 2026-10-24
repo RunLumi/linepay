@@ -10,6 +10,8 @@ keywords: [shift, hours, breaks, repeat, undo, draft, overnight, callout, daylig
 
 Open **Today → Add work**. Choose **Regular**, **Callout**, or **Other**, then set **Start** and **End**, including both dates. Add an optional note for the storm, crew, ticket, or facts you will need later.
 
+The initial date and times are only a proposal. If that slot is already logged, a different free day in the current period may be suggested, including an earlier day near period end. Check when you actually worked before saving.
+
 Selecting Callout identifies the work type; it does not invent a minimum-hours rule. The configured agreement determines whether a guarantee applies. The app is a manual work record, not an automatic attendance clock or GPS tracker.
 
 Review **Actual worked time** and **Payroll timezone**, then choose **Save work**. Your entry should appear in the work log and update expected pay. If saving fails, the error is not confirmation that the entry was recorded.

@@ -146,6 +146,58 @@ struct PresentationValueTests {
         #expect(period.window.contains(start: second.start, end: second.end))
     }
 
+    @Test(arguments: [0, 1, 2])
+    func lastDayWorkSuggestionFindsTheLatestEarlierFreeDay(blockedEarlierDays: Int) throws {
+        let model = AppModel()
+        try model.saveProfile(UnitFixture.profile())
+        let period = try #require(model.activePeriod)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: model.currentTimeZoneIdentifier))
+        let lastDay = calendar.startOfDay(for: period.window.displayEndDate)
+        for offset in 0...blockedEarlierDays {
+            let day = try #require(calendar.date(byAdding: .day, value: -offset, to: lastDay))
+            let start = try #require(calendar.date(bySettingHour: 7, minute: 0, second: 0, of: day))
+            try model.addWork(
+                start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular)
+        }
+        let now = try #require(calendar.date(bySettingHour: 12, minute: 0, second: 0, of: lastDay))
+        let suggestion = AddWorkView.suggestedInterval(model: model, now: now)
+        let expectedDay = try #require(
+            calendar.date(byAdding: .day, value: -(blockedEarlierDays + 1), to: lastDay))
+        #expect(calendar.isDate(suggestion.start, inSameDayAs: expectedDay))
+        #expect(calendar.component(.hour, from: suggestion.start) == 7)
+        #expect(
+            model.conflictingWork(start: suggestion.start, end: suggestion.end, excluding: nil)
+                == nil)
+        #expect(period.window.contains(start: suggestion.start, end: suggestion.end))
+        #expect(suggestion.end.timeIntervalSince(suggestion.start) == 8 * 3_600)
+        #expect(model.workEntries.count == blockedEarlierDays + 1, "A suggestion never saves work")
+    }
+
+    @Test func aFullPeriodDoesNotMakeTheSuggestionSaveOrLeaveThePeriod() throws {
+        let model = AppModel()
+        try model.saveProfile(UnitFixture.profile())
+        let period = try #require(model.activePeriod)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: model.currentTimeZoneIdentifier))
+        let lastDay = calendar.startOfDay(for: period.window.displayEndDate)
+        var day = calendar.startOfDay(for: period.window.startDate)
+        while day <= lastDay {
+            let start = try #require(calendar.date(bySettingHour: 7, minute: 0, second: 0, of: day))
+            try model.addWork(
+                start: start, end: start.addingTimeInterval(8 * 3_600), kind: .regular)
+            day = try #require(calendar.date(byAdding: .day, value: 1, to: day))
+        }
+        let count = model.workEntries.count
+        let now = try #require(calendar.date(bySettingHour: 12, minute: 0, second: 0, of: lastDay))
+        let suggestion = AddWorkView.suggestedInterval(model: model, now: now)
+        #expect(
+            model.conflictingWork(start: suggestion.start, end: suggestion.end, excluding: nil)
+                != nil)
+        #expect(period.window.contains(start: suggestion.start, end: suggestion.end))
+        #expect(model.workEntries.count == count)
+    }
+
     @Test func firstPeriodDefaultsToTheStartOfThisWeekSoRecentShiftsFit() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "America/Chicago"))
