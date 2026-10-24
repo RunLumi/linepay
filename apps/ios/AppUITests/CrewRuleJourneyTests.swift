@@ -71,6 +71,10 @@ final class CrewRuleJourneyTests: XCTestCase {
         filename.typeText(marker)
         let editedName = try XCTUnwrap(filename.value as? String)
         XCTAssertTrue(editedName.contains(marker), editedName)
+        // Commit the native Files filename editor before activating Move/Save. On iOS 18,
+        // leaving it focused can consume the navigation action without completing the export.
+        let filenameReturn = app.keyboards.buttons["Return"].firstMatch
+        if filenameReturn.isHittable { filenameReturn.tap() }
         if !picker.staticTexts["On My iPhone"].exists {
             if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
             let local = app.staticTexts["On My iPhone"].firstMatch
