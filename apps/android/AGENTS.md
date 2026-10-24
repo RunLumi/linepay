@@ -31,7 +31,9 @@ Run `bash scripts/check-android.sh unit` for strict JVM/app/release/lint verific
 
 The first Android client is a bounded configured-rules vertical slice. It is not full iOS feature
 parity: do not represent user rule confirmation as independent applicability or legal verification,
-and keep unresolved weekly-rate, line-level paystub, OCR/voice, benefits, commerce, localization,
-and physical-device/store evidence visible.
+and keep unresolved weekly-rate, line-level paystub, OCR/voice, commerce, localization,
+and physical-device/store evidence visible. Manual employer-contribution receipts use the existing
+four-basis calculator and retain separate fund/period/source evidence; they do not establish
+eligibility, caps, remittance timing, legal-fringe compliance or wage-check clearance.
 
 Outside explicit task authorization, the best Android code is no Android code.

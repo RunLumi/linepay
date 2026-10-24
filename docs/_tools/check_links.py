@@ -52,7 +52,11 @@ def check(root: Path) -> tuple[int, list[str]]:
     errors: list[str] = []
     excluded = {".git", ".build", ".test-results", "node_modules", "DerivedData"}
     for source in sorted(root.rglob("*.md")):
-        if excluded.intersection(source.relative_to(root).parts):
+        relative = source.relative_to(root).parts
+        android_build = relative[:2] == ("apps", "android") and (
+            relative[2:3] == ("build",) or relative[3:4] == ("build",)
+        )
+        if excluded.intersection(relative) or android_build:
             continue
         body = without_fences(source.read_text(encoding="utf-8"))
         for match in list(LINK.finditer(body)) + list(REFERENCE.finditer(body)):

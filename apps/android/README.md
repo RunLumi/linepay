@@ -1,7 +1,8 @@
 # LinePaycheck Android
 
-The first Play candidate uses the v3 display name **Paycheck Audit: LinePay** while preserving
-`com.streamentry.linepay.android`. See [Play release and signing recovery](../../docs/release/android-play.md).
+The next Android candidate uses the owner-selected display name **Lineman Pay** while preserving
+`com.streamentry.linepay.android`. This source change does not change the existing Play listing or
+the prior candidate's release state. See [Play release and signing recovery](../../docs/release/android-play.md).
 
 The owner authorized native Android for the v2 work on October 16, 2026. The client uses Kotlin
 and Jetpack Compose. Payroll data remains in app-private local storage; the app has no LinePaycheck
@@ -22,6 +23,12 @@ account, backend, network permission, ad/analytics SDK, or Android automatic bac
 - Complete-workweek reviews can be prepared from explicitly selected saved paycheck periods. Their
   versioned receipts freeze the selected period, work, rule, remuneration, input and result evidence;
   they stay separate from paycheck gross and never clear a saved `Needs review` verdict.
+- Employer-contribution reviews accept an explicit fund identifier, period, source rules and
+  eligible hour/day/earnings/fixed-period segments. Optional confirmed statement values compare
+  only within the same scope. Schema 4 retains separate, replay-validated receipts and appended
+  revisions through local storage and encrypted backups; wages and paycheck checks are unchanged.
+  Caps, eligibility exceptions and remittance timing are not verified. See
+  [the receipt decision](../../docs/adr/0033-android-confirmed-benefit-receipts.md).
 - The Files picker supports password-protected manual pay-data backup and an explicit review before
   replacing local data. Diagnostic export contains only opt-in coarse usage counts, not wages or
   pay dates.

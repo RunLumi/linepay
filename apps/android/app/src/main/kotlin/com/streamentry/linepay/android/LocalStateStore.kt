@@ -134,12 +134,25 @@ internal fun migrateAndroidLocalState(root: JsonObject) {
             migrateAndroidSchemaTwo(root)
         }
         2 -> migrateAndroidSchemaTwo(root)
-        AndroidLocalState.CURRENT_SCHEMA_VERSION -> {
+        3 -> {
             if (root.get("weeklyReviews")?.isJsonArray != true) {
                 throw InvalidLocalState("This saved state is missing its weekly review collection.")
             }
         }
+        AndroidLocalState.CURRENT_SCHEMA_VERSION -> {
+            if (root.get("weeklyReviews")?.isJsonArray != true || root.get("benefitReviews")?.isJsonArray != true) {
+                throw InvalidLocalState("This saved state is missing its review collections.")
+            }
+        }
         else -> throw InvalidLocalState("This backup uses an unsupported LinePaycheck state version.")
+    }
+    if (version < 4) {
+        val prior = root.get("benefitReviews")
+        if (prior != null && (!prior.isJsonArray || prior.asJsonArray.size() != 0)) {
+            throw InvalidLocalState("This legacy state contains unsupported benefit receipts.")
+        }
+        root.add("benefitReviews", JsonArray())
+        root.addProperty("schemaVersion", AndroidLocalState.CURRENT_SCHEMA_VERSION)
     }
 }
 
@@ -219,7 +232,7 @@ private fun migrateAndroidSchemaTwo(root: JsonObject) {
         source.add("workContainingPeriodIds", JsonArray().apply { retainedIds.forEach(::add) })
     }
 
-    root.addProperty("schemaVersion", AndroidLocalState.CURRENT_SCHEMA_VERSION)
+    root.addProperty("schemaVersion", 3)
 }
 
 private fun JsonElement.requireJsonObject(message: String): JsonObject {

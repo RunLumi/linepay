@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -79,6 +80,8 @@ private enum class AppPage(val title: String) {
     RECORD_PAYCHECK("Record paycheck"),
     WEEKLY_REVIEW("Weekly rate review"),
     WEEKLY_RECEIPT("Weekly review receipt"),
+    BENEFITS("Employer contributions"),
+    BENEFIT_RECEIPT("Benefit receipt"),
 }
 
 @Composable
@@ -96,7 +99,24 @@ fun LinePaycheckApp(
     var page by rememberSaveable { mutableStateOf(AppPage.ROOT) }
     var editingProfile by rememberSaveable { mutableStateOf(false) }
     var selectedWeeklyReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedBenefitReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
+    var revisingBenefitReceiptId by rememberSaveable { mutableStateOf<String?>(null) }
+    var benefitDraftDirty by rememberSaveable { mutableStateOf(false) }
+    var discardBenefitDraft by remember { mutableStateOf(false) }
     val activeProfile = state.profile
+
+    if (discardBenefitDraft) androidx.compose.material3.AlertDialog(
+        onDismissRequest = { discardBenefitDraft = false },
+        title = { Text("Discard unsaved contribution review?") },
+        text = { Text("The unsaved entries will be discarded. Saved receipts stay unchanged.") },
+        confirmButton = { androidx.compose.material3.TextButton(onClick = {
+            discardBenefitDraft = false; benefitDraftDirty = false; page = AppPage.ROOT
+        }) { Text("Discard review") } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = { discardBenefitDraft = false }) { Text("Keep editing") } },
+    )
+    androidx.activity.compose.BackHandler(enabled = page == AppPage.BENEFITS) {
+        if (benefitDraftDirty) discardBenefitDraft = true else page = AppPage.ROOT
+    }
 
     if (loadError != null) {
         LinePaycheckTheme {
@@ -124,7 +144,8 @@ fun LinePaycheckApp(
                     navigationIcon = {
                         androidx.compose.material3.TextButton(
                             onClick = {
-                                page = AppPage.ROOT
+                                if (page == AppPage.BENEFITS && benefitDraftDirty) discardBenefitDraft = true
+                                else page = AppPage.ROOT
                                 editingProfile = false
                             },
                             modifier = Modifier.testTag("navigation.back"),
@@ -207,6 +228,24 @@ fun LinePaycheckApp(
                         WeeklyReviewReceiptDetailScreen(receipt)
                     }
                 }
+                page == AppPage.BENEFITS -> BenefitReviewScreen(
+                    state = state,
+                    revises = state.benefitReviews.singleOrNull { it.id == revisingBenefitReceiptId },
+                    saveError = saveError,
+                    onSave = onSaveState,
+                    onOpenReceipt = { id -> selectedBenefitReceiptId = id; page = AppPage.BENEFIT_RECEIPT },
+                    onDirtyChanged = { benefitDraftDirty = it },
+                )
+                page == AppPage.BENEFIT_RECEIPT -> {
+                    val receipt = state.benefitReviews.singleOrNull { it.id == selectedBenefitReceiptId }
+                    if (receipt == null) PageContent { Text("This benefit receipt is no longer available.") }
+                    else BenefitReceiptDetailScreen(receipt,
+                        onRevise = { revisingBenefitReceiptId = receipt.id; benefitDraftDirty = false; page = AppPage.BENEFITS },
+                        onDelete = {
+                            if (onSaveState(AndroidBenefitRepository.deleteFamily(state, receipt.id))) page = AppPage.ROOT
+                        },
+                    )
+                }
                 page == AppPage.SETUP -> PayRuleSetupScreen(
                     initial = if (editingProfile) activeProfile else null,
                     saveError = saveError,
@@ -236,6 +275,7 @@ fun LinePaycheckApp(
                     )
                     MainTab.HISTORY -> HistoryScreen(
                         state = state,
+                        onOpenBenefitReceipt = { id -> selectedBenefitReceiptId = id; page = AppPage.BENEFIT_RECEIPT },
                         saveError = saveError,
                         onDeleteCheck = { id ->
                             runCatching { AndroidWeeklyReviewRepository.deletePaycheckPeriod(state, id) }
@@ -257,6 +297,8 @@ fun LinePaycheckApp(
                         },
                         onSaveState = onSaveState,
                         onSaveActivity = onSaveActivity,
+                        onBenefits = { revisingBenefitReceiptId = null; benefitDraftDirty = false; page = AppPage.BENEFITS },
+                        onOpenBenefitReceipt = { id -> selectedBenefitReceiptId = id; page = AppPage.BENEFIT_RECEIPT },
                     )
                 }
             }

@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.LinePaycheck" parent="Base.Theme.LinePaycheck">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

@@ -105,9 +105,10 @@ data class AndroidLocalState(
     val work: List<AndroidWorkEntry> = emptyList(),
     val checks: List<AndroidPaycheckSnapshot> = emptyList(),
     val weeklyReviews: List<AndroidWeeklyReviewReceipt> = emptyList(),
+    val benefitReviews: List<AndroidBenefitReceipt> = emptyList(),
 ) {
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 3
+        const val CURRENT_SCHEMA_VERSION = 4
         const val MAXIMUM_WORK_ENTRIES = 10_000
         const val MAXIMUM_SAVED_CHECKS = 2_000
         const val MAXIMUM_WEEKLY_REVIEWS = 128
@@ -143,6 +144,7 @@ object AndroidLocalStateValidator {
         state.work.forEach(::validateWork)
         state.checks.forEach(::validateCheck)
         AndroidWeeklyReviewRepository.validateState(state)
+        AndroidBenefitRepository.validateState(state)
         return state
     }
 
