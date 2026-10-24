@@ -15,6 +15,9 @@ claim that every screen meets an App Store accessibility label.
 - Its largest-text Settings journey scrolls each of 17 available actions (crew-rule sharing is owner-held in 1.1.0) completely inside the navigation/
   tab-bar viewport and checks its text bounds. Existing normal/dark largest-text pay, consent,
   evidence and recovery journeys remain required.
+- The audit-offer journey requires buttons to fit inside the reading viewport. At maximum text
+  size, a disclosure paragraph may be taller than that viewport; the test verifies its complete
+  accessibility text and scrolls both the beginning and ending into readable positions.
 - `testContrastOnFreshWorkerScreens` runs Apple's contrast audit on the existing iOS 26 simulator.
   It checks Today, Settings, the backup action after scrolling it fully into view, and local activity.
   Reports for mapped text overlapping a system bar are retained and classified as outside the
