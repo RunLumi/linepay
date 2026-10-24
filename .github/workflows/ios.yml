@@ -31,7 +31,8 @@ jobs:
     runs-on: linepay-ios
     # V2 adds independent backup, benefits, crew and accessibility UI journeys. Keep the
     # complete test matrix plus coverage export and Release build within one bounded gate.
-    timeout-minutes: 60
+    # The 55-journey minimum-runtime run takes about 51 minutes before coverage/Release/export.
+    timeout-minutes: 75
     env:
       # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime. The device is
       # found by name: a UDID does not survive a host restore or simulator rebuild.

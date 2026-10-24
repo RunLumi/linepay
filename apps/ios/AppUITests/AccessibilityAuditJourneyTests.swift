@@ -151,17 +151,13 @@ final class AccessibilityAuditJourneyTests: XCTestCase {
         }
         XCTAssertTrue(recording.waitForExistence(timeout: 10))
         XCTAssertTrue(recording.isHittable)
-        let activityDisclosureText =
-            "This is not an install counter or a global conversion report. Existing subscriptions, renewals and restored pay data are different from new paid customers. Turning recording off keeps prior observations until you clear them."
-        let activityDisclosure = app.staticTexts.matching(
-            NSPredicate(format: "label == %@", activityDisclosureText)
-        ).firstMatch
-        XCTAssertTrue(activityDisclosure.waitForExistence(timeout: 10))
+        let activityDisclosure = app.staticTexts["activity.recording-explanation"].firstMatch
         var disclosureScrolls = 0
         while !activityDisclosure.isHittable && disclosureScrolls < 6 {
             app.swipeUp()
             disclosureScrolls += 1
         }
+        XCTAssertTrue(activityDisclosure.waitForExistence(timeout: 10))
         XCTAssertTrue(activityDisclosure.isHittable)
         XCTAssertGreaterThan(activityDisclosure.frame.height, 200)
         let activityNavigationBar = app.navigationBars["Device-local activity"].firstMatch

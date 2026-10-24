@@ -558,8 +558,8 @@
         "crew-rule-drafts"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "b24069995fdef42da3b03ebb42afcb283ecc16fd",
-      "reason": "Targeted October 22 review: the Files document uses its explicit exported .linepayrules type and a stem-only suggested filename. The public choose/save steps and file extension remain accurate; a simulator Files-provider E2E passed. No agreement-rights or release approval is implied."
+      "blob": "61380913fd9ea74b80978d21efce047ec2af0400",
+      "reason": "October 23: crew draft title and revision use the existing labeled focusable field so largest-text input remains reachable; reviewed crew-rule sharing instructions, choices and authority are unchanged."
     },
     {
       "path": "apps/ios/App/Sources/PaycheckResolutionView.swift",

@@ -14,7 +14,8 @@ final class LocalActivityJourneyTests: XCTestCase {
         let recording = app.switches["activity.recording"].firstMatch
         reveal(recording)
         XCTAssertEqual(recording.value as? String, "1")
-        recording.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let nativeSwitch = recording.switches.firstMatch
+        (nativeSwitch.exists ? nativeSwitch : recording).tap()
         XCTAssertEqual(recording.value as? String, "0")
         tap("activity.preview")
         XCTAssertTrue(app.navigationBars["Review local diagnostics"].waitForExistence(timeout: 10))

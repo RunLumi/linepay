@@ -2490,3 +2490,26 @@ candidate is validated and ready to replace it.
 Builds/results live under `.build/full-1.1.0-15/` on the SSD to avoid the nearly-full system volume.
 No device/runtime was created or erased. Do not present intermediate focused passes or the
 previous 1.0.6 gate as a passing full 1.1.0 release gate.
+
+### October 24 retry checkpoint
+
+- Exact-head hosted run `39959557786` at `7b241e3` passed 166 domain tests,
+  84 repository-script tests and 355 app tests. Its 55 UI cases had four explicit skips
+  and three failures; the full gate failed. The skips were the minimum-runtime contrast
+  check, raw heuristic diagnostic and two opt-in store-capture cases.
+- Follow-up fixes use the stable activity-disclosure identifier, the actual native child
+  switch, a scrollable Files cell and the existing labeled/focusable crew title fields.
+  The opt-out/export/relaunch/clear journey and real document pipeline passed on iOS 26.5.
+  The largest-text crew journey is still being verified; no final acceptance is implied.
+- Store capture's synthetic startup no longer spins a main-actor task. The real OCR/parser
+  core is reused directly for the synchronous fixture; normal imports remain asynchronous.
+  The real v3 capture journey then passed. Captures still need binding to the final commit.
+- Candidate screenshot captions now match the v3 expected-gross and configured daily
+  double-time scope. Historical captures/manifests remain unchanged. The pinned full guide
+  build, source freshness, 555 local links and five documentation-tool tests passed.
+- The existing dedicated runner was connected manually and executed the hosted job.
+  Its launchd service remains unrepaired; manual execution is not launchd acceptance.
+  The native job budget is now 75 minutes to retain all 55 journeys plus coverage,
+  Release build and artifact export; assertions and the full suite are retained.
+- The owner explicitly selected recording unavailable until physical-device QA. No full
+  candidate upload or Apple mutation has occurred; 1.0.6 remains separate from this retry.

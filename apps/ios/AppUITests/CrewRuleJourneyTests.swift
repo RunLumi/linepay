@@ -91,7 +91,7 @@ final class CrewRuleJourneyTests: XCTestCase {
         tap("crew-rules.choose-file")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
         let localRoot = picker.staticTexts["On My iPhone"].firstMatch
-        if !localRoot.exists {
+        if !localRoot.waitForExistence(timeout: 2) {
             let browseBack = picker.buttons["Browse"].firstMatch
             if browseBack.isHittable { browseBack.tap() }
         }
@@ -102,7 +102,11 @@ final class CrewRuleJourneyTests: XCTestCase {
             let localLocation = app.cells.matching(
                 identifier: "DOC.sidebar.item.On My iPhone"
             ).firstMatch
-            let browseView = app.collectionViews["Browse View"].firstMatch
+            let browseView = app.descendants(matching: .any).matching(
+                NSPredicate(
+                    format: "identifier == %@ OR identifier == %@",
+                    "Browse View", "Browse View (Picker)")
+            ).firstMatch
             for _ in 0..<5 where !localLocation.isHittable {
                 XCTAssertTrue(browseView.waitForExistence(timeout: 5))
                 browseView.swipeDown()
@@ -111,10 +115,16 @@ final class CrewRuleJourneyTests: XCTestCase {
             localLocation.tap()
         }
         XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
-        let file = app.collectionViews.matching(identifier: "File View").cells.matching(
+        let file = app.collectionViews.cells.matching(
             NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
         ).firstMatch
-        if !file.waitForExistence(timeout: 25) {
+        // Files virtualizes rows at large text sizes; reach the actual saved file rather than
+        // assuming every cell is already represented in the accessibility tree.
+        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
+        for _ in 0..<20 where !file.exists || !file.isHittable {
+            fileList.swipeUp()
+        }
+        if !file.waitForExistence(timeout: 10) {
             capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
             tree.name = "crew-files-local-root-before-search"
@@ -236,7 +246,8 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(element.isHittable, "Missing reachable review: \(id)")
         let before = element.value as? String
         XCTAssertTrue(before == "0" || before == "1")
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        let nativeSwitch = element.switches.firstMatch
+        (nativeSwitch.exists ? nativeSwitch : element).tap()
         let changed = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "value == %@", before == "1" ? "0" : "1"),
             object: element)

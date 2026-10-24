@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFont
 DEFAULT_SIZE = (1284, 2778)  # Apple's 6.5-inch portrait bucket; v3 uses 1320x2868 (6.9-inch)
 CANVAS = (0xF4, 0xF1, 0xE8)  # DESIGN.md canvas
 TEXT = (0x13, 0x17, 0x1A)  # text.primary
-SECONDARY = (0x5C, 0x64, 0x68)  # text.secondary
+SECONDARY = (0x3D, 0x45, 0x49)  # text.secondary
 OXIDE = (0x0E, 0x74, 0x6C)  # action.fill
 LINE = (0xD6, 0xD5, 0xCC)  # line.subtle
 FONT = "/System/Library/Fonts/SFNS.ttf"

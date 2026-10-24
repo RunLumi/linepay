@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct CrewRulesView: View {
     let model: AppModel
     var onPrepared: (() -> Void)? = nil
+    @FocusState private var focusedField: String?
     @State private var title = "Shared pay rules"
     @State private var revision = "1"
     @State private var includeAmounts = false
@@ -143,13 +144,13 @@ struct CrewRulesView: View {
 
     private var exportSection: some View {
         Section("Prepare a rule draft") {
-            LabeledContent("Draft title") {
-                TextField("Title", text: $title).accessibilityIdentifier("crew-rules.title")
-            }
-            LabeledContent("Draft revision") {
-                TextField("Revision", text: $revision).textInputAutocapitalization(.never)
-                    .accessibilityIdentifier("crew-rules.revision")
-            }
+            LinePayTextField(
+                "Draft title", text: $title, focus: $focusedField, identifier: "crew-rules.title")
+            LinePayTextField(
+                "Draft revision", text: $revision, focus: $focusedField,
+                identifier: "crew-rules.revision"
+            )
+            .textInputAutocapitalization(.never)
             Toggle("Include hourly and per-diem amounts", isOn: $includeAmounts)
                 .accessibilityIdentifier("crew-rules.include-amounts")
             Text(

@@ -442,24 +442,10 @@
             try model.savePaystubDraft(draft)
         }
 
-        /// The app session is built synchronously at launch; spin the main run loop until the real
-        /// OCR service finishes instead of replacing its output with canned lines.
+        /// Run the real OCR/parser synchronously for this synthetic startup fixture. Scheduling a
+        /// MainActor task and spinning its run loop can deadlock or trigger the launch watchdog.
         private static func recognizeBlocking(_ data: Data) throws -> OCRPaystubResult {
-            var outcome: Result<OCRPaystubResult, any Error>?
-            Task {
-                do {
-                    outcome = .success(
-                        try await PaystubOCRService().recognize(data: data, fileExtension: "pdf"))
-                } catch {
-                    outcome = .failure(error)
-                }
-            }
-            let deadline = Date().addingTimeInterval(60)
-            while outcome == nil, Date() < deadline {
-                RunLoop.main.run(mode: .default, before: Date().addingTimeInterval(0.05))
-            }
-            guard let outcome else { throw LocalStateStoreError.invalidState }
-            return try outcome.get()
+            try PaystubOCRService.recognizeDocument(data: data, fileExtension: "pdf")
         }
     }
 #endif
