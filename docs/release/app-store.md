@@ -2,7 +2,7 @@
 
 [Release home](README.md) · [v3 plan](../plan/v3.md) · [Pricing](../product/pricing.md) · [Claims](../legal/claim-register.md)
 
-> **Canonical App Store copy and presentation. Updated October 24, 2026.** The owner corrected the selected full-update name to **Paycheck Audit**, superseding Lineman Pay. The new name must appear in the installed app and editable App Store listing. Earlier signed builds, submitted metadata and screenshots remain historical evidence for their recorded names; they do not verify this corrected candidate. Final binary validation, metadata save, submission and public release are pending.
+> **Canonical App Store copy and presentation. Updated October 25, 2026.** **Paycheck Audit 1.1.0 (15)** was saved and submitted with the name, subtitle, description, keywords, update notes and six real screenshots below. Apple returned **WAITING_FOR_REVIEW**, release type **MANUAL**. [Actual source/build/CI/Apple evidence](evidence/release-1.1.0-2026-10-25.md) is retained; public release is pending Apple approval. The earlier Lineman Pay naming-only submission was withdrawn before this replacement.
 
 > **October 23 name-only submission:** The owner selected [1.0.6 (14)](evidence/release-1.0.6-2026-10-23.md) from released 1.0.5 source. Apple saved **Lineman Pay** and accepted the version as **WAITING_FOR_REVIEW**, release type **MANUAL**. Existing specialist copy, subtitle and eight screenshots were retained. The broader metadata and 1.1.0 experience below remain candidates; no public release is claimed.
 

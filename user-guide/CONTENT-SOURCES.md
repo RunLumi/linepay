@@ -91,3 +91,8 @@ October17 assessment-v4 candidate review: result/history/import/report/expected-
 covers active legacy weekly re-review, retained frozen comparisons and Recorded verdict context.
 Source and SDK checks do not prove native migration, rendering, PDF or VoiceOver behavior; no new
 native screenshot was substituted for those missing receipts.
+
+
+## October 24, 2026 screenshot refresh
+
+Reviewed the actual 1.1.0 (15) first-shift, manual paystub review, scoped paycheck-result and default report-preparation screens using synthetic native-journey captures. The result image now shows “Possible difference: paystub is lower” and its gross-only limitations. Screenshot provenance records the actual source, device and runtime; these images do not establish App Store publication or physical-device acceptance. Crew-rule sharing remains explicitly unavailable in the 1.1.0 guide.
