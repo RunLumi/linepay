@@ -29,55 +29,62 @@ struct PaystubOCRService: Sendable {
     func recognize(data: Data, fileExtension: String) async throws -> OCRPaystubResult {
         guard data.count <= 25 * 1024 * 1024 else { throw PaystubOCRError.oversizedDocument }
         let task = Task.detached(priority: .userInitiated) {
-            var lines: [RecognizedPaystubLine] = []
-            let pageCount: Int
-            if fileExtension.lowercased() == "pdf" || data.starts(with: Data("%PDF".utf8)) {
-                guard let pdf = PDFDocument(data: data), !pdf.isLocked else {
-                    throw PaystubOCRError.unsupportedDocument
-                }
-                pageCount = pdf.pageCount
-                // Render one page at a time, not eight high-resolution images at once.
-                for index in 0..<min(pageCount, 8) {
-                    try Task.checkCancellation()
-                    let pageLines = try autoreleasepool { () throws -> [RecognizedPaystubLine] in
-                        guard let page = pdf.page(at: index),
-                            let image = Self.normalizedImage(
-                                page.thumbnail(
-                                    of: CGSize(width: 1400, height: 1900), for: .mediaBox))
-                        else { return [] }
-                        return try Self.recognizeLines(image, page: index)
-                    }
-                    lines += pageLines
-                }
-            } else {
-                pageCount = 1
-                guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-                    let normalized = CGImageSourceCreateThumbnailAtIndex(
-                        source, 0,
-                        [
-                            kCGImageSourceCreateThumbnailFromImageAlways: true,
-                            kCGImageSourceCreateThumbnailWithTransform: true,
-                            kCGImageSourceThumbnailMaxPixelSize: 2400,
-                            kCGImageSourceShouldCacheImmediately: true,
-                        ] as CFDictionary)
-                else {
-                    throw PaystubOCRError.unsupportedDocument
-                }
-                lines = try Self.recognizeLines(normalized, page: 0)
-            }
-            guard !lines.isEmpty else { throw PaystubOCRError.noReadablePages }
-            return OCRPaystubResult(
-                recognizedText: lines.map(\.text).joined(separator: "\n"),
-                suggestions: PaystubTextParser.parse(lines), pageCount: pageCount,
-                notice: pageCount > 8
-                    ? "Only the first 8 of \(pageCount) pages were read. Review the remaining original pages; this audit is limited."
-                    : nil)
+            try Self.recognizeDocument(data: data, fileExtension: fileExtension)
         }
         return try await withTaskCancellationHandler {
             try await task.value
         } onCancel: {
             task.cancel()
         }
+    }
+
+    // The same OCR/parser path serves asynchronous imports and synchronous synthetic startup.
+    // Keeping the latter synchronous avoids re-entering the main run loop during App init.
+    static func recognizeDocument(data: Data, fileExtension: String) throws -> OCRPaystubResult {
+        guard data.count <= 25 * 1024 * 1024 else { throw PaystubOCRError.oversizedDocument }
+        var lines: [RecognizedPaystubLine] = []
+        let pageCount: Int
+        if fileExtension.lowercased() == "pdf" || data.starts(with: Data("%PDF".utf8)) {
+            guard let pdf = PDFDocument(data: data), !pdf.isLocked else {
+                throw PaystubOCRError.unsupportedDocument
+            }
+            pageCount = pdf.pageCount
+            // Render one page at a time, not eight high-resolution images at once.
+            for index in 0..<min(pageCount, 8) {
+                try Task.checkCancellation()
+                let pageLines = try autoreleasepool { () throws -> [RecognizedPaystubLine] in
+                    guard let page = pdf.page(at: index),
+                        let image = Self.normalizedImage(
+                            page.thumbnail(
+                                of: CGSize(width: 1400, height: 1900), for: .mediaBox))
+                    else { return [] }
+                    return try Self.recognizeLines(image, page: index)
+                }
+                lines += pageLines
+            }
+        } else {
+            pageCount = 1
+            guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+                let normalized = CGImageSourceCreateThumbnailAtIndex(
+                    source, 0,
+                    [
+                        kCGImageSourceCreateThumbnailFromImageAlways: true,
+                        kCGImageSourceCreateThumbnailWithTransform: true,
+                        kCGImageSourceThumbnailMaxPixelSize: 2400,
+                        kCGImageSourceShouldCacheImmediately: true,
+                    ] as CFDictionary)
+            else {
+                throw PaystubOCRError.unsupportedDocument
+            }
+            lines = try Self.recognizeLines(normalized, page: 0)
+        }
+        guard !lines.isEmpty else { throw PaystubOCRError.noReadablePages }
+        return OCRPaystubResult(
+            recognizedText: lines.map(\.text).joined(separator: "\n"),
+            suggestions: PaystubTextParser.parse(lines), pageCount: pageCount,
+            notice: pageCount > 8
+                ? "Only the first 8 of \(pageCount) pages were read. Review the remaining original pages; this audit is limited."
+                : nil)
     }
 
     private static func normalizedImage(_ image: UIImage) -> CGImage? {

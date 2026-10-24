@@ -31,7 +31,8 @@ jobs:
     runs-on: linepay-ios
     # V2 adds independent backup, benefits, crew and accessibility UI journeys. Keep the
     # complete test matrix plus coverage export and Release build within one bounded gate.
-    timeout-minutes: 60
+    # The 55-journey minimum-runtime run takes about 51 minutes before coverage/Release/export.
+    timeout-minutes: 75
     env:
       # StoreKit's local test daemon is stable on the installed iOS 18.5 runtime. The device is
       # found by name: a UDID does not survive a host restore or simulator rebuild.
@@ -69,6 +70,8 @@ jobs:
           xcrun simctl shutdown "$UDID" 2>/dev/null || true
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl ui "$UDID" content_size large
           # Restart only commerce daemons inside this simulator; do not touch
           # other simulator runtimes or host services.
           for SERVICE in com.apple.storekitd com.apple.appstored com.apple.itunesstored; do
@@ -76,6 +79,8 @@ jobs:
           done
           sleep 10
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
+          # Remove only the synthetic UI runner so no prior unsigned test code stays loaded.
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay.uitests.xctrunner 2>/dev/null || true
       - name: Toolchain
         run: |
           xcodebuild -version
@@ -86,7 +91,7 @@ jobs:
           rm -rf .test-results
           mkdir -p .test-results
           set -o pipefail
-          bash scripts/check-ios.sh 2>&1 | tee .test-results/verification.log
+          TMPDIR="$RUNNER_TEMP/" bash scripts/check-ios.sh 2>&1 | tee .test-results/verification.log
       - name: Retain resolved test dependencies and assertion diagnostics
         if: always()
         run: |
@@ -180,11 +185,30 @@ jobs:
           xcrun simctl spawn "$UDID" defaults write -g AppleLocale en_US
           xcrun simctl spawn "$UDID" defaults write -g AppleLanguages -array en
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
+          # Remove only the synthetic UI runner so no prior unsigned test code stays loaded.
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay.uitests.xctrunner 2>/dev/null || true
           xcrun simctl ui "$UDID" appearance "$APPEARANCE"
           xcrun simctl ui "$UDID" content_size "$TEXT_SIZE"
           echo "MAESTRO_IOS_DEVICE=$DEVICE_NAME" >> "$GITHUB_ENV"
           echo "UI_DEVICE_UDID=$UDID" >> "$GITHUB_ENV"
           maestro --version
+      - name: Verify current-runtime accessibility
+        if: matrix.name == 'standard-light'
+        run: |
+          (cd apps/ios && xcodegen generate)
+          mkdir -p .build/current-accessibility-results
+          TEST_RUNNER_LINEPAY_STORE_CAPTURE=v3 TEST_RUNNER_TZ=America/Chicago \
+            xcodebuild -jobs 2 -project apps/ios/LinePay.xcodeproj -scheme LinePay \
+            -configuration Debug -destination "platform=iOS Simulator,id=$UI_DEVICE_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/current-accessibility-derived" \
+            -resultBundlePath .build/current-accessibility-results/CurrentAccessibility.xcresult \
+            -onlyUsePackageVersionsFromResolvedFile -parallel-testing-enabled NO \
+            -test-timeouts-enabled YES -maximum-test-execution-time-allowance 720 \
+            -only-testing:LinePayUITests/AccessibilityAuditJourneyTests/testContrastOnFreshWorkerScreens \
+            -only-testing:LinePayUITests/AccessibilityAuditJourneyTests/testWorkerScreensPassSemanticAccessibilityAudit \
+            -only-testing:LinePayUITests/DynamicTypeCoverageJourneyTests/test13SettingsActionsRemainFullyReadableAtLargestText \
+            -only-testing:LinePayUITests/PaydayJourneyTests/testV3StoreScreenshotsFromSamplePaycheck \
+            CODE_SIGNING_ALLOWED=NO test
       - name: Run real application journeys
         run: bash scripts/test-ios-maestro.sh '${{ matrix.target }}'
       - name: Retain rendered screenshots and flow results
@@ -194,6 +218,7 @@ jobs:
           name: ios-ui-${{ matrix.name }}-${{ github.sha }}
           path: |
             .build/maestro-results/
+            .build/current-accessibility-results/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn

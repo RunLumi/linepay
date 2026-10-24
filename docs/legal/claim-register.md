@@ -32,8 +32,10 @@ and advanced audit tools"; the eight concept screenshots (fake UI, logo and empl
 
 ## vNext App Store candidate (1.1.0, en-US; not approved)
 
-The exact copy is in [app-store.md](../release/app-store.md); the owner selected **Lineman Pay** for the 1.1.0 listing and home-screen display on October 20. This mapping is a review aid, not
-owner/counsel approval or permission to publish. Build 12 is internal TestFlight only; the native
+The exact copy is in [app-store.md](../release/app-store.md); the owner selected **Paycheck Audit** for the 1.1.0 listing and home-screen display on October 24, superseding the October 20 Lineman Pay decision. This mapping is a review aid, not
+owner/counsel approval or permission to publish.
+
+**Earlier candidate evidence (October 20–23):** Build 12 is internal TestFlight only; the native
 receipt records a new Today clipping issue and other unresolved checks. Any submitted screenshots
 must be recaptured from the final selected build, and every row below needs final source/build-bound
 review before submission. A local focused build 13 E2E passed on iOS 18.5 / Xcode 27.1: the long
@@ -46,6 +48,8 @@ Corporation in classes 009, 036, and 042, including mobile software. This is a m
 confusability signal. An exact Lineman Pay clearance has not been established; owner/counsel
 review and App Store availability checks remain open, and no clearance is claimed.
 
+**October 24 candidate follow-up:** The renamed app passed the actual v3 capture journey and large-text dark About/recovery journey. Six real screenshot exports retain the generic-first sequence and scoped synthetic comparison. [Accessibility checks](../testing/accessibility-audit.md) distinguish visible contrast, all-size measurements and the retained raw diagnostic. These focused results do not clear the remaining full native/Files gate or establish physical VoiceOver acceptance. The historical LINE PAY search above concerns the superseded name and does not clear Paycheck Audit.
+
 | Candidate claim | Current implementation and evidence | Boundary / release gap |
 |---|---|---|
 | Hourly workers can enter their rate, period, and actual work and see expected wages | Generic first-paycheck journey in `OnboardingFlowView`, `PayProfileSetupView`, `TodayView`, and `PayLedgerView`; `PaydayJourneyTests` and exact `LinePayDomain` tests | The estimate covers only entered work and confirmed supported rules; the full native release gate is not green. |
@@ -53,6 +57,9 @@ review and App Store availability checks remain open, and no clearance is claime
 | Imported paystub fields can be reviewed and confirmed before comparison | On-device `PaystubOCRService`, review flow, and parser/PDF test suites | OCR is evidence, not truth. The clean-head native release gate and final build-bound screenshots remain pending. |
 | Lineworkers retain supported callout, per-diem, overtime, and dated-rule settings | Existing advanced pay-rule editor and deterministic domain tests | No named agreement, universal CBA, or complete jurisdictional coverage is claimed. |
 | Work and paystub processing are private by default; records are user-exported | Local persistence, Vision processing, no account/pay-data backend, privacy manifest, and manual export/backup flows | Exported files may contain sensitive information; the current App Store privacy and support snapshots must be rechecked for submission. |
+| Typed work drafts require review before save | `VoiceWorkView`, `VoiceWorkProposal` and proposal/UI tests | Microphone capture remains unavailable until physical-device QA; no recording permission or voice capability is advertised. |
+| Manual backups offer optional password protection | `BackupEncryption`, `BackupIO`, `BackupRestoreView` and encryption/restore regressions | User chooses the password and destination; no password recovery or automatic cloud sync. |
+| Benefits tracking retains reviewed evidence | `BenefitAuditsView` and contribution/period/report regressions | User-confirmed contributions are not independently verified entitlement. Crew-rule sharing is owner-held and unavailable in 1.1.0. |
 | The first comparable audit is free; Pro adds ongoing checks | `AppModel.canRunAudit`, `SubscriptionStore`, and subscription behavior/lifecycle tests | Final sandbox/TestFlight purchase, restore, expiry and offer eligibility evidence is still required for the selected build. |
 
 ## linepaycheck.com

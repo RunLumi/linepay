@@ -37,6 +37,20 @@ class CommandGuardTests(unittest.TestCase):
         return subprocess.run([self.bash, str(target), *args], env=self.environment,
                               capture_output=True, text=True, timeout=10)
 
+    def test_maestro_output_overrides_preserve_unowned_files(self):
+        protected = self.root / "personal-records"
+        protected.mkdir()
+        record = protected / "keep.txt"
+        record.write_text("unrelated data")
+        for variable in ["LINEPAY_MAESTRO_DERIVED_DATA", "LINEPAY_MAESTRO_RESULTS_DIR"]:
+            with self.subTest(variable=variable):
+                self.environment[variable] = str(protected)
+                result = self.run_script("test-ios-maestro.sh")
+                del self.environment[variable]
+                self.assertEqual(result.returncode, 64, result.stderr)
+                self.assertIn("empty or dedicated task directory", result.stderr)
+                self.assertEqual(record.read_text(), "unrelated data")
+
     def test_unknown_verification_mode_is_usage_error(self):
         result = self.run_script("agent-verify.sh", "not-a-mode")
         self.assertEqual(result.returncode, 64)

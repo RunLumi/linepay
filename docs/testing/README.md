@@ -115,3 +115,5 @@ future-only immutable adoption and state-schema8 provenance. `CrewRuleWorkflowTe
 without activation, unfinished/failed-save preservation, backup/old-schema shapes, changed-value refusal
 and explicit zero allowance. These App test sources require actual execution; direct SDK typechecking
 does not run them. See [the execution receipt](../plan/v2-execution.md) for current evidence and limits.
+
+- [Native accessibility release checks](accessibility-audit.md)

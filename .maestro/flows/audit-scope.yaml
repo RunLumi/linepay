@@ -33,6 +33,8 @@ tags: [ios, regression, payroll-scope]
 - scrollUntilVisible:
     element:
       id: audit.status
+    direction: UP
+    centerElement: true
     timeout: 60000
 - waitForAnimationToEnd
 - assertVisible: "No difference within compared items: gross total only"

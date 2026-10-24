@@ -6,7 +6,7 @@ group: Record your work
 description: Review a rules-only file, confirm your own values, and preserve existing work and paycheck checks.
 keywords: [crew, template, linepayrules, shared rules, omission, future periods]
 ---
-**V2 development preview:** these controls are in the candidate. App Store release and physical or cross-device acceptance remain pending.
+**Unavailable in Paycheck Audit 1.1.0:** crew-rule sharing is held until repeated native Files export/import is verified. The instructions below describe the development workflow; its Settings entry is hidden in this release. Ordinary manual pay-rule editing remains available. Existing saved records are preserved.
 
 ## What the file contains
 

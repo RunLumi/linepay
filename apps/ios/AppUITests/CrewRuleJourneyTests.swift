@@ -12,7 +12,27 @@ final class CrewRuleJourneyTests: XCTestCase {
         executionTimeAllowance = 900
         try exchange(large: true)
     }
+    func testHeldCrewSharingHasNoSettingsEntry() throws {
+        try XCTSkipIf(CrewRuleSharingAvailability.enabled, "Sharing is enabled for a later release")
+        continueAfterFailure = false
+        app.launchArguments = ["--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)"]
+        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "matches"
+        app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 15))
+        app.tabBars.buttons["Settings"].tap()
+        let agreements = app.buttons["settings.agreements"].firstMatch
+        reveal(agreements)
+        XCTAssertTrue(agreements.isHittable)
+        XCTAssertFalse(app.buttons["settings.crew-rules"].exists)
+        capture("crew-sharing-unavailable-settings", large: false)
+        app.terminate()
+    }
+
     private func exchange(large: Bool) throws {
+        try XCTSkipIf(
+            !CrewRuleSharingAvailability.enabled,
+            "Owner-held in 1.1.0: repeated native Files exchange is not release-verified.")
         continueAfterFailure = false
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
@@ -32,7 +52,7 @@ final class CrewRuleJourneyTests: XCTestCase {
         tap("settings.crew-rules")
         let title = app.textFields["crew-rules.title"].firstMatch
         reveal(title)
-        let marker = "SYNTHETIC-CREW-" + String(UUID().uuidString.prefix(8))
+        let marker = "A-SYNTHETIC-CREW-" + String(UUID().uuidString.prefix(8))
         title.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         title.typeText(" " + marker)
@@ -61,16 +81,11 @@ final class CrewRuleJourneyTests: XCTestCase {
         tap("crew-rules.export")
         let picker = app.navigationBars["FullDocumentManagerViewControllerNavigationBar"].firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 20))
-        let filename = app.textFields.matching(
-            NSPredicate(format: "value BEGINSWITH %@", "Crew rules")
-        ).firstMatch
+        let filename = app.textFields.firstMatch
         XCTAssertTrue(filename.waitForExistence(timeout: 10))
         let oldName = try XCTUnwrap(filename.value as? String)
-        filename.tap()
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        filename.typeText(
-            String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count) + marker
-                + ".linepayrules")
+        XCTAssertTrue(oldName.hasPrefix("Crew rules"), oldName)
+        // Each reviewed draft has a unique default filename; keep the user's default save path.
         if !picker.staticTexts["On My iPhone"].exists {
             if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
             let local = app.staticTexts["On My iPhone"].firstMatch
@@ -82,7 +97,15 @@ final class CrewRuleJourneyTests: XCTestCase {
         let save = picker.buttons["Move"].exists ? picker.buttons["Move"] : picker.buttons["Save"]
         XCTAssertTrue(save.isHittable)
         save.tap()
-        XCTAssertTrue(picker.waitForNonExistence(timeout: 15))
+        let saved = picker.waitForNonExistence(timeout: 30)
+        if !saved {
+            capture("v2-crew-save-picker-still-present", large: large)
+            let tree = XCTAttachment(string: app.debugDescription)
+            tree.name = "crew-files-after-save"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
+        XCTAssertTrue(saved, "Saving the selected local file must dismiss Files")
         let message = app.descendants(matching: .any).matching(identifier: "crew-rules.message")
             .firstMatch
         reveal(message)
@@ -90,18 +113,60 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(message.label.contains("Saved to the selected location"), message.label)
         tap("crew-rules.choose-file")
         XCTAssertTrue(picker.waitForExistence(timeout: 15))
-        let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", marker)).firstMatch
-        if !file.waitForExistence(timeout: 5), app.searchFields.firstMatch.exists {
-            app.searchFields.firstMatch.tap()
-            app.searchFields.firstMatch.typeText(marker)
+        let localRoot = picker.staticTexts["On My iPhone"].firstMatch
+        if !localRoot.waitForExistence(timeout: 2) {
+            let browseBack = picker.buttons["Browse"].firstMatch
+            if browseBack.isHittable { browseBack.tap() }
         }
-        if !file.waitForExistence(timeout: 15) {
-            capture("v2-crew-import-file-missing", large: large)
+        if !localRoot.exists {
+            let browseTab = app.tabBars.buttons["Browse"].firstMatch
+            XCTAssertTrue(browseTab.waitForExistence(timeout: 10))
+            if !browseTab.isSelected { browseTab.tap() }
+            let localLocation = app.cells.matching(
+                identifier: "DOC.sidebar.item.On My iPhone"
+            ).firstMatch
+            let browseView = app.descendants(matching: .any).matching(
+                NSPredicate(
+                    format: "identifier == %@ OR identifier == %@",
+                    "Browse View", "Browse View (Picker)")
+            ).firstMatch
+            for _ in 0..<5 where !localLocation.isHittable {
+                XCTAssertTrue(browseView.waitForExistence(timeout: 5))
+                browseView.swipeDown()
+            }
+            XCTAssertTrue(localLocation.isHittable, "Scroll Browse to the On My iPhone location")
+            localLocation.tap()
+        }
+        XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
+        let fileName = oldName.hasSuffix(".linepayrules") ? oldName : oldName + ".linepayrules"
+        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
+        XCTAssertTrue(fileList.waitForExistence(timeout: 10))
+        let matchingFiles = fileList.cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", fileName, fileName)
+        )
+        // Browse the actual destination. Files search depends on a separate index that may
+        // not include a just-saved file even after selecting the correct local search scope.
+        func selectableFile() -> XCUIElement? {
+            matchingFiles.allElementsBoundByIndex.first { $0.isHittable }
+        }
+        for _ in 0..<12 where selectableFile() == nil { fileList.swipeDown() }
+        for _ in 0..<40 where selectableFile() == nil { fileList.swipeUp() }
+        let fileReady = selectableFile() != nil
+        if !fileReady {
+            capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
-            tree.name = "synthetic-crew-files-hierarchy"
+            tree.name = "crew-files-local-destination"
             tree.lifetime = .keepAlways
             add(tree)
+            capture("v2-crew-import-file-missing", large: large)
+            let finalTree = XCTAttachment(string: app.debugDescription)
+            finalTree.name = "synthetic-crew-files-hierarchy"
+            finalTree.lifetime = .keepAlways
+            add(finalTree)
         }
+        XCTAssertTrue(fileReady, "Wait for the saved local draft to become selectable")
+        let file = try XCTUnwrap(selectableFile())
+        XCTAssertTrue(file.label.contains(fileName), file.label)
         XCTAssertTrue(file.isHittable, "Select the actual locally exported synthetic draft")
         XCTAssertTrue(file.isEnabled)
         file.tap()
@@ -210,7 +275,8 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(element.isHittable, "Missing reachable review: \(id)")
         let before = element.value as? String
         XCTAssertTrue(before == "0" || before == "1")
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        let nativeSwitch = element.switches.firstMatch
+        (nativeSwitch.exists ? nativeSwitch : element).tap()
         let changed = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "value == %@", before == "1" ? "0" : "1"),
             object: element)

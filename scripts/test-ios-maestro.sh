@@ -3,11 +3,33 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IOS_DIR="$ROOT/apps/ios"
-DERIVED_DATA="$ROOT/.build/maestro-ios"
-RESULTS_DIR="$ROOT/.build/maestro-results"
+DERIVED_DATA="${LINEPAY_MAESTRO_DERIVED_DATA:-$ROOT/.build/maestro-ios}"
+RESULTS_DIR="${LINEPAY_MAESTRO_RESULTS_DIR:-$ROOT/.build/maestro-results}"
 DEVICE_NAME="${MAESTRO_IOS_DEVICE:-iPhone 17 Pro}"
 TEST_TARGET="${1:-$ROOT/.maestro}"
 MAESTRO_PID=""
+IOS_BUILD_JOBS="${LINEPAY_IOS_BUILD_JOBS:-2}"
+if [[ ! "$IOS_BUILD_JOBS" =~ ^[1-9][0-9]*$ ]]; then
+    echo "error: LINEPAY_IOS_BUILD_JOBS must be a positive integer" >&2
+    exit 64
+fi
+
+check_task_output() {
+    local output="$1" default_output="$2"
+    if [[ "$output" != "$default_output" && -e "$output" \
+        && ! -f "$output/.linepay-maestro-output" ]]; then
+        local entry populated=false
+        for entry in "$output"/* "$output"/.[!.]* "$output"/..?*; do
+            if [[ -e "$entry" || -L "$entry" ]]; then populated=true; break; fi
+        done
+        if [[ ! -d "$output" || "$populated" == true ]]; then
+            echo "error: output override must be an empty or dedicated task directory: $output" >&2
+            exit 64
+        fi
+    fi
+}
+check_task_output "$DERIVED_DATA" "$ROOT/.build/maestro-ios"
+check_task_output "$RESULTS_DIR" "$ROOT/.build/maestro-results"
 
 cleanup() {
     if [[ -n "$MAESTRO_PID" ]] && kill -0 "$MAESTRO_PID" 2>/dev/null; then
@@ -52,7 +74,11 @@ xcrun simctl bootstatus "$DEVICE_UDID" -b
 
 echo "==> Build LinePay for simulator"
 rm -rf "$DERIVED_DATA"
+mkdir -p "$DERIVED_DATA"
+touch "$DERIVED_DATA/.linepay-maestro-output"
 xcodebuild \
+    -jobs "$IOS_BUILD_JOBS" \
+    -onlyUsePackageVersionsFromResolvedFile \
     -project "$IOS_DIR/LinePay.xcodeproj" \
     -scheme LinePay \
     -configuration Debug \
@@ -72,6 +98,8 @@ xcrun simctl install "$DEVICE_UDID" "$APP_PATH"
 
 echo "==> Run Maestro: $TEST_TARGET"
 rm -rf "$RESULTS_DIR"
+mkdir -p "$RESULTS_DIR"
+touch "$RESULTS_DIR/.linepay-maestro-output"
 maestro --udid "$DEVICE_UDID" test --test-output-dir "$RESULTS_DIR" "$TEST_TARGET" &
 MAESTRO_PID=$!
 wait "$MAESTRO_PID"

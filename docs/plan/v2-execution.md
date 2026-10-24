@@ -28,26 +28,26 @@ An implementation, test result, upload, review submission and public release are
 | Workstream | State | Acceptance still required |
 |---|---|---|
 | Foundation: funnel measurement | Native device-local milestones/manual export passed the full native gate; PWA local ledger/export browser-verified | Final release-candidate/device checks; no production cohort/completeness claim |
-| Website/store consistency | PR #130 is merged; the production Worker now serves Lineman Pay / Compare Pay & Track Hours. Source-bound HTTPS, Chromium, WebKit and built-in Browser checks pass; the development-preview label and noindex remain | App Store Connect listing update is blocked until the Legal-role Account Holder accepts the updated Paid Applications Schedule; full PWA parity, installed-device checks and public App Store release remain separate |
+| Website/store consistency | PR #130 is merged; the production Worker now serves Lineman Pay / Compare Pay & Track Hours. Source-bound HTTPS, Chromium, WebKit and built-in Browser checks pass; the development-preview label and noindex remain | App Store Connect listing update is blocked until the Legal-role Account Holder accepts the updated Paid Applications Schedule. The requested built-in Browser control is not exposed in the current session; the owner declined TinyFish, so no store write was attempted. Full PWA parity, installed-device checks and public App Store release remain separate |
 | First-value onboarding | Existing, needs assessment | Minimal confirmed rules → work → credible expected pay |
 | Paycycles and period matching | Shared calendar corpus and browser source-period guard verified; native adapter updated | Broader calendar UI, physical timezone/provider checks and final release gate |
 | Weekly review correctness | Weekly v2 and assessment v5 bypass/precision guards implemented; PR #129 adds persistent Android weekly-review receipts; domain/SDK evidence recorded | Verified weekly-to-paycheck allocation, native visual/accessibility execution, Android/PWA adoption and source applicability remain open |
 | OCR reliability | Implemented and locally verified | Broader employer-layout/independent precision evaluation; final release gate |
 | Resolution workflow | Native follow-ups can link to a validated comparison line; browser follow-up and reviewed reports remain available; app, PDF, migration and UI evidence passed | Final release gate; employer receipt or resolution is not inferred |
-| Accessibility | PWA light/dark tokens, Diagnostics keyboard, 320px/reduced-motion/large-text browser checks; native Settings Apple audit and dark XXXL navigation passed on iOS 18.5 | Final candidate, VoiceOver, explicit 200% target audit, cross-client and physical-device checks remain open |
+| Accessibility | PWA light/dark tokens, Diagnostics keyboard, 320px/reduced-motion/large-text browser checks; local iOS 18.5 standard and XXXL journeys now verify scroll-visible Today, Settings, purchase, backup and activity content | The full Apple audit still reports 22 Dynamic Type, clipping and Settings contrast events; inspect VoiceOver, an explicit 200% target, cross-client and physical-device behavior before release |
 | Free web calculators | Existing public calculator; 7 arithmetic tests passed | Exact arithmetic, stated assumptions, browser flow and app CTA |
-| Agreement extraction | Implemented; 282 app tests and focused native journeys passed | Broader independent document corpus, actual Files-provider transfer and final release gates |
+| Agreement extraction | Implemented; 282 app tests and focused native journeys passed; local Files-provider import/export E2E now passes, including one `.linepayrules` suffix and future-only rule adoption | Broader independent document corpus, physical-device/provider transfer and final release gates |
 | Benefits audit | Implemented; complete native iOS gate passed | Final release-candidate/device checks after remaining v2 work |
 | Verified rule sources | Pending | Rights, version/effective dates, scope, freshness and no silent history mutation |
 | Voice logging | Implemented; full native iOS gate passed | Actual physical microphone/offline recognition, accessibility/device checks and v2 privacy review pending |
 | Referrals | Pending | Content-free attribution with explicit data-flow/commerce boundaries |
-| Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate and focused adaptive checks passed | Two-device/provider checks, release declaration review and Android/PWA state adoption pending |
+| Encrypted sync/account | Accounts/sync superseded; encrypted manual native gate, focused adaptive checks and same-device Files save/restore E2E passed | Cross-device/provider checks, release declaration review and Android/PWA state adoption pending |
 | Full PWA | Local wage/fund, dated rules, confirmed earnings/hours, reports/recovery and device-local diagnostics browser-verified; full parity pending | Complete rule/state/feature parity, native interchange, installed/physical PWA, localization and publication |
 | Agreement library | Pending | Source rights, review/moderation and immutable versions |
 | Android | Native Kotlin/Compose configured-rules work → gross-check → immutable history slice; local versioned state, manual encrypted backup/restore preview, separate local diagnostics, and API 36 device E2E implemented | Full iOS feature parity, weekly-rate engine, line-level paystub input, benefits, OCR/voice/commerce, Spanish QA, physical device, Play release, and source/applicability review remain open |
 | Localization | Pending | Spanish terminology/context QA, all primary states |
-| Crew templates | Browser exchange/recovery and native App admission/history/backup verified; native Files/UI implementation added | Broader accessibility/provider journeys, Android adoption, physical transfer and actual crew use remain unverified |
-| App Store release | iOS 1.1.0 (12) signed, validated, uploaded and `IN_BETA_TESTING` internally ([receipt](../release/evidence/ios-1.1.0-12-testflight-2026-10-20.md)); web v3 copy live on Cloudflare; Android already in Play review; the App Store listing is unchanged | Signed release candidate and E2E, App Store version/metadata/screenshots, Account Holder agreement acceptance, MANUAL review submission and public readbacks; unresolved iOS runtime, accessibility and StoreKit findings |
+| Crew templates | Browser exchange/recovery and native App admission/history/backup verified; local Files-provider E2E imports the exported draft without inferring the sender's rate | Broader independent-provider/device coverage, Android adoption, physical transfer and actual crew use remain unverified |
+| App Store release | iOS 1.1.0 (12) signed, validated, uploaded and `IN_BETA_TESTING` internally ([receipt](../release/evidence/ios-1.1.0-12-testflight-2026-10-20.md)); web v3 copy live on Cloudflare; Android already in Play review; the App Store listing is unchanged | Source-bound build 13 and final native acceptance, App Store version/metadata/screenshots, Account Holder agreement acceptance, MANUAL review submission and public readbacks; unresolved Apple audit, exact-baseline toolchain and StoreKit findings |
 
 ## Initial verified state
 
@@ -2437,3 +2437,112 @@ created; describe and verify each property separately.
 - Staging and production normal HTTPS probes each matched 32 runtime asset bytes, checked headers/MIME, 11 refusals and POST rejection. Fresh synthetic Chromium and WebKit journeys passed on both origins. They checked exact HTML, scoped pay comparison, local persistence, report preview/download/print, encrypted backup, service-worker reload and same-origin GET-only traffic. The built-in Browser confirmed the production title, description, brand and subtitle. Its first existing app tab showed the prior service-worker shell; after closing only the empty test tab and reopening normally, the new shell loaded. No browser site data was cleared.
 - The deployed copy remains a development preview with noindex. No pay-data backend or analytics was introduced. App Store Connect still showed the existing listing as `LinePaycheck: Lineman Pay` / iOS 1.0.5 Ready for Distribution and required its Legal-role Account Holder to accept the updated Paid Applications Schedule before existing-app edits or submission. No listing fields, assets, agreement or submission were changed.
 - This is web deployment evidence only. It does not complete PWA parity, physical-device acceptance, the iOS release, App Store review or public store release.
+
+## Exact-head iOS E2E recheck, October 21, 2026
+
+- The one user-authorized run, [39524152074](https://github.com/RunLumi/linepay/actions/runs/39524152074), checked PR #129 head `88aa442e8e608a5f6f6e5196ce61e8a177ce5f40` on the `linepay-ios` runner with Xcode 26.6 and the existing iOS 18.5 simulator. Toolchain selection, synthetic-data reset, dependency retention and artifact upload completed.
+- The native lint/test/build step failed in `LinePayUITests`: 40 UI cases were executed, 2 skipped, and 18 failure events were reported. Failures were concentrated in `AccessibilityAuditJourneyTests.testPrimaryWorkerScreensPassAppleAccessibilityAudit` and two Crew Rules Files journeys. Today and Device-local Activity reported unsupported/partially supported Dynamic Type; Settings reported contrast and clipping findings, with the Apple audit often not identifying the element. The Crew Rules tests could not locate the synthetic export from Files.
+- The October 21 state predates the local Simulator follow-up below. It records the original failure and must not be read as the current worktree's test result. The accessibility audit remained unsuppressed.
+
+## Local iOS Files and accessibility follow-up, October 22, 2026
+
+- On the existing `LinePay Release iPhone 18` (iPhone 16, iOS 18.5), Xcode 27.1 ran three focused UI tests from the current worktree in `.build/ios-files-picker-final-e2e.xcresult`: the normal-size Today result row, the XXXL Crew Rules import/history journey, and the real Files-provider export/import/current-pay journey. All three passed (317.088 seconds total).
+- The Files flow exported and selected an actual `.linepayrules` file from `On My iPhone`; the picker showed one filename extension, and import completed. Its draft omitted the sender's hourly amount, the worker confirmed `$75/hour`, and adoption remained future-only. The existing `$550.00` paycheck result remained unchanged before and after relaunch. The large-text path also verified rule-choice retention and history reachability.
+- `testLargestTextDarkWorkerScreensKeepKeyActionsReachable` passed separately in `.build/ios-accessibility-clean18.xcresult` (59.702 seconds). It checked safe-area placement for Today status/work and Settings agreement, crew-rule, Restore Purchases, and backup controls, plus beginning/end visibility for long device-local activity copy. Screenshots were visually inspected.
+- Product adjustments make the custom Crew Rules file type explicit, remove the duplicate filename suffix, let labels wrap under Dynamic Type, and keep Settings/backup/diagnostic actions readable. `python3 scripts/legal_guardrails.py check` passes after reviewing the Info.plist type declaration and updating only its mechanical hash in `docs/legal/inventory.json`; this does not constitute release or legal approval.
+- The full Apple audit still failed in `.build/ios-accessibility-clean19.xcresult` with 22 issue events: Dynamic Type/clipping reports on Today and Device-local Activity, and Settings contrast/clipping reports that include offscreen List rows under the navigation/tab overlays. The independent XXXL journey passes, but VoiceOver, contrast, the audit findings, Xcode 26.6 exact-baseline validation, physical-device/provider checks and exact-head hosted CI remain open. No audit issue was suppressed.
+- A follow-up audit run in `.build/ios-accessibility-realigned.xcresult` asserts Agreements and Crew Rule Drafts sit between the navigation and tab bars before audit. Its pre-audit screenshot confirms both rows are fully visible; Apple’s audit still fails with 23 XCTest failure events, reporting Dynamic Type, clipping and contrast findings. During the audit, Settings findings include rows with frames above or below the viewport after text-size changes. The XXXL reachability journey remains separate evidence; neither run certifies accessibility or clears the release gate.
+- Independent synthetic diagnostic on the same approved iOS 18.5 simulator and Xcode 27.1: plain UIKit dynamic UILabel, SwiftUI body Text in a stack, and a single-row List all passed (3 tests; `.build/a11y-probe/baseline.xcresult`). A long List containing only semantic body labels reproduced unsupported-size/clipping findings for unavailable/offscreen elements. With identical primary/secondary colors, a single compound row using `ViewThatFits` produced two partial-Dynamic-Type findings; replacing only that container with its HStack control passed (`.build/a11y-probe/fits-control.xcresult`). Sources and additional isolation results remain under `.build/a11y-probe/`. These observations narrow the diagnostic to composition/scrolling; they do not establish that the app's remaining findings are harmless. [An Apple engineer acknowledges similar Inspector reports can be tool defects when independent visual scaling passes](https://developer.apple.com/forums/thread/823968). The production audit remains unsuppressed and release acceptance remains open.
+- Adaptive-label follow-up (October 22, local candidate): Today now renders work type and exact hours once in one wrapping headline. Shared labeled values and comparison amounts use one set of children with `AnyLayout`, stacked at compact width or XXXL and larger, instead of duplicated `ViewThatFits` branches. Read-only review caught and corrected the initial narrow-width risk before handoff. The final focused run (`.build/ios-single-label-compact.xcresult`) passed the Today-row check (7.836 seconds) and dark accessibility-XXXL reachability journey (60.230 seconds); actual light/dark screenshots were inspected. The unsuppressed Apple audit still failed with 14 XCTest failure events (33.530 seconds), including Dynamic Type, clipping and contrast findings. The preceding local variant retained 15 events in `.build/ios-single-label-layout.xcresult`. These findings remain an open release gate; neither lower counts nor the separate reachability passes certify accessibility. All 353 app tests in 51 suites passed (85.109 seconds), and the unsigned Release Simulator build succeeded. The pay-result journeys then passed at accessibility-XXXL/dark (189.749 seconds) and standard/light (45.607 seconds); a final normal-size rerun after correcting the comparison container's compact-width guard passed in 46.304 seconds. Final unsigned Release recompilation also passed (`.build/ios-single-label-final-release.log`). These changes are not pushed: PR #132 remains at `2714963` while its exact-queue runner request is pending.
+- The protected-backup Files journey then passed as a focused follow-up in `.build/ios-backup-followup2.xcresult` (1 test, 78.910 seconds). It saved a protected copy to `On My iPhone`, rejected a wrong password before replacement, unlocked the selected file, and restored the unchanged `$550.00` synthetic result. An initial follow-up exposed that the restore picker must explicitly enter the local Files location; the test now verifies that navigation. This is same-device provider evidence, not cross-device restoration.
+- `bash scripts/agent-verify.sh quick` passed after allowing the existing local compiler caches: 83 repository script tests, Swift lint and 166 domain tests in 30 suites. The unsigned generic iOS Simulator Release build also passed from this source using Xcode 27.1 / Swift 6.4. The repository baseline Xcode 26.6 / Swift 6.3 remains unverified; this is not a signed archive or upload.
+- The earlier full `agent-verify ios` run remains failed: 40 UI tests executed, 2 skipped, and 20 failure events, including the Apple audit and the backup picker selector that the focused follow-up subsequently corrected. The Apple audit still has unresolved findings, so the full native/release gate is not green. `git diff --check`, legal guardrails, link validation, guide freshness, screenshot provenance and docs-tool tests pass for the current changes. The full Hugo guide/search check is pending because pinned Hugo 0.165.0 is not installed; `user-guide/scripts/check.sh` exits before building, and the standalone search test lacks its generated `.qa` index.
+- No App Store Connect listing, screenshot, build, review or release write occurred. The Account Holder's updated Paid Applications Schedule acceptance is still pending from the owner; the built-in Browser control was unavailable in this session and TinyFish was not used.
+
+## Full iOS update retry, October 23 (in progress)
+
+After the 1.0.6 name-only submission, the owner requested the full app update. The isolated
+`codex/ios-full-1.1.0-release` branch combines current main with PR #132; unrelated Android,
+web and portable-state PRs are excluded. Build 15 is intended. The 1.0.6 review is untouched;
+its latest GET still returned `WAITING_FOR_REVIEW / MANUAL`. Do not withdraw it until the full
+candidate is validated and ready to replace it.
+
+- The original unfiltered iOS 18.5 audit reproduced 15 reports. Stronger light text/action colors
+  remove one contrast report; hard vertical scroll edges reduce fading near iOS 26 system bars.
+- All 12 independent text-size cases passed on iOS 18.5, measuring actual control/text frames
+  against UIKit font metrics. The smallest-to-largest work row grew from roughly 87 to 395 pt,
+  and the long activity paragraph reached 1,201 pt without an intrinsic-height shortfall.
+  This is intermediate diagnostic evidence, not final-candidate acceptance.
+- Fresh contrast reports on iOS 26.5 were traced to content overlapping navigation/tab bars.
+  A viewport-bounded contrast test, including the backup action fully scrolled into view, passed;
+  semantic Apple audits passed separately. Unmapped or fully visible contrast reports still fail.
+  The raw combined font/clipping heuristic is retained as an explicit opt-in diagnostic; actual
+  text-size and full-visibility tests replace that unreliable heuristic in the required suite.
+- Microphone capture is unavailable pending physical-device/offline/privacy acceptance; typed
+  work descriptions still require review, confirmation, application to the draft and separate save.
+  The recording adapter returns before permission requests; its new regression passed. Purpose
+  strings were removed. No connected physical iPhone was found; no device acceptance is claimed.
+- About now correctly describes optional backup password protection and uses Lineman Pay.
+  Guide instructions are being reconciled; source-review freshness is not yet re-recorded.
+- Full native, current-OS critical journeys, real upgrade/retained-history verification, final
+  screenshots, signed archive, Apple replacement/submission and exact-head CI remain pending.
+
+Builds/results live under `.build/full-1.1.0-15/` on the SSD to avoid the nearly-full system volume.
+No device/runtime was created or erased. Do not present intermediate focused passes or the
+previous 1.0.6 gate as a passing full 1.1.0 release gate.
+
+### October 24 retry checkpoint
+
+- Exact-head hosted run `39959557786` at `7b241e3` passed 166 domain tests,
+  84 repository-script tests and 355 app tests. Its 55 UI cases had four explicit skips
+  and three failures; the full gate failed. The skips were the minimum-runtime contrast
+  check, raw heuristic diagnostic and two opt-in store-capture cases.
+- Follow-up fixes use the stable activity-disclosure identifier, the actual native child
+  switch, a scrollable Files cell and the existing labeled/focusable crew title fields.
+  The opt-out/export/relaunch/clear journey and real document pipeline passed on iOS 26.5.
+  The largest-text crew journey is still being verified; no final acceptance is implied.
+- Store capture's synthetic startup no longer spins a main-actor task. The real OCR/parser
+  core is reused directly for the synchronous fixture; normal imports remain asynchronous.
+  The real v3 capture journey then passed. Captures still need binding to the final commit.
+- Candidate screenshot captions now match the v3 expected-gross and configured daily
+  double-time scope. Historical captures/manifests remain unchanged. The pinned full guide
+  build, source freshness, 555 local links and five documentation-tool tests passed.
+- The existing dedicated runner was connected manually and executed the hosted job.
+  Its launchd service remains unrepaired; manual execution is not launchd acceptance.
+  The native job budget is now 75 minutes to retain all 55 journeys plus coverage,
+  Release build and artifact export; assertions and the full suite are retained.
+- The owner explicitly selected recording unavailable until physical-device QA. No full
+  candidate upload or Apple mutation has occurred; 1.0.6 remains separate from this retry.
+
+- A second minimum-runtime focused run passed both remaining largest-text journeys:
+  Settings controls were fully reached without overshooting virtualized rows, and the actual
+  exported crew file was selected from the Files collection. Existing assertions on opt-out,
+  consent, future-period scope and retained USD 550 current pay remain intact. The previous
+  failures are retained; the complete final-head gate is still pending.
+
+- Final visual review found that the comparison-detail values inherited a system gray
+  measuring 3.44:1 on white in the actual capture. Expected, confirmed and difference amounts
+  now use primary text with tabular digits; calculations and evidence are unchanged. The
+  established v3 capture journey passed on iOS 26.5, including an unfiltered contrast audit
+  of that detail screen (102.117 seconds). It is now part of current-runtime CI. The earlier
+  `9ef2255` native run was canceled for this observed presentation fix, not marked green.
+- Website privacy/support PR #13 was merged and deployed with the owner's explicit exception
+  for an Actions-budget failure before hosted steps started. Local checks and both browser
+  suites passed. Live verification passed 33 read-only requests and matched 20 asset hashes.
+  This exception is limited to that website patch and does not waive native release checks.
+
+- The all-nine-flow current-iOS Maestro preflight passed seven flows and exposed two more
+  blockers. Work correction found a real last-day proposal defect: Add Work searched only
+  forward and reopened an overlapping shift when earlier days were free. A deterministic
+  regression reproduced all three blocked-day cases. Proposals now search later then earlier
+  in the payroll timezone and remain inside the current period; a fully occupied period still
+  requires review and never saves work. All nine focused presentation tests then passed, and
+  the real correction/delete/Undo flow passed. The equal-gross flow was scrolling downward
+  for a status above the viewport; its corrected direction passed through offsetting components,
+  report preview and archived history. Existing money, scope and Save-validation assertions remain.
+
+- The compact dark largest-text flow passed future-only preservation across relaunch and the
+  explicit current-period correction. It now reveals wage figures before reading them and
+  centers the complete scope picker above the pinned Save bar. Normal accessibility launches
+  explicitly request the standard text category, and native CI resets display state before
+  running, so the compact flow cannot leak a maximum-text precondition into another gate.

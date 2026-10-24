@@ -84,22 +84,20 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.streamentry.linepay
         PRODUCT_NAME: LinePay
-        CURRENT_PROJECT_VERSION: 13
+        CURRENT_PROJECT_VERSION: 15
         MARKETING_VERSION: 1.1.0
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: App/Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
-        INFOPLIST_KEY_CFBundleDisplayName: Lineman Pay
+        INFOPLIST_KEY_CFBundleDisplayName: Paycheck Audit
         INFOPLIST_KEY_CFBundleIconName: AppIcon
         INFOPLIST_KEY_CFBundleName: LinePaycheck
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
         # Apple OS cryptography only (HTTPS/StoreKit and CryptoKit/CommonCrypto backup protection).
         # Recheck export-compliance answers for each release; this flag is not owner approval.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
-        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Record a short work reading on this device for your review. Audio is not sent to a server."
-        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "Read a temporary work recording on this device only. Review all facts before saving work; no server fallback is used."
         INFOPLIST_KEY_NSCameraUsageDescription: "Scan a paystub on this device to compare it with the pay you expect."
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"
@@ -141,6 +139,7 @@ targets:
     sources:
       - path: AppUITests
         type: group
+      - path: App/Sources/CrewRuleSharingAvailability.swift
       - path: ../../shared/contracts/reconciliation/native-assessment-v4.json
         buildPhase: resources
       - path: ../../shared/contracts/backup/encryption-v1.json

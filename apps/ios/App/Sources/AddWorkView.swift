@@ -92,13 +92,15 @@ struct AddWorkView: View {
     }
 
     /// The usual start time today, inside the period. When that would overlap a shift already
-    /// logged that day, suggest the next day instead, so a new entry never opens in conflict.
+    /// logged that day, prefer a later free day, then the latest earlier free day in the period.
+    /// If no eight-hour slot is available, keep the proposal for explicit review and validation.
     static func suggestedInterval(model: AppModel, now: Date) -> (start: Date, end: Date) {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: model.currentTimeZoneIdentifier) ?? .current
         let today = calendar.startOfDay(for: now)
-        let periodStart = model.activePeriod?.window.startDate ?? today
-        let periodEnd = model.activePeriod?.window.displayEndDate ?? today
+        let window = model.activePeriod?.window
+        let periodStart = window?.startDate ?? today
+        let periodEnd = window?.displayEndDate ?? today
         let hour = model.activePeriod?.agreement.regularSchedule.first?.start.hour ?? 7
         let minute = model.activePeriod?.agreement.regularSchedule.first?.start.minute ?? 0
         func interval(on day: Date) -> (start: Date, end: Date) {
@@ -106,20 +108,37 @@ struct AddWorkView: View {
                 calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
             return (start, start.addingTimeInterval(8 * 3_600))
         }
-        var day = calendar.startOfDay(for: min(max(today, periodStart), periodEnd))
+        let anchor = calendar.startOfDay(for: min(max(today, periodStart), periodEnd))
+        var day = anchor
         for _ in 0..<31 {
             let candidate = interval(on: day)
-            guard
-                model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
-                    != nil
-            else { return candidate }
+            if model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                == nil,
+                window?.contains(start: candidate.start, end: candidate.end) ?? true
+            {
+                return candidate
+            }
             guard let next = calendar.date(byAdding: .day, value: 1, to: day),
                 next <= periodEnd
             else { break }
             day = next
         }
-        // Every day is taken: keep today's suggestion and let the overlap warning explain it.
-        return interval(on: calendar.startOfDay(for: min(max(today, periodStart), periodEnd)))
+        var earlier = anchor
+        for _ in 0..<31 {
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: earlier),
+                previous >= calendar.startOfDay(for: periodStart)
+            else { break }
+            earlier = previous
+            let candidate = interval(on: earlier)
+            if model.conflictingWork(start: candidate.start, end: candidate.end, excluding: nil)
+                == nil,
+                window?.contains(start: candidate.start, end: candidate.end) ?? true
+            {
+                return candidate
+            }
+        }
+        // No suitable slot: validation keeps this proposal from becoming overlapping work.
+        return interval(on: anchor)
     }
 
     private var conflict: WorkEntry? {
@@ -190,7 +209,7 @@ struct AddWorkView: View {
                 }
 
                 Section {
-                    Button("Use a voice work draft") { voiceDraft = true }
+                    Button("Draft work from notes") { voiceDraft = true }
                         .linePayRowAction().accessibilityIdentifier("work.voice")
                 }
 

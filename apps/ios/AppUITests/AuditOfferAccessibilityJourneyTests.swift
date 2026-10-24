@@ -64,7 +64,7 @@ final class AuditOfferAccessibilityJourneyTests: XCTestCase {
         let supported = app.staticTexts.matching(
             NSPredicate(format: "label BEGINSWITH %@", "Supported when configured:")
         ).firstMatch
-        reveal(supported)
+        revealDisclosure(supported)
         capture("audit-offer-\(variant)-coverage")
 
         let report = app.buttons["audit.export"].firstMatch
@@ -87,6 +87,39 @@ final class AuditOfferAccessibilityJourneyTests: XCTestCase {
     }
 
     private var variant: String { largeText ? "largest-dark" : "standard-light" }
+
+    private func revealDisclosure(_ element: XCUIElement) {
+        if !largeText {
+            reveal(element)
+            return
+        }
+        XCTAssertTrue(element.waitForExistence(timeout: 10))
+        XCTAssertTrue(element.label.hasPrefix("Supported when configured:"))
+        XCTAssertTrue(element.label.hasSuffix("flat per diem."))
+        let window = app.windows.firstMatch
+        // A complete paragraph can be taller than the viewport at accessibility sizes.
+        // Verify both ends are readable by scrolling; controls still require full visibility.
+        for beginning in [true, false] {
+            for _ in 0..<30 {
+                let top = app.navigationBars.firstMatch.frame.maxY + 8
+                let bottom = app.tabBars.firstMatch.frame.minY - 8
+                let edge = beginning ? element.frame.minY : element.frame.maxY
+                let lower = top + (beginning ? 0 : 80)
+                let upper = bottom - (beginning ? 80 : 0)
+                if element.isHittable, edge >= lower, edge <= upper { break }
+                let delta = edge < lower ? min(180, lower - edge + 8) : -min(180, edge - upper + 8)
+                let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+                start.press(
+                    forDuration: 0.05,
+                    thenDragTo: start.withOffset(CGVector(dx: 0, dy: delta)))
+            }
+            let edge = beginning ? element.frame.minY : element.frame.maxY
+            XCTAssertTrue(element.isHittable)
+            XCTAssertGreaterThanOrEqual(edge, app.navigationBars.firstMatch.frame.maxY + 8)
+            XCTAssertLessThanOrEqual(edge, app.tabBars.firstMatch.frame.minY - 8)
+            capture("audit-offer-\(variant)-coverage-\(beginning ? "beginning" : "ending")")
+        }
+    }
 
     private func reveal(_ element: XCUIElement, isOffer: Bool = false) {
         _ = element.waitForExistence(timeout: 10)

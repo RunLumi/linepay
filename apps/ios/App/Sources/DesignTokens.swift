@@ -7,11 +7,11 @@ enum LinePayColor {
     static let surfaceSecondary = dynamicColor(light: 0xE9E5DB, dark: 0x22282C)
     static let textPrimary = dynamicColor(light: 0x13171A, dark: 0xF4F1E8)
     static let textSecondary = dynamicColor(
-        light: 0x5C6468, dark: 0xAAB2B6, highLight: 0x13171A, highDark: 0xF4F1E8)
+        light: 0x3D4549, dark: 0xAAB2B6, highLight: 0x13171A, highDark: 0xF4F1E8)
     static let brandPrimary = dynamicColor(
         light: 0x0E746C, dark: 0x55C9BE, highLight: 0x064C47, highDark: 0x8AE1D5)
     static let actionText = dynamicColor(
-        light: 0x0B6D66, dark: 0x55C9BE, highLight: 0x063E3A, highDark: 0x8AE1D5)
+        light: 0x064C47, dark: 0x55C9BE, highLight: 0x063E3A, highDark: 0x8AE1D5)
     static let actionOnFill = dynamicColor(light: 0xFFFFFF, dark: 0x111417)
     static let review = dynamicColor(light: 0x7D5700, dark: 0xF2C66D)
     static let difference = dynamicColor(light: 0xB13C35, dark: 0xFFB4AB)
@@ -25,7 +25,7 @@ enum LinePayColor {
         let highContrast = traits.accessibilityContrast == .high
         let color: UInt32 =
             switch (dark, highContrast) {
-            case (false, false): 0x5C6468
+            case (false, false): 0x3D4549
             case (false, true): 0x13171A
             case (true, false): 0xAAB2B6
             case (true, true): 0xF4F1E8
@@ -68,23 +68,27 @@ enum LinePaySpacing {
 
 /// Keeps exact values readable when a row no longer has room for two columns.
 struct LinePayValueStyle: LabeledContentStyle {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     func makeBody(configuration: Configuration) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard) {
-                configuration.label
-                    .foregroundStyle(LinePayColor.textPrimary)
-                    .fixedSize()
-                Spacer(minLength: 0)
-                configuration.content.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: LinePaySpacing.compact) {
-                configuration.label.foregroundStyle(LinePayColor.textPrimary)
-                configuration.content
-                    .foregroundStyle(LinePayColor.textPrimary)
-            }
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        let stacked = horizontalSizeClass == .compact || dynamicTypeSize >= .xxxLarge
+        let layout =
+            stacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: LinePaySpacing.compact))
+            : AnyLayout(
+                HStackLayout(alignment: .firstTextBaseline, spacing: LinePaySpacing.standard))
+        layout {
+            configuration.label
+                .foregroundStyle(LinePayColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            if !stacked { Spacer(minLength: 0) }
+            configuration.content
+                .foregroundStyle(LinePayColor.textPrimary)
+                .multilineTextAlignment(stacked ? .leading : .trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -94,15 +98,14 @@ extension View {
     /// after the keyboard has been shown.
     func linePayCanvas() -> some View {
         scrollContentBackground(.hidden).background(LinePayColor.canvas.ignoresSafeArea())
-            .linePayHardTopEdge()
+            .linePayHardScrollEdges()
     }
 
-    /// On iOS 26 and later the navigation bar floats over content with a soft fade, which lets a
-    /// scrolled row of pay facts collide with the title and Back button. A hard edge keeps both
-    /// legible while the bar's controls stay in the system glass layer.
-    @ViewBuilder func linePayHardTopEdge() -> some View {
+    /// Keep scrolling pay facts from fading underneath the system navigation and tab bars.
+    /// The bars retain native materials; only the content boundary becomes a hard reading edge.
+    @ViewBuilder func linePayHardScrollEdges() -> some View {
         if #available(iOS 26.0, *) {
-            scrollEdgeEffectStyle(.hard, for: .top)
+            scrollEdgeEffectStyle(.hard, for: .vertical)
         } else {
             self
         }
@@ -121,6 +124,7 @@ extension View {
     /// label. Textual actions on neutral surfaces use the action color and a comfortable target.
     func linePayRowAction(minHeight: CGFloat = 48) -> some View {
         foregroundStyle(LinePayColor.actionText)
+            .font(.body)
             .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
             .contentShape(Rectangle())
     }

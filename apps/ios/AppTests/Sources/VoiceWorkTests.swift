@@ -1,5 +1,7 @@
+import AVFoundation
 import Foundation
 import LinePayDomain
+import Speech
 import Testing
 
 @testable import LinePay
@@ -102,6 +104,18 @@ struct VoiceWorkTests {
         #expect(capture.phase == .idle && capture.text.isEmpty && !capture.busy)
         capture.cancel()
         #expect(capture.phase == .idle)
+    }
+
+    @Test @MainActor func unavailableRecordingCannotRequestPermissionsOrStartCapture() async {
+        let speech = SFSpeechRecognizer.authorizationStatus()
+        let microphone = AVAudioApplication.shared.recordPermission
+        let capture = LocalVoiceCapture()
+        await capture.start()
+        #expect(capture.phase == .failed)
+        #expect(!capture.busy && capture.text.isEmpty)
+        #expect(capture.message?.contains("unavailable") == true)
+        #expect(SFSpeechRecognizer.authorizationStatus() == speech)
+        #expect(AVAudioApplication.shared.recordPermission == microphone)
     }
 
     @Test func temporaryAudioCleanupIsScopedAndLeavesUnrelatedFilesAlone() throws {

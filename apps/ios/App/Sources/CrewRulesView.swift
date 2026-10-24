@@ -5,11 +5,12 @@ import UniformTypeIdentifiers
 struct CrewRulesView: View {
     let model: AppModel
     var onPrepared: (() -> Void)? = nil
+    @FocusState private var focusedField: String?
     @State private var title = "Shared pay rules"
     @State private var revision = "1"
     @State private var includeAmounts = false
     @State private var rightsConfirmed = false
-    @State private var prepared: CrewRuleFileDocument?
+    @State private var prepared: CrewRuleTransfer?
     @State private var exportPacket: CrewRuleTemplate?
     @State private var exporting = false
     @State private var importing = false
@@ -30,6 +31,14 @@ struct CrewRulesView: View {
     @State private var messageArea: MessageArea = .inspectDraft
 
     var body: some View {
+        if CrewRuleSharingAvailability.enabled {
+            content
+        } else {
+            ContentUnavailableView("Crew rule sharing is unavailable", systemImage: "doc")
+        }
+    }
+
+    private var content: some View {
         Form {
             Section {
                 Text(
@@ -88,8 +97,9 @@ struct CrewRulesView: View {
         .onDisappear { task?.cancel() }
         .sheet(isPresented: $showingSetup) { PayProfileSetupView(model: model) }
         .fileExporter(
-            isPresented: $exporting, document: prepared, contentType: .data,
-            defaultFilename: "Crew rules.linepayrules"
+            isPresented: $exporting, item: prepared, contentTypes: [.linePayCrewRules],
+            defaultFilename: exportPacket.map { "Crew rules-\($0.templateID.uuidString.prefix(8))" }
+                ?? "Crew rules"
         ) { result in
             messageArea = .exportFile
             switch result {
@@ -100,7 +110,9 @@ struct CrewRulesView: View {
                 message = "The draft was not saved. Check the selected destination and retry."
             }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.data, .json]) { result in
+        .fileImporter(
+            isPresented: $importing, allowedContentTypes: [.linePayCrewRules, .json]
+        ) { result in
             messageArea = .inspectDraft
             message = nil
             guard case .success(let url) = result else {
@@ -141,13 +153,13 @@ struct CrewRulesView: View {
 
     private var exportSection: some View {
         Section("Prepare a rule draft") {
-            LabeledContent("Draft title") {
-                TextField("Title", text: $title).accessibilityIdentifier("crew-rules.title")
-            }
-            LabeledContent("Draft revision") {
-                TextField("Revision", text: $revision).textInputAutocapitalization(.never)
-                    .accessibilityIdentifier("crew-rules.revision")
-            }
+            LinePayTextField(
+                "Draft title", text: $title, focus: $focusedField, identifier: "crew-rules.title")
+            LinePayTextField(
+                "Draft revision", text: $revision, focus: $focusedField,
+                identifier: "crew-rules.revision"
+            )
+            .textInputAutocapitalization(.never)
             Toggle("Include hourly and per-diem amounts", isOn: $includeAmounts)
                 .accessibilityIdentifier("crew-rules.include-amounts")
             Text(
@@ -264,7 +276,7 @@ struct CrewRulesView: View {
             let packet = try CrewRuleTemplate.sharing(
                 agreement, templateID: UUID(), revision: revision, title: title,
                 includeAmounts: includeAmounts)
-            prepared = CrewRuleFileDocument(data: try packet.encoded())
+            prepared = CrewRuleTransfer(data: try packet.encoded())
             exportPacket = packet
             message = nil
         } catch {

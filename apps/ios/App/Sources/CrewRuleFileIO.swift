@@ -1,21 +1,17 @@
+import CoreTransferable
 import Foundation
-import SwiftUI
 import Synchronization
 import UniformTypeIdentifiers
 
-struct CrewRuleFileDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.data] }
-    let data: Data
+extension UTType {
+    static let linePayCrewRules = UTType(
+        exportedAs: "com.streamentry.linepay.crew-rules", conformingTo: .json)
+}
 
-    init(data: Data) { self.data = data }
-    init(configuration: ReadConfiguration) throws {
-        guard let bytes = configuration.file.regularFileContents, bytes.count <= 65_536 else {
-            throw CocoaError(.fileReadCorruptFile)
-        }
-        data = bytes
-    }
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: data)
+struct CrewRuleTransfer: Transferable, Sendable {
+    let data: Data
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .linePayCrewRules) { $0.data }
     }
 }
 

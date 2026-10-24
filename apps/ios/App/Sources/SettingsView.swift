@@ -15,8 +15,9 @@ struct SettingsView: View {
                     Section(header: settingsSectionHeader("Pay")) {
                         settingsNavigationRow(
                             "Pay profile: \(profile.name)", destination: .payProfile)
-                        Button("Edit pay rules") { editor = true }.accessibilityIdentifier(
-                            "settings.edit-rules")
+                        Button("Edit pay rules") { editor = true }
+                            .linePayRowAction()
+                            .accessibilityIdentifier("settings.edit-rules")
                         settingsNavigationRow(
                             "Pay period: \(profile.preferredCadence.title)",
                             destination: .payPeriod)
@@ -37,9 +38,11 @@ struct SettingsView: View {
                     settingsNavigationRow(
                         "Agreement documents", identifier: "settings.agreements",
                         destination: .agreements)
-                    settingsNavigationRow(
-                        "Crew rule drafts", identifier: "settings.crew-rules",
-                        destination: .crewRules)
+                    if CrewRuleSharingAvailability.enabled {
+                        settingsNavigationRow(
+                            "Crew rule drafts", identifier: "settings.crew-rules",
+                            destination: .crewRules)
+                    }
                 }
                 Section(header: settingsSectionHeader("LinePaycheck Pro")) {
                     LabeledContent {
@@ -73,9 +76,11 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings.view-pro")
                     Button("Restore Purchases") {
                         Task { await subscriptionStore.restorePurchases() }
-                    }
-                    Link("Manage subscription", destination: AppLinks.subscriptions).frame(
-                        minHeight: 44)
+                    }.linePayRowAction()
+                        .accessibilityIdentifier("settings.restore-purchases")
+                    Link("Manage subscription", destination: AppLinks.subscriptions)
+                        .linePayRowAction()
+                        .accessibilityIdentifier("settings.manage-subscription")
                     if let error = subscriptionStore.errorMessage {
                         Text(error).foregroundStyle(LinePayColor.review).font(.footnote)
                     }
@@ -96,12 +101,13 @@ struct SettingsView: View {
                 }
                 Section(header: settingsSectionHeader("About")) {
                     settingsNavigationRow(
-                        "About LinePaycheck", identifier: "settings.about", destination: .about)
+                        "About Paycheck Audit", identifier: "settings.about", destination: .about)
                     Link("Support", destination: AppLinks.support).accessibilityIdentifier(
                         "settings.support")
                     Link("Privacy policy", destination: AppLinks.privacy).accessibilityIdentifier(
                         "settings.privacy-policy")
                     Link("Terms of use", destination: AppLinks.terms)
+                        .accessibilityIdentifier("settings.terms")
                 }
             }
             .navigationTitle("Settings")
@@ -123,6 +129,7 @@ struct SettingsView: View {
     private func settingsSectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)
+            .fixedSize(horizontal: false, vertical: true)
             .textCase(nil)
             .foregroundStyle(LinePayColor.textPrimary)
             .accessibilityAddTraits(.isHeader)

@@ -16,9 +16,9 @@ The v2 development build offers optional password protection for complete backup
 
 “Local by default” does not mean exported copies cannot leave the phone, that all services work offline, or that a lost phone’s records can be recovered without a backup. Keep your device and storage accounts appropriately protected.
 
-## Voice input in the v2 development build
+## Work descriptions
 
-Voice work drafts request microphone and speech permission only when you choose to record. English recognition must run on this device; if it is unavailable, use manual entry. A short protected temporary recording is excluded from pay backups and removed on completion/cancellation; abandoned cleanup is retried at next launch. Cleanup problems are disclosed, and **Delete all local data** also retries owned-audio removal. The app adds no background microphone mode or server-recognition fallback. Review the reading and all proposed clock facts before applying them, then save work separately.
+**Draft work from notes** accepts a typed or pasted English description. Review all proposed clock facts before applying them, then save work separately. Microphone recording is unavailable in this version, and this candidate does not request microphone or speech-recognition permission. No audio is captured or sent to a recognition server.
 
 ## Device-local activity in the v2 development build
 

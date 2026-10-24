@@ -27,9 +27,11 @@ struct VoiceWorkView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Voice proposes; you confirm") {
+                Section("Review a work description") {
                     Text(
-                        "Record up to one minute in English. Recognition must run on this device; there is no server fallback. Audio is temporary, not an original work record. The reading is not saved until you use reviewed facts in the work editor."
+                        WorkReadingAvailability.recordingEnabled
+                            ? "Record up to one minute in English. Recognition must run on this device; there is no server fallback. Audio is temporary, not an original work record. The reading is not saved until you use reviewed facts in the work editor."
+                            : "Type or paste a short work description in English. Review the proposed dates, times and breaks before using them in the work editor. The draft cannot choose pay rules or save work for you."
                     )
                     Text(
                         "Example: ‘Regular from seven AM to three PM. No unpaid breaks.’ For overnight work, add ‘next day’ after the end time. For a break: ‘Unpaid break from noon to twelve thirty PM.’"
@@ -43,22 +45,24 @@ struct VoiceWorkView: View {
                         DatePicker("Work starts on", selection: $day, displayedComponents: .date)
                     }
                     Text("Payroll timezone: \(timeZoneIdentifier)").font(.footnote)
-                    if capture.phase == .recording {
-                        Label("Recording — stops at one minute", systemImage: "mic.fill")
-                        Button("Stop and read on this device") { capture.stopAndTranscribe() }
-                            .accessibilityIdentifier("voice.stop")
-                    } else if capture.busy {
-                        ProgressView(
-                            capture.phase == .permission
-                                ? "Waiting for permission" : "Reading on this device")
-                        Button("Cancel recording") { capture.cancel() }
-                    } else {
-                        Button(reading.isEmpty ? "Record work" : "Record again") {
-                            proposal = nil
-                            confirmed = false
-                            message = nil
-                            Task { await capture.start() }
-                        }.accessibilityIdentifier("voice.record")
+                    if WorkReadingAvailability.recordingEnabled {
+                        if capture.phase == .recording {
+                            Label("Recording — stops at one minute", systemImage: "mic.fill")
+                            Button("Stop and read on this device") { capture.stopAndTranscribe() }
+                                .accessibilityIdentifier("voice.stop")
+                        } else if capture.busy {
+                            ProgressView(
+                                capture.phase == .permission
+                                    ? "Waiting for permission" : "Reading on this device")
+                            Button("Cancel recording") { capture.cancel() }
+                        } else {
+                            Button(reading.isEmpty ? "Record work" : "Record again") {
+                                proposal = nil
+                                confirmed = false
+                                message = nil
+                                Task { await capture.start() }
+                            }.accessibilityIdentifier("voice.record")
+                        }
                     }
                     if capture.cleanupIssue {
                         Label(
@@ -135,7 +139,7 @@ struct VoiceWorkView: View {
                 }
             }
             .labeledContentStyle(LinePayValueStyle()).linePayCanvas().linePayKeyboardDismiss()
-            .navigationTitle("Voice work draft").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Work notes draft").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {

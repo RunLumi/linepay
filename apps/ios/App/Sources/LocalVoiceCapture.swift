@@ -3,6 +3,11 @@ import Foundation
 import Observation
 import Speech
 
+/// Re-enable recording only after the physical-device procedure and permission review pass.
+enum WorkReadingAvailability {
+    static let recordingEnabled = false
+}
+
 /// Platform adapter only. Audio is temporary, excluded from backups and never offered to a server.
 @MainActor
 @Observable
@@ -22,6 +27,11 @@ final class LocalVoiceCapture: NSObject, AVAudioRecorderDelegate {
     var busy: Bool { phase == .permission || phase == .recording || phase == .transcribing }
 
     func start() async {
+        guard WorkReadingAvailability.recordingEnabled else {
+            message = "Recording is unavailable in this version. Type a work description instead."
+            phase = .failed
+            return
+        }
         guard !busy else { return }
         cancel()
         let token = generation

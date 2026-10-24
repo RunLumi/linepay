@@ -163,10 +163,12 @@ final class SubscriptionStore {
         isPro = entitled
         hasCheckedEntitlements = true
         // Never reject an entitlement just because its paid period expired: StoreKit includes grace.
-        notice = nil
-        renewalDate = nil
-        willAutoRenew = nil
-        isTrial = false
+        // StoreKit lookups suspend. Publish one complete status snapshot so concurrent
+        // refreshes never expose a temporary "not a trial" state during a live trial.
+        var nextNotice: String?
+        var nextRenewalDate: Date?
+        var nextWillAutoRenew: Bool?
+        var nextIsTrial = false
         for product in products {
             guard let subscription = product.subscription,
                 let statuses = try? await subscription.status
@@ -180,10 +182,10 @@ final class SubscriptionStore {
                 if entitled, transaction.revocationDate == nil, !transaction.isUpgraded,
                     status.state == .subscribed || status.state == .inGracePeriod
                 {
-                    renewalDate = transaction.expirationDate
-                    willAutoRenew = renewal.willAutoRenew
-                    isTrial = transaction.offer?.paymentMode == .freeTrial
-                    if isTrial {
+                    nextRenewalDate = transaction.expirationDate
+                    nextWillAutoRenew = renewal.willAutoRenew
+                    nextIsTrial = transaction.offer?.paymentMode == .freeTrial
+                    if nextIsTrial {
                         localActivity?.record(
                             .verifiedTrialObserved, once: .transaction(transaction.id))
                     } else if let price = transaction.price, price > 0 {
@@ -196,19 +198,25 @@ final class SubscriptionStore {
                 // StoreKit test device, so do not suppress the user-facing notice while
                 // Apple's signed status is already in grace.
                 if status.state == .inGracePeriod {
-                    notice =
+                    nextNotice =
                         "Pro remains active during Apple's billing grace period. Review payment details in your App Store account."
                 } else if renewal.isInBillingRetry && !entitled {
-                    notice =
+                    nextNotice =
                         "Apple is retrying subscription payment. Existing records remain available."
                 } else if status.state == .expired && !entitled {
-                    notice = "Pro has expired. Existing audits and work records remain available."
+                    nextNotice =
+                        "Pro has expired. Existing audits and work records remain available."
                 } else if status.state == .revoked && !entitled {
-                    notice =
+                    nextNotice =
                         "The App Store entitlement is no longer active. Existing records remain available."
                 }
             }
         }
+        guard generation == refreshGeneration else { return }
+        notice = nextNotice
+        renewalDate = nextRenewalDate
+        willAutoRenew = nextWillAutoRenew
+        isTrial = nextIsTrial
         // Only once Apple's signed status is known: a reminder about a trial that will no longer
         // bill (cancelled, or already converted) is noise.
         if observesStoreKit, renewalDate != nil, willAutoRenew == false || !isTrial {

@@ -63,6 +63,11 @@ Test artifacts are written under:
 
 `.build/` is ignored by Git.
 
+For an SSD-backed local run, `LINEPAY_MAESTRO_DERIVED_DATA` and
+`LINEPAY_MAESTRO_RESULTS_DIR` override the two task-owned output directories. The script removes
+those exact directories before rebuilding/running, so use dedicated scratch paths, never an
+archive or user-data folder. Overrides must be empty or already marked as script-owned. `LINEPAY_IOS_BUILD_JOBS` defaults to 2 to bound host pressure.
+
 ## 3. Prerequisites
 
 You need:

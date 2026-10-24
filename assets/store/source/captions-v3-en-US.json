@@ -14,8 +14,8 @@
     {
       "id": "02-track-hours-know-expected-pay",
       "raw": "store-v3-02-today.png",
-      "headline": "Track Hours.\nKnow Expected Pay.",
-      "caption": "Log shifts. See expected wages from your rules.",
+      "headline": "Track Hours.\nSee Expected Gross.",
+      "caption": "Log shifts. Review estimated gross wages.",
       "qualifier": "Illustrative data",
       "productState": "today-expected-wages-before-paycheck",
       "accessRequirement": "Free"
@@ -23,7 +23,7 @@
     {
       "id": "03-scan-review-compare",
       "raw": "store-v3-03-scan-review.png",
-      "headline": "Scan. Review.\nCompare.",
+      "headline": "Import. Review.\nCompare.",
       "caption": "Read on your iPhone. Nothing counts until you confirm it.",
       "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
       "productState": "paystub-ocr-review-unconfirmed-dates-and-gross",
@@ -32,8 +32,8 @@
     {
       "id": "04-possible-overtime-gaps",
       "raw": "store-v3-04-line-differences.png",
-      "headline": "Find Possible\nOvertime Gaps.",
-      "caption": "Line by line: expected double time vs. your paystub.",
+      "headline": "Possible Double-Time\nDifference.",
+      "caption": "Configured daily double time, not a full overtime audit.",
       "qualifier": "Illustrative data · First paycheck check free. Pro for ongoing checks.",
       "productState": "confirmed-line-comparison-double-time-hours-difference",
       "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
@@ -42,7 +42,7 @@
       "id": "05-keep-the-evidence",
       "raw": "store-v3-05-line-evidence.png",
       "headline": "Keep the\nEvidence.",
-      "caption": "Work, rule and paystub value behind every line.",
+      "caption": "Trace a comparison to work and paystub values.",
       "qualifier": "Illustrative data",
       "productState": "double-time-line-evidence-with-retained-paystub",
       "accessRequirement": "Part of a paycheck check (first free; Pro for later periods)"
