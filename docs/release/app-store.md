@@ -205,13 +205,11 @@ Calculations and paystub processing happen on-device. Manual exports/backups are
 Use only if the final submitted build includes the accepted generic journey. Add other v2 improvements individually after their final release gates; this is not a declaration that the whole roadmap is complete.
 
 ```text
-A simpler way to check your paycheck.
+LinePaycheck is now Paycheck Audit.
 
-Start with hourly pay, record your work and compare your paystub from the expected-pay screen. Uncertain overtime rules and mismatched pay periods stay visible for review.
+A clearer paycheck-checking journey with typed work drafts, optional password-protected backups, benefits tracking and crew-rule draft tools. Review possible differences with their work and paystub evidence.
 
-Your lineworker and advanced pay settings remain available, along with your saved work and paycheck history.
-
-Calculations depend on the supported rules and information you confirm. A possible difference is a prompt to review, not a legal finding.
+Your saved history and advanced lineman pay settings remain available. Microphone recording is unavailable in this version.
 ```
 
 ## 11. Submission and experiment gates

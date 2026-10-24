@@ -558,8 +558,8 @@
         "crew-rule-drafts"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "61380913fd9ea74b80978d21efce047ec2af0400",
-      "reason": "October 23: crew draft title and revision use the existing labeled focusable field so largest-text input remains reachable; reviewed crew-rule sharing instructions, choices and authority are unchanged."
+      "blob": "94dd94f9012f461d1c6b9164a9836d475662e4df",
+      "reason": "October 24: reviewed crew export against the existing backup Transferable pattern; immutable encoded draft bytes and distinct default filename, same Files destination/review/adoption steps. No payroll/history data added to export."
     },
     {
       "path": "apps/ios/App/Sources/PaycheckResolutionView.swift",

@@ -10,7 +10,7 @@ struct CrewRulesView: View {
     @State private var revision = "1"
     @State private var includeAmounts = false
     @State private var rightsConfirmed = false
-    @State private var prepared: CrewRuleFileDocument?
+    @State private var prepared: CrewRuleTransfer?
     @State private var exportPacket: CrewRuleTemplate?
     @State private var exporting = false
     @State private var importing = false
@@ -89,8 +89,9 @@ struct CrewRulesView: View {
         .onDisappear { task?.cancel() }
         .sheet(isPresented: $showingSetup) { PayProfileSetupView(model: model) }
         .fileExporter(
-            isPresented: $exporting, document: prepared, contentType: .linePayCrewRules,
-            defaultFilename: "Crew rules"
+            isPresented: $exporting, item: prepared, contentTypes: [.linePayCrewRules],
+            defaultFilename: exportPacket.map { "Crew rules-\($0.templateID.uuidString.prefix(8))" }
+                ?? "Crew rules"
         ) { result in
             messageArea = .exportFile
             switch result {
@@ -267,7 +268,7 @@ struct CrewRulesView: View {
             let packet = try CrewRuleTemplate.sharing(
                 agreement, templateID: UUID(), revision: revision, title: title,
                 includeAmounts: includeAmounts)
-            prepared = CrewRuleFileDocument(data: try packet.encoded())
+            prepared = CrewRuleTransfer(data: try packet.encoded())
             exportPacket = packet
             message = nil
         } catch {
