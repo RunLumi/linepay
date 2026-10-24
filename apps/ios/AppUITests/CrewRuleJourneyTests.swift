@@ -82,7 +82,15 @@ final class CrewRuleJourneyTests: XCTestCase {
         let save = picker.buttons["Move"].exists ? picker.buttons["Move"] : picker.buttons["Save"]
         XCTAssertTrue(save.isHittable)
         save.tap()
-        XCTAssertTrue(picker.waitForNonExistence(timeout: 15))
+        let saved = picker.waitForNonExistence(timeout: 15)
+        if !saved {
+            capture("v2-crew-save-picker-still-present", large: large)
+            let tree = XCTAttachment(string: app.debugDescription)
+            tree.name = "crew-files-after-save"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
+        XCTAssertTrue(saved, "Saving the selected local file must dismiss Files")
         let message = app.descendants(matching: .any).matching(identifier: "crew-rules.message")
             .firstMatch
         reveal(message)
@@ -115,16 +123,30 @@ final class CrewRuleJourneyTests: XCTestCase {
             localLocation.tap()
         }
         XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
+        let fileName = marker + ".linepayrules"
+        let matchingFiles = app.cells.matching(
+            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", fileName, fileName)
+        )
+        // Search the exact generated file rather than depending on a virtualized grid's position
+        // or on how many earlier synthetic files remain in the local provider.
+        let search = app.searchFields.firstMatch
         let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
-        let file = fileList.cells.matching(
-            NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", marker, marker)
-        ).firstMatch
-        // Files virtualizes rows at large text sizes; reach the actual saved file rather than
-        // assuming every cell is already represented in the accessibility tree.
-        for _ in 0..<20 where !file.exists || !file.isHittable {
-            fileList.swipeUp()
+        for _ in 0..<30 where !search.isHittable { fileList.swipeDown() }
+        XCTAssertTrue(search.isHittable, "Reveal the local Files search field")
+        search.tap()
+        if let previous = search.value as? String, !previous.isEmpty, previous != "Search" {
+            search.typeText(
+                String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count))
         }
-        if !file.waitForExistence(timeout: 10) {
+        search.typeText(marker)
+        let submitSearch = app.keyboards.buttons["Search"].firstMatch
+        if submitSearch.isHittable { submitSearch.tap() }
+        let visibleFile = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                matchingFiles.allElementsBoundByIndex.contains { $0.isHittable }
+            }, object: nil)
+        let fileReady = XCTWaiter.wait(for: [visibleFile], timeout: 25) == .completed
+        if !fileReady {
             capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
             tree.name = "crew-files-local-root-before-search"
@@ -136,7 +158,8 @@ final class CrewRuleJourneyTests: XCTestCase {
             finalTree.lifetime = .keepAlways
             add(finalTree)
         }
-        XCTAssertTrue(file.exists, "Wait for the saved local draft to appear")
+        XCTAssertTrue(fileReady, "Wait for the saved local draft to become selectable")
+        let file = try XCTUnwrap(matchingFiles.allElementsBoundByIndex.first { $0.isHittable })
         XCTAssertTrue(file.label.contains("\(marker).linepayrules"), file.label)
         XCTAssertTrue(file.isHittable, "Select the actual locally exported synthetic draft")
         XCTAssertTrue(file.isEnabled)

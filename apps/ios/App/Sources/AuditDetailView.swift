@@ -292,7 +292,7 @@ struct PaycheckComparisonDetail: View {
     let comparison: PaycheckComparison
     var body: some View {
         List {
-            Section("This comparison") {
+            Section {
                 Text(comparison.field.title).font(.title2.bold())
                 LabeledContent("Expected") {
                     Text(formatted(comparison.expected))
@@ -306,9 +306,11 @@ struct PaycheckComparisonDetail: View {
                     Text(formatted(comparison.difference))
                         .foregroundStyle(LinePayColor.textPrimary).monospacedDigit()
                 }
+            } header: {
+                Text("This comparison").foregroundStyle(LinePayColor.textSecondary)
             }
             if let calculation = context.calculation {
-                Section("Only the work behind this line") {
+                Section {
                     let selected = calculation.components.filter {
                         comparison.componentIDs.contains($0.id)
                     }
@@ -328,9 +330,12 @@ struct PaycheckComparisonDetail: View {
                                 work: context.workEntries, model: model)
                         }
                     }
+                } header: {
+                    Text("Only the work behind this line").foregroundStyle(
+                        LinePayColor.textSecondary)
                 }
             }
-            Section("Paystub evidence") {
+            Section {
                 if let paid = context.paystub {
                     Text("Confirmed \(comparison.field.title): \(formatted(comparison.paid))")
                         .monospacedDigit()
@@ -349,11 +354,14 @@ struct PaycheckComparisonDetail: View {
                         Text(text).font(.caption.monospaced()).textSelection(.enabled)
                     }
                 }
+            } header: {
+                Text("Paystub evidence").foregroundStyle(LinePayColor.textSecondary)
             }
             Section {
                 Text(
                     "Check this line on your paystub or with payroll. A difference is not a determination of wages legally owed."
-                ).font(.footnote)
+                ).font(.footnote).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("audit.line-scope")
             }
         }
         .linePayCanvas()

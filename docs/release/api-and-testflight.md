@@ -118,7 +118,7 @@ a required operation, resolve the missing evidence or reviewed policy—not the 
    python3 scripts/asc-api.py "/v1/apps/$ASC_APP_ID/buildUploads?limit=20"
    ```
 
-3. Set `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` deliberately in `apps/ios/project.yml`. Keep bundle ID and `LinePay` scheme unchanged. Set `CFBundleDisplayName` from the exact candidate in [app-store.md](app-store.md); the owner-selected 1.1.0 build 13 candidate is **Lineman Pay**, pending availability/confusability review and release gates. Never reuse a version/build pair after an uncertain upload without checking Apple first.
+3. Set `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` deliberately in `apps/ios/project.yml`. Keep bundle ID and `LinePay` scheme unchanged. Set `CFBundleDisplayName` from the exact candidate in [app-store.md](app-store.md); the owner-selected full-update candidate is **Paycheck Audit** (October 24; supersedes Lineman Pay), pending availability/confusability review and release gates. Never reuse a version/build pair after an uncertain upload without checking Apple first.
 4. Run `bash scripts/agent-doctor.sh` and `bash scripts/agent-verify.sh ui` when Maestro is available; `ui` includes the native gate, so do not redundantly run `ios` first. Record unsupported manual checks honestly. Re-run only checks invalidated by later changes.
 5. Verify the icon is opaque, the privacy manifest is bundled, permissions match behavior, StoreKit IDs match the configured products, and supported migration/recovery paths are safe.
 

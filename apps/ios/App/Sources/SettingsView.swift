@@ -99,7 +99,7 @@ struct SettingsView: View {
                 }
                 Section(header: settingsSectionHeader("About")) {
                     settingsNavigationRow(
-                        "About Lineman Pay", identifier: "settings.about", destination: .about)
+                        "About Paycheck Audit", identifier: "settings.about", destination: .about)
                     Link("Support", destination: AppLinks.support).accessibilityIdentifier(
                         "settings.support")
                     Link("Privacy policy", destination: AppLinks.privacy).accessibilityIdentifier(

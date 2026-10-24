@@ -332,7 +332,20 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Double-time pay"].waitForExistence(timeout: 10))
         capture("store-v3-05-line-evidence")
         if #available(iOS 26.0, *) {
-            try app.performAccessibilityAudit(for: .contrast)
+            try auditVisibleEvidenceContrast("amounts")
+            let scope = app.staticTexts["audit.line-scope"]
+            for _ in 0..<10 {
+                if scope.exists, scope.isHittable,
+                    scope.frame.minY >= app.navigationBars.firstMatch.frame.maxY,
+                    scope.frame.maxY <= app.tabBars.firstMatch.frame.minY
+                {
+                    break
+                }
+                dragContent(upBy: 0.15)
+            }
+            XCTAssertGreaterThanOrEqual(scope.frame.minY, app.navigationBars.firstMatch.frame.maxY)
+            XCTAssertLessThanOrEqual(scope.frame.maxY, app.tabBars.firstMatch.frame.minY)
+            try auditVisibleEvidenceContrast("scope-fully-visible")
         }
         tapContaining("Overtime")
         XCTAssertTrue(app.navigationBars["Why this amount?"].waitForExistence(timeout: 10))
@@ -464,7 +477,7 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertTrue(about.waitForExistence(timeout: 10))
         XCTAssertTrue(about.isHittable, "About navigation must remain reachable at large text")
         about.tap()
-        XCTAssertTrue(app.navigationBars["About Lineman Pay"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["About Paycheck Audit"].waitForExistence(timeout: 10))
         capture("45-about")
         let guide = app.descendants(matching: .any)
             .matching(identifier: "settings.user-guide").firstMatch
@@ -817,6 +830,35 @@ final class PaydayJourneyTests: XCTestCase {
         XCTAssertEqual(app.buttons["paystub.audit"].label, "Compare with expected pay")
         tap("paystub.audit")
     }
+    private func auditVisibleEvidenceContrast(_ state: String) throws {
+        let top = app.navigationBars.firstMatch.frame.maxY
+        let bottom = app.tabBars.firstMatch.frame.minY
+        XCTAssertGreaterThan(bottom, top, "The evidence reading viewport must be present")
+        let viewport = CGRect(
+            x: 0, y: top, width: app.windows.firstMatch.frame.width, height: bottom - top)
+        try app.performAccessibilityAudit(for: .contrast) { [self] issue in
+            let details =
+                "Evidence contrast \(state): \(issue.compactDescription) / \(issue.detailedDescription) / \(issue.element?.debugDescription ?? "unmapped")"
+            print(details)
+            let report = XCTAttachment(string: details)
+            report.name = "evidence-contrast-\(state)"
+            report.lifetime = .keepAlways
+            add(report)
+            if let element = issue.element,
+                !app.navigationBars.descendants(matching: .any).allElementsBoundByIndex.contains(
+                    element),
+                !app.tabBars.descendants(matching: .any).allElementsBoundByIndex.contains(element),
+                !viewport.contains(element.frame)
+            {
+                print(
+                    "Evidence contrast outside reading viewport: \(element.frame), \(element.label)"
+                )
+                return true
+            }
+            return false
+        }
+    }
+
     private func capture(_ name: String) {
         let image = XCTAttachment(screenshot: app.screenshot())
         image.name = name

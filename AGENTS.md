@@ -23,7 +23,7 @@ Small fixes stay small.
 These are deliberately different:
 
 - Public product brand: **LinePaycheck**
-- vNext display-name candidate: **Lineman Pay** (selected Oct 20; pending release)
+- vNext display name: **Paycheck Audit** (Oct 24; pending release)
 - Repository: `streamentry/linepay`
 - iOS bundle ID: **`com.streamentry.linepay`**
 - Xcode project / scheme / target: `LinePay`
