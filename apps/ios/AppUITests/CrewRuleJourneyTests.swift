@@ -141,6 +141,12 @@ final class CrewRuleJourneyTests: XCTestCase {
         search.typeText(marker)
         let submitSearch = app.keyboards.buttons["Search"].firstMatch
         if submitSearch.isHittable { submitSearch.tap() }
+        // Files remembers a previous search scope independently of the browsed folder.
+        // Search the local destination, not Recents, which may omit a newly exported draft.
+        let localScope = app.segmentedControls["scopeBar"].buttons["On My iPhone"]
+        XCTAssertTrue(localScope.waitForExistence(timeout: 10))
+        if !localScope.isSelected { localScope.tap() }
+        XCTAssertTrue(localScope.isSelected)
         let visibleFile = XCTNSPredicateExpectation(
             predicate: NSPredicate { _, _ in
                 matchingFiles.allElementsBoundByIndex.contains { $0.isHittable }
