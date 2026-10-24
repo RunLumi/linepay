@@ -12,7 +12,27 @@ final class CrewRuleJourneyTests: XCTestCase {
         executionTimeAllowance = 900
         try exchange(large: true)
     }
+    func testHeldCrewSharingHasNoSettingsEntry() throws {
+        try XCTSkipIf(CrewRuleSharingAvailability.enabled, "Sharing is enabled for a later release")
+        continueAfterFailure = false
+        app.launchArguments = ["--ui-testing", "--reset-ui-state", "-AppleLanguages", "(en)"]
+        app.launchEnvironment["LINEPAY_UI_SCENARIO"] = "matches"
+        app.launchEnvironment["LINEPAY_COMMERCE_ENABLED"] = "0"
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 15))
+        app.tabBars.buttons["Settings"].tap()
+        let agreements = app.buttons["settings.agreements"].firstMatch
+        reveal(agreements)
+        XCTAssertTrue(agreements.isHittable)
+        XCTAssertFalse(app.buttons["settings.crew-rules"].exists)
+        capture("crew-sharing-unavailable-settings", large: false)
+        app.terminate()
+    }
+
     private func exchange(large: Bool) throws {
+        try XCTSkipIf(
+            !CrewRuleSharingAvailability.enabled,
+            "Owner-held in 1.1.0: repeated native Files exchange is not release-verified.")
         continueAfterFailure = false
         app.terminate()
         _ = app.wait(for: .notRunning, timeout: 10)
@@ -65,12 +85,7 @@ final class CrewRuleJourneyTests: XCTestCase {
         XCTAssertTrue(filename.waitForExistence(timeout: 10))
         let oldName = try XCTUnwrap(filename.value as? String)
         XCTAssertTrue(oldName.hasPrefix("Crew rules"), oldName)
-        filename.tap()
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        filename.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count))
-        filename.typeText(marker)
-        let editedName = try XCTUnwrap(filename.value as? String)
-        XCTAssertTrue(editedName.contains(marker), editedName)
+        // Each reviewed draft has a unique default filename; keep the user's default save path.
         if !picker.staticTexts["On My iPhone"].exists {
             if picker.buttons["Browse"].exists { picker.buttons["Browse"].tap() }
             let local = app.staticTexts["On My iPhone"].firstMatch
@@ -123,39 +138,24 @@ final class CrewRuleJourneyTests: XCTestCase {
             localLocation.tap()
         }
         XCTAssertTrue(localRoot.waitForExistence(timeout: 10))
-        let fileName = marker + ".linepayrules"
-        let matchingFiles = app.cells.matching(
+        let fileName = oldName.hasSuffix(".linepayrules") ? oldName : oldName + ".linepayrules"
+        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
+        XCTAssertTrue(fileList.waitForExistence(timeout: 10))
+        let matchingFiles = fileList.cells.matching(
             NSPredicate(format: "identifier CONTAINS %@ OR label CONTAINS %@", fileName, fileName)
         )
-        // Search the exact generated file rather than depending on a virtualized grid's position
-        // or on how many earlier synthetic files remain in the local provider.
-        let search = app.searchFields.firstMatch
-        let fileList = app.collectionViews.matching(identifier: "File View").firstMatch
-        for _ in 0..<30 where !search.isHittable { fileList.swipeDown() }
-        XCTAssertTrue(search.isHittable, "Reveal the local Files search field")
-        search.tap()
-        if let previous = search.value as? String, !previous.isEmpty, previous != "Search" {
-            search.typeText(
-                String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count))
+        // Browse the actual destination. Files search depends on a separate index that may
+        // not include a just-saved file even after selecting the correct local search scope.
+        func selectableFile() -> XCUIElement? {
+            matchingFiles.allElementsBoundByIndex.first { $0.isHittable }
         }
-        search.typeText(marker)
-        let submitSearch = app.keyboards.buttons["Search"].firstMatch
-        if submitSearch.isHittable { submitSearch.tap() }
-        // Files remembers a previous search scope independently of the browsed folder.
-        // Search the local destination, not Recents, which may omit a newly exported draft.
-        let localScope = app.segmentedControls["scopeBar"].buttons["On My iPhone"]
-        XCTAssertTrue(localScope.waitForExistence(timeout: 10))
-        if !localScope.isSelected { localScope.tap() }
-        XCTAssertTrue(localScope.isSelected)
-        let visibleFile = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in
-                matchingFiles.allElementsBoundByIndex.contains { $0.isHittable }
-            }, object: nil)
-        let fileReady = XCTWaiter.wait(for: [visibleFile], timeout: 25) == .completed
+        for _ in 0..<12 where selectableFile() == nil { fileList.swipeDown() }
+        for _ in 0..<40 where selectableFile() == nil { fileList.swipeUp() }
+        let fileReady = selectableFile() != nil
         if !fileReady {
             capture("v2-crew-local-root-file-missing", large: large)
             let tree = XCTAttachment(string: app.debugDescription)
-            tree.name = "crew-files-local-root-before-search"
+            tree.name = "crew-files-local-destination"
             tree.lifetime = .keepAlways
             add(tree)
             capture("v2-crew-import-file-missing", large: large)
@@ -165,8 +165,8 @@ final class CrewRuleJourneyTests: XCTestCase {
             add(finalTree)
         }
         XCTAssertTrue(fileReady, "Wait for the saved local draft to become selectable")
-        let file = try XCTUnwrap(matchingFiles.allElementsBoundByIndex.first { $0.isHittable })
-        XCTAssertTrue(file.label.contains("\(marker).linepayrules"), file.label)
+        let file = try XCTUnwrap(selectableFile())
+        XCTAssertTrue(file.label.contains(fileName), file.label)
         XCTAssertTrue(file.isHittable, "Select the actual locally exported synthetic draft")
         XCTAssertTrue(file.isEnabled)
         file.tap()

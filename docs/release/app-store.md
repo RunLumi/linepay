@@ -207,9 +207,9 @@ Use only if the final submitted build includes the accepted generic journey. Add
 ```text
 LinePaycheck is now Paycheck Audit.
 
-A clearer paycheck-checking journey with typed work drafts, optional password-protected backups, benefits tracking and crew-rule draft tools. Review possible differences with their work and paystub evidence.
+A clearer paycheck-checking journey with typed work drafts, optional password-protected backups and benefits tracking. Review possible differences with their work and paystub evidence.
 
-Your saved history and advanced lineman pay settings remain available. Microphone recording is unavailable in this version.
+Your saved history and advanced lineman pay settings remain available. Microphone recording and crew-rule sharing are unavailable in this version.
 ```
 
 ## 11. Submission and experiment gates

@@ -139,6 +139,7 @@ targets:
     sources:
       - path: AppUITests
         type: group
+      - path: App/Sources/CrewRuleSharingAvailability.swift
       - path: ../../shared/contracts/reconciliation/native-assessment-v4.json
         buildPhase: resources
       - path: ../../shared/contracts/backup/encryption-v1.json

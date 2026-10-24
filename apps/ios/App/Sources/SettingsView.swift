@@ -38,9 +38,11 @@ struct SettingsView: View {
                     settingsNavigationRow(
                         "Agreement documents", identifier: "settings.agreements",
                         destination: .agreements)
-                    settingsNavigationRow(
-                        "Crew rule drafts", identifier: "settings.crew-rules",
-                        destination: .crewRules)
+                    if CrewRuleSharingAvailability.enabled {
+                        settingsNavigationRow(
+                            "Crew rule drafts", identifier: "settings.crew-rules",
+                            destination: .crewRules)
+                    }
                 }
                 Section(header: settingsSectionHeader("LinePaycheck Pro")) {
                     LabeledContent {

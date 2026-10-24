@@ -41,7 +41,7 @@ final class DynamicTypeCoverageJourneyTests: XCTestCase {
             "settings.restore-purchases", "settings.manage-subscription",
             "settings.privacy-data", "backup.open", "settings.exportData", "settings.about",
             "settings.support", "settings.privacy-policy", "settings.terms",
-        ] {
+        ].filter({ CrewRuleSharingAvailability.enabled || $0 != "settings.crew-rules" }) {
             let element = app.descendants(matching: .any)
                 .matching(identifier: identifier).firstMatch
             revealFully(element)

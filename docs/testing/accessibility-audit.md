@@ -12,7 +12,7 @@ claim that every screen meets an App Store accessibility label.
   rendered work/status/action/text frames with independent UIKit font metrics, retains the full
   labels, and measures the combined work row using its headline, time and note styles. The long
   activity paragraph can scroll; it must retain its complete intrinsic height.
-- Its largest-text Settings journey scrolls each of 18 actions completely inside the navigation/
+- Its largest-text Settings journey scrolls each of 17 available actions (crew-rule sharing is owner-held in 1.1.0) completely inside the navigation/
   tab-bar viewport and checks its text bounds. Existing normal/dark largest-text pay, consent,
   evidence and recovery journeys remain required.
 - `testContrastOnFreshWorkerScreens` runs Apple's contrast audit on the existing iOS 26 simulator.

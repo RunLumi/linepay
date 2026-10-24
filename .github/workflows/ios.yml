@@ -79,6 +79,8 @@ jobs:
           done
           sleep 10
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
+          # Remove only the synthetic UI runner so no prior unsigned test code stays loaded.
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay.uitests.xctrunner 2>/dev/null || true
       - name: Toolchain
         run: |
           xcodebuild -version
@@ -183,6 +185,8 @@ jobs:
           xcrun simctl spawn "$UDID" defaults write -g AppleLocale en_US
           xcrun simctl spawn "$UDID" defaults write -g AppleLanguages -array en
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
+          # Remove only the synthetic UI runner so no prior unsigned test code stays loaded.
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay.uitests.xctrunner 2>/dev/null || true
           xcrun simctl ui "$UDID" appearance "$APPEARANCE"
           xcrun simctl ui "$UDID" content_size "$TEXT_SIZE"
           echo "MAESTRO_IOS_DEVICE=$DEVICE_NAME" >> "$GITHUB_ENV"

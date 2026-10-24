@@ -45,4 +45,4 @@ Next: [Read the expected-pay ledger]({{< relref "/expected-pay" >}}).
 
 ## Imported crew drafts in the v2 candidate
 
-An imported [crew rule draft]({{< relref "/crew-rule-drafts" >}}) uses **Future work periods only** for an existing profile. The editor displays that fixed scope for review; the explicit save and change confirmation still apply. This restriction does not change the ordinary manual-edit choices above.
+Crew-rule sharing is unavailable in 1.1.0. In the development workflow, an imported [crew rule draft]({{< relref "/crew-rule-drafts" >}}) uses **Future work periods only** for an existing profile. The editor displays that fixed scope for review; the explicit save and change confirmation still apply. This restriction does not change the ordinary manual-edit choices above.

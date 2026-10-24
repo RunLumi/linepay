@@ -59,7 +59,7 @@ review and App Store availability checks remain open, and no clearance is claime
 | Work and paystub processing are private by default; records are user-exported | Local persistence, Vision processing, no account/pay-data backend, privacy manifest, and manual export/backup flows | Exported files may contain sensitive information; the current App Store privacy and support snapshots must be rechecked for submission. |
 | Typed work drafts require review before save | `VoiceWorkView`, `VoiceWorkProposal` and proposal/UI tests | Microphone capture remains unavailable until physical-device QA; no recording permission or voice capability is advertised. |
 | Manual backups offer optional password protection | `BackupEncryption`, `BackupIO`, `BackupRestoreView` and encryption/restore regressions | User chooses the password and destination; no password recovery or automatic cloud sync. |
-| Benefits tracking and crew-rule drafts retain reviewed evidence | `BenefitAuditsView`, `CrewRulesView`, bounded import and adoption regressions | User-confirmed contributions/rules are not independently verified entitlement or an official agreement; final native Files acceptance remains required. |
+| Benefits tracking retains reviewed evidence | `BenefitAuditsView` and contribution/period/report regressions | User-confirmed contributions are not independently verified entitlement. Crew-rule sharing is owner-held and unavailable in 1.1.0. |
 | The first comparable audit is free; Pro adds ongoing checks | `AppModel.canRunAudit`, `SubscriptionStore`, and subscription behavior/lifecycle tests | Final sandbox/TestFlight purchase, restore, expiry and offer eligibility evidence is still required for the selected build. |
 
 ## linepaycheck.com

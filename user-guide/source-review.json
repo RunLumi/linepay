@@ -186,8 +186,8 @@
         "benefits"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "e4ab17fe06030cce907bc452d7b936a3b3b26c79",
-      "reason": "October 24: reviewed mapped guides for Paycheck Audit naming and readable comparison headers/scope. Support About label updated; privacy, billing, benefits and evidence steps remain accurate. Release pending."
+      "blob": "a94c4bce5936a7ce32702e0945e80d409473f6b3",
+      "reason": "October 24 owner release scope: crew-rule sharing hidden and view guarded until native Files QA; development guide clearly marked unavailable; ordinary manual rule editing and saved records unchanged."
     },
     {
       "path": "apps/ios/App/Sources/AboutLinePayView.swift",
@@ -558,8 +558,8 @@
         "crew-rule-drafts"
       ],
       "disposition": "reviewed-no-guide-change",
-      "blob": "94dd94f9012f461d1c6b9164a9836d475662e4df",
-      "reason": "October 24: reviewed crew export against the existing backup Transferable pattern; immutable encoded draft bytes and distinct default filename, same Files destination/review/adoption steps. No payroll/history data added to export."
+      "blob": "8917e58ce1a27993c845607f5181356e0820f2f2",
+      "reason": "October 24 owner release scope: crew-rule sharing hidden and view guarded until native Files QA; development guide clearly marked unavailable; ordinary manual rule editing and saved records unchanged."
     },
     {
       "path": "apps/ios/App/Sources/PaycheckResolutionView.swift",
@@ -597,6 +597,15 @@
       ],
       "disposition": "reviewed",
       "blob": "16dc67b6302ac709614e90588a5fe6f9312da0a1"
+    },
+    {
+      "path": "apps/ios/App/Sources/CrewRuleSharingAvailability.swift",
+      "guides": [
+        "crew-rule-drafts"
+      ],
+      "disposition": "reviewed-no-guide-change",
+      "blob": "51d18061203a920f9290afc187648494fae8254a",
+      "reason": "October 24 owner release scope: crew-rule sharing hidden and view guarded until native Files QA; development guide clearly marked unavailable; ordinary manual rule editing and saved records unchanged."
     }
   ]
 }

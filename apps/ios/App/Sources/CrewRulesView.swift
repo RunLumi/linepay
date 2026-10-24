@@ -31,6 +31,14 @@ struct CrewRulesView: View {
     @State private var messageArea: MessageArea = .inspectDraft
 
     var body: some View {
+        if CrewRuleSharingAvailability.enabled {
+            content
+        } else {
+            ContentUnavailableView("Crew rule sharing is unavailable", systemImage: "doc")
+        }
+    }
+
+    private var content: some View {
         Form {
             Section {
                 Text(

@@ -52,6 +52,8 @@ jobs:
           echo "IOS_SIMULATOR_DESTINATION=platform=iOS Simulator,id=$UDID" >> "$GITHUB_ENV"
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl uninstall "$UDID" com.streamentry.linepay 2>/dev/null || true
+          # Remove only the synthetic UI runner so no prior unsigned test code stays loaded.
+          xcrun simctl uninstall "$UDID" com.streamentry.linepay.uitests.xctrunner 2>/dev/null || true
       - name: Run legal behavior and interaction regressions
         run: |
           set -euo pipefail
