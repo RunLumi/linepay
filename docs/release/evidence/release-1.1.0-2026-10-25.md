@@ -2,7 +2,9 @@
 
 [Release home](../README.md) · [Store copy](../app-store.md) · [v3 plan](../../plan/v3.md)
 
-Apple accepted this update as **WAITING_FOR_REVIEW**, with release type **MANUAL**. The submitted listing is **Paycheck Audit**, subtitle **Compare Pay & Track Hours**. Public release is pending Apple approval; this receipt does not claim the new version is downloadable.
+**Current status (October 25):** Apple reports **READY_FOR_SALE**, and the public U.S. listing returns **Paycheck Audit / 1.1.0**. All 175 current territories report **AVAILABLE**; see the [worldwide availability follow-up](worldwide-availability-2026-10-25.md). The submission evidence below records the earlier state.
+
+At submission, Apple accepted this update as **WAITING_FOR_REVIEW**, with release type **MANUAL**. The submitted listing was **Paycheck Audit**, subtitle **Compare Pay & Track Hours**. Public release was pending Apple approval at that point; the current status is recorded above.
 
 ## Authority and source
 
@@ -72,7 +74,7 @@ New set: `e01e09bd-e51f-4be2-a76f-5d49f36b310a`. The old draft-only eight-image 
 
 The signed archive, IPA, source archive, actual native results, six screenshots, request/readback receipts and credential reference are retained in the private operator release bundle outside Git. No private key was copied. The four public help screenshots were refreshed from the passed final-source native journeys with provenance and scoped-result wording.
 
-**Remaining provider step:** Apple review, followed by the authorized manual public-release request and a fresh public storefront readback. Submission, approval and publication remain separate states.
+**Submission-time remaining provider step:** Apple review, followed by public release and a fresh storefront readback. The [October 25 follow-up](worldwide-availability-2026-10-25.md) now records READY_FOR_SALE and the public U.S. listing; the original submission readbacks above remain historical evidence.
 
 
 ## Live help deployment follow-up

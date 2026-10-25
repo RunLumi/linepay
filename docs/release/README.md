@@ -21,3 +21,5 @@
 - [1.0.5 (11) submission record](evidence/release-1.0.5-2026-10-05.md)
 
 - [Paycheck Audit 1.1.0 (15) App Review submission, October 25](evidence/release-1.1.0-2026-10-25.md)
+
+- [Paycheck Audit worldwide availability, October 25](evidence/worldwide-availability-2026-10-25.md)
