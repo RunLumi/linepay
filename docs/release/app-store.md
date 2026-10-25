@@ -1,8 +1,8 @@
-# Paycheck Audit — App Store candidate
+# Paycheck Audit — App Store listing
 
 [Release home](README.md) · [v3 plan](../plan/v3.md) · [Pricing](../product/pricing.md) · [Claims](../legal/claim-register.md)
 
-> **Canonical App Store copy and presentation. Updated October 25, 2026.** **Paycheck Audit 1.1.0 (15)** was saved and submitted with the name, subtitle, description, keywords, update notes and six real screenshots below. Apple returned **WAITING_FOR_REVIEW**, release type **MANUAL**. [Actual source/build/CI/Apple evidence](evidence/release-1.1.0-2026-10-25.md) is retained; public release is pending Apple approval. The earlier Lineman Pay naming-only submission was withdrawn before this replacement.
+> **Canonical App Store copy and presentation. Updated October 25, 2026.** **Paycheck Audit 1.1.0 (15)** was saved and submitted with the name, subtitle, description, keywords, update notes and six real screenshots below. Apple now reports **READY_FOR_SALE**, release type **MANUAL**; public U.S. lookup returns **Paycheck Audit / 1.1.0**, and all 175 current territories report **AVAILABLE**. [Worldwide readback](evidence/worldwide-availability-2026-10-25.md) and [source/build/CI/submission evidence](evidence/release-1.1.0-2026-10-25.md) are retained. The earlier Lineman Pay naming-only submission was withdrawn before this replacement.
 
 > **October 23 name-only submission:** The owner selected [1.0.6 (14)](evidence/release-1.0.6-2026-10-23.md) from released 1.0.5 source. Apple saved **Lineman Pay** and accepted the version as **WAITING_FOR_REVIEW**, release type **MANUAL**. Existing specialist copy, subtitle and eight screenshots were retained. The broader metadata and 1.1.0 experience below remain candidates; no public release is claimed.
 
@@ -18,7 +18,7 @@ Start with US hourly workers with variable schedules or supported overtime and p
 |---|---|
 | Existing 1.0.5 | The October 22 public listing and Apple GET readbacks retained **LinePaycheck: Lineman Pay**, version 1.0.5. The [submission receipt](evidence/release-1.0.5-2026-10-05.md) and [claim register](../legal/claim-register.md) retain the dated build 11, specialist-copy and screenshot evidence. |
 | vNext candidate | Signed local 1.1.0 (13) is retained privately. October 22 GET readback found processed TestFlight 1.1.0 (12), no observed build 13 reservation/upload, and no editable 1.1.0 App Store version. Copy, screenshots and review routes below still require acceptance against the final selected binary. |
-| Submitted / public vNext | Record the actual selected build, metadata, screenshots, release mode and Apple state in a new source-bound release receipt. No vNext submission or public-state claim is made here. |
+| Public 1.1.0 (15) | October 25: Apple **READY_FOR_SALE**, public U.S. **Paycheck Audit / 1.1.0**, all 175 current territories **AVAILABLE**; see the [dated readback](evidence/worldwide-availability-2026-10-25.md). Earlier candidate rows retain their dated evidence. |
 
 Built-in Browser is available, but App Store Connect requires secure user sign-in. Paid Applications Agreement acceptance remains unverified; the owner's “I’ll handle it” reply is not an acceptance receipt. Recheck the selected build, editable version, metadata and manual release setting before any authorized write. If source changes require another archive, first check Apple's build reservations to avoid reusing an uploaded build number.
 
